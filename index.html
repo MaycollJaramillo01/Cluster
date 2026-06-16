@@ -6,7 +6,7 @@
 <title>Cluster Media | Agencia de marketing digital para negocios hispanos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -21,6 +21,7 @@
           display: ['"Open Sans"', 'sans-serif'],
           sans: ['"Open Sans"', 'sans-serif'],
           mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          banner: ['"Bebas Neue"', 'sans-serif'],
         },
       },
     },
@@ -44,21 +45,24 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
+  .service-bento { grid-auto-rows: 1fr; }
+  .service-cover { min-height: 220px; transition: transform .3s ease; }
+  .service-cover:hover { transform: translateY(-2px); }
 </style>
 </head>
 <body class="bg-ink-900 text-paper font-sans antialiased">
 
   <!-- HEADER -->
-  <header class="fixed inset-x-0 top-0 z-50 bg-cream backdrop-blur-md border-b border-black/[0.08]">
+  <header class="fixed inset-x-0 top-0 z-50 bg-transparent">
     <div class="container-x flex h-[66px] items-center justify-between gap-4">
-      <a href="/" class="group inline-flex items-center gap-2.5">
-        <img src="assets/img/logo-white.webp" alt="Cluster Media" class="h-9 w-auto brightness-0 transition-transform duration-300 group-hover:scale-105" />
-        <span class="flex flex-col leading-none text-black">
-          <span class="font-display text-base font-bold">Cluster.</span>
-          <span class="font-display text-base font-bold -mt-1">Media</span>
+      <a href="/" class="group inline-flex items-center gap-2.5 translate-y-2">
+        <img src="assets/img/logo-white.webp" alt="Cluster Media" class="h-9 w-auto transition-transform duration-300 group-hover:scale-105" />
+        <span class="flex flex-col leading-none text-[#EAE8E4]">
+          <span class="font-sans text-lg font-bold uppercase tracking-wide">Cluster.</span>
+          <span class="font-sans text-lg font-bold -mt-1 uppercase tracking-wide">Media</span>
         </span>
       </a>
-      <nav class="hidden items-center gap-6 lg:flex text-sm font-bold text-black">
+      <nav class="hidden translate-y-2 items-center gap-6 lg:flex font-sans text-sm font-bold uppercase tracking-wide text-[#EAE8E4]">
         <a href="#inicio" class="hover:text-[#02C39A] transition">Inicio</a>
         <a href="#servicios" class="hover:text-[#02C39A] transition">Servicios</a>
         <a href="#paquete" class="hover:text-[#02C39A] transition">Paquete Inicial</a>
@@ -79,8 +83,8 @@
 
   <!-- HERO -->
   <section id="inicio" class="relative flex min-h-[calc(70svh+150px)] flex-col overflow-hidden bg-ink-950">
-    <video autoplay muted loop playsinline poster="assets/video/hero-poster.jpg" class="absolute inset-0 h-full w-full object-cover opacity-80" style="filter: contrast(1.35) saturate(1.15) brightness(0.95);">
-      <source src="assets/video/hero.mp4" type="video/mp4" />
+    <video autoplay muted loop playsinline class="absolute inset-0 h-full w-full object-cover opacity-80" style="filter: contrast(1.35) saturate(1.15) brightness(0.95);">
+      <source src="assets/video/hero3.mp4" type="video/mp4" />
     </video>
     <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/55 to-ink-950/20"></div>
     <div class="absolute inset-0" style="background:radial-gradient(80% 60% at 15% 60%, rgba(2,195,154,0.18), transparent 60%);"></div>
@@ -215,67 +219,65 @@
         <a href="#servicios" class="inline-flex items-center gap-2 text-sm font-medium text-paper/80 hover:text-white transition">Ver todos los servicios →</a>
       </div>
 
-      <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-          <span class="mono-label text-paper/40">01</span>
-          <h3 class="font-display mt-3 text-xl font-semibold">Branding</h3>
-          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Logotipo, manual de marca e identidad visual para que tu negocio se vea profesional y confiable.</p>
-          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
-            <li>Logotipo y versiones</li><li>Manual de marca</li><li>Identidad visual</li><li>Línea gráfica</li>
-          </ul>
-          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver Branding →</a>
+      <div class="service-bento mt-14 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <!-- 01 Branding — large 2x2 -->
+        <article class="service-cover col-span-2 row-span-2 flex flex-col justify-between bg-[#02C39A] p-7 text-ink-950">
+          <span class="mono-label">01</span>
+          <h3 class="font-banner text-5xl font-bold uppercase leading-[0.95] tracking-wide sm:text-6xl lg:text-7xl">Branding</h3>
+          <div class="mt-6 flex items-end justify-between gap-3">
+            <span class="mono-label">Logotipo · Manual de marca</span>
+            <a href="#" class="mono-label shrink-0 hover:underline">Ver Branding →</a>
+          </div>
         </article>
 
-        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-          <span class="mono-label text-paper/40">02</span>
-          <h3 class="font-display mt-3 text-xl font-semibold">Paquete Digital Inicial</h3>
-          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Website, Google Business Profile, landing page, SSL y campaña inicial de Google Ads por USD 590.</p>
-          <p class="mt-4 font-display text-lg font-semibold text-[#02C39A]">USD 590</p>
-          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
-            <li>Website profesional</li><li>Landing page</li><li>Perfil de Google Business</li><li>Certificado SSL</li>
-          </ul>
-          <a href="#paquete" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver paquete →</a>
+        <!-- 02 Paquete Digital Inicial — wide 2x1 -->
+        <article class="service-cover col-span-2 flex flex-col justify-between bg-ink-950 p-7 text-paper">
+          <span class="mono-label text-paper/50">02</span>
+          <h3 class="font-banner text-4xl font-bold uppercase leading-[0.95] tracking-wide sm:text-5xl">Paquete Digital Inicial</h3>
+          <div class="mt-6 flex items-end justify-between gap-3">
+            <span class="mono-label text-[#02C39A]">USD 590 · Pago único</span>
+            <a href="#paquete" class="mono-label shrink-0 text-paper/70 hover:text-white hover:underline">Ver paquete →</a>
+          </div>
         </article>
 
-        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-          <span class="mono-label text-paper/40">03</span>
-          <h3 class="font-display mt-3 text-xl font-semibold">Redes Sociales / Crecimiento</h3>
-          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Contenido, reels, artes, campañas y estrategia mensual para generar más oportunidades.</p>
-          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
-            <li>Creación de contenido</li><li>Reels y artes</li><li>Carruseles</li><li>Campañas Meta</li>
-          </ul>
-          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver paquetes →</a>
+        <!-- 03 Redes Sociales — small 1x1 -->
+        <article class="service-cover flex flex-col justify-between bg-cream p-7 text-ink-950">
+          <span class="mono-label">03</span>
+          <h3 class="font-banner text-3xl font-bold uppercase leading-[0.95] tracking-wide sm:text-4xl">Redes Sociales</h3>
+          <div class="mt-6 flex items-end justify-between gap-3">
+            <span class="mono-label">Crecimiento</span>
+            <a href="#" class="mono-label shrink-0 hover:underline">Ver →</a>
+          </div>
         </article>
 
-        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-          <span class="mono-label text-paper/40">04</span>
-          <h3 class="font-display mt-3 text-xl font-semibold">Google Ads / Performance</h3>
-          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Gestión mensual de campañas para aparecer cuando tus clientes ya están buscando tus servicios.</p>
-          <p class="mt-4 font-display text-lg font-semibold text-[#02C39A]">Desde USD 150/mes</p>
-          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
-            <li>Configuración de campañas</li><li>Gestión mensual</li><li>Optimización continua</li><li>Investigación de keywords</li>
-          </ul>
-          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Quiero Google Ads →</a>
+        <!-- 04 Google Ads — small 1x1 -->
+        <article class="service-cover flex flex-col justify-between bg-ink-950 p-7 text-paper">
+          <span class="mono-label text-paper/50">04</span>
+          <h3 class="font-banner text-3xl font-bold uppercase leading-[0.95] tracking-wide sm:text-4xl">Google Ads</h3>
+          <div class="mt-6 flex items-end justify-between gap-3">
+            <span class="mono-label text-[#02C39A]">Desde 150/mes</span>
+            <a href="#" class="mono-label shrink-0 text-paper/70 hover:text-white hover:underline">Ver →</a>
+          </div>
         </article>
 
-        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-          <span class="mono-label text-paper/40">05</span>
-          <h3 class="font-display mt-3 text-xl font-semibold">IA / Automatizaciones</h3>
-          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Automatiza WhatsApp, Messenger, Instagram Inbox y el seguimiento de tus leads con IA y CRM.</p>
-          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
-            <li>WhatsApp automatizado</li><li>Agentes IA</li><li>CRM</li><li>Workflows</li>
-          </ul>
-          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver automatizaciones →</a>
+        <!-- 05 IA / Automatizaciones — wide 2x1 -->
+        <article class="service-cover col-span-2 flex flex-col justify-between bg-cream p-7 text-ink-950">
+          <span class="mono-label">05</span>
+          <h3 class="font-banner text-4xl font-bold uppercase leading-[0.95] tracking-wide sm:text-5xl">IA / Automatizaciones</h3>
+          <div class="mt-6 flex items-end justify-between gap-3">
+            <span class="mono-label">WhatsApp · CRM · Workflows</span>
+            <a href="#" class="mono-label shrink-0 hover:underline">Ver más →</a>
+          </div>
         </article>
 
-        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
-          <span class="mono-label text-paper/40">06</span>
-          <h3 class="font-display mt-3 text-xl font-semibold">Websites / SEO</h3>
-          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Websites informativos, landing pages, SEO básico y estructura de conversión integrada con tu CRM.</p>
-          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
-            <li>Websites informativos</li><li>Landing pages</li><li>SEO básico</li><li>Formularios</li>
-          </ul>
-          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver websites →</a>
+        <!-- 06 Websites / SEO — wide 2x1 -->
+        <article class="service-cover col-span-2 flex flex-col justify-between bg-ink-950 p-7 text-paper">
+          <span class="mono-label text-paper/50">06</span>
+          <h3 class="font-banner text-4xl font-bold uppercase leading-[0.95] tracking-wide sm:text-5xl">Websites / SEO</h3>
+          <div class="mt-6 flex items-end justify-between gap-3">
+            <span class="mono-label text-[#02C39A]">Landing pages · SEO básico</span>
+            <a href="#" class="mono-label shrink-0 text-paper/70 hover:text-white hover:underline">Ver →</a>
+          </div>
         </article>
       </div>
     </div>
@@ -390,19 +392,33 @@
   </section>
 
   <!-- CTA FINAL -->
-  <section id="contacto" class="relative overflow-hidden bg-ink-950 py-24 sm:py-32 text-center">
-    <div class="container-x">
-      <h2 class="font-display mx-auto max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-        ¿Listo para hacer crecer tu negocio?
-      </h2>
-      <p class="mx-auto mt-6 max-w-xl text-paper/65 leading-relaxed">
-        Agenda una llamada y cuéntanos qué necesita tu negocio. Te ayudaremos a identificar la mejor ruta para mejorar tu presencia digital, generar clientes o automatizar tu atención comercial.
-      </p>
-      <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <a href="https://calendly.com/clustermedia/llamada" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-7 py-3.5 text-sm font-medium text-white">Agendar llamada</a>
-        <a href="https://wa.me/13050000000" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-7 py-3.5 text-sm font-medium text-white">Escribir por WhatsApp</a>
-        <a href="#contacto" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 px-7 py-3.5 text-sm font-medium text-paper/80 hover:text-white transition">Solicitar información</a>
+  <section id="contacto" class="relative overflow-hidden bg-cream py-24 sm:py-32 text-ink-950">
+    <div class="container-x grid gap-12 lg:grid-cols-2 lg:items-start">
+      <div>
+        <h2 class="font-display max-w-xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+          Descubramos juntos lo que podemos lograr.
+        </h2>
+        <p class="mt-6 max-w-md text-ink-950/65 leading-relaxed">
+          Agenda una llamada y cuéntanos qué necesita tu negocio. Te ayudaremos a identificar la mejor ruta para mejorar tu presencia digital, generar clientes o automatizar tu atención comercial.
+        </p>
+        <div class="mt-10 flex flex-wrap items-center gap-3">
+          <a href="https://calendly.com/clustermedia/llamada" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-7 py-3.5 text-sm font-medium text-white">Agendar llamada</a>
+          <a href="https://wa.me/13050000000" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full border border-ink-950/15 px-7 py-3.5 text-sm font-medium text-ink-950/80 hover:text-ink-950 transition">Escribir por WhatsApp</a>
+        </div>
       </div>
+
+      <form class="rounded-2xl bg-white p-8 shadow-sm lg:p-10" onsubmit="event.preventDefault(); window.open('https://wa.me/13050000000?text=' + encodeURIComponent('Hola Cluster Media, soy ' + this.nombre.value + '. ' + this.mensaje.value), '_blank');">
+        <p class="text-2xl">Hey 👋</p>
+        <p class="mt-2 text-sm text-ink-950/60 leading-relaxed">Respondé estas preguntas rápidas para que nuestro equipo se contacte con vos.</p>
+
+        <label class="mt-8 block text-xs font-semibold uppercase tracking-wide text-ink-950/50">Nombre*</label>
+        <input name="nombre" required type="text" placeholder="¿Cómo te llamás?" class="mt-2 w-full border-b border-ink-950/15 bg-transparent py-2 text-ink-950 placeholder:text-ink-950/35 focus:border-[#02C39A] focus:outline-none" />
+
+        <label class="mt-6 block text-xs font-semibold uppercase tracking-wide text-ink-950/50">¿Qué necesita tu negocio?*</label>
+        <input name="mensaje" required type="text" placeholder="Ej: presencia digital, más clientes, automatización..." class="mt-2 w-full border-b border-ink-950/15 bg-transparent py-2 text-ink-950 placeholder:text-ink-950/35 focus:border-[#02C39A] focus:outline-none" />
+
+        <button type="submit" class="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-950 px-7 py-3.5 text-sm font-medium text-white transition hover:bg-black">Solicitar información</button>
+      </form>
     </div>
   </section>
 
