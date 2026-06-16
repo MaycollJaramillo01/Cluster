@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0e0e0e;
+  --foreground: #f9f9f9;
+}
+
+@layer base {
+  * {
+    border-color: hsl(0 0% 100% / 0.08);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #0e0e0e;
+  }
+
+  body {
+    @apply bg-ink-900 text-paper antialiased;
+    font-feature-settings: 'ss01', 'cv01';
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    @apply bg-brand text-white;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+    text-wrap: balance;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0e0e0e;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-white/10;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand/60;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-container px-5 sm:px-8 lg:px-12;
+  }
+
+  /* Etiqueta monoespaciada estilo agencia */
+  .mono-label {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.28em];
+  }
+
+  /* Texto con relleno degradado verde */
+  .text-gradient {
+    @apply bg-gradient-to-br from-paper via-paper to-brand-300 bg-clip-text text-transparent;
+  }
+
+  .text-brandgrad {
+    @apply bg-gradient-to-r from-brand-300 via-brand-400 to-brand-300 bg-clip-text text-transparent;
+  }
+
+  /* Tarjetas modernistas: superficie sólida sin bordes, se elevan al hover */
+  .card-dark {
+    @apply relative rounded-3xl bg-white/[0.05] transition-all duration-500;
+  }
+  .card-dark:hover {
+    @apply -translate-y-1.5 bg-white/[0.08];
+    box-shadow: 0 30px 60px -28px rgba(60, 161, 66, 0.35);
+  }
+
+  /* Subrayado animado para enlaces */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
+}
+
+@layer utilities {
+  /* ── Animaciones de entrada (todo el site) ─────────────── */
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .page-enter {
+    animation: pageEnter 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes headerEnter {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .header-enter {
+    animation: headerEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Aparición suave para cualquier elemento, con retardos en cascada */
+  @keyframes riseIn {
+    from {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .rise-in {
+    animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Grano / ruido sutil sobre fondos oscuros */
+  .grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .clip-reveal {
+    clip-path: inset(0 100% 0 0);
+    transition: clip-path 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .clip-reveal.is-visible {
+    clip-path: inset(0 0 0 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .clip-reveal {
+      opacity: 1;
+      transform: none;
+      clip-path: none;
+      transition: none;
+    }
+    .page-enter,
+    .header-enter,
+    .rise-in,
+    .animate-float,
+    .animate-marquee,
+    .animate-marquee-rev,
+    .animate-spin-slow {
+      animation: none;
+    }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}

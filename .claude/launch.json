@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "cluster-marketing",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "3456"],
-      "port": 3456
+      "name": "cluster-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start"],
+      "port": 3000
     }
   ]
 }
