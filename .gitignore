@@ -14,6 +14,17 @@
 # misc
 .DS_Store
 *.pem
+.claude/
+
+# Raw video sources. Commit the optimized web assets that are referenced by the app.
+/public/assets/videos/services/*.mov
+/public/assets/videos/services/Generacion de clientes.mp4
+/public/assets/videos/services/Google ads.mp4
+/public/assets/videos/services/Marca profesional.mp4
+/public/assets/videos/services/Presencia digital.mp4
+/public/assets/videos/services/Redes sociales.mp4
+/public/assets/videos/services/Websites-seo.mp4
+/public/assets/videos/services/digital-pack.mp4
 
 # debug
 npm-debug.log*

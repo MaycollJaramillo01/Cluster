@@ -3,35 +3,35 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   Sistema de temas: tinta (#09161C) + papel (#F9F9F9).
+   Sistema de temas: negro neutro (#111111) + papel (#F9F9F9).
    Cada sección aplica .theme-dark o .theme-light y las utilidades
    semánticas (text-fg, bg-surface, text-accent…) se invierten solas.
    ───────────────────────────────────────────────────────────── */
 :root,
 .theme-dark {
-  --bg: #09161c;
+  --bg: #111111;
   --fg: #f9f9f9;
   --muted: rgba(249, 249, 249, 0.6);
   --faint: rgba(249, 249, 249, 0.4);
   --line: rgba(249, 249, 249, 0.14);
   --surface: rgba(249, 249, 249, 0.05);
   --surface-2: rgba(249, 249, 249, 0.09);
-  --accent: #f9f9f9;
-  --accent-fg: #09161c;
+  --accent: #02C39A;
+  --accent-fg: #111111;
   --card-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.65);
 }
 
 .theme-light {
   --bg: #f9f9f9;
-  --fg: #09161c;
-  --muted: rgba(9, 22, 28, 0.62);
-  --faint: rgba(9, 22, 28, 0.45);
-  --line: rgba(9, 22, 28, 0.12);
-  --surface: rgba(9, 22, 28, 0.04);
-  --surface-2: rgba(9, 22, 28, 0.08);
-  --accent: #09161c;
-  --accent-fg: #f9f9f9;
-  --card-shadow: 0 30px 60px -30px rgba(9, 22, 28, 0.18);
+  --fg: #111111;
+  --muted: rgba(17, 17, 17, 0.62);
+  --faint: rgba(17, 17, 17, 0.45);
+  --line: rgba(17, 17, 17, 0.12);
+  --surface: rgba(17, 17, 17, 0.04);
+  --surface-2: rgba(17, 17, 17, 0.08);
+  --accent: #02C39A;
+  --accent-fg: #111111;
+  --card-shadow: 0 30px 60px -30px rgba(17, 17, 17, 0.18);
 }
 
 @layer base {
@@ -41,7 +41,7 @@
 
   html {
     scroll-behavior: smooth;
-    background-color: #09161c;
+    background-color: #111111;
   }
 
   body {
@@ -113,6 +113,12 @@
   }
   .bg-theme {
     background-color: var(--bg);
+  }
+  .bg-fg {
+    background-color: var(--fg);
+  }
+  .text-bg {
+    color: var(--bg);
   }
   .bg-surface {
     background-color: var(--surface);

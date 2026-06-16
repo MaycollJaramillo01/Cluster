@@ -59,6 +59,7 @@ type SectionHeadingProps = {
   align?: 'left' | 'center';
   tone?: 'dark' | 'light';
   className?: string;
+  titleClass?: string;
 };
 
 export function SectionHeading({
@@ -67,6 +68,7 @@ export function SectionHeading({
   description,
   align = 'left',
   className = '',
+  titleClass = 'text-5xl text-fg sm:text-6xl lg:text-7xl',
 }: SectionHeadingProps) {
   const isCenter = align === 'center';
   return (
@@ -76,7 +78,7 @@ export function SectionHeading({
       } ${className}`}
     >
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      <h2 className="text-5xl text-fg sm:text-6xl lg:text-7xl">{title}</h2>
+      <h2 className={`text-fg ${titleClass}`}>{title}</h2>
       {description && (
         <p className="text-lg leading-relaxed text-muted sm:text-xl">
           {description}

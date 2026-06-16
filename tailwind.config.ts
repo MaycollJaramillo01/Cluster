@@ -8,13 +8,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Paleta monocromática editorial: tinta #09161C + papel #F9F9F9
+        // Paleta editorial: tinta #111111 (negro neutro) + papel #F9F9F9
         ink: {
-          DEFAULT: '#09161C',
-          950: '#060F13',
-          900: '#09161C',
-          850: '#0C1B22',
-          800: '#102229',
+          DEFAULT: '#111111',
+          950: '#080808',
+          900: '#111111',
+          850: '#1A1A1A',
+          800: '#222222',
           700: '#163039',
           600: '#1F4350',
           500: '#2C5A6B',
@@ -26,7 +26,7 @@ const config: Config = {
         },
         // "brand" apunta a la tinta (sin verde) por compatibilidad con clases existentes.
         brand: {
-          DEFAULT: '#09161C',
+          DEFAULT: '#02C39A',
           50: '#EAEDEE',
           100: '#C9D0D2',
           200: '#9FACB0',

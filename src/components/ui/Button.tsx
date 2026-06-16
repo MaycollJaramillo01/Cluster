@@ -17,7 +17,7 @@ const base =
 // Botones monocromáticos: contraste sólido que se invierte con el tema.
 const variants: Record<Variant, string> = {
   primary:
-    'bg-accent text-accent-fg hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0',
+    'bg-fg text-bg hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0',
   secondary:
     'bg-surface text-fg hover:bg-surface-2 hover:-translate-y-0.5 active:translate-y-0',
   ghost: 'bg-surface text-fg hover:bg-surface-2',

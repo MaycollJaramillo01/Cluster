@@ -1,36 +1,49 @@
 import { HomeHero } from '@/components/home/HomeHero';
+import { SolutionCard, type SolutionVideo } from '@/components/home/SolutionCard';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
-import { Icon, type IconName } from '@/components/ui/Icon';
+import { Icon } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
-import { ServiceCard } from '@/components/blocks/ServiceCard';
+import { ServicesBento } from '@/components/home/ServicesBento';
 import { CaseCard } from '@/components/blocks/CaseCard';
 import Image from 'next/image';
 import { LogoWall } from '@/components/blocks/LogoWall';
 import { CheckList } from '@/components/blocks/Blocks';
 import { CTASection } from '@/components/blocks/CTASection';
-import { services, caseStudies, site, whatsappLink } from '@/lib/site';
+import { caseStudies, site, whatsappLink } from '@/lib/site';
 
-const solutions: { icon: IconName; title: string; text: string }[] = [
+const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
   {
-    icon: 'sparkles',
     title: 'Marca profesional',
     text: 'Branding, diseño visual y comunicación clara para verte confiable.',
+    video: {
+      mp4: '/assets/videos/services/marca-profesional.mp4',
+      poster: '/assets/videos/services/marca-profesional-poster.jpg',
+    },
   },
   {
-    icon: 'globe',
     title: 'Presencia digital',
     text: 'Website, Google Business Profile, landing pages y SEO básico.',
+    video: {
+      mp4: '/assets/videos/services/presencia-digital.mp4',
+      poster: '/assets/videos/services/presencia-digital-poster.jpg',
+    },
   },
   {
-    icon: 'target',
     title: 'Generación de clientes',
     text: 'Redes sociales, Meta Ads, Google Ads y contenido estratégico.',
+    video: {
+      mp4: '/assets/videos/services/generacion-clientes.mp4',
+      poster: '/assets/videos/services/generacion-clientes-poster.jpg',
+    },
   },
   {
-    icon: 'bot',
     title: 'Automatización comercial',
     text: 'WhatsApp, CRM, agentes IA, workflows y seguimiento automático.',
+    video: {
+      mp4: '/assets/videos/services/automatizacion.mp4',
+      poster: '/assets/videos/services/automatizacion-poster.jpg',
+    },
   },
 ];
 
@@ -52,14 +65,6 @@ const whyCluster = [
   'Atendemos negocios pequeños, medianos y empresas en crecimiento',
 ];
 
-const packageIncludes = [
-  'Website profesional',
-  'Landing page',
-  'Perfil de Google Business',
-  'Certificado SSL',
-  '1 campaña de Google Ads',
-  'Guía para generar clientes online',
-];
 
 export default function HomePage() {
   return (
@@ -75,6 +80,28 @@ export default function HomePage() {
           <LogoWall />
         </div>
       </div>
+
+      {/* Solución */}
+      <Section tone="dark">
+        <SectionHeading
+          eyebrow="La solución Cluster"
+          tone="light"
+          title="Contenido, campañas y automatización trabajando juntos."
+          description="No vemos el marketing como piezas aisladas. Diseñamos un ecosistema donde tu marca se ve mejor, tus campañas atraen más prospectos y tus automatizaciones ayudan a responder y dar seguimiento."
+          titleClass="text-fg text-3xl sm:text-4xl lg:text-4xl xl:text-5xl"
+        />
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {solutions.map((s, i) => (
+            <SolutionCard
+              key={s.title}
+              title={s.title}
+              text={s.text}
+              video={s.video}
+              index={i}
+            />
+          ))}
+        </div>
+      </Section>
 
       {/* Enfoque — sección editorial con imagen real */}
       <Section tone="light">
@@ -106,6 +133,22 @@ export default function HomePage() {
             description="No entregamos piezas sueltas. Conectamos marca, contenido, campañas, web y automatización en un mismo sistema que atrae, convierte y da seguimiento — para que cada acción de marketing empuje hacia el mismo objetivo: más clientes reales."
           />
         </div>
+      </Section>
+
+      {/* Servicios */}
+      <Section tone="dark">
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+          <SectionHeading
+            eyebrow="Servicios"
+            tone="light"
+            title="Servicios diseñados para hacer crecer tu negocio."
+            description="Desde branding y websites hasta campañas, contenido y automatizaciones con IA."
+          />
+          <Button href="/servicios" variant="ghost" iconRight="arrow-right">
+            Ver todos los servicios
+          </Button>
+        </div>
+        <ServicesBento />
       </Section>
 
       {/* Problema */}
@@ -154,99 +197,6 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* Solución */}
-      <Section tone="dark">
-        <SectionHeading
-          eyebrow="La solución Cluster"
-          tone="light"
-          align="center"
-          title="Contenido, campañas y automatización trabajando juntos."
-          description="No vemos el marketing como piezas aisladas. Diseñamos un ecosistema donde tu marca se ve mejor, tus campañas atraen más prospectos y tus automatizaciones ayudan a responder y dar seguimiento."
-        />
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {solutions.map((s, i) => (
-            <Reveal
-              key={s.title}
-              delay={i * 70}
-              className="group rounded-3xl bg-surface p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-line hover:bg-surface"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-accent transition-colors group-hover:bg-accent group-hover:text-accent-fg">
-                <Icon name={s.icon} size={24} />
-              </span>
-              <h3 className="mt-5 font-display text-lg font-semibold text-white">
-                {s.title}
-              </h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-white/60">
-                {s.text}
-              </p>
-            </Reveal>
-          ))}
-        </div>
-      </Section>
-
-      {/* Servicios */}
-      <Section tone="soft">
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <SectionHeading
-            eyebrow="Servicios"
-            title="Servicios diseñados para hacer crecer tu negocio."
-            description="Desde branding y websites hasta campañas, contenido y automatizaciones con IA."
-          />
-          <Button href="/servicios" variant="ghost" iconRight="arrow-right">
-            Ver todos los servicios
-          </Button>
-        </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, i) => (
-            <ServiceCard key={service.slug} service={service} index={i} />
-          ))}
-        </div>
-      </Section>
-
-      {/* Paquete Digital Inicial destacado */}
-      <Section tone="light">
-        <Reveal className="theme-dark overflow-hidden bg-ink-900 text-fg shadow-glow ring-1 ring-inset ring-[color:var(--line)]">
-          <div className="grid items-center gap-10 p-8 sm:p-12 lg:grid-cols-2 lg:p-16">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
-                <Icon name="rocket" size={14} /> Oferta de lanzamiento
-              </span>
-              <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl">
-                Tu negocio listo para vender en internet por USD 590.
-              </h2>
-              <p className="mt-4 max-w-md text-lg text-white/80">
-                Un paquete pensado para negocios que necesitan una presencia
-                digital profesional sin pagar miles de dólares desde el inicio.
-              </p>
-              <div className="mt-6 flex items-end gap-3">
-                <span className="text-xl text-white/50 line-through">
-                  USD 870
-                </span>
-                <span className="font-display text-4xl font-bold">USD 590</span>
-                <span className="pb-1.5 text-sm text-white/70">pago único</span>
-              </div>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button
-                  href="/paquete-inicial-digital"
-                  variant="white"
-                  size="lg"
-                  iconRight="arrow-right"
-                >
-                  Ver detalles del paquete
-                </Button>
-              </div>
-            </div>
-            <div className="rounded-3xl bg-surface-2 p-7 backdrop-blur-sm">
-              <h3 className="font-display text-lg font-semibold">Incluye:</h3>
-              <CheckList
-                items={packageIncludes}
-                tone="light"
-                className="mt-4"
-              />
-            </div>
-          </div>
-        </Reveal>
-      </Section>
 
       {/* Casos de éxito */}
       <Section tone="soft">
