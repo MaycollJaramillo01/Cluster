@@ -1,1379 +1,456 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cluster Marketing</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --teal: #0fd4a8;
-      --teal-dark: #0ab88f;
-      --dark: #0e0e0e;
-      --dark2: #141414;
-      --dark3: #1a1a1a;
-      --gray: #2a2a2a;
-      --gray-light: #3a3a3a;
-      --text: #ffffff;
-      --text-muted: #a0a0a0;
-      --text-dim: #6b6b6b;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--dark);
-      color: var(--text);
-      overflow-x: hidden;
-    }
-
-    /* ─── NAV ─── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      padding: 0 48px;
-      height: 68px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(14,14,14,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      transition: background 0.3s;
-    }
-
-    .nav-logo {
-      display: flex;
-      flex-direction: column;
-      line-height: 1;
-    }
-    .nav-logo span:first-child {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      color: #fff;
-    }
-    .nav-logo span:last-child {
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      color: var(--teal);
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 36px;
-      list-style: none;
-    }
-    .nav-links a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      transition: color 0.2s;
-      position: relative;
-    }
-    .nav-links a:hover, .nav-links a.active { color: #fff; }
-    .nav-links a.active::after {
-      content: '';
-      position: absolute;
-      bottom: -4px; left: 0; right: 0;
-      height: 2px;
-      background: var(--teal);
-      border-radius: 2px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 11px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s;
-      border: none;
-    }
-    .btn-teal {
-      background: var(--teal);
-      color: #000;
-    }
-    .btn-teal:hover { background: var(--teal-dark); transform: translateY(-1px); }
-    .btn-outline {
-      background: transparent;
-      color: #fff;
-      border: 1.5px solid rgba(255,255,255,0.25);
-    }
-    .btn-outline:hover { border-color: rgba(255,255,255,0.6); }
-    .btn svg { width: 16px; height: 16px; }
-
-    /* ─── SECTION 1: HERO ─── */
-    #hero {
-      min-height: 100vh;
-      padding: 68px 0 0;
-      background: var(--dark);
-      display: grid;
-      grid-template-columns: 1fr 520px;
-      align-items: center;
-      gap: 0;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-bg-dots {
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, rgba(15,212,168,0.08) 1px, transparent 1px);
-      background-size: 32px 32px;
-      pointer-events: none;
-    }
-    .hero-bg-glow {
-      position: absolute;
-      top: -200px; right: 100px;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(15,212,168,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero-content {
-      padding: 80px 64px 80px 80px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(15,212,168,0.1);
-      border: 1px solid rgba(15,212,168,0.3);
-      border-radius: 100px;
-      padding: 6px 14px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--teal);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
-    }
-    .hero-tag::before {
-      content: '';
-      width: 6px; height: 6px;
-      background: var(--teal);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    .hero-title {
-      font-size: clamp(38px, 4.5vw, 58px);
-      font-weight: 900;
-      line-height: 1.1;
-      margin-bottom: 20px;
-      letter-spacing: -0.02em;
-    }
-    .hero-title .teal { color: var(--teal); }
-
-    .hero-subtitle {
-      font-size: 16px;
-      color: var(--text-muted);
-      line-height: 1.65;
-      max-width: 440px;
-      margin-bottom: 36px;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 14px;
-      margin-bottom: 48px;
-    }
-
-    .hero-social-proof {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .avatars {
-      display: flex;
-    }
-    .avatars span {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      border: 2px solid var(--dark);
-      background: var(--gray-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 700;
-      margin-left: -8px;
-      color: var(--teal);
-    }
-    .avatars span:first-child { margin-left: 0; }
-    .social-proof-text {
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-    .social-proof-text strong { color: #fff; }
-
-    .hero-visual {
-      position: relative;
-      height: 100%;
-      min-height: 600px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-    }
-
-    .hero-image-placeholder {
-      width: 100%;
-      height: 520px;
-      background: linear-gradient(160deg, rgba(15,212,168,0.06) 0%, transparent 60%);
-      border-left: 1px solid rgba(255,255,255,0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .hero-team-label {
-      position: absolute;
-      bottom: 40px;
-      left: 40px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(8px);
-      border-radius: 12px;
-      padding: 14px 20px;
-    }
-    .hero-team-label p {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-    }
-    .hero-team-label span {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .hero-stats {
-      position: absolute;
-      right: 40px;
-      top: 80px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .stat-card {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.07);
-      backdrop-filter: blur(8px);
-      border-radius: 12px;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      min-width: 190px;
-      opacity: 0;
-      transform: translateX(30px);
-      transition: all 0.5s ease;
-    }
-    .stat-card.visible {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    .stat-icon {
-      width: 36px; height: 36px;
-      background: rgba(15,212,168,0.12);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .stat-icon svg { width: 18px; height: 18px; color: var(--teal); }
-    .stat-value {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--teal);
-      line-height: 1;
-    }
-    .stat-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    /* ─── BRANDS BAR ─── */
-    .brands-bar {
-      background: #111;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      padding: 28px 80px;
-      display: flex;
-      align-items: center;
-      gap: 64px;
-      overflow: hidden;
-    }
-    .brands-label {
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .brands-track {
-      display: flex;
-      gap: 64px;
-      animation: marquee 20s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes marquee {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-    .brand-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-dim);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      white-space: nowrap;
-      transition: color 0.2s;
-    }
-    .brand-name:hover { color: var(--text-muted); }
-
-    /* ─── SECTION 2: SERVICIOS ─── */
-    #servicios {
-      padding: 100px 80px;
-      background: var(--dark);
-    }
-
-    .section-header {
-      text-align: center;
-      margin-bottom: 64px;
-    }
-    .section-tag {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--teal);
-      margin-bottom: 16px;
-    }
-    .section-title {
-      font-size: clamp(28px, 3.5vw, 42px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: #fff;
-    }
-
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      max-width: 1100px;
-      margin: 0 auto 48px;
-    }
-
-    .service-card {
-      background: var(--dark2);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      padding: 32px 28px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(24px);
-    }
-    .service-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .service-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--teal), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .service-card:hover {
-      border-color: rgba(15,212,168,0.2);
-      transform: translateY(-4px);
-      background: var(--dark3);
-    }
-    .service-card:hover::before { opacity: 1; }
-
-    .service-icon {
-      width: 48px; height: 48px;
-      background: rgba(15,212,168,0.1);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      transition: background 0.3s;
-    }
-    .service-card:hover .service-icon { background: rgba(15,212,168,0.18); }
-    .service-icon svg { width: 22px; height: 22px; color: var(--teal); }
-
-    .service-name {
-      font-size: 17px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: #fff;
-    }
-    .service-desc {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-    }
-
-    .services-cta {
-      text-align: center;
-    }
-    .link-arrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--teal);
-      font-size: 14px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: gap 0.2s;
-    }
-    .link-arrow:hover { gap: 12px; }
-
-    /* ─── SECTION 3: CASOS DE ÉXITO ─── */
-    #casos {
-      padding: 100px 80px;
-      background: #0a0a0a;
-    }
-
-    .cases-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      max-width: 1100px;
-      margin: 0 auto 48px;
-    }
-
-    .case-card {
-      background: var(--dark2);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      padding: 32px 28px;
-      position: relative;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(24px);
-      transition: all 0.4s ease;
-    }
-    .case-card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .case-card:hover {
-      border-color: rgba(15,212,168,0.15);
-      transform: translateY(-3px);
-    }
-
-    .case-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .case-brand {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      color: #fff;
-    }
-    .case-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .tag {
-      background: rgba(255,255,255,0.06);
-      border-radius: 100px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text-muted);
-    }
-
-    .case-metric {
-      font-size: 46px;
-      font-weight: 900;
-      color: var(--teal);
-      line-height: 1;
-      margin-bottom: 4px;
-      letter-spacing: -0.03em;
-    }
-    .case-metric-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 16px;
-    }
-    .case-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-
-    .sparkline {
-      position: absolute;
-      bottom: 24px; right: 24px;
-      opacity: 0.4;
-    }
-
-    .cases-cta { text-align: center; }
-
-    /* ─── SECTION 4: PROCESO + CTA + FOOTER ─── */
-    #proceso {
-      padding: 100px 80px;
-      background: var(--dark);
-    }
-
-    .process-steps {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 0;
-      max-width: 1100px;
-      margin: 0 auto 100px;
-      position: relative;
-    }
-    .process-steps::before {
-      content: '';
-      position: absolute;
-      top: 36px;
-      left: calc(12.5%);
-      right: calc(12.5%);
-      height: 1px;
-      background: rgba(255,255,255,0.08);
-    }
-
-    .step {
-      text-align: center;
-      padding: 0 24px;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.4s ease;
-    }
-    .step.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .step-num {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      border: 1.5px solid rgba(255,255,255,0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 24px;
-      position: relative;
-      background: var(--dark);
-      transition: all 0.3s;
-    }
-    .step-num::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border-radius: 50%;
-      border: 1px solid rgba(15,212,168,0);
-      transition: border-color 0.3s;
-    }
-    .step:hover .step-num {
-      border-color: var(--teal);
-      background: rgba(15,212,168,0.08);
-    }
-    .step:hover .step-num::after { border-color: rgba(15,212,168,0.2); }
-
-    .step-num svg { width: 26px; height: 26px; color: var(--teal); }
-    .step-num .step-counter {
-      position: absolute;
-      top: -4px; right: -4px;
-      width: 20px; height: 20px;
-      background: var(--teal);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: 800;
-      color: #000;
-    }
-
-    .step-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: #fff;
-    }
-    .step-desc {
-      font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.65;
-    }
-
-    /* About strip */
-    .about-strip {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      max-width: 1100px;
-      margin: 0 auto 100px;
-      align-items: center;
-    }
-
-    .about-tag {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--teal);
-      margin-bottom: 16px;
-    }
-    .about-title {
-      font-size: clamp(26px, 3vw, 36px);
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.02em;
-      margin-bottom: 20px;
-    }
-    .about-title em { font-style: normal; color: var(--teal); }
-    .about-desc {
-      font-size: 15px;
-      color: var(--text-muted);
-      line-height: 1.7;
-      margin-bottom: 28px;
-    }
-
-    .about-visual {
-      background: var(--dark2);
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 20px;
-      aspect-ratio: 4/3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .about-visual-inner {
-      text-align: center;
-    }
-    .about-logo {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      color: #fff;
-    }
-    .about-logo span { color: var(--teal); display: block; font-size: 11px; letter-spacing: 0.2em; margin-top: 4px; }
-    .about-visual::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at 60% 40%, rgba(15,212,168,0.08) 0%, transparent 70%);
-    }
-
-    /* CTA Banner */
-    .cta-banner {
-      background: linear-gradient(135deg, var(--teal) 0%, #09a882 100%);
-      border-radius: 24px;
-      padding: 64px 80px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 40px;
-      max-width: 1100px;
-      margin: 0 auto 100px;
-      position: relative;
-      overflow: hidden;
-    }
-    .cta-banner::before {
-      content: '';
-      position: absolute;
-      top: -80px; right: -80px;
-      width: 320px; height: 320px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 50%;
-    }
-    .cta-banner::after {
-      content: '';
-      position: absolute;
-      bottom: -60px; right: 200px;
-      width: 200px; height: 200px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 50%;
-    }
-    .cta-text { position: relative; z-index: 1; }
-    .cta-text h2 {
-      font-size: clamp(24px, 2.8vw, 34px);
-      font-weight: 900;
-      color: #000;
-      letter-spacing: -0.02em;
-      margin-bottom: 10px;
-    }
-    .cta-text p {
-      font-size: 15px;
-      color: rgba(0,0,0,0.65);
-    }
-    .btn-dark {
-      background: #000;
-      color: #fff;
-      position: relative; z-index: 1;
-      white-space: nowrap;
-      flex-shrink: 0;
-      padding: 14px 28px;
-      font-size: 15px;
-    }
-    .btn-dark:hover { background: #1a1a1a; transform: translateY(-1px); }
-
-    /* Footer */
-    footer {
-      background: var(--dark2);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 64px 80px 32px;
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 1fr;
-      gap: 48px;
-      margin-bottom: 48px;
-    }
-
-    .footer-brand p {
-      font-size: 13px;
-      color: var(--text-dim);
-      line-height: 1.7;
-      margin-top: 14px;
-      max-width: 240px;
-    }
-
-    .footer-social {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    .social-btn {
-      width: 36px; height: 36px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 700;
-      transition: all 0.2s;
-    }
-    .social-btn:hover { border-color: var(--teal); color: var(--teal); }
-
-    .footer-col h4 {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 18px;
-    }
-    .footer-col ul { list-style: none; }
-    .footer-col ul li { margin-bottom: 10px; }
-    .footer-col ul a {
-      color: var(--text-dim);
-      text-decoration: none;
-      font-size: 13.5px;
-      transition: color 0.2s;
-    }
-    .footer-col ul a:hover { color: #fff; }
-
-    .footer-contact-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-      font-size: 13.5px;
-      color: var(--text-dim);
-    }
-    .footer-contact-item svg { width: 15px; height: 15px; color: var(--teal); flex-shrink: 0; }
-
-    .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.05);
-      padding-top: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .footer-bottom p {
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    /* ─── ANIMATIONS ─── */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .hero-content > * {
-      opacity: 0;
-      animation: fadeInUp 0.6s ease forwards;
-    }
-    .hero-tag { animation-delay: 0.1s; }
-    .hero-title { animation-delay: 0.2s; }
-    .hero-subtitle { animation-delay: 0.3s; }
-    .hero-actions { animation-delay: 0.4s; }
-    .hero-social-proof { animation-delay: 0.5s; }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--dark); }
-    ::-webkit-scrollbar-thumb { background: var(--gray); border-radius: 3px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cluster Media | Agencia de marketing digital para negocios hispanos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: { 950: '#0a0a0a', 900: '#0e0e0e', 850: '#121212' },
+          paper: '#f9f9f9',
+          cream: '#F5F1EA',
+        },
+        fontFamily: {
+          display: ['"Open Sans"', 'sans-serif'],
+          sans: ['"Open Sans"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { background: #0e0e0e; }
+  .mono-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; }
+  .container-x { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+  .grain::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 22s linear infinite;
+  }
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+</style>
 </head>
-<body>
+<body class="bg-ink-900 text-paper font-sans antialiased">
 
-  <!-- NAV -->
-  <nav id="navbar">
-    <div class="nav-logo">
-      <span>CLUSTER</span>
-      <span>MARKETING</span>
-    </div>
-    <ul class="nav-links">
-      <li><a href="#hero" class="active">Inicio</a></li>
-      <li><a href="#servicios">Servicios</a></li>
-      <li><a href="#casos">Casos de éxito</a></li>
-      <li><a href="#proceso">Nosotros</a></li>
-      <li><a href="#">Recursos</a></li>
-    </ul>
-    <a href="#proceso" class="btn btn-teal">
-      Agendar llamada
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-    </a>
-  </nav>
-
-  <!-- ═══════════════════════════════════════ -->
-  <!-- SECCIÓN 1: HERO                        -->
-  <!-- ═══════════════════════════════════════ -->
-  <section id="hero">
-    <div class="hero-bg-dots"></div>
-    <div class="hero-bg-glow"></div>
-
-    <div class="hero-content">
-      <div class="hero-tag">Agencia de Marketing Digital</div>
-      <h1 class="hero-title">
-        Estrategias digitales<br>
-        que generan<br>
-        <span class="teal">clientes reales.</span>
-      </h1>
-      <p class="hero-subtitle">
-        Ayudamos a empresas a atraer, convertir y fidelizar clientes
-        a través de contenido, publicidad y tecnología.
-      </p>
-      <div class="hero-actions">
-        <a href="#proceso" class="btn btn-teal">
-          Agendar llamada
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+  <!-- HEADER -->
+  <header class="fixed inset-x-0 top-0 z-50 bg-cream backdrop-blur-md border-b border-black/[0.08]">
+    <div class="container-x flex h-[66px] items-center justify-between gap-4">
+      <a href="/" class="group inline-flex items-center gap-2.5">
+        <img src="assets/img/logo-white.webp" alt="Cluster Media" class="h-9 w-auto brightness-0 transition-transform duration-300 group-hover:scale-105" />
+        <span class="flex flex-col leading-none text-black">
+          <span class="font-display text-base font-bold">Cluster.</span>
+          <span class="font-display text-base font-bold -mt-1">Media</span>
+        </span>
+      </a>
+      <nav class="hidden items-center gap-6 lg:flex text-sm font-bold text-black">
+        <a href="#inicio" class="hover:text-[#02C39A] transition">Inicio</a>
+        <a href="#servicios" class="hover:text-[#02C39A] transition">Servicios</a>
+        <a href="#paquete" class="hover:text-[#02C39A] transition">Paquete Inicial</a>
+        <a href="#casos" class="hover:text-[#02C39A] transition">Casos de Éxito</a>
+        <a href="#cluster" class="hover:text-[#02C39A] transition">Sobre Cluster</a>
+        <a href="#contacto" class="hover:text-[#02C39A] transition">Contacto</a>
+      </nav>
+      <div class="hidden items-center gap-2 lg:flex">
+        <a href="https://wa.me/13050000000?text=Hola%20Cluster%20Media%2C%20quiero%20m%C3%A1s%20informaci%C3%B3n." target="_blank" class="flex h-10 w-10 items-center justify-center rounded-full bg-[#02C39A] text-white hover:bg-[#029e7d] transition">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.07L2 22l5.07-1.33C8.53 21.5 10.24 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.13c-.22.62-1.29 1.18-1.78 1.25-.46.07-1.03.1-1.66-.1-.38-.12-.87-.28-1.5-.55-2.63-1.14-4.34-3.78-4.47-3.95-.13-.17-1.07-1.42-1.07-2.71 0-1.28.67-1.91.91-2.18.22-.24.49-.3.66-.3h.47c.15 0 .35-.06.55.42.21.5.71 1.74.77 1.87.07.13.11.28.02.44-.4.46-.66.71-.93 1.06-.13.16-.27.33-.11.6.16.27.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.21 1.37.27.13.43.11.59-.06.16-.18.69-.8.87-1.07.18-.27.35-.22.59-.13.24.09 1.52.72 1.78.85.27.13.44.2.5.31.07.12.07.65-.15 1.27z"/></svg>
         </a>
-        <a href="#casos" class="btn btn-outline">Ver casos de éxito</a>
-      </div>
-      <div class="hero-social-proof">
-        <div class="avatars">
-          <span>A</span><span>B</span><span>C</span><span>D</span>
-        </div>
-        <p class="social-proof-text"><strong>+120 empresas</strong> han confiado en nosotros</p>
+        <a href="https://calendly.com/clustermedia/llamada" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-6 py-3 text-sm font-medium text-white">
+          Agendar llamada
+        </a>
       </div>
     </div>
+  </header>
 
-    <div class="hero-visual">
-      <div class="hero-image-placeholder">
-        <div class="hero-stats">
-          <div class="stat-card" data-delay="600">
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-            </div>
-            <div>
-              <div class="stat-value" data-count="127">0%</div>
-              <div class="stat-label">más leads vs. mes anterior</div>
-            </div>
-          </div>
-          <div class="stat-card" data-delay="800">
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            </div>
-            <div>
-              <div class="stat-value" data-count="320">0%</div>
-              <div class="stat-label">ROI promedio últimos 90 días</div>
-            </div>
-          </div>
-          <div class="stat-card" data-delay="1000">
-            <div class="stat-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div>
-              <div class="stat-value" data-dollar="2.4">$0M</div>
-              <div class="stat-label">en ventas generadas últimos 90 días</div>
-            </div>
-          </div>
+  <!-- HERO -->
+  <section id="inicio" class="relative flex min-h-[calc(70svh+150px)] flex-col overflow-hidden bg-ink-950">
+    <video autoplay muted loop playsinline poster="assets/video/hero-poster.jpg" class="absolute inset-0 h-full w-full object-cover opacity-80" style="filter: contrast(1.35) saturate(1.15) brightness(0.95);">
+      <source src="assets/video/hero.mp4" type="video/mp4" />
+    </video>
+    <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/55 to-ink-950/20"></div>
+    <div class="absolute inset-0" style="background:radial-gradient(80% 60% at 15% 60%, rgba(2,195,154,0.18), transparent 60%);"></div>
+    <div class="grain absolute inset-0"></div>
+
+    <div class="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 rotate-90 lg:block">
+      <span class="mono-label text-paper/40">Cluster Media — EST. Miami</span>
+    </div>
+
+    <div class="container-x relative z-[1] flex flex-1 flex-col justify-end pb-10 pt-24">
+      <h1 class="sr-only">Cluster Media — Agencia de marketing digital para negocios hispanos en Estados Unidos, Latinoamérica y España.</h1>
+
+      <div class="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/[0.08] sm:grid-cols-4">
+        <div class="border-white/10 bg-ink-950/60 px-5 py-5">
+          <div class="font-display text-3xl font-semibold text-paper">+50</div>
+          <div class="mt-1 text-xs text-paper/55">negocios atendidos</div>
         </div>
-
-        <div class="hero-team-label">
-          <p>Tu equipo digital</p>
-          <span>Estrategia · Contenido · Tecnología</span>
+        <div class="border-white/10 bg-ink-950/60 px-5 py-5">
+          <div class="font-display text-3xl font-semibold text-paper">~20</div>
+          <div class="mt-1 text-xs text-paper/55">leads/día en campañas</div>
+        </div>
+        <div class="border-white/10 bg-ink-950/60 px-5 py-5">
+          <div class="font-display text-3xl font-semibold text-paper">3</div>
+          <div class="mt-1 text-xs text-paper/55">mercados: EE.UU · LATAM · ES</div>
+        </div>
+        <div class="border-white/10 bg-ink-950/60 px-5 py-5">
+          <div class="font-display text-3xl font-semibold text-paper">6</div>
+          <div class="mt-1 text-xs text-paper/55">servicios integrados</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- BRANDS BAR -->
-  <div class="brands-bar">
-    <span class="brands-label">Marcas que confían en nosotros</span>
-    <div style="overflow:hidden; flex:1">
-      <div class="brands-track" id="brandsTrack">
-        <span class="brand-name">KUMU</span>
-        <span class="brand-name">FITLIFE</span>
-        <span class="brand-name">Océano</span>
-        <span class="brand-name">GAVIA</span>
-        <span class="brand-name">DÚO FOODS</span>
-        <span class="brand-name">HELIOS</span>
-        <span class="brand-name">MELIORA</span>
-        <!-- duplicated for seamless loop -->
-        <span class="brand-name">KUMU</span>
-        <span class="brand-name">FITLIFE</span>
-        <span class="brand-name">Océano</span>
-        <span class="brand-name">GAVIA</span>
-        <span class="brand-name">DÚO FOODS</span>
-        <span class="brand-name">HELIOS</span>
-        <span class="brand-name">MELIORA</span>
-      </div>
+  <!-- TICKER -->
+  <div class="relative overflow-hidden bg-[#02C39A] py-4">
+    <div class="marquee-track">
+      <span class="font-display flex items-center whitespace-nowrap text-lg font-semibold uppercase tracking-wide text-ink-950">
+        <span class="px-6">MARKETING</span><span class="px-2">·</span>
+        <span class="px-6">AUTOMATIZACIÓN</span><span class="px-2">·</span>
+        <span class="px-6">DISEÑO</span><span class="px-2">·</span>
+        <span class="px-6">MÉTRICAS</span><span class="px-2">·</span>
+        <span class="px-6">MARKETING</span><span class="px-2">·</span>
+        <span class="px-6">AUTOMATIZACIÓN</span><span class="px-2">·</span>
+        <span class="px-6">DISEÑO</span><span class="px-2">·</span>
+        <span class="px-6">MÉTRICAS</span><span class="px-2">·</span>
+      </span>
+      <span class="font-display flex items-center whitespace-nowrap text-lg font-semibold uppercase tracking-wide text-ink-950">
+        <span class="px-6">MARKETING</span><span class="px-2">·</span>
+        <span class="px-6">AUTOMATIZACIÓN</span><span class="px-2">·</span>
+        <span class="px-6">DISEÑO</span><span class="px-2">·</span>
+        <span class="px-6">MÉTRICAS</span><span class="px-2">·</span>
+        <span class="px-6">MARKETING</span><span class="px-2">·</span>
+        <span class="px-6">AUTOMATIZACIÓN</span><span class="px-2">·</span>
+        <span class="px-6">DISEÑO</span><span class="px-2">·</span>
+        <span class="px-6">MÉTRICAS</span><span class="px-2">·</span>
+      </span>
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- SECCIÓN 2: SERVICIOS                   -->
-  <!-- ═══════════════════════════════════════ -->
-  <section id="servicios">
-    <div class="section-header">
-      <p class="section-tag">Qué hacemos</p>
-      <h2 class="section-title">Servicios que impulsan tu crecimiento</h2>
-    </div>
+  <!-- EL PROBLEMA -->
+  <section class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-ink-900 text-paper">
+    <div class="container-x">
+      <span class="mono-label text-[#02C39A]">El problema</span>
+      <h2 class="font-display mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+        Tu negocio puede ser bueno, pero si no se ve profesional en internet, estás perdiendo clientes.
+      </h2>
+      <p class="mt-6 max-w-2xl text-paper/65 leading-relaxed">
+        Muchos negocios hispanos siguen dependiendo solo de referidos, publicaciones improvisadas o respuestas manuales por WhatsApp. El problema no es la falta de esfuerzo: es no tener un sistema digital que genere confianza, atraiga clientes y dé seguimiento.
+      </p>
 
-    <div class="services-grid">
-      <div class="service-card" data-delay="0">
-        <div class="service-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5z"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-        </div>
-        <h3 class="service-name">Social Media</h3>
-        <p class="service-desc">Gestionamos tus redes para construir comunidad y generar clientes.</p>
+      <div class="mt-12">
+        <p class="mono-label text-paper/40">Señales de que estás perdiendo oportunidades:</p>
+        <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <li class="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-paper/75">Redes sociales sin estrategia</li>
+          <li class="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-paper/75">Website desactualizado o inexistente</li>
+          <li class="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-paper/75">Campañas mal configuradas</li>
+          <li class="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-paper/75">Leads que escriben y nadie responde a tiempo</li>
+          <li class="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-paper/75">Marca poco profesional</li>
+          <li class="rounded-xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-paper/75">Dependencia total de referidos</li>
+        </ul>
       </div>
-      <div class="service-card" data-delay="80">
-        <div class="service-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        </div>
-        <h3 class="service-name">Paid Advertising</h3>
-        <p class="service-desc">Campañas optimizadas para atraer más clientes y maximizar tu ROI.</p>
-      </div>
-      <div class="service-card" data-delay="160">
-        <div class="service-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </div>
-        <h3 class="service-name">Website Design</h3>
-        <p class="service-desc">Diseñamos sitios web estratégicos, rápidos y enfocados en conversión.</p>
-      </div>
-      <div class="service-card" data-delay="240">
-        <div class="service-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        </div>
-        <h3 class="service-name">Video Production</h3>
-        <p class="service-desc">Creamos videos que conectan, cuentan tu historia y venden.</p>
-      </div>
-      <div class="service-card" data-delay="320">
-        <div class="service-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        </div>
-        <h3 class="service-name">Podcast Production</h3>
-        <p class="service-desc">Producimos podcasts profesionales que posicionan tu marca.</p>
-      </div>
-      <div class="service-card" data-delay="400">
-        <div class="service-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        </div>
-        <h3 class="service-name">Email Marketing</h3>
-        <p class="service-desc">Campañas automatizadas que nutren, convierten y fidelizan clientes.</p>
-      </div>
-    </div>
 
-    <div class="services-cta">
-      <a href="#" class="link-arrow">
-        Ver todos los servicios
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      <a href="#contacto" class="mt-10 inline-flex items-center gap-2 text-sm font-medium text-[#02C39A] hover:text-[#029e7d] transition">
+        Quiero mejorar mi presencia digital →
       </a>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- SECCIÓN 3: CASOS DE ÉXITO              -->
-  <!-- ═══════════════════════════════════════ -->
-  <section id="casos">
-    <div class="section-header">
-      <p class="section-tag">Casos de éxito</p>
-      <h2 class="section-title">Resultados que hablan por nosotros</h2>
-    </div>
+  <!-- LA SOLUCION CLUSTER -->
+  <section class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-cream text-ink-950">
+    <div class="container-x relative z-[1]">
+      <span class="mono-label text-[#02C39A]">La solución Cluster</span>
+      <h2 class="font-display mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+        Contenido, campañas y automatización trabajando juntos.
+      </h2>
+      <p class="mt-6 max-w-2xl text-ink-950/65 leading-relaxed">
+        No vemos el marketing como piezas aisladas. Diseñamos un ecosistema donde tu marca se ve mejor, tus campañas atraen más prospectos y tus automatizaciones ayudan a responder y dar seguimiento.
+      </p>
 
-    <div class="cases-grid">
-      <div class="case-card" data-delay="0">
-        <div class="case-header">
-          <span class="case-brand">K KUMU</span>
+      <div class="mt-14 grid gap-px overflow-hidden rounded-2xl bg-black/[0.08] sm:grid-cols-2 lg:grid-cols-4">
+        <div class="bg-cream px-6 py-8">
+          <h3 class="font-display text-lg font-semibold">Marca profesional</h3>
+          <p class="mt-2 text-sm text-ink-950/60 leading-relaxed">Branding, diseño visual y comunicación clara para verte confiable.</p>
         </div>
-        <div class="case-tags">
-          <span class="tag">Social Media</span>
-          <span class="tag">Paid Ads</span>
+        <div class="bg-cream px-6 py-8">
+          <h3 class="font-display text-lg font-semibold">Presencia digital</h3>
+          <p class="mt-2 text-sm text-ink-950/60 leading-relaxed">Website, Google Business Profile, landing pages y SEO básico.</p>
         </div>
-        <div class="case-metric" data-count="250" data-prefix="+">0%</div>
-        <div class="case-metric-label">Leads generados</div>
-        <p class="case-desc">Estrategia de contenido y campañas que multiplicaron la generación de leads calificados.</p>
-        <svg class="sparkline" width="80" height="40" viewBox="0 0 80 40">
-          <polyline points="0,35 15,28 30,20 45,15 60,8 75,3" fill="none" stroke="#0fd4a8" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <div class="bg-cream px-6 py-8">
+          <h3 class="font-display text-lg font-semibold">Generación de clientes</h3>
+          <p class="mt-2 text-sm text-ink-950/60 leading-relaxed">Redes sociales, Meta Ads, Google Ads y contenido estratégico.</p>
+        </div>
+        <div class="bg-cream px-6 py-8">
+          <h3 class="font-display text-lg font-semibold">Automatización comercial</h3>
+          <p class="mt-2 text-sm text-ink-950/60 leading-relaxed">WhatsApp, CRM, agentes IA, workflows y seguimiento automático.</p>
+        </div>
       </div>
-
-      <div class="case-card" data-delay="100">
-        <div class="case-header">
-          <span class="case-brand">✦ FITLIFE</span>
-        </div>
-        <div class="case-tags">
-          <span class="tag">Paid Ads</span>
-          <span class="tag">Email Marketing</span>
-        </div>
-        <div class="case-metric" data-count="180" data-prefix="+">0%</div>
-        <div class="case-metric-label">Ventas online</div>
-        <p class="case-desc">Automatización de campañas y email marketing que impulsaron las ventas de su tienda online.</p>
-        <svg class="sparkline" width="80" height="40" viewBox="0 0 80 40">
-          <polyline points="0,38 12,30 25,24 38,18 52,10 65,6 75,2" fill="none" stroke="#0fd4a8" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-
-      <div class="case-card" data-delay="200">
-        <div class="case-header">
-          <span class="case-brand">◉ Océano</span>
-        </div>
-        <div class="case-tags">
-          <span class="tag">Branding</span>
-          <span class="tag">Web Design</span>
-        </div>
-        <div class="case-metric" data-count="400" data-prefix="+">0%</div>
-        <div class="case-metric-label">Alcance en redes</div>
-        <p class="case-desc">Rediseñamos su marca y presencia digital logrando un crecimiento masivo en redes y comunidad.</p>
-        <svg class="sparkline" width="80" height="40" viewBox="0 0 80 40">
-          <polyline points="0,36 10,32 22,26 35,20 48,12 60,6 75,1" fill="none" stroke="#0fd4a8" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </div>
-    </div>
-
-    <div class="cases-cta">
-      <a href="#" class="btn btn-outline" style="font-size:14px; padding: 12px 24px;">
-        Ver más casos de éxito
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-      </a>
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!-- SECCIÓN 4: PROCESO + SOBRE + CTA + FOOTER -->
-  <!-- ═══════════════════════════════════════ -->
-  <section id="proceso">
-    <div class="section-header">
-      <p class="section-tag">Nuestro proceso</p>
-      <h2 class="section-title">Así trabajamos contigo</h2>
-    </div>
+  <!-- SERVICIOS -->
+  <section id="servicios" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-ink-850 text-paper">
+    <div class="container-x">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <span class="mono-label text-[#02C39A]">Servicios</span>
+          <h2 class="font-display mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            Servicios diseñados para hacer crecer tu negocio.
+          </h2>
+          <p class="mt-6 max-w-xl text-paper/65 leading-relaxed">Desde branding y websites hasta campañas, contenido y automatizaciones con IA.</p>
+        </div>
+        <a href="#servicios" class="inline-flex items-center gap-2 text-sm font-medium text-paper/80 hover:text-white transition">Ver todos los servicios →</a>
+      </div>
 
-    <div class="process-steps">
-      <div class="step" data-delay="0">
-        <div class="step-num">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span class="step-counter">1</span>
-        </div>
-        <h3 class="step-title">Diagnóstico</h3>
-        <p class="step-desc">Analizamos tu negocio, objetivos y audiencia.</p>
-      </div>
-      <div class="step" data-delay="100">
-        <div class="step-num">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-          <span class="step-counter">2</span>
-        </div>
-        <h3 class="step-title">Estrategia</h3>
-        <p class="step-desc">Diseñamos un plan personalizado alineado a tus metas.</p>
-      </div>
-      <div class="step" data-delay="200">
-        <div class="step-num">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span class="step-counter">3</span>
-        </div>
-        <h3 class="step-title">Implementación</h3>
-        <p class="step-desc">Ejecutamos campañas y contenidos con foco en resultados.</p>
-      </div>
-      <div class="step" data-delay="300">
-        <div class="step-num">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          <span class="step-counter">4</span>
-        </div>
-        <h3 class="step-title">Optimización</h3>
-        <p class="step-desc">Medimos, analizamos y optimizamos para seguir creciendo.</p>
+      <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">01</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Branding</h3>
+          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Logotipo, manual de marca e identidad visual para que tu negocio se vea profesional y confiable.</p>
+          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
+            <li>Logotipo y versiones</li><li>Manual de marca</li><li>Identidad visual</li><li>Línea gráfica</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver Branding →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">02</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Paquete Digital Inicial</h3>
+          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Website, Google Business Profile, landing page, SSL y campaña inicial de Google Ads por USD 590.</p>
+          <p class="mt-4 font-display text-lg font-semibold text-[#02C39A]">USD 590</p>
+          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
+            <li>Website profesional</li><li>Landing page</li><li>Perfil de Google Business</li><li>Certificado SSL</li>
+          </ul>
+          <a href="#paquete" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver paquete →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">03</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Redes Sociales / Crecimiento</h3>
+          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Contenido, reels, artes, campañas y estrategia mensual para generar más oportunidades.</p>
+          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
+            <li>Creación de contenido</li><li>Reels y artes</li><li>Carruseles</li><li>Campañas Meta</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver paquetes →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">04</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Google Ads / Performance</h3>
+          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Gestión mensual de campañas para aparecer cuando tus clientes ya están buscando tus servicios.</p>
+          <p class="mt-4 font-display text-lg font-semibold text-[#02C39A]">Desde USD 150/mes</p>
+          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
+            <li>Configuración de campañas</li><li>Gestión mensual</li><li>Optimización continua</li><li>Investigación de keywords</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Quiero Google Ads →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">05</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">IA / Automatizaciones</h3>
+          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Automatiza WhatsApp, Messenger, Instagram Inbox y el seguimiento de tus leads con IA y CRM.</p>
+          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
+            <li>WhatsApp automatizado</li><li>Agentes IA</li><li>CRM</li><li>Workflows</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver automatizaciones →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">06</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Websites / SEO</h3>
+          <p class="mt-2 text-sm text-paper/60 leading-relaxed">Websites informativos, landing pages, SEO básico y estructura de conversión integrada con tu CRM.</p>
+          <ul class="mt-4 space-y-1.5 text-sm text-paper/55">
+            <li>Websites informativos</li><li>Landing pages</li><li>SEO básico</li><li>Formularios</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver websites →</a>
+        </article>
       </div>
     </div>
+  </section>
 
-    <!-- About strip -->
-    <div class="about-strip">
-      <div>
-        <p class="about-tag">Sobre Cluster</p>
-        <h2 class="about-title">Más que una agencia,<br>somos tu <em>aliado de crecimiento.</em></h2>
-        <p class="about-desc">Combinamos estrategia, creatividad y tecnología para ayudar a empresas a crecer de forma sostenible en el mundo digital.</p>
-        <a href="#" class="btn btn-teal">
-          Conocer al equipo
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-        </a>
-      </div>
-      <div class="about-visual">
-        <div class="about-visual-inner">
-          <div class="about-logo">
-            CLUSTER
-            <span>MARKETING</span>
+  <!-- PAQUETE INICIAL -->
+  <section id="paquete" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-cream text-ink-950">
+    <div class="container-x">
+      <div class="rounded-3xl border border-black/10 bg-gradient-to-br from-black/[0.03] to-transparent p-10 lg:p-14">
+        <span class="mono-label text-[#02C39A]">Oferta de lanzamiento</span>
+        <h2 class="font-display mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+          Tu negocio listo para vender en internet por USD 590.
+        </h2>
+        <p class="mt-6 max-w-xl text-ink-950/65 leading-relaxed">
+          Un paquete pensado para negocios que necesitan una presencia digital profesional sin pagar miles de dólares desde el inicio.
+        </p>
+
+        <div class="mt-10 flex flex-wrap items-end gap-8">
+          <div>
+            <span class="text-ink-950/40 line-through text-lg">USD 870</span>
+            <div class="font-display text-5xl font-semibold text-ink-950">USD 590</div>
+            <span class="text-sm text-ink-950/50">pago único</span>
           </div>
+          <a href="#contacto" class="inline-flex items-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-7 py-3.5 text-sm font-medium text-white">Ver detalles del paquete</a>
         </div>
+
+        <ul class="mt-10 grid gap-3 sm:grid-cols-2">
+          <li class="text-sm text-ink-950/75">✓ Website profesional</li>
+          <li class="text-sm text-ink-950/75">✓ Landing page</li>
+          <li class="text-sm text-ink-950/75">✓ Perfil de Google Business</li>
+          <li class="text-sm text-ink-950/75">✓ Certificado SSL</li>
+          <li class="text-sm text-ink-950/75">✓ 1 campaña de Google Ads</li>
+          <li class="text-sm text-ink-950/75">✓ Guía para generar clientes online</li>
+        </ul>
       </div>
     </div>
+  </section>
 
-    <!-- CTA Banner -->
-    <div class="cta-banner">
-      <div class="cta-text">
-        <h2>¿Listo para hacer crecer tu negocio?</h2>
-        <p>Hablemos de tu proyecto y descubramos cómo podemos ayudarte.</p>
+  <!-- CASOS DE EXITO -->
+  <section id="casos" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-ink-850 text-paper">
+    <div class="container-x">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <span class="mono-label text-[#02C39A]">Casos de éxito</span>
+          <h2 class="font-display mt-4 max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+            Resultados reales para negocios reales.
+          </h2>
+          <p class="mt-6 max-w-xl text-paper/65 leading-relaxed">Algunos negocios que confiaron en Cluster Media para crecer.</p>
+        </div>
+        <a href="#casos" class="inline-flex items-center gap-2 text-sm font-medium text-paper/80 hover:text-white transition">Ver todos los casos →</a>
       </div>
-      <a href="#" class="btn btn-dark">
-        Agendar llamada
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
-      </a>
+
+      <div class="mt-14 grid gap-6 lg:grid-cols-3">
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">Automotriz</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Car Depot</h3>
+          <p class="mt-1 text-sm font-medium text-[#02C39A]">~20 leads diarios — Generación constante de leads para venta de vehículos</p>
+          <p class="mt-4 text-sm text-paper/60 leading-relaxed">Después de dos meses de trabajo, ayudamos a un negocio de vehículos en Estados Unidos a generar alrededor de 20 leads diarios mediante campañas y estrategia digital.</p>
+          <ul class="mt-4 flex flex-wrap gap-2 text-xs text-paper/55">
+            <li class="rounded-full border border-white/10 px-3 py-1">Campañas</li><li class="rounded-full border border-white/10 px-3 py-1">Redes sociales</li><li class="rounded-full border border-white/10 px-3 py-1">Generación de leads</li><li class="rounded-full border border-white/10 px-3 py-1">Seguimiento comercial</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver caso →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">Salud</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Clínicas Médicas Ojíne</h3>
+          <p class="mt-1 text-sm font-medium text-[#02C39A]">+Presencia digital y pacientes — Comunicación digital para servicios de salud</p>
+          <p class="mt-4 text-sm text-paper/60 leading-relaxed">Apoyamos a una marca médica a fortalecer su presencia digital, comunicar mejor sus servicios y conectar con pacientes potenciales.</p>
+          <ul class="mt-4 flex flex-wrap gap-2 text-xs text-paper/55">
+            <li class="rounded-full border border-white/10 px-3 py-1">Redes sociales</li><li class="rounded-full border border-white/10 px-3 py-1">Contenido</li><li class="rounded-full border border-white/10 px-3 py-1">Diseño</li><li class="rounded-full border border-white/10 px-3 py-1">Estrategia</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver caso →</a>
+        </article>
+
+        <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-7">
+          <span class="mono-label text-paper/40">Retail</span>
+          <h3 class="font-display mt-3 text-xl font-semibold">Ink Express</h3>
+          <p class="mt-1 text-sm font-medium text-[#02C39A]">−Carga operativa con IA — Automatización para atender mejor a sus clientes</p>
+          <p class="mt-4 text-sm text-paper/60 leading-relaxed">Una tienda con alto volumen de mensajes necesitaba mejorar su atención y ordenar sus oportunidades comerciales. La solución se enfocó en automatización, CRM y seguimiento.</p>
+          <ul class="mt-4 flex flex-wrap gap-2 text-xs text-paper/55">
+            <li class="rounded-full border border-white/10 px-3 py-1">IA</li><li class="rounded-full border border-white/10 px-3 py-1">WhatsApp automatizado</li><li class="rounded-full border border-white/10 px-3 py-1">CRM</li><li class="rounded-full border border-white/10 px-3 py-1">Workflows</li>
+          </ul>
+          <a href="#" class="mt-6 inline-flex text-sm font-medium text-[#02C39A]">Ver caso →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- POR QUE CLUSTER -->
+  <section id="cluster" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-cream text-ink-950">
+    <div class="container-x grid gap-12 lg:grid-cols-2 lg:items-center">
+      <div>
+        <span class="mono-label text-[#02C39A]">Por qué Cluster</span>
+        <h2 class="font-display mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+          No somos solo una agencia de redes sociales.
+        </h2>
+        <p class="mt-6 max-w-xl text-ink-950/65 leading-relaxed">
+          Somos un equipo que entiende estrategia, contenido, campañas, websites, automatización y ventas. Nuestro enfoque es ayudar a negocios hispanos a competir mejor en mercados cada vez más digitales.
+        </p>
+        <a href="#cluster" class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#02C39A]">Conoce a Cluster Media →</a>
+      </div>
+      <ul class="grid gap-4">
+        <li class="rounded-xl border border-black/10 bg-black/[0.03] px-6 py-5 text-sm text-ink-950/75">Comunicación cercana y real</li>
+        <li class="rounded-xl border border-black/10 bg-black/[0.03] px-6 py-5 text-sm text-ink-950/75">Experiencia con negocios hispanos</li>
+        <li class="rounded-xl border border-black/10 bg-black/[0.03] px-6 py-5 text-sm text-ink-950/75">Servicios integrados</li>
+        <li class="rounded-xl border border-black/10 bg-black/[0.03] px-6 py-5 text-sm text-ink-950/75">Enfoque en generación de clientes</li>
+        <li class="rounded-xl border border-black/10 bg-black/[0.03] px-6 py-5 text-sm text-ink-950/75">Automatización comercial</li>
+        <li class="rounded-xl border border-black/10 bg-black/[0.03] px-6 py-5 text-sm text-ink-950/75">Atendemos negocios pequeños, medianos y empresas en crecimiento</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section id="contacto" class="relative overflow-hidden bg-ink-950 py-24 sm:py-32 text-center">
+    <div class="container-x">
+      <h2 class="font-display mx-auto max-w-2xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+        ¿Listo para hacer crecer tu negocio?
+      </h2>
+      <p class="mx-auto mt-6 max-w-xl text-paper/65 leading-relaxed">
+        Agenda una llamada y cuéntanos qué necesita tu negocio. Te ayudaremos a identificar la mejor ruta para mejorar tu presencia digital, generar clientes o automatizar tu atención comercial.
+      </p>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+        <a href="https://calendly.com/clustermedia/llamada" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-7 py-3.5 text-sm font-medium text-white">Agendar llamada</a>
+        <a href="https://wa.me/13050000000" target="_blank" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#02C39A] hover:bg-[#029e7d] transition px-7 py-3.5 text-sm font-medium text-white">Escribir por WhatsApp</a>
+        <a href="#contacto" class="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 px-7 py-3.5 text-sm font-medium text-paper/80 hover:text-white transition">Solicitar información</a>
+      </div>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer>
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="nav-logo">
-          <span>CLUSTER</span>
-          <span>MARKETING</span>
-        </div>
-        <p>Estrategias de marketing digital que generan crecimiento real para empresas que quieren escalar.</p>
-        <div class="footer-social">
-          <a href="#" class="social-btn">in</a>
-          <a href="#" class="social-btn">ig</a>
-          <a href="#" class="social-btn">yt</a>
-          <a href="#" class="social-btn">tk</a>
-        </div>
+  <footer class="bg-ink-950 border-t border-white/10 pt-16 pb-8">
+    <div class="container-x grid gap-10 lg:grid-cols-4">
+      <div>
+        <span class="font-display text-lg font-semibold text-white">Cluster.Media</span>
+        <p class="mt-3 text-sm text-paper/55 leading-relaxed max-w-xs">Marketing digital para negocios hispanos que quieren crecer, generar clientes y automatizar su operación comercial.</p>
       </div>
-
-      <div class="footer-col">
-        <h4>Navegación</h4>
-        <ul>
-          <li><a href="#hero">Inicio</a></li>
-          <li><a href="#servicios">Servicios</a></li>
-          <li><a href="#casos">Casos de éxito</a></li>
-          <li><a href="#proceso">Nosotros</a></li>
-          <li><a href="#">Recursos</a></li>
+      <div>
+        <h4 class="mono-label text-paper/40">Servicios</h4>
+        <ul class="mt-4 space-y-2 text-sm text-paper/65">
+          <li><a href="#servicios" class="hover:text-white">Branding</a></li>
+          <li><a href="#paquete" class="hover:text-white">Paquete Digital Inicial</a></li>
+          <li><a href="#servicios" class="hover:text-white">Redes Sociales</a></li>
+          <li><a href="#servicios" class="hover:text-white">Google Ads</a></li>
+          <li><a href="#servicios" class="hover:text-white">IA / Automatizaciones</a></li>
+          <li><a href="#servicios" class="hover:text-white">Websites / SEO</a></li>
         </ul>
       </div>
-
-      <div class="footer-col">
-        <h4>Servicios</h4>
-        <ul>
-          <li><a href="#">Social Media</a></li>
-          <li><a href="#">Paid Advertising</a></li>
-          <li><a href="#">Website Design</a></li>
-          <li><a href="#">Video Production</a></li>
-          <li><a href="#">Podcast Production</a></li>
-          <li><a href="#">Email Marketing</a></li>
+      <div>
+        <h4 class="mono-label text-paper/40">Empresa</h4>
+        <ul class="mt-4 space-y-2 text-sm text-paper/65">
+          <li><a href="#cluster" class="hover:text-white">Sobre Cluster</a></li>
+          <li><a href="#casos" class="hover:text-white">Casos de Éxito</a></li>
+          <li><a href="#contacto" class="hover:text-white">Contacto</a></li>
         </ul>
       </div>
-
-      <div class="footer-col">
-        <h4>Contacto</h4>
-        <div class="footer-contact-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          hola@clustermarketing.com
-        </div>
-        <div class="footer-contact-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          +1 (305) 123-4567
-        </div>
-        <div class="footer-contact-item">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Miami, Florida, USA
-        </div>
+      <div>
+        <h4 class="mono-label text-paper/40">Contacto</h4>
+        <ul class="mt-4 space-y-2 text-sm text-paper/65">
+          <li><a href="https://calendly.com/clustermedia/llamada" class="hover:text-white">Agendar llamada</a></li>
+          <li><a href="https://wa.me/13050000000" class="hover:text-white">WhatsApp</a></li>
+          <li><a href="mailto:info@cluster.marketing" class="hover:text-white">info@cluster.marketing</a></li>
+          <li class="text-paper/50">Miami, FL · Estados Unidos</li>
+        </ul>
       </div>
     </div>
-
-    <div class="footer-bottom">
-      <p>© 2025 Cluster Marketing. Todos los derechos reservados.</p>
-      <p style="display:flex;gap:20px;">
-        <a href="#" style="color:var(--text-dim);text-decoration:none;font-size:12px;">Privacidad</a>
-        <a href="#" style="color:var(--text-dim);text-decoration:none;font-size:12px;">Términos</a>
-      </p>
+    <div class="container-x mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-paper/40">
+      <span>© 2026 Cluster Media. Todos los derechos reservados.</span>
+      <div class="flex gap-4">
+        <a href="#" class="hover:text-white">Privacy Policy</a>
+        <a href="#" class="hover:text-white">Terms and Conditions</a>
+      </div>
     </div>
   </footer>
 
-  <script>
-    // ─── NAV: active link + scroll shrink ───────────────────────────────────
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-links a');
-
-    function updateNav() {
-      const scrollY = window.scrollY;
-      sections.forEach(section => {
-        const top = section.offsetTop - 100;
-        const bottom = top + section.offsetHeight;
-        if (scrollY >= top && scrollY < bottom) {
-          navLinks.forEach(a => a.classList.remove('active'));
-          const active = document.querySelector(`.nav-links a[href="#${section.id}"]`);
-          if (active) active.classList.add('active');
-        }
-      });
-    }
-
-    window.addEventListener('scroll', updateNav, { passive: true });
-
-    // ─── SCROLL-TRIGGERED ANIMATIONS ──────────────────────────────────────
-    const animatedEls = document.querySelectorAll('.service-card, .case-card, .step, .stat-card');
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const el = entry.target;
-          const delay = parseInt(el.dataset.delay || 0);
-          setTimeout(() => el.classList.add('visible'), delay);
-          observer.unobserve(el);
-        }
-      });
-    }, { threshold: 0.15 });
-
-    animatedEls.forEach(el => observer.observe(el));
-
-    // trigger stat cards on load (hero is visible immediately)
-    setTimeout(() => {
-      document.querySelectorAll('.stat-card').forEach(card => {
-        const delay = parseInt(card.dataset.delay || 0);
-        setTimeout(() => card.classList.add('visible'), delay);
-      });
-    }, 400);
-
-    // ─── COUNT-UP ANIMATION ──────────────────────────────────────────────
-    function animateCount(el) {
-      const target = parseInt(el.dataset.count);
-      const prefix = el.dataset.prefix || '';
-      const suffix = el.dataset.suffix || '%';
-      const duration = 1400;
-      const start = performance.now();
-
-      function update(now) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const ease = 1 - Math.pow(1 - progress, 3);
-        const current = Math.round(ease * target);
-        el.textContent = prefix + current + suffix;
-        if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-
-    function animateDollar(el) {
-      const target = parseFloat(el.dataset.dollar);
-      const duration = 1400;
-      const start = performance.now();
-
-      function update(now) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        const ease = 1 - Math.pow(1 - progress, 3);
-        const current = (ease * target).toFixed(1);
-        el.textContent = '$' + current + 'M';
-        if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-
-    const countObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const el = entry.target;
-          if (el.dataset.count) animateCount(el);
-          if (el.dataset.dollar) animateDollar(el);
-          countObserver.unobserve(el);
-        }
-      });
-    }, { threshold: 0.5 });
-
-    document.querySelectorAll('[data-count], [data-dollar]').forEach(el => countObserver.observe(el));
-
-    // trigger hero stat counters after cards animate in
-    setTimeout(() => {
-      document.querySelectorAll('.hero-stats [data-count]').forEach(el => {
-        animateCount(el);
-        countObserver.unobserve(el);
-      });
-      document.querySelectorAll('.hero-stats [data-dollar]').forEach(el => {
-        animateDollar(el);
-        countObserver.unobserve(el);
-      });
-    }, 1200);
-
-    // ─── SMOOTH ANCHOR SCROLL ────────────────────────────────────────────
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', e => {
-        const target = document.querySelector(anchor.getAttribute('href'));
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-
-    // ─── SERVICE CARDS: tilt on hover ────────────────────────────────────
-    document.querySelectorAll('.service-card').forEach(card => {
-      card.addEventListener('mousemove', e => {
-        const rect = card.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width - 0.5;
-        const y = (e.clientY - rect.top) / rect.height - 0.5;
-        card.style.transform = `translateY(-4px) rotateX(${-y * 4}deg) rotateY(${x * 4}deg)`;
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = '';
-      });
-    });
-  </script>
 </body>
 </html>
+
