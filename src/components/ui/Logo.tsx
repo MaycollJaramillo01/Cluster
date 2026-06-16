@@ -31,7 +31,7 @@ export function Logo({ variant = 'light', className = '' }: LogoProps) {
         }`}
       >
         <span className="font-display text-lg font-semibold tracking-tight">
-          Cluster<span className="text-brand">.</span>
+          Cluster<span className="text-accent">.</span>
         </span>
         <span
           className={`text-[10px] font-medium uppercase tracking-[0.24em] ${

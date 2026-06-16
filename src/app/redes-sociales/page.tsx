@@ -38,6 +38,7 @@ export default function RedesSocialesPage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/social.jpg", alt: "Creación de contenido para redes sociales" }}
         eyebrow="Redes Sociales / Crecimiento"
         title="Redes sociales para negocios que quieren vender más, no solo publicar más."
         subtitle="Creamos contenido, campañas y estrategia mensual para que tu negocio se vea activo, profesional y genere más oportunidades."
@@ -46,13 +47,13 @@ export default function RedesSocialesPage() {
 
       <Section tone="light">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/10 text-brand-300">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent">
             <Icon name="megaphone" size={28} />
           </span>
-          <h2 className="mt-6 font-display text-3xl font-semibold text-paper sm:text-4xl lg:text-5xl">
+          <h2 className="mt-6 font-display text-3xl font-semibold text-fg sm:text-4xl lg:text-5xl">
             Publicar no es una estrategia.
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-paper/60">
+          <p className="mt-5 text-lg leading-relaxed text-muted">
             Muchas empresas publican en redes sin una dirección clara. Nosotros
             creamos contenido alineado a objetivos comerciales: atraer clientes,
             generar confianza y mantener tu negocio presente en la mente de tu
@@ -75,10 +76,10 @@ export default function RedesSocialesPage() {
           ))}
         </div>
 
-        <Reveal className="mx-auto mt-10 flex max-w-2xl items-start gap-3 rounded-2xl bg-white/[0.05] p-5 text-sm text-paper/60">
-          <Icon name="shield" size={20} className="mt-0.5 flex-none text-brand-300" />
+        <Reveal className="mx-auto mt-10 flex max-w-2xl items-start gap-3 rounded-2xl bg-surface p-5 text-sm text-muted">
+          <Icon name="shield" size={20} className="mt-0.5 flex-none text-accent" />
           <p>
-            <strong className="text-paper">Importante:</strong> los precios no
+            <strong className="text-fg">Importante:</strong> los precios no
             incluyen inversión publicitaria. La pauta se define según el
             presupuesto y objetivos de cada negocio.
           </p>

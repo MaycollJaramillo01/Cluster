@@ -16,7 +16,7 @@ const serviceOptions = [
 ];
 
 const inputClass =
-  'w-full rounded-xl bg-white/[0.06] px-4 py-3 text-[15px] text-paper placeholder:text-paper/35 transition-colors focus:bg-white/[0.09] focus:outline-none focus:ring-2 focus:ring-brand/50';
+  'w-full rounded-xl bg-surface px-4 py-3 text-[15px] text-fg placeholder:text-faint transition-colors focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]';
 
 export function ContactForm() {
   const [sent, setSent] = useState(false);
@@ -42,14 +42,14 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl bg-brand/15 p-10 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
+      <div className="flex flex-col items-center justify-center rounded-3xl bg-surface p-10 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white">
           <Icon name="check" size={28} strokeWidth={2.5} />
         </span>
-        <h3 className="mt-5 font-display text-xl font-semibold text-paper">
+        <h3 className="mt-5 font-display text-xl font-semibold text-fg">
           ¡Gracias por escribirnos!
         </h3>
-        <p className="mt-2 max-w-sm text-[15px] text-paper/55">
+        <p className="mt-2 max-w-sm text-[15px] text-muted">
           Hemos preparado tu mensaje. Si no se abrió WhatsApp automáticamente,
           escríbenos directamente y te responderemos lo antes posible.
         </p>
@@ -69,7 +69,7 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl bg-white/[0.04] p-7 sm:p-8"
+      className="rounded-3xl bg-surface p-7 sm:p-8"
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Nombre" name="nombre" placeholder="Tu nombre" required />
@@ -89,7 +89,7 @@ export function ContactForm() {
       <div className="mt-4">
         <label
           htmlFor="servicio"
-          className="mb-1.5 block text-sm font-medium text-paper/70"
+          className="mb-1.5 block text-sm font-medium text-muted"
         >
           Servicio de interés
         </label>
@@ -113,7 +113,7 @@ export function ContactForm() {
       <div className="mt-4">
         <label
           htmlFor="mensaje"
-          className="mb-1.5 block text-sm font-medium text-paper/70"
+          className="mb-1.5 block text-sm font-medium text-muted"
         >
           Mensaje
         </label>
@@ -129,7 +129,7 @@ export function ContactForm() {
       <Button type="submit" size="lg" className="mt-6 w-full" iconRight="arrow-right">
         Enviar mensaje
       </Button>
-      <p className="mt-3 text-center text-xs text-paper/40">
+      <p className="mt-3 text-center text-xs text-faint">
         Al enviar aceptas que Cluster Media te contacte sobre tu solicitud.
       </p>
     </form>
@@ -151,9 +151,9 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-paper/70">
+      <label htmlFor={name} className="mb-1.5 block text-sm font-medium text-muted">
         {label}
-        {required && <span className="text-brand-300"> *</span>}
+        {required && <span className="text-accent"> *</span>}
       </label>
       <input
         id={name}

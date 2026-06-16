@@ -64,6 +64,7 @@ export default function BrandingPage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/creative.jpg", alt: "Diseño y dirección de arte de marca" }}
         eyebrow="Branding"
         title="Haz que tu negocio se vea como una marca seria."
         subtitle="Diseñamos logotipos, manuales de marca e identidad visual para que tu negocio proyecte confianza desde el primer contacto."
@@ -77,7 +78,7 @@ export default function BrandingPage() {
             title="Una identidad completa, lista para aplicar."
             description="Construimos los elementos esenciales para que tu marca se vea coherente en cada punto de contacto con tus clientes."
           />
-          <Reveal delay={120} className="flex flex-col justify-center rounded-3xl bg-white/[0.04] p-8">
+          <Reveal delay={120} className="flex flex-col justify-center rounded-3xl bg-surface p-8">
             <CheckList items={includes} columns={1} className="gap-4" />
           </Reveal>
         </div>
@@ -85,7 +86,7 @@ export default function BrandingPage() {
 
       <Section tone="dark">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/20 text-brand-300">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent">
             <Icon name="sparkles" size={28} />
           </span>
           <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-4xl">

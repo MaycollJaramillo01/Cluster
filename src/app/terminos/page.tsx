@@ -65,7 +65,7 @@ export default function TerminosPage() {
         <h2>Contacto</h2>
         <p>
           Para cualquier consulta sobre estos términos, escríbenos a{' '}
-          <a href={`mailto:${site.email}`} className="text-brand underline">
+          <a href={`mailto:${site.email}`} className="text-accent underline">
             {site.email}
           </a>
           .

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Space_Grotesk, JetBrains_Mono } from 'next/font/google';
+import { Big_Shoulders_Display, Fraunces, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -12,24 +12,27 @@ import {
 } from '@/components/seo/JsonLd';
 import { site } from '@/lib/site';
 
-const inter = Inter({
+// Titulares condensados industriales (estilo editorial / Pitchfork)
+const display = Big_Shoulders_Display({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-display',
   display: 'swap',
 });
 
-const spaceGrotesk = Space_Grotesk({
+// Cuerpo serif editorial (estilo Olivine / Fraunces)
+const body = Fraunces({
   subsets: ['latin'],
-  variable: '--font-space',
+  variable: '--font-body',
   display: 'swap',
-  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// Etiquetas técnicas monoespaciadas
+const mono = IBM_Plex_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
   display: 'swap',
-  weight: ['400', '500'],
+  weight: ['400', '500', '600'],
 });
 
 export const metadata: Metadata = {
@@ -90,9 +93,9 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
     >
-      <body>
+      <body suppressHydrationWarning>
         <JsonLd data={organizationSchema} />
         <JsonLd data={localBusinessSchema} />
         <a

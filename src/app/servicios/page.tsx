@@ -23,6 +23,7 @@ export default function ServiciosPage() {
         ])}
       />
       <PageHero
+        image={{ src: "/assets/stock/strategy.jpg", alt: "Equipo de marketing trabajando en estrategia digital" }}
         eyebrow="Servicios"
         title="Servicios digitales para negocios que quieren crecer."
         subtitle="Desde branding y websites hasta campañas, contenido y automatizaciones: diseñamos soluciones para que tu negocio se vea mejor, consiga más clientes y opere con mayor eficiencia."

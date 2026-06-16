@@ -3,12 +3,12 @@ import { Reveal } from './Reveal';
 
 type Tone = 'light' | 'soft' | 'dark' | 'brand';
 
-// En dark modernism todo es oscuro; los tonos solo varían la elevación.
+// Cada tono activa un tema (claro/oscuro) que invierte las utilidades semánticas.
 const tones: Record<Tone, string> = {
-  light: 'bg-ink-900 text-paper',
-  soft: 'bg-ink-850 text-paper',
-  dark: 'bg-ink-950 text-paper grain',
-  brand: 'bg-brand text-white',
+  light: 'theme-light bg-paper',
+  soft: 'theme-light bg-paper-soft',
+  dark: 'theme-dark bg-ink-900 grain',
+  brand: 'theme-dark bg-ink-950 grain',
 };
 
 type SectionProps = {
@@ -29,7 +29,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`relative overflow-hidden py-24 sm:py-28 lg:py-32 ${tones[tone]} ${className}`}
+      className={`relative overflow-hidden py-24 text-fg sm:py-28 lg:py-32 ${tones[tone]} ${className}`}
     >
       <div className={`container-x relative z-[1] ${containerClassName}`}>
         {children}
@@ -45,8 +45,8 @@ type EyebrowProps = {
 
 export function Eyebrow({ children }: EyebrowProps) {
   return (
-    <span className="mono-label inline-flex items-center gap-2.5 text-brand-300">
-      <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-400 shadow-glow-sm" />
+    <span className="mono-label inline-flex items-center gap-3 text-accent">
+      <span className="inline-block h-px w-8 bg-accent" />
       {children}
     </span>
   );
@@ -76,11 +76,11 @@ export function SectionHeading({
       } ${className}`}
     >
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      <h2 className="text-[2rem] font-semibold leading-[1.05] text-paper sm:text-4xl lg:text-5xl">
-        {title}
-      </h2>
+      <h2 className="text-5xl text-fg sm:text-6xl lg:text-7xl">{title}</h2>
       {description && (
-        <p className="text-lg leading-relaxed text-paper/55">{description}</p>
+        <p className="text-lg leading-relaxed text-muted sm:text-xl">
+          {description}
+        </p>
       )}
     </Reveal>
   );

@@ -8,40 +8,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Paleta dark modernism de Cluster Media
+        // Paleta monocromática editorial: tinta #09161C + papel #F9F9F9
         ink: {
-          DEFAULT: '#1D1D1D',
-          950: '#0A0A0A',
-          900: '#0E0E0E',
-          850: '#121212',
-          800: '#1D1D1D',
-          700: '#242424',
-          600: '#2E2E2E',
-          500: '#3a3a3a',
+          DEFAULT: '#09161C',
+          950: '#060F13',
+          900: '#09161C',
+          850: '#0C1B22',
+          800: '#102229',
+          700: '#163039',
+          600: '#1F4350',
+          500: '#2C5A6B',
         },
         paper: {
           DEFAULT: '#F9F9F9',
-          dim: '#E7E7E7',
+          soft: '#EFEFEF',
+          dim: '#E4E4E4',
         },
+        // "brand" apunta a la tinta (sin verde) por compatibilidad con clases existentes.
         brand: {
-          DEFAULT: '#2E7D32',
-          50: '#E8F3E9',
-          100: '#C8E2CA',
-          200: '#A0CDA3',
-          300: '#6FB174',
-          400: '#43C04A',
-          500: '#2E7D32',
-          600: '#26692A',
-          700: '#1E5421',
-          800: '#163F18',
-          900: '#0E2A10',
-          glow: '#3CA142',
+          DEFAULT: '#09161C',
+          50: '#EAEDEE',
+          100: '#C9D0D2',
+          200: '#9FACB0',
+          300: '#6E8089',
+          400: '#42535C',
+          500: '#09161C',
+          600: '#09161C',
+          700: '#070F14',
+          800: '#05090C',
+          900: '#030506',
+          glow: '#1F4350',
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-space)', 'var(--font-inter)', 'sans-serif'],
-        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        display: ['var(--font-display)', 'Arial Narrow', 'Impact', 'sans-serif'],
+        sans: ['var(--font-body)', 'Georgia', 'serif'],
+        serif: ['var(--font-body)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', 'Consolas', 'monospace'],
       },
       fontSize: {
         '10xl': ['10rem', { lineHeight: '0.92', letterSpacing: '-0.04em' }],
@@ -49,14 +52,24 @@ const config: Config = {
       maxWidth: {
         container: '1320px',
       },
+      // Estética editorial: esquinas rectas en todo el sitio.
       borderRadius: {
-        '4xl': '2rem',
-        '5xl': '2.5rem',
+        none: '0',
+        sm: '0',
+        DEFAULT: '0',
+        md: '0',
+        lg: '0',
+        xl: '0',
+        '2xl': '0',
+        '3xl': '0',
+        '4xl': '0',
+        '5xl': '0',
+        full: '0',
       },
       boxShadow: {
-        glow: '0 0 60px -12px rgba(60,161,66,0.55)',
-        'glow-sm': '0 0 30px -8px rgba(60,161,66,0.4)',
-        panel: '0 30px 80px -20px rgba(0,0,0,0.6)',
+        glow: '0 24px 60px -24px rgba(0,0,0,0.35)',
+        'glow-sm': '0 12px 30px -14px rgba(0,0,0,0.3)',
+        panel: '0 30px 80px -20px rgba(0,0,0,0.45)',
       },
       backgroundImage: {
         'grid-fade':

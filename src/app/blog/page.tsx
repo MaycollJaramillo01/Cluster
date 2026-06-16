@@ -28,6 +28,7 @@ export default function BlogPage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/collaboration.jpg", alt: "Equipo creando contenido y estrategia" }}
         eyebrow="Blog · Insights"
         title="Ideas para hacer crecer tu negocio digital."
         subtitle="Estrategias prácticas de marketing, campañas, branding y automatización pensadas para negocios hispanos que quieren competir mejor."
@@ -40,7 +41,7 @@ export default function BlogPage() {
           {blogCategories.map((cat) => (
             <span
               key={cat}
-              className="rounded-full bg-white/[0.05] px-4 py-2 text-sm font-medium text-paper/65 transition-colors hover:border-brand/40 hover:text-brand-300"
+              className="rounded-full bg-surface px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-line hover:text-accent"
             >
               {cat}
             </span>
@@ -48,29 +49,29 @@ export default function BlogPage() {
         </div>
 
         {/* Artículo destacado */}
-        <Reveal className="group mb-12 grid overflow-hidden rounded-3xl bg-white/[0.04] lg:grid-cols-2">
-          <div className="relative flex min-h-[240px] items-end overflow-hidden bg-gradient-to-br from-brand/20 via-ink-850 to-ink-900 p-8">
+        <Reveal className="group mb-12 grid overflow-hidden rounded-3xl bg-surface lg:grid-cols-2">
+          <div className="theme-dark relative flex min-h-[240px] items-end overflow-hidden bg-ink-900 p-8 text-fg">
             <div className="grain absolute inset-0" aria-hidden="true" />
             <div className="relative z-[1]">
-              <span className="mono-label rounded-full bg-brand px-3 py-1.5 text-white">
+              <span className="mono-label bg-accent px-3 py-1.5 text-accent-fg">
                 Destacado
               </span>
-              <h2 className="mt-5 font-display text-2xl font-semibold leading-snug text-paper sm:text-3xl">
+              <h2 className="mt-5 font-display text-2xl font-semibold leading-snug text-fg sm:text-3xl">
                 {featured.title}
               </h2>
             </div>
           </div>
           <div className="flex flex-col justify-center p-8">
-            <span className="mono-label text-brand-300">{featured.category}</span>
-            <p className="mt-4 text-[15px] leading-relaxed text-paper/55">
+            <span className="mono-label text-accent">{featured.category}</span>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">
               {featured.excerpt}
             </p>
-            <div className="mt-5 font-mono text-sm text-paper/40">
+            <div className="mt-5 font-mono text-sm text-faint">
               {featured.readingTime} de lectura
             </div>
             <Link
               href={`/blog/${featured.slug}`}
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-brand-300 transition-all group-hover:gap-3"
+              className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-accent transition-all group-hover:gap-3"
             >
               Leer artículo
               <Icon name="arrow-right" size={16} />
@@ -87,20 +88,20 @@ export default function BlogPage() {
               delay={i * 60}
               className="card-dark group flex flex-col p-7"
             >
-              <span className="mono-label text-brand-300">{article.category}</span>
-              <h3 className="mt-4 font-display text-lg font-semibold leading-snug text-paper">
+              <span className="mono-label text-accent">{article.category}</span>
+              <h3 className="mt-4 font-display text-lg font-semibold leading-snug text-fg">
                 {article.title}
               </h3>
-              <p className="mt-2 flex-1 text-[15px] leading-relaxed text-paper/55">
+              <p className="mt-2 flex-1 text-[15px] leading-relaxed text-muted">
                 {article.excerpt}
               </p>
-              <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
-                <span className="font-mono text-sm text-paper/40">
+              <div className="mt-5 flex items-center justify-between border-t border-line pt-4">
+                <span className="font-mono text-sm text-faint">
                   {article.readingTime}
                 </span>
                 <Link
                   href={`/blog/${article.slug}`}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-300 transition-all group-hover:gap-3"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-accent transition-all group-hover:gap-3"
                   aria-label={`Leer ${article.title}`}
                 >
                   Leer

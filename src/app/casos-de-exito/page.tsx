@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { CaseCard } from '@/components/blocks/CaseCard';
-import { LogoMarquee } from '@/components/blocks/LogoMarquee';
+import { LogoWall } from '@/components/blocks/LogoWall';
 import { CTASection } from '@/components/blocks/CTASection';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/JsonLd';
 import { caseStudies, site } from '@/lib/site';
@@ -25,6 +25,7 @@ export default function CasosPage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/meeting.jpg", alt: "Reunión de estrategia con un cliente" }}
         eyebrow="Casos de éxito"
         title="Resultados reales para negocios que decidieron crecer."
         subtitle="Estos son algunos negocios que han confiado en Cluster Media para mejorar su presencia digital, generar prospectos y ordenar su crecimiento."
@@ -47,7 +48,7 @@ export default function CasosPage() {
           description="Hemos trabajado con negocios familiares hasta empresas con mayor estructura comercial."
           className="mb-12"
         />
-        <LogoMarquee />
+        <LogoWall />
       </Section>
 
       <CTASection

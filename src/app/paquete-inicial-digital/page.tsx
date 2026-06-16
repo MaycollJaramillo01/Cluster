@@ -139,6 +139,7 @@ export default function PaquetePage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/office.jpg", alt: "Negocio hispano listo para vender en internet" }}
         eyebrow="Paquete Digital Inicial"
         title="Tu negocio listo para vender en internet por USD 590."
         subtitle="Creamos la base digital que tu negocio necesita para verse profesional, aparecer en Google y empezar a recibir clientes online."
@@ -193,22 +194,22 @@ export default function PaquetePage() {
 
       {/* Condiciones importantes */}
       <Section tone="soft">
-        <Reveal className="mx-auto max-w-3xl rounded-3xl bg-white/[0.04] p-8 sm:p-10">
+        <Reveal className="mx-auto max-w-3xl rounded-3xl bg-surface p-8 sm:p-10">
           <div className="flex items-start gap-4">
-            <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-brand/10 text-brand-300">
+            <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-surface text-accent">
               <Icon name="shield" size={24} />
             </span>
             <div>
-              <h2 className="font-display text-xl font-semibold text-paper">
+              <h2 className="font-display text-xl font-semibold text-fg">
                 Información importante
               </h2>
-              <p className="mt-3 text-[15px] leading-relaxed text-paper/65">
+              <p className="mt-3 text-[15px] leading-relaxed text-muted">
                 El paquete incluye una estructura digital inicial. El cliente
                 debe proporcionar logo, textos, fotografías, información del
                 negocio y accesos necesarios. La inversión publicitaria de
                 Google Ads no está incluida en el precio del paquete.
               </p>
-              <ul className="mt-4 space-y-2 text-sm text-paper/50">
+              <ul className="mt-4 space-y-2 text-sm text-faint">
                 <li>· Pago único de USD 590.</li>
                 <li>· Tiempo de entrega estimado según materiales.</li>
                 <li>· Cambios limitados según política interna.</li>

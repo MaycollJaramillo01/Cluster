@@ -53,7 +53,7 @@ export default function PrivacidadPage() {
         <p>
           Puedes solicitar acceso, rectificación o eliminación de tus datos
           personales escribiéndonos a{' '}
-          <a href={`mailto:${site.email}`} className="text-brand underline">
+          <a href={`mailto:${site.email}`} className="text-accent underline">
             {site.email}
           </a>
           .

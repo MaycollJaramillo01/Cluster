@@ -31,7 +31,7 @@ export default function ContactoPage() {
           aria-hidden="true"
         />
         <div
-          className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-brand/15 blur-[120px]"
+          className="absolute -left-32 top-10 h-80 w-80 rounded-full bg-surface blur-[120px]"
           aria-hidden="true"
         />
         <div className="container-x relative z-[1] max-w-3xl">
@@ -39,12 +39,12 @@ export default function ContactoPage() {
             <Eyebrow>Contacto · Hablemos</Eyebrow>
           </Reveal>
           <Reveal delay={60}>
-            <h1 className="mt-6 text-4xl font-semibold leading-[1.02] tracking-[-0.03em] text-paper sm:text-6xl">
+            <h1 className="mt-6 text-4xl font-semibold leading-[1.02] tracking-[-0.03em] text-fg sm:text-6xl">
               Hablemos de cómo hacer crecer tu negocio.
             </h1>
           </Reveal>
           <Reveal delay={120}>
-            <p className="mt-6 text-lg text-paper/60">
+            <p className="mt-6 text-lg text-muted">
               Agenda una llamada, escríbenos por WhatsApp o completa el
               formulario. Te ayudaremos a identificar la mejor ruta para tu
               negocio.
@@ -58,16 +58,16 @@ export default function ContactoPage() {
           {/* Columna de canales */}
           <div className="lg:col-span-2">
             <div className="space-y-4">
-              <Reveal className="rounded-3xl bg-white/[0.04] p-6">
+              <Reveal className="rounded-3xl bg-surface p-6">
                 <div className="flex items-start gap-4">
-                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-brand/10 text-brand-300">
+                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-surface text-accent">
                     <Icon name="calendar" size={24} />
                   </span>
                   <div>
-                    <h3 className="font-display text-lg font-semibold text-paper">
+                    <h3 className="font-display text-lg font-semibold text-fg">
                       Agendar llamada
                     </h3>
-                    <p className="mt-1.5 text-[15px] text-paper/55">
+                    <p className="mt-1.5 text-[15px] text-muted">
                       Elige el día y la hora que mejor te funcione para una
                       llamada de diagnóstico.
                     </p>
@@ -84,16 +84,16 @@ export default function ContactoPage() {
                 </div>
               </Reveal>
 
-              <Reveal delay={80} className="rounded-3xl bg-white/[0.04] p-6">
+              <Reveal delay={80} className="rounded-3xl bg-surface p-6">
                 <div className="flex items-start gap-4">
                   <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-[#25D366]/10 text-[#25D366]">
                     <Icon name="whatsapp" size={24} />
                   </span>
                   <div>
-                    <h3 className="font-display text-lg font-semibold text-paper">
+                    <h3 className="font-display text-lg font-semibold text-fg">
                       WhatsApp
                     </h3>
-                    <p className="mt-1.5 text-[15px] text-paper/55">
+                    <p className="mt-1.5 text-[15px] text-muted">
                       ¿Prefieres escribirnos directamente? Envíanos un mensaje.
                     </p>
                     <Button
@@ -110,28 +110,28 @@ export default function ContactoPage() {
                 </div>
               </Reveal>
 
-              <Reveal delay={160} className="rounded-3xl bg-white/[0.04] p-6">
+              <Reveal delay={160} className="rounded-3xl bg-surface p-6">
                 <div className="space-y-4">
                   <a
                     href={`mailto:${site.email}`}
-                    className="flex items-center gap-4 text-paper/75 transition-colors hover:text-brand-300"
+                    className="flex items-center gap-4 text-muted transition-colors hover:text-accent"
                   >
-                    <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-brand/10 text-brand-300">
+                    <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-surface text-accent">
                       <Icon name="mail" size={22} />
                     </span>
                     <div>
-                      <div className="font-mono text-xs uppercase tracking-wider text-paper/40">
+                      <div className="font-mono text-xs uppercase tracking-wider text-faint">
                         Email
                       </div>
                       <div className="font-medium">{site.email}</div>
                     </div>
                   </a>
-                  <div className="flex items-center gap-4 text-paper/75">
-                    <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-brand/10 text-brand-300">
+                  <div className="flex items-center gap-4 text-muted">
+                    <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-surface text-accent">
                       <Icon name="pin" size={22} />
                     </span>
                     <div>
-                      <div className="font-mono text-xs uppercase tracking-wider text-paper/40">
+                      <div className="font-mono text-xs uppercase tracking-wider text-faint">
                         Ubicación
                       </div>
                       <div className="font-medium">{site.location}</div>

@@ -55,10 +55,10 @@ export function Header() {
               <div key={item.href} className="group relative">
                 <Link
                   href={item.href}
-                  className={`inline-flex items-center gap-1 px-3.5 py-2 text-sm font-medium tracking-tight transition-colors ${
+                  className={`inline-flex items-center gap-1 px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] transition-colors ${
                     isActive(item.href)
-                      ? 'text-brand-300'
-                      : 'text-paper/70 hover:text-paper'
+                      ? 'text-accent'
+                      : 'text-muted hover:text-fg'
                   }`}
                 >
                   {item.label}
@@ -71,7 +71,7 @@ export function Header() {
                         <Link
                           key={child.href}
                           href={child.href}
-                          className="block px-3.5 py-2.5 text-sm font-medium text-paper/65 transition-colors hover:bg-brand/10 hover:text-brand-300"
+                          className="block px-3.5 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-accent"
                         >
                           {child.label}
                         </Link>
@@ -90,7 +90,7 @@ export function Header() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="WhatsApp"
-            className="flex h-10 w-10 items-center justify-center border-0 bg-white/[0.08] text-paper/80 transition-all hover:bg-[#25D366] hover:text-white"
+            className="flex h-10 w-10 items-center justify-center border-0 bg-surface text-muted transition-all hover:bg-[#25D366] hover:text-white"
           >
             <Icon name="whatsapp" size={18} />
           </a>
@@ -105,7 +105,7 @@ export function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Cerrar menú' : 'Abrir menú'}
           aria-expanded={open}
-          className="flex h-11 w-11 items-center justify-center border-0 bg-white/[0.08] text-paper transition-colors hover:bg-white/[0.16] lg:hidden"
+          className="flex h-11 w-11 items-center justify-center border-0 bg-surface text-fg transition-colors hover:bg-surface-2 lg:hidden"
         >
           <Icon name={open ? 'close' : 'menu'} size={22} />
         </button>
@@ -113,7 +113,7 @@ export function Header() {
 
       {/* Menú móvil */}
       <div
-        className={`overflow-hidden border-t border-white/10 bg-ink-900 transition-[max-height] duration-500 ease-out lg:hidden ${
+        className={`overflow-hidden border-t border-line bg-ink-900 transition-[max-height] duration-500 ease-out lg:hidden ${
           open ? 'max-h-[85vh]' : 'max-h-0'
         }`}
       >
@@ -126,7 +126,7 @@ export function Header() {
                   <Link
                     href={item.href}
                     className={`flex-1 px-3 py-3 text-lg font-medium ${
-                      isActive(item.href) ? 'text-brand-300' : 'text-paper'
+                      isActive(item.href) ? 'text-accent' : 'text-fg'
                     }`}
                   >
                     {item.label}
@@ -136,7 +136,7 @@ export function Header() {
                       type="button"
                       onClick={() => setServicesOpen((v) => !v)}
                       aria-label="Mostrar servicios"
-                      className="flex h-9 w-9 items-center justify-center border-0 text-paper/50"
+                      className="flex h-9 w-9 items-center justify-center border-0 text-faint"
                     >
                       <Icon
                         name="chevron-down"
@@ -149,12 +149,12 @@ export function Header() {
                   )}
                 </div>
                 {hasChildren && servicesOpen && (
-                  <div className="ml-3 flex flex-col border-l border-white/10 pl-3">
+                  <div className="ml-3 flex flex-col border-l border-line pl-3">
                     {item.children!.map((child) => (
                       <Link
                         key={child.href}
                         href={child.href}
-                        className="px-3 py-2.5 text-[15px] text-paper/60"
+                        className="px-3 py-2.5 text-[15px] text-muted"
                       >
                         {child.label}
                       </Link>

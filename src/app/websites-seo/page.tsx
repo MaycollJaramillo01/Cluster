@@ -49,6 +49,7 @@ export default function WebsitesSeoPage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/laptop.jpg", alt: "Desarrollo de websites y SEO" }}
         eyebrow="Websites / SEO"
         title="Websites pensados para convertir visitas en clientes."
         subtitle="Creamos sitios web claros, modernos y enfocados en que tu negocio se vea profesional y genere contactos."
@@ -62,7 +63,7 @@ export default function WebsitesSeoPage() {
             title="Sitios que se ven bien y trabajan por ti."
             description="Cada website lo construimos con una estructura pensada para guiar al visitante hacia el contacto, no solo para informar."
           />
-          <Reveal delay={120} className="rounded-3xl bg-white/[0.04] p-8">
+          <Reveal delay={120} className="rounded-3xl bg-surface p-8">
             <CheckList items={servicesList} columns={2} className="gap-4" />
           </Reveal>
         </div>
@@ -70,9 +71,9 @@ export default function WebsitesSeoPage() {
 
       {/* Conexión con Paquete Inicial */}
       <Section tone="dark">
-        <Reveal className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-white/[0.06] p-8 text-center sm:flex-row sm:text-left lg:p-10">
+        <Reveal className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-surface p-8 text-center sm:flex-row sm:text-left lg:p-10">
           <div className="flex items-center gap-5">
-            <span className="hidden h-14 w-14 flex-none items-center justify-center rounded-2xl bg-brand/20 text-brand-300 sm:flex">
+            <span className="hidden h-14 w-14 flex-none items-center justify-center rounded-2xl bg-surface text-accent sm:flex">
               <Icon name="rocket" size={28} />
             </span>
             <div>

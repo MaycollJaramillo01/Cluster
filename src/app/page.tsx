@@ -5,7 +5,8 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import { ServiceCard } from '@/components/blocks/ServiceCard';
 import { CaseCard } from '@/components/blocks/CaseCard';
-import { LogoMarquee } from '@/components/blocks/LogoMarquee';
+import Image from 'next/image';
+import { LogoWall } from '@/components/blocks/LogoWall';
 import { CheckList } from '@/components/blocks/Blocks';
 import { CTASection } from '@/components/blocks/CTASection';
 import { services, caseStudies, site, whatsappLink } from '@/lib/site';
@@ -65,15 +66,47 @@ export default function HomePage() {
     <>
       <HomeHero />
 
-      {/* Prueba social — marquee */}
-      <div className="border-y border-white/10 bg-ink-950 py-12">
+      {/* Prueba social — muro de marcas */}
+      <div className="border-y border-line bg-ink-950 py-14">
         <div className="container-x">
-          <p className="mono-label mb-8 text-center text-paper/40">
-            Negocios que ya confiaron en Cluster Media
+          <p className="mono-label mb-10 text-center text-faint">
+            Marcas que confían en Cluster Media
           </p>
-          <LogoMarquee />
+          <LogoWall />
         </div>
       </div>
+
+      {/* Enfoque — sección editorial con imagen real */}
+      <Section tone="light">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <Reveal className="relative aspect-[4/3] overflow-hidden">
+            <Image
+              src="/assets/stock/strategy2.jpg"
+              alt="Equipo de Cluster Media trabajando en estrategia de marketing"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover grayscale transition duration-700 hover:grayscale-0"
+            />
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-ink-950/60 via-transparent to-transparent"
+              aria-hidden="true"
+            />
+            <span className="mono-label absolute bottom-5 left-5 bg-ink-950/70 px-3 py-1.5 text-muted backdrop-blur-sm">
+              Estrategia · Contenido · Performance
+            </span>
+          </Reveal>
+          <SectionHeading
+            eyebrow="Cómo trabajamos"
+            title={
+              <>
+                Una agencia, un solo{' '}
+                <span className="text-accent">sistema de crecimiento</span>.
+              </>
+            }
+            description="No entregamos piezas sueltas. Conectamos marca, contenido, campañas, web y automatización en un mismo sistema que atrae, convierte y da seguimiento — para que cada acción de marketing empuje hacia el mismo objetivo: más clientes reales."
+          />
+        </div>
+      </Section>
 
       {/* Problema */}
       <Section tone="light">
@@ -84,36 +117,39 @@ export default function HomePage() {
               <>
                 Tu negocio puede ser bueno, pero si no se ve profesional en
                 internet, estás{' '}
-                <span className="text-brand">perdiendo clientes</span>.
+                <span className="text-accent">perdiendo clientes</span>.
               </>
             }
             description="Muchos negocios hispanos siguen dependiendo solo de referidos, publicaciones improvisadas o respuestas manuales por WhatsApp. El problema no es la falta de esfuerzo: es no tener un sistema digital que genere confianza, atraiga clientes y dé seguimiento."
           />
           <Reveal delay={120} className="flex flex-col justify-center">
-            <div className="rounded-3xl bg-white/[0.05] p-8">
-              <h3 className="font-display text-lg font-semibold text-paper">
-                Señales de que estás perdiendo oportunidades:
-              </h3>
-              <ul className="mt-5 space-y-3.5">
-                {problems.map((p) => (
-                  <li key={p} className="flex items-start gap-3">
-                    <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-red-500/15 text-red-400">
-                      <Icon name="close" size={12} strokeWidth={2.5} />
-                    </span>
-                    <span className="text-[15px] text-paper/70">{p}</span>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                href={whatsappLink('Quiero mejorar mi presencia digital.')}
-                external
-                variant="ghost"
-                className="mt-7 w-full"
-                iconRight="arrow-right"
-              >
+            <p className="mono-label text-faint">Señales de alerta</p>
+            <ul className="mt-7 border-t border-line">
+              {problems.map((p, i) => (
+                <li
+                  key={p}
+                  className="group flex items-baseline gap-6 border-b border-line py-4"
+                >
+                  <span className="font-mono text-xs text-accent">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span className="font-display text-base font-medium uppercase tracking-tight text-muted transition-colors duration-300 group-hover:text-fg sm:text-lg">
+                    {p}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href={whatsappLink('Quiero mejorar mi presencia digital.')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-8 inline-flex items-center gap-2 self-start font-mono text-xs font-medium uppercase tracking-[0.16em] text-accent"
+            >
+              <span className="link-underline">
                 Quiero mejorar mi presencia digital
-              </Button>
-            </div>
+              </span>
+              <Icon name="arrow-right" size={16} />
+            </a>
           </Reveal>
         </div>
       </Section>
@@ -132,9 +168,9 @@ export default function HomePage() {
             <Reveal
               key={s.title}
               delay={i * 70}
-              className="group rounded-3xl bg-white/[0.06] p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-brand/40 hover:bg-white/[0.07]"
+              className="group rounded-3xl bg-surface p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-line hover:bg-surface"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/20 text-brand-300 transition-colors group-hover:bg-brand group-hover:text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-accent transition-colors group-hover:bg-accent group-hover:text-accent-fg">
                 <Icon name={s.icon} size={24} />
               </span>
               <h3 className="mt-5 font-display text-lg font-semibold text-white">
@@ -169,10 +205,10 @@ export default function HomePage() {
 
       {/* Paquete Digital Inicial destacado */}
       <Section tone="light">
-        <Reveal className="overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-600 to-brand-800 text-white shadow-glow">
+        <Reveal className="theme-dark overflow-hidden bg-ink-900 text-fg shadow-glow ring-1 ring-inset ring-[color:var(--line)]">
           <div className="grid items-center gap-10 p-8 sm:p-12 lg:grid-cols-2 lg:p-16">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+              <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold uppercase tracking-wider">
                 <Icon name="rocket" size={14} /> Oferta de lanzamiento
               </span>
               <h2 className="mt-5 font-display text-3xl font-bold leading-tight sm:text-4xl">
@@ -200,7 +236,7 @@ export default function HomePage() {
                 </Button>
               </div>
             </div>
-            <div className="rounded-3xl bg-white/10 p-7 backdrop-blur-sm">
+            <div className="rounded-3xl bg-surface-2 p-7 backdrop-blur-sm">
               <h3 className="font-display text-lg font-semibold">Incluye:</h3>
               <CheckList
                 items={packageIncludes}

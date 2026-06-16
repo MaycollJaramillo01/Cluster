@@ -6,7 +6,6 @@ import { Reveal } from '@/components/ui/Reveal';
 export function CheckList({
   items,
   columns = 1,
-  tone = 'dark',
   className = '',
 }: {
   items: string[];
@@ -20,20 +19,10 @@ export function CheckList({
     >
       {items.map((item) => (
         <li key={item} className="flex items-start gap-3">
-          <span
-            className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full ${
-              tone === 'light' ? 'bg-white/20 text-white' : 'bg-brand/15 text-brand-300'
-            }`}
-          >
+          <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center bg-surface text-accent">
             <Icon name="check" size={13} strokeWidth={2.5} />
           </span>
-          <span
-            className={`text-[15px] leading-relaxed ${
-              tone === 'light' ? 'text-white/90' : 'text-paper/70'
-            }`}
-          >
-            {item}
-          </span>
+          <span className="text-[15px] leading-relaxed text-muted">{item}</span>
         </li>
       ))}
     </ul>
@@ -45,23 +34,23 @@ export type IncludeItem = { icon: IconName; title: string; text: string };
 
 export function IncludeGrid({ items }: { items: IncludeItem[] }) {
   return (
-    <div className="grid gap-px overflow-hidden rounded-3xl bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-px overflow-hidden bg-surface-2 sm:grid-cols-2 lg:grid-cols-3">
       {items.map((item, i) => (
         <Reveal
           key={item.title}
           delay={i * 50}
-          className="group relative bg-ink-900 p-8 transition-colors duration-500 hover:bg-ink-850"
+          className="group relative bg-theme p-8 transition-colors duration-500 hover:bg-surface"
         >
-          <span className="mono-label absolute right-6 top-6 text-paper/20">
+          <span className="mono-label absolute right-6 top-6 text-faint">
             {String(i + 1).padStart(2, '0')}
           </span>
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand-300 transition-all duration-500 group-hover:border-brand/40 group-hover:bg-brand group-hover:text-white">
+          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-accent transition-all duration-500 group-hover:border-line group-hover:bg-accent group-hover:text-accent-fg">
             <Icon name={item.icon} size={24} />
           </span>
-          <h3 className="mt-5 font-display text-lg font-semibold text-paper">
+          <h3 className="mt-5 font-display text-lg font-semibold text-fg">
             {item.title}
           </h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-paper/55">
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
             {item.text}
           </p>
         </Reveal>
@@ -83,13 +72,13 @@ export function ProcessSteps({ steps }: { steps: Step[] }) {
           delay={i * 80}
           className="card-dark p-7"
         >
-          <span className="font-display text-5xl font-semibold text-brand/30">
+          <span className="font-display text-5xl font-semibold text-faint">
             {String(i + 1).padStart(2, '0')}
           </span>
-          <h3 className="mt-4 font-display text-lg font-semibold text-paper">
+          <h3 className="mt-4 font-display text-lg font-semibold text-fg">
             {step.title}
           </h3>
-          <p className="mt-2 text-[15px] leading-relaxed text-paper/55">
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
             {step.text}
           </p>
         </Reveal>
@@ -105,9 +94,9 @@ export function PillList({ items }: { items: string[] }) {
       {items.map((item) => (
         <span
           key={item}
-          className="inline-flex items-center gap-2 rounded-full bg-white/[0.05] px-4 py-2 text-sm font-medium text-paper/70 transition-colors hover:border-brand/40 hover:text-paper"
+          className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-line hover:text-fg"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
           {item}
         </span>
       ))}
@@ -124,7 +113,7 @@ export function ProseBlock({
   className?: string;
 }) {
   return (
-    <div className={`max-w-2xl text-lg leading-relaxed text-paper/65 ${className}`}>
+    <div className={`max-w-2xl text-lg leading-relaxed text-muted ${className}`}>
       {children}
     </div>
   );

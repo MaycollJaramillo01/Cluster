@@ -2,51 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0e0e0e;
-  --foreground: #f9f9f9;
+/* ─────────────────────────────────────────────────────────────
+   Sistema de temas: tinta (#09161C) + papel (#F9F9F9).
+   Cada sección aplica .theme-dark o .theme-light y las utilidades
+   semánticas (text-fg, bg-surface, text-accent…) se invierten solas.
+   ───────────────────────────────────────────────────────────── */
+:root,
+.theme-dark {
+  --bg: #09161c;
+  --fg: #f9f9f9;
+  --muted: rgba(249, 249, 249, 0.6);
+  --faint: rgba(249, 249, 249, 0.4);
+  --line: rgba(249, 249, 249, 0.14);
+  --surface: rgba(249, 249, 249, 0.05);
+  --surface-2: rgba(249, 249, 249, 0.09);
+  --accent: #f9f9f9;
+  --accent-fg: #09161c;
+  --card-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.65);
+}
+
+.theme-light {
+  --bg: #f9f9f9;
+  --fg: #09161c;
+  --muted: rgba(9, 22, 28, 0.62);
+  --faint: rgba(9, 22, 28, 0.45);
+  --line: rgba(9, 22, 28, 0.12);
+  --surface: rgba(9, 22, 28, 0.04);
+  --surface-2: rgba(9, 22, 28, 0.08);
+  --accent: #09161c;
+  --accent-fg: #f9f9f9;
+  --card-shadow: 0 30px 60px -30px rgba(9, 22, 28, 0.18);
 }
 
 @layer base {
   * {
-    border-color: hsl(0 0% 100% / 0.08);
+    border-color: var(--line);
   }
 
   html {
     scroll-behavior: smooth;
-    background-color: #0e0e0e;
+    background-color: #09161c;
   }
 
   body {
-    @apply bg-ink-900 text-paper antialiased;
-    font-feature-settings: 'ss01', 'cv01';
+    @apply font-sans antialiased;
+    background-color: var(--bg);
+    color: var(--fg);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
 
   ::selection {
-    @apply bg-brand text-white;
+    background: var(--accent);
+    color: var(--accent-fg);
   }
 
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display tracking-tight;
+    @apply font-display font-bold uppercase;
+    letter-spacing: 0.005em;
+    line-height: 0.95;
     text-wrap: balance;
+  }
+  h3,
+  h4 {
+    line-height: 1;
   }
 
   ::-webkit-scrollbar {
     width: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #0e0e0e;
+    background: #09161c;
   }
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-white/10;
+    background: rgba(150, 160, 165, 0.35);
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-brand/60;
+    background: rgba(150, 160, 165, 0.55);
   }
 }
 
@@ -60,22 +95,57 @@
     @apply font-mono text-[11px] font-medium uppercase tracking-[0.28em];
   }
 
-  /* Texto con relleno degradado verde */
+  /* ── Utilidades semánticas (se invierten según el tema) ── */
+  .text-fg {
+    color: var(--fg);
+  }
+  .text-muted {
+    color: var(--muted);
+  }
+  .text-faint {
+    color: var(--faint);
+  }
+  .text-accent {
+    color: var(--accent);
+  }
+  .text-accent-fg {
+    color: var(--accent-fg);
+  }
+  .bg-theme {
+    background-color: var(--bg);
+  }
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  .bg-surface-2 {
+    background-color: var(--surface-2);
+  }
+  .bg-accent {
+    background-color: var(--accent);
+  }
+  .border-line {
+    border-color: var(--line);
+  }
+  .divide-line > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--line);
+  }
+
   .text-gradient {
-    @apply bg-gradient-to-br from-paper via-paper to-brand-300 bg-clip-text text-transparent;
+    color: var(--fg);
   }
-
   .text-brandgrad {
-    @apply bg-gradient-to-r from-brand-300 via-brand-400 to-brand-300 bg-clip-text text-transparent;
+    color: var(--accent);
   }
 
-  /* Tarjetas modernistas: superficie sólida sin bordes, se elevan al hover */
+  /* Tarjetas: superficie sólida sin bordes, se elevan al hover */
   .card-dark {
-    @apply relative rounded-3xl bg-white/[0.05] transition-all duration-500;
+    @apply relative transition-all duration-500;
+    background-color: var(--surface);
   }
   .card-dark:hover {
-    @apply -translate-y-1.5 bg-white/[0.08];
-    box-shadow: 0 30px 60px -28px rgba(60, 161, 66, 0.35);
+    @apply -translate-y-1.5;
+    background-color: var(--surface-2);
+    box-shadow: var(--card-shadow);
   }
 
   /* Subrayado animado para enlaces */
@@ -121,7 +191,6 @@
     animation: headerEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* Aparición suave para cualquier elemento, con retardos en cascada */
   @keyframes riseIn {
     from {
       opacity: 0;
@@ -136,7 +205,7 @@
     animation: riseIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* Grano / ruido sutil sobre fondos oscuros */
+  /* Grano / ruido sutil (solo sobre fondos oscuros) */
   .grain::before {
     content: '';
     position: absolute;

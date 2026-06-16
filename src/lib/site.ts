@@ -258,6 +258,7 @@ export type CaseStudy = {
   metric: { value: string; label: string };
   services: string[];
   industry: string;
+  image: string;
 };
 
 export const caseStudies: CaseStudy[] = [
@@ -270,6 +271,7 @@ export const caseStudies: CaseStudy[] = [
     metric: { value: '~20', label: 'leads diarios' },
     services: ['Campañas', 'Redes sociales', 'Generación de leads', 'Seguimiento comercial'],
     industry: 'Automotriz',
+    image: '/assets/stock/automotive.jpg',
   },
   {
     slug: 'clinicas-medicas-ojine',
@@ -280,6 +282,7 @@ export const caseStudies: CaseStudy[] = [
     metric: { value: '+Presencia', label: 'digital y pacientes' },
     services: ['Redes sociales', 'Contenido', 'Diseño', 'Estrategia'],
     industry: 'Salud',
+    image: '/assets/stock/medical.jpg',
   },
   {
     slug: 'ink-express',
@@ -290,20 +293,26 @@ export const caseStudies: CaseStudy[] = [
     metric: { value: '−Carga', label: 'operativa con IA' },
     services: ['IA', 'WhatsApp automatizado', 'CRM', 'Workflows'],
     industry: 'Retail',
+    image: '/assets/stock/retail.jpg',
   },
 ];
 
-// Marcas que han confiado en Cluster Media (prueba social)
-export const clientLogos = [
-  'Car Depot',
-  'Clínicas Médicas Ojíne',
-  'Ink Express',
-  "Arnie's",
-  'DermaPiel',
-  'Remax',
-  'Seguros Atlántida',
-  'Travel Diunsa',
-  'Kielsa',
+// Marcas que han confiado en Cluster Media (prueba social).
+// Los logos se sirven desde /public/assets/logos para que Next pueda optimizarlos.
+export type Client = { name: string; logo: string };
+
+export const clients: Client[] = [
+  { name: "Arnie's", logo: '/assets/logos/arnies-transparent.png' },
+  {
+    name: 'Clínicas Médicas Ojíne',
+    logo: '/assets/logos/clinicas-medicas-ojine-transparent.png',
+  },
+  { name: 'DermaPiel', logo: '/assets/logos/dermapiel-transparent.png' },
+  { name: 'Ink Express', logo: '/assets/logos/ink-express-transparent.png' },
+  { name: 'Kielsa', logo: '/assets/logos/kielsa.webp' },
+  { name: 'Luxo Boutique', logo: '/assets/logos/luxo-boutique-transparent.png' },
+  { name: 'Seguros Atlántida', logo: '/assets/logos/seguros-atlantida.svg' },
+  { name: 'Travel Diunsa', logo: '/assets/logos/travel-diunsa-transparent.png' },
 ];
 
 // ─────────────────────────────────────────────────────────────

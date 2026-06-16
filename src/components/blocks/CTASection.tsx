@@ -14,11 +14,11 @@ export function CTASection({
   whatsappMessage,
 }: CTASectionProps) {
   return (
-    <section className="relative overflow-hidden bg-ink-950 py-24 sm:py-32">
+    <section className="theme-dark relative overflow-hidden bg-ink-950 py-24 text-fg sm:py-32">
       <div className="grain absolute inset-0" aria-hidden="true" />
       {/* Glow grande de marca */}
       <div
-        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/20 blur-[140px]"
+        className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface blur-[140px]"
         aria-hidden="true"
       />
       <div
@@ -28,10 +28,10 @@ export function CTASection({
 
       <div className="container-x relative z-[1]">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.03em] text-paper sm:text-5xl lg:text-6xl">
+          <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.03em] text-fg sm:text-5xl lg:text-6xl">
             {title}
           </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-paper/60">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted">
             {text}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">

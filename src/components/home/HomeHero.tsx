@@ -25,14 +25,14 @@ export function HomeHero() {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-0 bg-[radial-gradient(80%_60%_at_15%_60%,rgba(46,125,50,0.22),transparent_60%)]"
+        className="absolute inset-0 bg-[radial-gradient(80%_60%_at_15%_60%,rgba(255,255,255,0.07),transparent_60%)]"
         aria-hidden="true"
       />
       <div className="grain absolute inset-0" aria-hidden="true" />
 
       {/* Etiqueta vertical lateral */}
       <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 rotate-90 lg:block">
-        <span className="mono-label text-paper/40">
+        <span className="mono-label text-faint">
           Cluster Media — EST. Miami
         </span>
       </div>
@@ -47,7 +47,7 @@ export function HomeHero() {
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <Reveal delay={120}>
-            <p className="max-w-xl text-lg leading-relaxed text-paper/65">
+            <p className="max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
               Marcas, contenido, campañas, websites y automatizaciones con IA
               para conseguir más clientes y profesionalizar tu presencia
               digital.
@@ -74,7 +74,7 @@ export function HomeHero() {
 
         {/* Barra de métricas */}
         <Reveal delay={300}>
-          <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/[0.05] backdrop-blur-sm sm:grid-cols-4">
+          <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-surface backdrop-blur-sm sm:grid-cols-4">
             {[
               { value: '+50', label: 'negocios atendidos' },
               { value: '~20', label: 'leads/día en campañas' },
@@ -83,12 +83,12 @@ export function HomeHero() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="border-white/10 px-5 py-5 [&:not(:last-child)]:border-r"
+                className="border-line px-5 py-5 [&:not(:last-child)]:border-r"
               >
-                <div className="font-display text-3xl font-semibold text-paper">
+                <div className="font-display text-4xl font-bold text-fg sm:text-5xl">
                   {stat.value}
                 </div>
-                <div className="mt-1 text-[13px] leading-tight text-paper/45">
+                <div className="mono-label mt-2 text-[10px] leading-tight text-faint">
                   {stat.label}
                 </div>
               </div>
@@ -98,7 +98,7 @@ export function HomeHero() {
       </div>
 
       {/* Indicador de scroll */}
-      <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1] hidden -translate-x-1/2 items-center gap-2 text-paper/40 sm:flex">
+      <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1] hidden -translate-x-1/2 items-center gap-2 text-faint sm:flex">
         <Icon name="chevron-down" size={16} className="animate-bounce" />
         <span className="mono-label">Scroll</span>
       </div>

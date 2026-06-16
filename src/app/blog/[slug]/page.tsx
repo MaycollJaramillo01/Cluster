@@ -66,10 +66,10 @@ export default async function ArticlePage({ params }: Params) {
         />
         <div className="container-x relative z-[1] max-w-3xl">
           <Eyebrow>{article.category}</Eyebrow>
-          <h1 className="mt-6 text-3xl font-semibold leading-[1.05] tracking-tight text-paper sm:text-4xl lg:text-[2.75rem]">
+          <h1 className="mt-6 text-3xl font-semibold leading-[1.05] tracking-tight text-fg sm:text-4xl lg:text-[2.75rem]">
             {article.title}
           </h1>
-          <div className="mt-6 flex items-center gap-4 font-mono text-sm text-paper/45">
+          <div className="mt-6 flex items-center gap-4 font-mono text-sm text-faint">
             <span>{site.name}</span>
             <span>·</span>
             <span>{article.readingTime} de lectura</span>
@@ -80,15 +80,15 @@ export default async function ArticlePage({ params }: Params) {
       {/* Cuerpo del artículo (plantilla editable por el equipo de contenido) */}
       <article className="bg-ink-900 py-16 sm:py-20">
         <div className="container-x max-w-3xl">
-          <div className="space-y-6 text-lg leading-relaxed text-paper/65">
-            <p className="text-xl text-paper/85">{article.excerpt}</p>
+          <div className="space-y-6 text-lg leading-relaxed text-muted">
+            <p className="text-xl text-muted">{article.excerpt}</p>
             <p>
               En {site.name} ayudamos a negocios hispanos a competir en mercados
               cada vez más digitales. En este artículo abordamos cómo aplicar
               estas ideas de forma práctica en tu negocio, sin tecnicismos
               innecesarios y con un enfoque comercial.
             </p>
-            <h2 className="font-display text-2xl font-semibold text-paper">
+            <h2 className="font-display text-2xl font-semibold text-fg">
               Por qué esto importa para tu negocio
             </h2>
             <p>
@@ -97,7 +97,7 @@ export default async function ArticlePage({ params }: Params) {
               herramientas correctas— marca la diferencia entre depender de
               referidos o construir un flujo constante de clientes.
             </p>
-            <h2 className="font-display text-2xl font-semibold text-paper">
+            <h2 className="font-display text-2xl font-semibold text-fg">
               Cómo te ayudamos
             </h2>
             <p>
@@ -106,8 +106,8 @@ export default async function ArticlePage({ params }: Params) {
               esto a tu caso específico, agenda una llamada y lo revisamos
               juntos.
             </p>
-            <p className="rounded-2xl bg-white/[0.05] p-5 text-base text-paper/55">
-              <strong className="text-paper">Nota:</strong> este es un artículo
+            <p className="rounded-2xl bg-surface p-5 text-base text-muted">
+              <strong className="text-fg">Nota:</strong> este es un artículo
               de plantilla listo para que el equipo de contenido complete con el
               texto SEO definitivo.
             </p>
@@ -115,7 +115,7 @@ export default async function ArticlePage({ params }: Params) {
 
           <Link
             href="/blog"
-            className="mt-10 inline-flex items-center gap-2 text-sm font-medium text-brand-300"
+            className="mt-10 inline-flex items-center gap-2 text-sm font-medium text-accent"
           >
             <Icon name="arrow-right" size={16} className="rotate-180" />
             Volver al blog
@@ -124,9 +124,9 @@ export default async function ArticlePage({ params }: Params) {
       </article>
 
       {/* Artículos relacionados */}
-      <section className="border-t border-white/10 bg-ink-850 py-16">
+      <section className="border-t border-line bg-ink-850 py-16">
         <div className="container-x">
-          <h2 className="mb-8 font-display text-2xl font-semibold text-paper">
+          <h2 className="mb-8 font-display text-2xl font-semibold text-fg">
             Sigue leyendo
           </h2>
           <div className="grid gap-6 sm:grid-cols-3">
@@ -136,8 +136,8 @@ export default async function ArticlePage({ params }: Params) {
                 href={`/blog/${a.slug}`}
                 className="card-dark group p-6"
               >
-                <span className="mono-label text-brand-300">{a.category}</span>
-                <h3 className="mt-3 font-display text-base font-semibold leading-snug text-paper">
+                <span className="mono-label text-accent">{a.category}</span>
+                <h3 className="mt-3 font-display text-base font-semibold leading-snug text-fg">
                   {a.title}
                 </h3>
               </Link>

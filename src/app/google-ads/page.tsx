@@ -78,6 +78,7 @@ export default function GoogleAdsPage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/analytics.jpg", alt: "Análisis de campañas y métricas de Google Ads" }}
         eyebrow="Google Ads / Performance"
         title="Aparece cuando tus clientes ya están buscando tus servicios."
         subtitle="Gestionamos campañas de Google Ads para negocios que quieren generar prospectos desde búsquedas reales."
@@ -88,10 +89,10 @@ export default function GoogleAdsPage() {
         whatsappMessage="Hola, quiero información sobre Google Ads para mi negocio."
       />
 
-      <div className="border-y border-white/10 bg-ink-850 py-6 text-center text-white">
+      <div className="border-y border-line bg-ink-850 py-6 text-center text-white">
         <div className="container-x flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm">
           <span className="text-white/60">
-            <strong className="text-brand-300">Desde USD 150/mes</strong> ·
+            <strong className="text-accent">Desde USD 150/mes</strong> ·
             gestión
           </span>
           <span className="text-white/60">
@@ -110,7 +111,7 @@ export default function GoogleAdsPage() {
             title="Gestión profesional, mes a mes."
             description="Nos encargamos de configurar, optimizar y dar seguimiento para que tu inversión trabaje mejor."
           />
-          <Reveal delay={120} className="rounded-3xl bg-white/[0.04] p-8">
+          <Reveal delay={120} className="rounded-3xl bg-surface p-8">
             <CheckList items={includes} className="gap-4" />
           </Reveal>
         </div>
@@ -128,7 +129,7 @@ export default function GoogleAdsPage() {
 
       <Section tone="dark">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand/20 text-brand-300">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent">
             <Icon name="search" size={28} />
           </span>
           <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-4xl">

@@ -35,9 +35,9 @@ const socials: { name: IconName; href: string; label: string }[] = [
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden border-t border-white/10 bg-ink-950 text-white">
+    <footer className="relative overflow-hidden border-t border-line bg-ink-950 text-white">
       <div
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/50 to-transparent"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
         aria-hidden="true"
       />
       <div className="container-x relative">
@@ -57,7 +57,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="flex h-10 w-10 items-center justify-center border-0 bg-white/[0.08] text-white/70 transition-colors hover:bg-brand hover:text-white"
+                  className="flex h-10 w-10 items-center justify-center border-0 bg-surface text-muted transition-colors hover:bg-accent hover:text-accent-fg"
                 >
                   <Icon name={s.name} size={18} />
                 </a>
@@ -76,7 +76,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-[15px] text-white/65 transition-colors hover:text-brand-300"
+                      className="text-[15px] text-white/65 transition-colors hover:text-accent"
                     >
                       {link.label}
                     </Link>
@@ -97,9 +97,9 @@ export function Footer() {
                   href={site.calendarUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-brand-300"
+                  className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
-                  <Icon name="calendar" size={17} className="text-brand-300" />
+                  <Icon name="calendar" size={17} className="text-accent" />
                   Agendar llamada
                 </a>
               </li>
@@ -108,23 +108,23 @@ export function Footer() {
                   href={whatsappLink()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-brand-300"
+                  className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
-                  <Icon name="whatsapp" size={17} className="text-brand-300" />
+                  <Icon name="whatsapp" size={17} className="text-accent" />
                   WhatsApp
                 </a>
               </li>
               <li>
                 <a
                   href={`mailto:${site.email}`}
-                  className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-brand-300"
+                  className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
-                  <Icon name="mail" size={17} className="text-brand-300" />
+                  <Icon name="mail" size={17} className="text-accent" />
                   {site.email}
                 </a>
               </li>
               <li className="inline-flex items-center gap-2.5 text-[15px] text-white/65">
-                <Icon name="pin" size={17} className="text-brand-300" />
+                <Icon name="pin" size={17} className="text-accent" />
                 {site.location}
               </li>
             </ul>
@@ -132,7 +132,7 @@ export function Footer() {
         </div>
 
         {/* Barra inferior */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 py-7 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-line py-7 sm:flex-row">
           <p className="text-sm text-white/45">
             © {new Date().getFullYear()} {site.name}. Todos los derechos
             reservados.

@@ -53,6 +53,7 @@ export default function SobrePage() {
       />
 
       <PageHero
+        image={{ src: "/assets/stock/team.jpg", alt: "Equipo de Cluster Media" }}
         eyebrow="Sobre Cluster"
         title="Somos Cluster Media: comunicación digital que conecta y genera crecimiento."
         subtitle="Ayudamos a negocios hispanos a construir marcas más fuertes, atraer más clientes y adaptarse a un mercado cada vez más digital."
@@ -78,13 +79,13 @@ export default function SobrePage() {
               delay={i * 80}
               className="card-dark p-8"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/10 text-brand-300">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface text-accent">
                 <Icon name={v.icon} size={24} />
               </span>
-              <h3 className="mt-5 font-display text-lg font-semibold text-paper">
+              <h3 className="mt-5 font-display text-lg font-semibold text-fg">
                 {v.title}
               </h3>
-              <p className="mt-2 text-[15px] leading-relaxed text-paper/55">
+              <p className="mt-2 text-[15px] leading-relaxed text-muted">
                 {v.text}
               </p>
             </Reveal>

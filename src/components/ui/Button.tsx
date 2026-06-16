@@ -12,28 +12,26 @@ type Variant =
 type Size = 'sm' | 'md' | 'lg';
 
 const base =
-  'group/btn relative inline-flex items-center justify-center gap-2 border-0 font-medium tracking-tight transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/60 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900 disabled:opacity-60';
+  'group/btn relative inline-flex items-center justify-center gap-2.5 border-0 font-mono text-xs font-medium uppercase tracking-[0.16em] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:[--tw-ring-color:var(--accent)] focus-visible:[--tw-ring-offset-color:var(--bg)] disabled:opacity-60';
 
-// Estilo modernista: rellenos sólidos, sin bordes. Botones contundentes.
+// Botones monocromáticos: contraste sólido que se invierte con el tema.
 const variants: Record<Variant, string> = {
   primary:
-    'bg-brand text-white hover:bg-brand-400 hover:shadow-glow hover:-translate-y-0.5 active:translate-y-0',
+    'bg-accent text-accent-fg hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0',
   secondary:
-    'bg-paper text-ink-900 hover:bg-white hover:-translate-y-0.5 active:translate-y-0',
-  ghost:
-    'bg-white/[0.08] text-paper backdrop-blur-sm hover:bg-white/[0.16] hover:-translate-y-0.5 active:translate-y-0',
+    'bg-surface text-fg hover:bg-surface-2 hover:-translate-y-0.5 active:translate-y-0',
+  ghost: 'bg-surface text-fg hover:bg-surface-2',
   whatsapp:
     'bg-[#25D366] text-white hover:bg-[#1ebe5a] hover:-translate-y-0.5 active:translate-y-0',
-  'outline-light':
-    'bg-white/[0.08] text-paper backdrop-blur-sm hover:bg-white/[0.16] hover:-translate-y-0.5 active:translate-y-0',
+  'outline-light': 'bg-surface text-fg hover:bg-surface-2',
   white:
-    'bg-paper text-ink-900 hover:bg-white hover:-translate-y-0.5 active:translate-y-0',
+    'bg-paper text-ink hover:bg-white hover:-translate-y-0.5 active:translate-y-0',
 };
 
 const sizes: Record<Size, string> = {
-  sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-[15px]',
-  lg: 'px-7 py-3.5 text-[15px]',
+  sm: 'px-5 py-2.5',
+  md: 'px-6 py-3.5',
+  lg: 'px-8 py-4 text-[13px]',
 };
 
 type CommonProps = {
