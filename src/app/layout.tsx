@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from 'next';
-import { Big_Shoulders_Display, Fraunces, IBM_Plex_Mono } from 'next/font/google';
+import {
+  Big_Shoulders_Display,
+  Fraunces,
+  IBM_Plex_Mono,
+  Montserrat,
+} from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
@@ -33,6 +38,14 @@ const mono = IBM_Plex_Mono({
   variable: '--font-mono',
   display: 'swap',
   weight: ['400', '500', '600'],
+});
+
+// Tipografia de marca para el logotipo textual.
+const brand = Montserrat({
+  subsets: ['latin'],
+  variable: '--font-brand',
+  display: 'swap',
+  weight: ['300', '400', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -93,7 +106,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${display.variable} ${body.variable} ${mono.variable}`}
+      className={`${display.variable} ${body.variable} ${mono.variable} ${brand.variable}`}
     >
       <body suppressHydrationWarning>
         <JsonLd data={organizationSchema} />

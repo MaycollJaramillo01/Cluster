@@ -42,6 +42,7 @@ const config: Config = {
       },
       fontFamily: {
         display: ['var(--font-display)', 'Arial Narrow', 'Impact', 'sans-serif'],
+        brand: ['var(--font-brand)', 'Montserrat', 'Arial', 'sans-serif'],
         sans: ['var(--font-body)', 'Georgia', 'serif'],
         serif: ['var(--font-body)', 'Georgia', 'serif'],
         mono: ['var(--font-mono)', 'Consolas', 'monospace'],

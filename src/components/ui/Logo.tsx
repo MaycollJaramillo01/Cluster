@@ -30,11 +30,11 @@ export function Logo({ variant = 'light', className = '' }: LogoProps) {
           isLight ? 'text-white' : 'text-ink-900'
         }`}
       >
-        <span className="font-display text-lg font-semibold tracking-tight">
-          Cluster<span className="text-accent">.</span>
+        <span className="font-brand text-[15px] font-extrabold uppercase tracking-[0.18em]">
+          Cluster
         </span>
         <span
-          className={`text-[10px] font-medium uppercase tracking-[0.24em] ${
+          className={`mt-0.5 font-brand text-[12px] font-light uppercase tracking-[0.38em] ${
             isLight ? 'text-white/50' : 'text-ink-900/45'
           }`}
         >
