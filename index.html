@@ -57,12 +57,12 @@
     <div class="container-x flex h-[66px] items-center justify-between gap-4">
       <a href="/" class="group inline-flex items-center gap-2.5 translate-y-2">
         <img src="assets/img/logo-white.webp" alt="Cluster Media" class="h-9 w-auto transition-transform duration-300 group-hover:scale-105" />
-        <span class="flex flex-col leading-none text-[#EAE8E4]">
+        <span class="flex flex-col leading-none text-white">
           <span class="font-sans text-lg font-bold uppercase tracking-wide">Cluster.</span>
           <span class="font-sans text-lg font-bold -mt-1 uppercase tracking-wide">Media</span>
         </span>
       </a>
-      <nav class="hidden translate-y-2 items-center gap-6 lg:flex font-sans text-sm font-bold uppercase tracking-wide text-[#EAE8E4]">
+      <nav class="hidden translate-y-2 items-center gap-6 lg:flex font-sans text-sm font-bold uppercase tracking-wide text-[#6B7280]/60">
         <a href="#inicio" class="hover:text-[#02C39A] transition">Inicio</a>
         <a href="#servicios" class="hover:text-[#02C39A] transition">Servicios</a>
         <a href="#paquete" class="hover:text-[#02C39A] transition">Paquete Inicial</a>
@@ -96,8 +96,8 @@
     <div class="container-x relative z-[1] flex flex-1 flex-col justify-end pb-10 pt-24">
       <h1 class="sr-only">Cluster Media — Agencia de marketing digital para negocios hispanos en Estados Unidos, Latinoamérica y España.</h1>
 
-      <div class="text-center" style="margin-top:40px">
-        <p class="mx-auto max-w-md text-sm font-semibold lowercase tracking-wide text-white/40">Creamos algo lo suficiente bueno para detener el scroll</p>
+      <div class="text-center" style="margin-top:50px">
+        <p class="mx-auto max-w-md text-sm font-semibold uppercase tracking-wide text-white/40">CREAMOS ALGO LO SUFICIENTEMENTE BUENO PARA DETENER EL SCROLL</p>
       </div>
 
       <div class="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/[0.08] sm:grid-cols-4">
@@ -148,7 +148,7 @@
   </div>
 
   <!-- LA SOLUCION CLUSTER -->
-  <section class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-ink-950 text-paper">
+  <section class="relative overflow-hidden py-14 sm:py-18 lg:py-20 bg-ink-950 text-paper">
     <div class="container-x relative z-[1]">
       <span class="mono-label text-[#02C39A]">La solución Cluster</span>
       <h2 class="font-display mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
@@ -199,37 +199,134 @@
     </div>
   </section>
 
-  <!-- EL PROBLEMA -->
-  <section class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-cream text-ink-950">
+  <!-- EL PROBLEMA / QUIZ -->
+  <section class="relative overflow-hidden py-14 sm:py-18 lg:py-20 bg-cream text-ink-950">
     <div class="container-x">
-      <span class="mono-label text-[#02C39A]">El problema</span>
-      <h2 class="font-display mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-        Tu negocio puede ser bueno, pero si no se ve profesional en internet, estás perdiendo clientes.
-      </h2>
-      <p class="mt-6 max-w-2xl text-ink-950/65 leading-relaxed">
-        Muchos negocios hispanos siguen dependiendo solo de referidos, publicaciones improvisadas o respuestas manuales por WhatsApp. El problema no es la falta de esfuerzo: es no tener un sistema digital que genere confianza, atraiga clientes y dé seguimiento.
-      </p>
+      <div class="max-w-2xl mx-auto">
 
-      <div class="mt-12">
-        <p class="mono-label text-ink-950/40">Señales de que estás perdiendo oportunidades:</p>
-        <ul class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <li class="rounded-xl border border-black/10 bg-black/[0.03] px-5 py-4 text-sm text-ink-950/75">Redes sociales sin estrategia</li>
-          <li class="rounded-xl border border-black/10 bg-black/[0.03] px-5 py-4 text-sm text-ink-950/75">Website desactualizado o inexistente</li>
-          <li class="rounded-xl border border-black/10 bg-black/[0.03] px-5 py-4 text-sm text-ink-950/75">Campañas mal configuradas</li>
-          <li class="rounded-xl border border-black/10 bg-black/[0.03] px-5 py-4 text-sm text-ink-950/75">Leads que escriben y nadie responde a tiempo</li>
-          <li class="rounded-xl border border-black/10 bg-black/[0.03] px-5 py-4 text-sm text-ink-950/75">Marca poco profesional</li>
-          <li class="rounded-xl border border-black/10 bg-black/[0.03] px-5 py-4 text-sm text-ink-950/75">Dependencia total de referidos</li>
-        </ul>
+        <!-- Step indicators -->
+        <div class="flex items-center gap-3 mb-10">
+          <div id="step-dot-1" class="h-2 w-8 rounded-full bg-ink-950 transition-all"></div>
+          <div id="step-dot-2" class="h-2 w-2 rounded-full bg-ink-950/20 transition-all"></div>
+          <div id="step-dot-3" class="h-2 w-2 rounded-full bg-ink-950/20 transition-all"></div>
+        </div>
+
+        <!-- STEP 1: Problema -->
+        <div id="quiz-step-1">
+          <span class="mono-label text-ink-950/40">Paso 1 de 3</span>
+          <h2 class="font-display mt-3 text-3xl font-semibold leading-tight sm:text-4xl">¿Cuál es tu mayor desafío digital hoy?</h2>
+          <p class="mt-3 text-sm text-ink-950/50">Seleccioná la opción que mejor describe tu situación actual.</p>
+          <div class="mt-8 grid gap-3 sm:grid-cols-2">
+            <button onclick="selectOption(this)" data-value="redes" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              📱 No tengo estrategia en redes sociales
+            </button>
+            <button onclick="selectOption(this)" data-value="web" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              💻 Mi web está desactualizada o no tengo
+            </button>
+            <button onclick="selectOption(this)" data-value="campanas" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              📊 Invierto en publicidad pero no veo resultados
+            </button>
+            <button onclick="selectOption(this)" data-value="leads" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              💬 Me contactan pero no logro cerrar ventas
+            </button>
+            <button onclick="selectOption(this)" data-value="marca" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              🎨 Mi marca no transmite profesionalismo
+            </button>
+            <button onclick="selectOption(this)" data-value="todo" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              🚀 Quiero crecer pero no sé por dónde empezar
+            </button>
+          </div>
+          <button onclick="goStep(2)" id="btn-step-1" class="mt-8 w-full bg-ink-950 text-paper py-4 text-sm font-semibold uppercase tracking-wide opacity-40 pointer-events-none transition-opacity">
+            Siguiente →
+          </button>
+        </div>
+
+        <!-- STEP 2: Negocio -->
+        <div id="quiz-step-2" class="hidden">
+          <span class="mono-label text-ink-950/40">Paso 2 de 3</span>
+          <h2 class="font-display mt-3 text-3xl font-semibold leading-tight sm:text-4xl">¿En qué etapa está tu negocio?</h2>
+          <p class="mt-3 text-sm text-ink-950/50">Esto nos ayuda a recomendarte el plan ideal.</p>
+          <div class="mt-8 grid gap-3 sm:grid-cols-2">
+            <button onclick="selectOption(this)" data-value="inicio" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              🌱 Estoy empezando, tengo menos de 1 año
+            </button>
+            <button onclick="selectOption(this)" data-value="crecimiento" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              📈 Llevo 1–3 años y quiero escalar
+            </button>
+            <button onclick="selectOption(this)" data-value="establecido" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              🏢 Soy una empresa consolidada (3+ años)
+            </button>
+            <button onclick="selectOption(this)" data-value="freelance" class="quiz-option text-left border border-ink-950/15 bg-white px-5 py-4 text-sm font-medium text-ink-950 hover:border-[#02C39A] hover:bg-[#02C39A]/5 transition-all">
+              👤 Soy profesional independiente / freelance
+            </button>
+          </div>
+          <div class="mt-8 flex gap-3">
+            <button onclick="goStep(1)" class="w-1/3 border border-ink-950/15 py-4 text-sm font-semibold uppercase tracking-wide hover:bg-ink-950/5 transition-colors">
+              ← Volver
+            </button>
+            <button onclick="goStep(3)" id="btn-step-2" class="flex-1 bg-ink-950 text-paper py-4 text-sm font-semibold uppercase tracking-wide opacity-40 pointer-events-none transition-opacity">
+              Siguiente →
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Datos -->
+        <div id="quiz-step-3" class="hidden">
+          <span class="mono-label text-ink-950/40">Paso 3 de 3</span>
+          <h2 class="font-display mt-3 text-3xl font-semibold leading-tight sm:text-4xl">¿A dónde te enviamos tu recomendación?</h2>
+          <p class="mt-3 text-sm text-ink-950/50">Te contactamos con un plan adaptado a tu situación.</p>
+          <div class="mt-8 space-y-4">
+            <input type="text" placeholder="Tu nombre" class="w-full border border-ink-950/15 bg-white px-5 py-4 text-sm outline-none focus:border-[#02C39A] transition-colors" />
+            <input type="text" placeholder="Nombre de tu negocio" class="w-full border border-ink-950/15 bg-white px-5 py-4 text-sm outline-none focus:border-[#02C39A] transition-colors" />
+            <input type="tel" placeholder="WhatsApp (con código de país)" class="w-full border border-ink-950/15 bg-white px-5 py-4 text-sm outline-none focus:border-[#02C39A] transition-colors" />
+          </div>
+          <div class="mt-8 flex gap-3">
+            <button onclick="goStep(2)" class="w-1/3 border border-ink-950/15 py-4 text-sm font-semibold uppercase tracking-wide hover:bg-ink-950/5 transition-colors">
+              ← Volver
+            </button>
+            <a href="https://wa.me/13059717482" class="flex-1 bg-[#02C39A] text-white text-center py-4 text-sm font-semibold uppercase tracking-wide hover:bg-[#029e7d] transition-colors">
+              Recibir mi recomendación →
+            </a>
+          </div>
+        </div>
+
       </div>
-
-      <a href="#contacto" class="mt-10 inline-flex items-center gap-2 text-sm font-medium text-[#02C39A] hover:text-[#029e7d] transition">
-        Quiero mejorar mi presencia digital →
-      </a>
     </div>
   </section>
 
+  <script>
+    var quizAnswers = {};
+
+    function selectOption(btn) {
+      var parent = btn.closest('.grid');
+      parent.querySelectorAll('.quiz-option').forEach(function(b) {
+        b.classList.remove('border-[#02C39A]', 'bg-[#02C39A]/5', 'ring-2', 'ring-[#02C39A]');
+      });
+      btn.classList.add('border-[#02C39A]', 'bg-[#02C39A]/5');
+      var step = btn.closest('[id^="quiz-step-"]').id.replace('quiz-step-', '');
+      quizAnswers['step' + step] = btn.dataset.value;
+      var nextBtn = document.getElementById('btn-step-' + step);
+      if (nextBtn) {
+        nextBtn.classList.remove('opacity-40', 'pointer-events-none');
+      }
+    }
+
+    function goStep(n) {
+      [1,2,3].forEach(function(i) {
+        document.getElementById('quiz-step-' + i).classList.add('hidden');
+        var dot = document.getElementById('step-dot-' + i);
+        if (dot) {
+          dot.className = i === n
+            ? 'h-2 w-8 rounded-full bg-ink-950 transition-all'
+            : 'h-2 w-2 rounded-full bg-ink-950/20 transition-all';
+        }
+      });
+      document.getElementById('quiz-step-' + n).classList.remove('hidden');
+    }
+  </script>
+
   <!-- SERVICIOS -->
-  <section id="servicios" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-ink-850 text-paper">
+  <section id="servicios" class="relative overflow-hidden py-14 sm:py-18 lg:py-20 bg-ink-850 text-paper">
     <div class="container-x">
       <div class="flex flex-wrap items-end justify-between gap-6">
         <div>
@@ -307,7 +404,7 @@
   </section>
 
   <!-- PAQUETE INICIAL -->
-  <section id="paquete" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-cream text-ink-950">
+  <section id="paquete" class="relative overflow-hidden py-14 sm:py-18 lg:py-20 bg-cream text-ink-950">
     <div class="container-x">
       <h2 class="font-display text-center text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
         Elegí el plan para vos
@@ -367,13 +464,10 @@
   </section>
 
   <!-- CASOS DE EXITO -->
-  <section id="casos" class="relative overflow-hidden py-24 sm:py-28 lg:py-32 bg-ink-950 text-paper">
+  <section id="casos" class="relative overflow-hidden py-14 sm:py-18 lg:py-20 bg-ink-950 text-paper">
     <div class="container-x">
       <div class="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <span class="mono-label inline-flex items-center gap-2 text-paper/60">
-            <span class="h-px w-4 bg-paper/40"></span>Casos de éxito
-          </span>
           <h2 class="font-banner mt-4 max-w-2xl text-4xl font-bold uppercase leading-[0.95] tracking-wide sm:text-5xl lg:text-6xl">
             Resultados reales<br />para negocios reales.
           </h2>
