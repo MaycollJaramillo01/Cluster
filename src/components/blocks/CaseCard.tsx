@@ -12,7 +12,7 @@ export function CaseCard({
   index?: number;
 }) {
   return (
-    <Reveal
+    <Reveal 
       as="article"
       delay={index * 80}
       className="group flex h-full flex-col overflow-hidden border border-ink-900/10 bg-paper shadow-glow-sm transition duration-300 hover:-translate-y-1 hover:border-ink-900/25 hover:bg-white"
