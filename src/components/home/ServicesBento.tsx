@@ -91,6 +91,18 @@ const cards: BentoCard[] = [
     video: '/assets/videos/services/websites-seo-bg.mp4',
     poster: '/assets/videos/services/websites-seo-bg-poster.jpg',
   },
+  {
+    index: 7,
+    title: 'SEO Audit',
+    href: '/seo-audit',
+    cta: 'Auditar',
+    tags: 'IA · Diagnostico SEO',
+    variant: 'accent',
+    gridClass: 'md:col-span-4 min-h-44',
+    titleClass: 'text-3xl lg:text-4xl xl:text-5xl',
+    video: '/assets/videos/services/websites-seo-bg.mp4',
+    poster: '/assets/videos/services/websites-seo-bg-poster.jpg',
+  },
 ];
 
 const variantBg: Record<BentoVariant, string> = {

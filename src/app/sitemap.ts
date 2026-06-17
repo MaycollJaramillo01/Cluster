@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/branding', priority: 0.8, freq: 'monthly' as const },
     { path: '/automatizaciones-ia', priority: 0.8, freq: 'monthly' as const },
     { path: '/websites-seo', priority: 0.8, freq: 'monthly' as const },
+    { path: '/seo-audit', priority: 0.8, freq: 'monthly' as const },
     { path: '/casos-de-exito', priority: 0.7, freq: 'monthly' as const },
     { path: '/sobre-cluster', priority: 0.6, freq: 'monthly' as const },
     { path: '/blog', priority: 0.7, freq: 'weekly' as const },

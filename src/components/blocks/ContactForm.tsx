@@ -12,6 +12,7 @@ const serviceOptions = [
   'Google Ads',
   'IA / Automatizaciones',
   'Websites / SEO',
+  'SEO Audit',
   'No estoy seguro',
 ];
 

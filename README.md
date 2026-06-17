@@ -17,6 +17,16 @@ npm run build    # build de producción (SSG)
 npm run start    # servir el build de producción
 ```
 
+## Variables de entorno
+
+La seccion `/seo-audit` usa OpenRouter desde una ruta server-side de Next.js.
+Copia `.env.example` a `.env.local` y define:
+
+```bash
+OPENROUTER_API_KEY=tu_api_key
+OPENROUTER_MODEL=openrouter/free
+```
+
 ## Estructura
 
 ```

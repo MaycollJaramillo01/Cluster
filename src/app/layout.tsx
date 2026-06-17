@@ -9,6 +9,7 @@ import './globals.css';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { FloatingWhatsApp } from '@/components/layout/FloatingWhatsApp';
+import { AutoTranslate } from '@/components/i18n/AutoTranslate';
 import { PageTransition } from '@/components/ui/PageTransition';
 import {
   JsonLd,
@@ -111,6 +112,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <JsonLd data={organizationSchema} />
         <JsonLd data={localBusinessSchema} />
+        <AutoTranslate />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-white"

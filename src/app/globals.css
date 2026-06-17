@@ -50,6 +50,15 @@
     color: var(--fg);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
+    top: 0 !important;
+  }
+
+  .cluster-translate-element,
+  .goog-te-banner-frame,
+  .goog-te-balloon-frame,
+  .goog-te-gadget,
+  #goog-gt-tt {
+    display: none !important;
   }
 
   ::selection {

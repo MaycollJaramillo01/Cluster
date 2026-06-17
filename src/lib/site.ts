@@ -41,6 +41,7 @@ export const mainNav = [
       { label: 'Google Ads', href: '/google-ads' },
       { label: 'IA / Automatizaciones', href: '/automatizaciones-ia' },
       { label: 'Websites / SEO', href: '/websites-seo' },
+      { label: 'SEO Audit', href: '/seo-audit' },
     ],
   },
   { label: 'Paquete Inicial', href: '/paquete-inicial-digital' },
@@ -170,6 +171,23 @@ export const services: Service[] = [
     ],
     cta: 'Ver websites',
     icon: 'globe',
+  },
+  {
+    slug: 'seo-audit',
+    href: '/seo-audit',
+    name: 'SEO Audit',
+    short: 'Diagnostico rapido para saber que esta frenando tu website.',
+    description:
+      'Auditoria SEO con IA para detectar problemas tecnicos, contenido debil, oportunidades locales y mejoras de conversion.',
+    features: [
+      'Analisis tecnico',
+      'Revision de contenido',
+      'SEO local',
+      'Conversion',
+      'Prioridades accionables',
+    ],
+    cta: 'Auditar website',
+    icon: 'search',
   },
 ];
 
