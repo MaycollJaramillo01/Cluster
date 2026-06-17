@@ -13,6 +13,7 @@ type PageHeroProps = {
   primaryCta?: { label: string; href: string };
   whatsappMessage?: string;
   image?: { src: string; alt: string };
+  visual?: ReactNode;
   children?: ReactNode;
 };
 
@@ -24,8 +25,11 @@ export function PageHero({
   primaryCta = { label: 'Agendar llamada', href: site.calendarUrl },
   whatsappMessage,
   image,
+  visual,
   children,
 }: PageHeroProps) {
+  const hasMedia = Boolean(image || visual);
+
   return (
     <section className="relative overflow-hidden bg-ink-950 pt-36 pb-20 sm:pt-44 sm:pb-24">
       {/* Rejilla + glow de fondo */}
@@ -42,13 +46,13 @@ export function PageHero({
       <div className="container-x relative z-[1]">
         <div
           className={
-            image
-              ? 'grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16'
+            hasMedia
+              ? 'grid min-w-0 grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16'
               : ''
           }
         >
           {/* Columna de texto */}
-          <div className={image ? '' : 'max-w-4xl'}>
+          <div className={hasMedia ? 'min-w-0 max-w-[21rem] sm:max-w-none' : 'max-w-4xl'}>
             {eyebrow && (
               <Reveal>
                 <Eyebrow>{eyebrow}</Eyebrow>
@@ -56,9 +60,9 @@ export function PageHero({
             )}
             <Reveal delay={60}>
               <h1
-                className={`mt-6 font-semibold leading-[0.98] tracking-[-0.03em] text-fg ${
-                  image
-                    ? 'text-[2.5rem] sm:text-5xl lg:text-6xl'
+                className={`mt-6 max-w-full break-words font-semibold leading-[0.98] text-fg ${
+                  hasMedia
+                    ? 'text-[2.05rem] sm:text-5xl lg:text-6xl'
                     : 'text-[2.75rem] sm:text-6xl lg:text-7xl'
                 }`}
               >
@@ -67,7 +71,7 @@ export function PageHero({
             </Reveal>
             {subtitle && (
               <Reveal delay={120}>
-                <p className="mt-7 max-w-2xl text-lg leading-relaxed text-muted">
+                <p className="mt-7 max-w-full break-words text-base leading-relaxed text-muted sm:max-w-2xl sm:text-lg">
                   {subtitle}
                 </p>
               </Reveal>
@@ -118,11 +122,18 @@ export function PageHero({
             {children}
           </div>
 
-          {/* Columna de imagen */}
-          {image && (
+          {/* Columna visual */}
+          {visual ? (
             <Reveal
               delay={160}
-              className="relative aspect-[4/3] overflow-hidden lg:aspect-[4/5]"
+              className="relative aspect-[4/3] min-w-0 overflow-hidden lg:aspect-[4/5]"
+            >
+              {visual}
+            </Reveal>
+          ) : image ? (
+            <Reveal
+              delay={160}
+              className="relative aspect-[4/3] min-w-0 overflow-hidden lg:aspect-[4/5]"
             >
               <Image
                 src={image.src}
@@ -141,7 +152,7 @@ export function PageHero({
                 aria-hidden="true"
               />
             </Reveal>
-          )}
+          ) : null}
         </div>
       </div>
     </section>

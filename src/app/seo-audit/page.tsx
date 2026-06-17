@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
 import { CTASection } from '@/components/blocks/CTASection';
 import { JsonLd, breadcrumbSchema, serviceSchema } from '@/components/seo/JsonLd';
+import { SeoAuditHeroGraphic } from '@/components/seo-audit/SeoAuditHeroGraphic';
 import { SeoAuditTool } from '@/components/seo-audit/SeoAuditTool';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -51,7 +52,7 @@ export default function SeoAuditPage() {
       />
 
       <PageHero
-        image={{ src: '/assets/stock/analytics.jpg', alt: 'Analisis SEO de un website' }}
+        visual={<SeoAuditHeroGraphic />}
         eyebrow="SEO Audit"
         title="Auditoria SEO con IA para encontrar oportunidades reales."
         subtitle="Revisa tu website, detecta problemas de visibilidad y recibe prioridades claras para mejorar posicionamiento, confianza y conversion."

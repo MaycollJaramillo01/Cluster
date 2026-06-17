@@ -278,12 +278,11 @@ function extractSnapshot(
 }
 
 async function generateAudit(snapshot: PageSnapshot, businessType: string) {
+  const fallbackAudit = buildFallbackAudit(snapshot, businessType);
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    throw new PublicError(
-      'Falta configurar OPENROUTER_API_KEY en el servidor.',
-      500
-    );
+    console.warn('SEO audit fallback: OPENROUTER_API_KEY is not configured.');
+    return fallbackAudit;
   }
 
   const model = process.env.OPENROUTER_MODEL || DEFAULT_MODEL;
@@ -295,27 +294,28 @@ async function generateAudit(snapshot: PageSnapshot, businessType: string) {
     localChecks,
   };
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': site.url,
-      'X-OpenRouter-Title': site.name,
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.2,
-      max_tokens: 1800,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Eres un consultor SEO senior para negocios hispanos. Devuelve solo JSON valido, sin markdown. Prioriza hallazgos accionables, conversion, SEO local y claridad comercial.',
-        },
-        {
-          role: 'user',
-          content: `Audita esta pagina con los datos extraidos por el servidor. Responde en espanol con este schema exacto:
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': site.url,
+        'X-OpenRouter-Title': site.name,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        max_tokens: 1800,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Eres un consultor SEO senior para negocios hispanos. Devuelve solo JSON valido, sin markdown. Prioriza hallazgos accionables, conversion, SEO local y claridad comercial.',
+          },
+          {
+            role: 'user',
+            content: `Audita esta pagina con los datos extraidos por el servidor. Responde en espanol con este schema exacto:
 {
   "score": 0-100,
   "summary": "resumen breve",
@@ -330,30 +330,35 @@ async function generateAudit(snapshot: PageSnapshot, businessType: string) {
 
 Datos:
 ${JSON.stringify(payload, null, 2)}`,
-        },
-      ],
-    }),
-  });
+          },
+        ],
+      }),
+    });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    console.error('OpenRouter error', response.status, detail.slice(0, 500));
-    throw new PublicError(
-      `OpenRouter respondio con estado ${response.status}.`,
-      502
-    );
+    if (!response.ok) {
+      const detail = await response.text().catch(() => '');
+      console.error('OpenRouter error', response.status, detail.slice(0, 500));
+      return fallbackAudit;
+    }
+
+    const data = await response.json().catch(() => null);
+    const content = extractMessageContent(data);
+
+    if (!content) {
+      console.warn('SEO audit fallback: OpenRouter returned no content.');
+      return fallbackAudit;
+    }
+
+    try {
+      return normalizeAudit(parseJsonContent(content), snapshot, fallbackAudit);
+    } catch (error) {
+      console.warn('SEO audit fallback: OpenRouter returned invalid JSON.', error);
+      return fallbackAudit;
+    }
+  } catch (error) {
+    console.error('OpenRouter request failed; using local SEO audit fallback.', error);
+    return fallbackAudit;
   }
-
-  const data = (await response.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const content = data.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new PublicError('OpenRouter no devolvio contenido para la auditoria.', 502);
-  }
-
-  return normalizeAudit(parseJsonContent(content), snapshot);
 }
 
 function buildLocalChecks(snapshot: PageSnapshot): AuditItem[] {
@@ -428,25 +433,202 @@ function buildLocalChecks(snapshot: PageSnapshot): AuditItem[] {
   ];
 }
 
-function normalizeAudit(value: unknown, snapshot: PageSnapshot): SeoAuditResult {
+function buildFallbackAudit(
+  snapshot: PageSnapshot,
+  businessType: string
+): SeoAuditResult {
   const localChecks = buildLocalChecks(snapshot);
-  const fallbackScore = calculateLocalScore(snapshot);
-  const parsed = isRecord(value) ? value : {};
+  const score = calculateLocalScore(snapshot);
+  const titleIssue = !snapshot.title
+    ? 'Agregar una etiqueta title clara con servicio, marca y ubicacion.'
+    : 'Ajustar el title para que comunique servicio principal, marca y ubicacion.';
+  const descriptionIssue = !snapshot.metaDescription
+    ? 'Crear una meta description con beneficio, servicio y llamada a la accion.'
+    : 'Revisar la meta description para mejorar clics desde Google.';
+  const h1Issue =
+    snapshot.h1s.length === 1
+      ? `Usar el H1 "${snapshot.h1s[0]}" como base para reforzar la promesa comercial.`
+      : 'Dejar un solo H1 principal que explique que hace el negocio y para quien.';
+  const contentIssue =
+    snapshot.wordCount < 450
+      ? 'Ampliar el contenido visible con servicios, zonas atendidas, preguntas frecuentes y pruebas de confianza.'
+      : 'Ordenar el contenido con subtitulos orientados a busquedas y objeciones del cliente.';
+  const altIssue =
+    snapshot.images > 0 && snapshot.imagesMissingAlt > 0
+      ? `Agregar texto alternativo descriptivo a ${snapshot.imagesMissingAlt} imagenes.`
+      : 'Mantener textos alternativos descriptivos en imagenes importantes.';
+  const businessContext = businessType || 'este negocio';
 
   return {
-    score: clampScore(Number(parsed.score) || fallbackScore),
+    score,
+    summary:
+      `Auditoria generada con analisis local porque la IA no devolvio contenido usable. ` +
+      `La pagina tiene ${snapshot.wordCount} palabras visibles, ${snapshot.h1s.length} H1, ` +
+      `${snapshot.imagesMissingAlt} imagenes sin alt y respondio en ${(
+        snapshot.loadTimeMs / 1000
+      ).toFixed(1)}s.`,
+    quickWins: [
+      titleIssue,
+      descriptionIssue,
+      h1Issue,
+      contentIssue,
+      altIssue,
+    ],
+    priorities: [
+      {
+        title: 'Claridad para Google y usuarios',
+        detail:
+          snapshot.title && snapshot.metaDescription
+            ? 'El sitio tiene metadatos base, pero deben alinearse mejor con la intencion de busqueda y la oferta comercial.'
+            : 'Faltan metadatos clave. Sin title o meta description fuertes, Google y los usuarios reciben menos contexto antes del clic.',
+        impact: 'Alto',
+        effort: 'Bajo',
+      },
+      {
+        title: 'Contenido suficiente para posicionar',
+        detail: contentIssue,
+        impact: snapshot.wordCount < 250 ? 'Alto' : 'Medio',
+        effort: 'Medio',
+      },
+      {
+        title: 'Ruta de conversion',
+        detail:
+          'La pagina debe dejar claro que accion tomar: llamar, escribir por WhatsApp, llenar formulario o agendar una consulta.',
+        impact: 'Alto',
+        effort: 'Bajo',
+      },
+    ],
+    technical: localChecks,
+    content: [
+      {
+        title: 'Mensaje principal',
+        detail: h1Issue,
+        status: snapshot.h1s.length === 1 ? 'ok' : 'warning',
+      },
+      {
+        title: 'Profundidad del contenido',
+        detail: contentIssue,
+        status: snapshot.wordCount >= 450 ? 'ok' : 'critical',
+      },
+      {
+        title: 'Estructura de subtitulos',
+        detail:
+          snapshot.h2s.length > 0
+            ? `Se detectaron ${snapshot.h2s.length} subtitulos H2. Usalos para responder servicios, zonas, beneficios y preguntas frecuentes.`
+            : 'No se detectaron H2. Agrega subtitulos para ordenar servicios, beneficios, zonas y preguntas frecuentes.',
+        status: snapshot.h2s.length > 0 ? 'ok' : 'warning',
+      },
+    ],
+    localSeo: [
+      {
+        title: 'Ubicacion y zonas de servicio',
+        detail:
+          `Para ${businessContext}, incluye ciudad, zonas atendidas y frases como "servicio cerca de mi" de forma natural.`,
+        status: 'warning',
+      },
+      {
+        title: 'Confianza local',
+        detail:
+          'Agrega testimonios, casos, fotos reales, direccion o areas de cobertura y enlaces a Google Business Profile si aplica.',
+        status: 'warning',
+      },
+      {
+        title: 'Datos estructurados',
+        detail:
+          'Implementa schema LocalBusiness, Service o FAQ para dar mas contexto a buscadores.',
+        status: 'warning',
+      },
+    ],
+    conversion: [
+      {
+        title: 'CTA visible',
+        detail:
+          'El primer viewport debe incluir una accion clara: llamar, WhatsApp, cotizar o agendar.',
+        status: 'warning',
+      },
+      {
+        title: 'Prueba de confianza',
+        detail:
+          'Muestra resultados, marcas, resenas, certificaciones o garantias antes de pedir el contacto.',
+        status: 'warning',
+      },
+      {
+        title: 'Contacto sin friccion',
+        detail:
+          'Repite canales de contacto en puntos clave de la pagina y evita formularios largos como unica opcion.',
+        status: 'warning',
+      },
+    ],
+    nextSteps: [
+      'Corregir title, meta description y H1 antes de trabajar detalles menores.',
+      'Crear o ampliar secciones de servicios, ubicacion, beneficios y preguntas frecuentes.',
+      'Agregar CTAs visibles y pruebas de confianza cerca del inicio de la pagina.',
+      'Revisar imagenes sin alt y enlazado interno hacia servicios importantes.',
+    ],
+  };
+}
+
+function normalizeAudit(
+  value: unknown,
+  snapshot: PageSnapshot,
+  fallback = buildFallbackAudit(snapshot, '')
+): SeoAuditResult {
+  const parsed = isRecord(value) ? value : {};
+  const parsedScore =
+    typeof parsed.score === 'number'
+      ? parsed.score
+      : typeof parsed.score === 'string'
+        ? Number.parseFloat(parsed.score)
+        : NaN;
+  const quickWins = normalizeStringArray(parsed.quickWins).slice(0, 5);
+  const nextSteps = normalizeStringArray(parsed.nextSteps).slice(0, 5);
+
+  return {
+    score: Number.isFinite(parsedScore) ? clampScore(parsedScore) : fallback.score,
     summary:
       typeof parsed.summary === 'string' && parsed.summary.trim()
         ? parsed.summary.trim()
-        : 'Auditoria generada con senales tecnicas basicas de la pagina.',
-    quickWins: normalizeStringArray(parsed.quickWins).slice(0, 5),
-    priorities: normalizeItems(parsed.priorities).slice(0, 5),
-    technical: normalizeItems(parsed.technical, localChecks).slice(0, 6),
-    content: normalizeItems(parsed.content).slice(0, 5),
-    localSeo: normalizeItems(parsed.localSeo).slice(0, 5),
-    conversion: normalizeItems(parsed.conversion).slice(0, 5),
-    nextSteps: normalizeStringArray(parsed.nextSteps).slice(0, 5),
+        : fallback.summary,
+    quickWins: quickWins.length ? quickWins : fallback.quickWins,
+    priorities: normalizeItems(parsed.priorities, fallback.priorities).slice(0, 5),
+    technical: normalizeItems(parsed.technical, fallback.technical).slice(0, 6),
+    content: normalizeItems(parsed.content, fallback.content).slice(0, 5),
+    localSeo: normalizeItems(parsed.localSeo, fallback.localSeo).slice(0, 5),
+    conversion: normalizeItems(parsed.conversion, fallback.conversion).slice(0, 5),
+    nextSteps: nextSteps.length ? nextSteps : fallback.nextSteps,
   };
+}
+
+function extractMessageContent(data: unknown) {
+  if (!isRecord(data) || !Array.isArray(data.choices)) return '';
+
+  for (const choice of data.choices) {
+    if (!isRecord(choice) || !isRecord(choice.message)) continue;
+
+    const content = stringifyMessageContent(choice.message.content);
+    if (content) return content;
+  }
+
+  return '';
+}
+
+function stringifyMessageContent(content: unknown): string {
+  if (typeof content === 'string') return content.trim();
+
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === 'string') return part;
+        if (!isRecord(part)) return '';
+        if (typeof part.text === 'string') return part.text;
+        if (typeof part.content === 'string') return part.content;
+        return '';
+      })
+      .join('\n')
+      .trim();
+  }
+
+  return '';
 }
 
 function parseJsonContent(content: string) {
