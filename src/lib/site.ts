@@ -192,6 +192,65 @@ export const services: Service[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────
+// Planes / Precios (sección "Elegí el plan para vos")
+// ─────────────────────────────────────────────────────────────
+export type PricingPlan = {
+  name: string;
+  kicker: string; // etiqueta mono sobre el nombre
+  price: string;
+  period?: string; // ej. '/mes'
+  note: string;
+  features: string[];
+  cta: string;
+  whatsapp: string;
+  highlight?: boolean;
+  badge?: string;
+};
+
+export const plans: PricingPlan[] = [
+  {
+    name: 'Básico',
+    kicker: 'Pago único',
+    price: 'USD 290',
+    note: 'Para empezar a existir en internet',
+    features: ['Landing page', 'Perfil de Google Business', 'Certificado SSL'],
+    cta: 'Elegir plan',
+    whatsapp: 'Hola, quiero el plan Básico (USD 290).',
+  },
+  {
+    name: 'Inicial',
+    kicker: 'Pago único',
+    price: 'USD 590',
+    note: 'La base completa para empezar a vender',
+    highlight: true,
+    badge: 'Popular',
+    features: [
+      'Todo lo del plan Básico',
+      'Website profesional',
+      '1 campaña de Google Ads',
+      'Guía para generar clientes online',
+    ],
+    cta: 'Elegir plan',
+    whatsapp: 'Hola, quiero el plan Inicial (USD 590).',
+  },
+  {
+    name: 'Crecimiento',
+    kicker: 'Mensual',
+    price: 'USD 150',
+    period: '/mes',
+    note: '+ paquete Inicial',
+    features: [
+      'Todo lo del plan Inicial',
+      'Gestión mensual de Google Ads',
+      'Contenido para redes sociales',
+      'Automatización con WhatsApp / CRM',
+    ],
+    cta: 'Elegir plan',
+    whatsapp: 'Hola, quiero el plan Crecimiento (USD 150/mes).',
+  },
+];
+
+// ─────────────────────────────────────────────────────────────
 // Paquetes de Redes Sociales
 // ─────────────────────────────────────────────────────────────
 export type Plan = {

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { HomeHero } from '@/components/home/HomeHero';
 import { SolutionCard, type SolutionVideo } from '@/components/home/SolutionCard';
 import { Section, SectionHeading } from '@/components/ui/Section';
@@ -6,11 +7,10 @@ import { Icon } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import { ServicesBento } from '@/components/home/ServicesBento';
 import { EcosystemDiagram } from '@/components/home/EcosystemDiagram';
+import { PricingPlans } from '@/components/home/PricingPlans';
 import { CaseCard } from '@/components/blocks/CaseCard';
-import Image from 'next/image';
 import { LogoWall } from '@/components/blocks/LogoWall';
-import { CheckList } from '@/components/blocks/Blocks';
-import { CTASection } from '@/components/blocks/CTASection';
+import { LeadQuiz } from '@/components/forms/LeadQuiz';
 import { caseStudies, site, whatsappLink } from '@/lib/site';
 
 const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
@@ -57,15 +57,6 @@ const problems = [
   'Dependencia total de referidos',
 ];
 
-const whyCluster = [
-  'Comunicación cercana y real',
-  'Experiencia con negocios hispanos',
-  'Servicios integrados',
-  'Enfoque en generación de clientes',
-  'Automatización comercial',
-  'Atendemos negocios pequeños, medianos y empresas en crecimiento',
-];
-
 
 export default function HomePage() {
   return (
@@ -102,55 +93,6 @@ export default function HomePage() {
             />
           ))}
         </div>
-      </Section>
-
-      {/* Enfoque — sección editorial con imagen real */}
-      <Section tone="light">
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <Reveal className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src="/assets/stock/strategy2.jpg"
-              alt="Equipo de Cluster Media trabajando en estrategia de marketing"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover grayscale transition duration-700 hover:grayscale-0"
-            />
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-ink-950/60 via-transparent to-transparent"
-              aria-hidden="true"
-            />
-            <span className="mono-label absolute bottom-5 left-5 bg-ink-950/70 px-3 py-1.5 text-muted backdrop-blur-sm">
-              Estrategia · Contenido · Performance
-            </span>
-          </Reveal>
-          <SectionHeading
-            eyebrow="Cómo trabajamos"
-            title={
-              <>
-                Una agencia, un solo{' '}
-                <span className="text-accent">sistema de crecimiento</span>.
-              </>
-            }
-            description="No entregamos piezas sueltas. Conectamos marca, contenido, campañas, web y automatización en un mismo sistema que atrae, convierte y da seguimiento — para que cada acción de marketing empuje hacia el mismo objetivo: más clientes reales."
-          />
-        </div>
-      </Section>
-
-      {/* Ecosistema — un solo sistema */}
-      <Section tone="brand">
-        <SectionHeading
-          align="center"
-          eyebrow="El ecosistema Cluster"
-          tone="light"
-          title={
-            <>
-              Cuatro pilares, <span className="text-accent">un solo sistema</span>.
-            </>
-          }
-          description="No entregamos piezas sueltas. Marca, contenido, campañas y automatización giran alrededor de un mismo núcleo que atrae, convierte y da seguimiento."
-          titleClass="text-fg text-3xl sm:text-4xl lg:text-5xl"
-        />
-        <EcosystemDiagram />
       </Section>
 
       {/* Problema */}
@@ -234,28 +176,94 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* Por qué Cluster */}
-      <Section tone="light">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          <div className="flex flex-col justify-center">
-            <SectionHeading
-              eyebrow="Por qué Cluster"
-              title="No somos solo una agencia de redes sociales."
-              description="Somos un equipo que entiende estrategia, contenido, campañas, websites, automatización y ventas. Nuestro enfoque es ayudar a negocios hispanos a competir mejor en mercados cada vez más digitales."
-            />
-            <div className="mt-8">
-              <Button href="/sobre-cluster" iconRight="arrow-right">
-                Conoce a Cluster Media
-              </Button>
-            </div>
-          </div>
-          <Reveal delay={120} className="flex flex-col justify-center">
-            <CheckList items={whyCluster} className="gap-4" />
-          </Reveal>
-        </div>
+      {/* Ecosistema — un solo sistema (cierre) */}
+      <Section tone="brand">
+        <SectionHeading
+          align="center"
+          eyebrow="El ecosistema Cluster"
+          tone="light"
+          title={
+            <>
+              Cuatro pilares, <span className="text-accent">un solo sistema</span>.
+            </>
+          }
+          description="No entregamos piezas sueltas. Marca, contenido, campañas y automatización giran alrededor de un mismo núcleo que atrae, convierte y da seguimiento."
+          titleClass="text-fg text-3xl sm:text-4xl lg:text-5xl"
+        />
+        <EcosystemDiagram />
       </Section>
 
-      <CTASection whatsappMessage="Hola, quiero hacer crecer mi negocio con Cluster Media." />
+      {/* Planes */}
+      <Section tone="light">
+        <SectionHeading
+          align="center"
+          eyebrow="Planes"
+          title="Elegí el plan para vos."
+          description="Desde tu primera presencia digital hasta un sistema de crecimiento mensual. Empieza donde estás y escala cuando lo necesites."
+        />
+        <PricingPlans />
+        <Reveal className="mt-12 text-center">
+          <Link
+            href="#diagnostico"
+            className="inline-flex items-center gap-2 font-mono text-xs font-medium uppercase tracking-[0.16em] text-accent"
+          >
+            <span className="link-underline">
+              ¿No sabes cuál elegir? Hacé el diagnóstico
+            </span>
+            <Icon name="arrow-right" size={16} />
+          </Link>
+        </Reveal>
+      </Section>
+
+      {/* Diagnóstico — cierre de conversión con quiz */}
+      <section
+        id="diagnostico"
+        className="theme-dark relative overflow-hidden bg-ink-950 py-24 text-fg sm:py-32"
+      >
+        <div className="grain absolute inset-0" aria-hidden="true" />
+        <div
+          className="pointer-events-none absolute -left-40 top-1/2 h-[44rem] w-[44rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(2,195,154,0.16),transparent_70%)] blur-[90px]"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-grid-fade [background-size:64px_64px] opacity-25 [mask-image:radial-gradient(55%_55%_at_50%_50%,black,transparent)]"
+          aria-hidden="true"
+        />
+
+        <div className="container-x relative z-[1] grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+          <Reveal>
+            <span className="mono-label inline-flex items-center gap-3 text-accent">
+              <span className="inline-block h-px w-8 bg-accent" />
+              Diagnóstico gratis
+            </span>
+            <h2 className="mt-5 font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight text-fg sm:text-5xl lg:text-6xl">
+              ¿Listo para hacer crecer tu negocio?
+            </h2>
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-muted">
+              Respondé 3 preguntas y te enviamos una recomendación real, sin
+              compromiso — el plan ideal para tu etapa y tu mayor desafío digital.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button href={site.calendarUrl} external size="lg" iconRight="arrow-right">
+                Agendar llamada
+              </Button>
+              <Button
+                href={whatsappLink('Hola, quiero hacer crecer mi negocio con Cluster Media.')}
+                external
+                variant="whatsapp"
+                size="lg"
+                icon="whatsapp"
+              >
+                WhatsApp
+              </Button>
+            </div>
+          </Reveal>
+
+          <Reveal delay={120} className="flex justify-center lg:justify-end">
+            <LeadQuiz />
+          </Reveal>
+        </div>
+      </section>
     </>
   );
 }

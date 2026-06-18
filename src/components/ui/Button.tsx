@@ -6,6 +6,7 @@ type Variant =
   | 'primary'
   | 'secondary'
   | 'ghost'
+  | 'accent'
   | 'whatsapp'
   | 'outline-light'
   | 'white';
@@ -21,6 +22,8 @@ const variants: Record<Variant, string> = {
   secondary:
     'bg-surface text-fg hover:bg-surface-2 hover:-translate-y-0.5 active:translate-y-0',
   ghost: 'bg-surface text-fg hover:bg-surface-2',
+  accent:
+    'bg-accent text-accent-fg hover:opacity-90 hover:-translate-y-0.5 active:translate-y-0',
   whatsapp:
     'bg-[#25D366] text-white hover:bg-[#1ebe5a] hover:-translate-y-0.5 active:translate-y-0',
   'outline-light': 'bg-surface text-fg hover:bg-surface-2',
