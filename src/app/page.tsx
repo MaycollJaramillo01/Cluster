@@ -153,22 +153,6 @@ export default function HomePage() {
         <EcosystemDiagram />
       </Section>
 
-      {/* Servicios */}
-      <Section tone="dark">
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <SectionHeading
-            eyebrow="Servicios"
-            tone="light"
-            title="Servicios diseñados para hacer crecer tu negocio."
-            description="Desde branding y websites hasta campañas, contenido y automatizaciones con IA."
-          />
-          <Button href="/servicios" variant="ghost" iconRight="arrow-right">
-            Ver todos los servicios
-          </Button>
-        </div>
-        <ServicesBento />
-      </Section>
-
       {/* Problema */}
       <Section tone="light">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
@@ -215,6 +199,21 @@ export default function HomePage() {
         </div>
       </Section>
 
+      {/* Servicios */}
+      <Section tone="dark">
+        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+          <SectionHeading
+            eyebrow="Servicios"
+            tone="light"
+            title="Servicios diseñados para hacer crecer tu negocio."
+            description="Desde branding y websites hasta campañas, contenido y automatizaciones con IA."
+          />
+          <Button href="/servicios" variant="ghost" iconRight="arrow-right">
+            Ver todos los servicios
+          </Button>
+        </div>
+        <ServicesBento />
+      </Section>
 
       {/* Casos de éxito */}
       <Section tone="soft">
