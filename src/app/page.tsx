@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import { ServicesBento } from '@/components/home/ServicesBento';
+import { EcosystemDiagram } from '@/components/home/EcosystemDiagram';
 import { CaseCard } from '@/components/blocks/CaseCard';
 import Image from 'next/image';
 import { LogoWall } from '@/components/blocks/LogoWall';
@@ -133,6 +134,23 @@ export default function HomePage() {
             description="No entregamos piezas sueltas. Conectamos marca, contenido, campañas, web y automatización en un mismo sistema que atrae, convierte y da seguimiento — para que cada acción de marketing empuje hacia el mismo objetivo: más clientes reales."
           />
         </div>
+      </Section>
+
+      {/* Ecosistema — un solo sistema */}
+      <Section tone="brand">
+        <SectionHeading
+          align="center"
+          eyebrow="El ecosistema Cluster"
+          tone="light"
+          title={
+            <>
+              Cuatro pilares, <span className="text-accent">un solo sistema</span>.
+            </>
+          }
+          description="No entregamos piezas sueltas. Marca, contenido, campañas y automatización giran alrededor de un mismo núcleo que atrae, convierte y da seguimiento."
+          titleClass="text-fg text-3xl sm:text-4xl lg:text-5xl"
+        />
+        <EcosystemDiagram />
       </Section>
 
       {/* Servicios */}
