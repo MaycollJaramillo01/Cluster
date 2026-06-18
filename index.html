@@ -96,9 +96,6 @@
     <div class="container-x relative z-[1] flex flex-1 flex-col justify-end pb-10 pt-24">
       <h1 class="sr-only">Cluster Media — Agencia de marketing digital para negocios hispanos en Estados Unidos, Latinoamérica y España.</h1>
 
-      <div class="text-center" style="margin-top:50px">
-        <p class="mx-auto max-w-md text-sm font-semibold uppercase tracking-wide text-white/40">CREAMOS ALGO LO SUFICIENTEMENTE BUENO PARA DETENER EL SCROLL</p>
-      </div>
 
       <div class="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/[0.08] sm:grid-cols-4">
         <div class="border-white/10 bg-ink-950/60 px-5 py-5">
@@ -200,21 +197,98 @@
   </section>
 
   <!-- CÓMO TRABAJAMOS -->
-  <section class="relative overflow-hidden py-44 bg-cream text-ink-950">
-    <img src="assets/imagenes/reunion.jpeg" alt="" class="absolute inset-0 h-full w-full object-cover" style="opacity:0.24;" />
+  <section class="relative overflow-hidden pt-14 pb-14 bg-cream text-ink-950">
     <div class="relative z-[1] container-x">
-      <div class="max-w-3xl">
-        <span class="mono-label text-ink-950/40">Cómo trabajamos</span>
-        <h2 class="font-display mt-4 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+
+      <!-- Header -->
+      <div class="text-center mb-16">
+        <span class="mono-label text-paper/40">Cómo trabajamos</span>
+        <h2 class="font-display mt-4 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
           Una agencia, un solo sistema de crecimiento.
         </h2>
-        <p class="mt-6 max-w-2xl text-ink-950/65 leading-relaxed text-base">
-          No entregamos piezas sueltas. Conectamos marca, contenido, campañas, web y automatización en un mismo sistema que atrae, convierte y da seguimiento — para que cada acción de marketing empuje hacia el mismo objetivo: más clientes reales.
+        <p class="mt-4 mx-auto max-w-2xl text-paper/55 leading-relaxed text-sm">
+          No entregamos piezas sueltas. Conectamos marca, contenido, campañas, web y automatización en un mismo sistema que atrae, convierte y da seguimiento.
         </p>
-        <a href="#contacto" class="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#02C39A] hover:text-[#029e7d] transition">
-          Quiero saber más →
+      </div>
+
+      <!-- Diagrama circular -->
+      <div class="flex justify-center" style="margin-top:-70px">
+        <div class="relative w-full max-w-2xl aspect-square">
+          <svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+            <!-- Círculos -->
+            <circle cx="300" cy="300" r="250" fill="none" stroke="#0a0a0a" stroke-width="1.5"/>
+            <circle cx="300" cy="300" r="170" fill="none" stroke="#0a0a0a" stroke-width="1.5"/>
+            <circle cx="300" cy="300" r="90"  fill="none" stroke="#02C39A" stroke-width="2"/>
+
+            <!-- Líneas de cruz -->
+            <line x1="300" y1="50"  x2="300" y2="550" stroke="#0a0a0a" stroke-width="1"/>
+            <line x1="50"  y1="300" x2="550" y2="300" stroke="#0a0a0a" stroke-width="1"/>
+
+            <!-- Líneas diagonales -->
+            <line x1="123" y1="123" x2="477" y2="477" stroke="#0a0a0a" stroke-width="1"/>
+            <line x1="477" y1="123" x2="123" y2="477" stroke="#0a0a0a" stroke-width="1"/>
+
+            <!-- Marcas × -->
+            <text x="296" y="64"  fill="#0a0a0a" font-size="10" font-family="monospace">×</text>
+            <text x="296" y="546" fill="#0a0a0a" font-size="10" font-family="monospace">×</text>
+            <text x="46"  y="305" fill="#0a0a0a" font-size="10" font-family="monospace">×</text>
+            <text x="542" y="305" fill="#0a0a0a" font-size="10" font-family="monospace">×</text>
+
+            <!-- Centro -->
+            <rect x="245" y="245" width="110" height="110" fill="#02C39A" stroke="#02C39A" stroke-width="1"/>
+            <text x="300" y="290" text-anchor="middle" fill="#0a0a0a" font-size="11" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="1">UN SOLO</text>
+            <text x="300" y="306" text-anchor="middle" fill="#0a0a0a" font-size="11" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="1">SISTEMA</text>
+            <text x="300" y="322" text-anchor="middle" fill="rgba(0,0,0,0.5)" font-size="9" font-family="'JetBrains Mono', monospace" letter-spacing="1">CLUSTER</text>
+
+            <!-- ARRIBA: Marca & Branding -->
+            <text x="300" y="118" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">MARCA</text>
+            <text x="300" y="134" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">&amp; BRANDING</text>
+            <text x="230" y="86"  text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Identidad visual</text>
+            <text x="230" y="97"  text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Diseño gráfico</text>
+            <text x="230" y="108" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Credibilidad de marca</text>
+            <text x="370" y="86"  text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Manual de marca</text>
+            <text x="370" y="97"  text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Posicionamiento</text>
+            <text x="370" y="108" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Diferenciación</text>
+
+            <!-- DERECHA: Campañas & Ads -->
+            <text x="476" y="295" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">CAMPAÑAS</text>
+            <text x="476" y="311" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">&amp; ADS</text>
+            <text x="515" y="225" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Meta Ads</text>
+            <text x="515" y="236" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Google Ads</text>
+            <text x="515" y="247" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">KPIs reales</text>
+            <text x="515" y="360" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Remarketing</text>
+            <text x="515" y="371" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Segmentación</text>
+            <text x="515" y="382" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Leads calificados</text>
+
+            <!-- ABAJO: Automatización & CRM -->
+            <text x="300" y="474" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">AUTOMATIZACIÓN</text>
+            <text x="300" y="490" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">&amp; CRM</text>
+            <text x="220" y="518" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">WhatsApp automático</text>
+            <text x="220" y="529" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Agentes IA</text>
+            <text x="220" y="540" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Seguimiento</text>
+            <text x="380" y="518" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Workflows</text>
+            <text x="380" y="529" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Pipeline de ventas</text>
+            <text x="380" y="540" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Nurturing</text>
+
+            <!-- IZQUIERDA: Contenido & Web -->
+            <text x="124" y="295" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">CONTENIDO</text>
+            <text x="124" y="311" text-anchor="middle" fill="#0a0a0a" font-size="13" font-family="'Open Sans', sans-serif" font-weight="700" letter-spacing="2">&amp; WEB</text>
+            <text x="85" y="225" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Redes sociales</text>
+            <text x="85" y="236" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Tono consistente</text>
+            <text x="85" y="247" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Diseño editorial</text>
+            <text x="85" y="360" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Website</text>
+            <text x="85" y="371" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">Landing pages</text>
+            <text x="85" y="382" text-anchor="middle" fill="#0a0a0a" font-size="8.5" font-family="'Open Sans', sans-serif">SEO</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="text-center mt-10">
+        <a href="#contacto" class="inline-flex items-center gap-2 text-sm font-semibold text-[#02C39A] hover:text-[#029e7d] transition">
+          Quiero este sistema para mi negocio →
         </a>
       </div>
+
     </div>
   </section>
 
