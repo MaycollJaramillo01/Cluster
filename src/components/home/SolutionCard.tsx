@@ -31,6 +31,7 @@ export function SolutionCard({
             muted
             loop
             playsInline
+            preload="metadata"
             poster={video.poster}
             className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
           >

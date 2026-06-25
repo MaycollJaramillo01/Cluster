@@ -18,7 +18,7 @@ const pillars: Pillar[] = [
   },
   {
     n: '02',
-    title: 'Campañas & Ads',
+    title: 'RRSS y ADS',
     items: ['Meta Ads', 'Google Ads', 'KPIs reales'],
   },
   {

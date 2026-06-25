@@ -41,16 +41,15 @@ export function HomeHero() {
       <div className="container-x relative z-[1] flex flex-1 flex-col justify-end pb-12 pt-32 sm:pb-16">
         {/* H1 oculto: necesario para SEO aunque el hero sea solo video */}
         <h1 className="sr-only">
-          Cluster Media — Agencia de marketing digital para negocios hispanos en
-          Estados Unidos, Latinoamérica y España.
+          Cluster Media — Comunicación digital que conecta con tu audiencia.
         </h1>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <Reveal delay={120}>
             <p className="max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
-              Marcas, contenido, campañas, websites y automatizaciones con IA
-              para conseguir más clientes y profesionalizar tu presencia
-              digital.
+              Construimos marcas que conectan con tu audiencia: contenido real,
+              campañas, websites y automatizaciones para salir del molde
+              corporativo.
             </p>
           </Reveal>
 
@@ -79,7 +78,7 @@ export function HomeHero() {
               { value: '+50', label: 'negocios atendidos' },
               { value: '~20', label: 'leads/día en campañas' },
               { value: '3', label: 'mercados: EE.UU · LATAM · ES' },
-              { value: '6', label: 'servicios integrados' },
+              { value: '17', label: 'servicios digitales' },
             ].map((stat) => (
               <div
                 key={stat.label}

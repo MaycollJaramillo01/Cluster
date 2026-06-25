@@ -15,93 +15,84 @@ type BentoCard = {
   gridClass: string;
   titleClass: string;
   video?: string;
+  webm?: string;
   poster?: string;
 };
 
 const cards: BentoCard[] = [
   {
     index: 1,
-    title: 'Branding',
-    href: '/branding',
-    cta: 'Ver Branding',
-    tags: 'Logotipo · Manual de marca',
+    title: 'RRSS y ADS',
+    href: '/redes-sociales',
+    cta: 'Ver RRSS y ADS',
+    tags: 'Meta Ads · Google Ads · Reels',
     variant: 'accent',
     gridClass: 'md:col-span-2 md:row-span-2 min-h-72',
     titleClass: 'text-5xl lg:text-6xl xl:text-[5.5rem]',
-    video: '/assets/videos/services/marca-profesional.mp4',
-    poster: '/assets/videos/services/marca-profesional-poster.jpg',
-  },
-  {
-    index: 2,
-    title: 'Paquete Digital Inicial',
-    href: '/paquete-inicial-digital',
-    cta: 'Ver paquete',
-    tags: 'USD 590 · Pago único',
-    variant: 'dark',
-    gridClass: 'md:col-span-2 min-h-56',
-    titleClass: 'text-3xl lg:text-4xl xl:text-5xl',
-    video: '/assets/videos/services/paquete-digital-bg.mp4',
-    poster: '/assets/videos/services/paquete-digital-bg-poster.jpg',
-  },
-  {
-    index: 3,
-    title: 'Redes Sociales',
-    href: '/redes-sociales',
-    cta: 'Ver',
-    tags: 'Crecimiento',
-    variant: 'light',
-    gridClass: 'min-h-44',
-    titleClass: 'text-2xl lg:text-3xl',
     video: '/assets/videos/services/redes-sociales-bg.mp4',
     poster: '/assets/videos/services/redes-sociales-bg-poster.jpg',
   },
   {
-    index: 4,
-    title: 'Google Ads',
-    href: '/google-ads',
-    cta: 'Ver',
-    tags: 'Desde USD 150/mes',
+    index: 2,
+    title: 'Branding',
+    href: '/branding',
+    cta: 'Ver Branding',
+    tags: 'Logotipo · Manual de marca',
     variant: 'dark',
-    gridClass: 'min-h-44',
-    titleClass: 'text-2xl lg:text-3xl',
-    video: '/assets/videos/services/google-ads-bg.mp4',
-    poster: '/assets/videos/services/google-ads-bg-poster.jpg',
+    gridClass: 'md:col-span-2 min-h-56',
+    titleClass: 'text-3xl lg:text-4xl xl:text-5xl',
+    video: '/assets/videos/services/marca-profesional.mp4',
+    webm: '/assets/videos/services/marca-profesional.webm',
+    poster: '/assets/videos/services/marca-profesional-poster.jpg',
   },
   {
-    index: 5,
+    index: 3,
+    title: 'Websites / SEO',
+    href: '/websites-seo',
+    cta: 'Ver',
+    tags: 'Landing pages · SEO básico',
+    variant: 'light',
+    gridClass: 'md:col-span-2 min-h-56',
+    titleClass: 'text-4xl lg:text-5xl xl:text-6xl',
+    video: '/assets/videos/services/websites-seo-bg.mp4',
+    poster: '/assets/videos/services/websites-seo-bg-poster.jpg',
+  },
+  {
+    index: 4,
     title: 'IA / Automatizaciones',
     href: '/automatizaciones-ia',
     cta: 'Ver más',
     tags: 'WhatsApp · CRM · Workflows',
-    variant: 'light',
+    variant: 'dark',
     gridClass: 'md:col-span-2 min-h-44',
     titleClass: 'text-3xl lg:text-4xl',
     video: '/assets/videos/services/automatizacion.mp4',
     poster: '/assets/videos/services/automatizacion-poster.jpg',
   },
   {
-    index: 6,
-    title: 'Websites / SEO',
-    href: '/websites-seo',
-    cta: 'Ver',
-    tags: 'Landing pages · SEO básico',
-    variant: 'dark',
+    index: 5,
+    title: 'Paquetes mensuales',
+    href: '/#planes',
+    cta: 'Ver paquetes',
+    tags: 'Next · Advance · Cluster',
+    variant: 'light',
     gridClass: 'md:col-span-2 min-h-44',
     titleClass: 'text-3xl lg:text-4xl',
-    video: '/assets/videos/services/websites-seo-bg.mp4',
-    poster: '/assets/videos/services/websites-seo-bg-poster.jpg',
+    video: '/assets/videos/services/paquete-digital-bg.mp4',
+    poster: '/assets/videos/services/paquete-digital-bg-poster.jpg',
   },
   {
-    index: 7,
+    index: 6,
     title: 'SEO Audit',
     href: '/seo-audit',
     cta: 'Auditar',
-    tags: 'IA · Diagnostico SEO',
+    tags: 'IA · Diagnóstico SEO',
     variant: 'accent',
     gridClass: 'md:col-span-4 min-h-44',
     titleClass: 'text-3xl lg:text-4xl xl:text-5xl',
-    video: '/assets/videos/services/websites-seo-bg.mp4',
-    poster: '/assets/videos/services/websites-seo-bg-poster.jpg',
+    video: '/assets/videos/services/seo-audit-bg.mp4',
+    webm: '/assets/videos/services/seo-audit-bg.webm',
+    poster: '/assets/videos/services/seo-audit-bg-poster.jpg',
   },
 ];
 
@@ -141,7 +132,7 @@ function Card({ card }: { card: BentoCard }) {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Video — always playing behind color layer */}
-      {card.video && (
+      {active && card.video && (
         <video
           autoPlay
           muted
@@ -152,6 +143,7 @@ function Card({ card }: { card: BentoCard }) {
           aria-hidden="true"
           className="absolute inset-0 z-0 h-full w-full object-cover"
         >
+          {card.webm && <source src={card.webm} type="video/webm" />}
           <source src={card.video} type="video/mp4" />
         </video>
       )}
@@ -163,7 +155,7 @@ function Card({ card }: { card: BentoCard }) {
       />
 
       {/* Dark scrim for text legibility over video */}
-      {card.video && (
+      {active && card.video && (
         <div
           className="absolute inset-0 z-20 bg-black/55 transition-opacity duration-700"
           style={{ opacity: active ? 1 : 0 }}

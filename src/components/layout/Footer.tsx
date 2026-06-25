@@ -8,7 +8,7 @@ const columns = [
     title: 'Servicios',
     links: [
       { label: 'Branding', href: '/branding' },
-      { label: 'Paquete Digital Inicial', href: '/paquete-inicial-digital' },
+      { label: 'Planes mensuales', href: '/#planes' },
       { label: 'Redes Sociales', href: '/redes-sociales' },
       { label: 'Google Ads', href: '/google-ads' },
       { label: 'IA / Automatizaciones', href: '/automatizaciones-ia' },
@@ -47,8 +47,8 @@ export function Footer() {
           <div className="lg:col-span-4">
             <Logo variant="light" />
             <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-white/55">
-              Marketing digital para negocios hispanos que quieren crecer,
-              generar clientes y automatizar su operación comercial.
+              Comunicación digital cercana, real y distinta para marcas que
+              quieren conectar con su audiencia y crecer.
             </p>
             <div className="mt-6 flex gap-2.5">
               {socials.map((s) => (

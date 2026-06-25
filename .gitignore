@@ -17,6 +17,7 @@
 .claude/
 
 # Raw video sources. Commit the optimized web assets that are referenced by the app.
+/public/assets/videos/new videos/
 /public/assets/videos/services/*.mov
 /public/assets/videos/services/Generacion de clientes.mp4
 /public/assets/videos/services/Google ads.mp4

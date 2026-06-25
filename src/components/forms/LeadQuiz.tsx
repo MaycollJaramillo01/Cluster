@@ -34,6 +34,7 @@ export function LeadQuiz() {
   const [stage, setStage] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [redes, setRedes] = useState('');
   const [sent, setSent] = useState(false);
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -47,7 +48,8 @@ export function LeadQuiz() {
       `• Etapa: ${stLabel}%0A` +
       `• Nombre: ${data.get('nombre')}%0A` +
       `• Negocio: ${data.get('negocio') || '—'}%0A` +
-      `• WhatsApp: ${data.get('whatsapp')}`;
+      `• WhatsApp: ${data.get('whatsapp')}%0A` +
+      `• Redes: ${data.get('redes') || '—'}`;
     setSent(true);
     window.open(whatsappLink(decodeURIComponent(message)), '_blank');
   }
@@ -197,6 +199,13 @@ export function LeadQuiz() {
             value={whatsapp}
             onChange={setWhatsapp}
             required
+          />
+          <IconField
+            icon="instagram"
+            name="redes"
+            placeholder="@usuario en Instagram / TikTok (opcional)"
+            value={redes}
+            onChange={setRedes}
           />
           <div className="flex gap-3 pt-2">
             <BackButton onClick={() => setStep(1)} />

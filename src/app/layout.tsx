@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import {
-  Big_Shoulders_Display,
-  Fraunces,
+  Bebas_Neue,
+  DM_Sans,
   IBM_Plex_Mono,
   Montserrat,
 } from 'next/font/google';
@@ -18,18 +18,20 @@ import {
 } from '@/components/seo/JsonLd';
 import { site } from '@/lib/site';
 
-// Titulares condensados industriales (estilo editorial / Pitchfork)
-const display = Big_Shoulders_Display({
+// Titulares: Bebas Neue — condensado ultra-bold, dark modernism
+const display = Bebas_Neue({
   subsets: ['latin'],
   variable: '--font-display',
   display: 'swap',
+  weight: '400',
 });
 
-// Cuerpo serif editorial (estilo Olivine / Fraunces)
-const body = Fraunces({
+// Cuerpo: DM Sans — geométrico limpio, alta legibilidad en pantalla
+const body = DM_Sans({
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap',
+  weight: ['300', '400', '500', '600'],
   style: ['normal', 'italic'],
 });
 
@@ -53,17 +55,23 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default:
-      'Cluster Media | Agencia de marketing digital para negocios hispanos',
+      'Cluster Media | Comunicación digital que conecta con tu audiencia',
     template: '%s | Cluster Media',
   },
   description: site.description,
   keywords: [
+    'comunicación digital para marcas',
+    'contenido para redes sociales',
     'agencia de marketing digital para hispanos',
     'marketing digital para negocios hispanos',
     'marketing digital en Estados Unidos',
     'agencia de redes sociales para negocios',
     'campañas de Google Ads para negocios',
+    'campañas de Meta Ads para negocios',
     'websites para negocios hispanos',
+    'edición audiovisual para marcas',
+    'fotografía y podcast para marcas',
+    'funnels y email marketing',
     'automatización de WhatsApp para negocios',
     'agentes IA para negocios',
     'branding para negocios',
@@ -78,12 +86,12 @@ export const metadata: Metadata = {
     locale: 'es_US',
     url: site.url,
     siteName: site.name,
-    title: 'Cluster Media | Marketing digital para negocios hispanos',
+    title: 'Cluster Media | Comunicación digital que conecta con tu audiencia',
     description: site.description,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cluster Media | Marketing digital para negocios hispanos',
+    title: 'Cluster Media | Comunicación digital que conecta con tu audiencia',
     description: site.description,
   },
   robots: {

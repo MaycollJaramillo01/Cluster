@@ -6,13 +6,21 @@ import { Icon } from '@/components/ui/Icon';
 import { whatsappLink } from '@/lib/site';
 
 const serviceOptions = [
-  'Paquete Digital Inicial',
+  'Paquete Next',
+  'Paquete Advance',
+  'Paquete Enterprise',
+  'Paquete Cluster',
   'Branding',
   'Redes Sociales',
   'Google Ads',
   'IA / Automatizaciones',
   'Websites / SEO',
   'SEO Audit',
+  'Edición audiovisual / videos',
+  'Fotografía',
+  'Podcast',
+  'Funnels / Email marketing',
+  'Consultoría / capacitación',
   'No estoy seguro',
 ];
 

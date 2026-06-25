@@ -11,34 +11,34 @@ import { site } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Sobre Cluster Media | Agencia digital para negocios hispanos',
   description:
-    'Conoce a Cluster Media, agencia digital internacional que ayuda a negocios hispanos a crecer con contenido, campañas, branding, websites y automatizaciones.',
+    'Conoce a Cluster Media, agencia de comunicación digital que construye marcas, contenido y sistemas para conectar con audiencias reales.',
   alternates: { canonical: '/sobre-cluster' },
 };
 
 const beliefs = [
-  'La relevancia se gana.',
-  'El contenido debe conectar.',
-  'La marca debe generar confianza.',
-  'Las campañas deben tener estrategia.',
-  'La tecnología debe facilitar ventas.',
-  'La automatización debe ayudar a no perder oportunidades.',
+  'La relevancia ya no se compra: se gana contando historias relevantes.',
+  'El contenido debe sentirse cercano, real y distinto.',
+  'Una marca debe conectar antes de intentar vender.',
+  'Las campañas funcionan mejor cuando parten de una historia clara.',
+  'La tecnología debe ayudar a responder, ordenar y vender mejor.',
+  'Cada pieza digital debe salir del molde corporativo.',
 ];
 
 const values: { icon: IconName; title: string; text: string }[] = [
   {
     icon: 'users',
     title: 'Conexión real',
-    text: 'Comunicación cercana, en tu idioma y enfocada en tus objetivos comerciales.',
+    text: 'Creamos comunicación cercana y humana para que tu marca conecte de verdad con las personas.',
   },
   {
-    icon: 'chart',
-    title: 'Enfoque en resultados',
-    text: 'No medimos likes: medimos prospectos, oportunidades y crecimiento real.',
+    icon: 'megaphone',
+    title: 'Contenido que rompe el molde',
+    text: 'Lo que funciona hoy no es gritar más, sino crear piezas que la audiencia quiera ver y recordar.',
   },
   {
     icon: 'globe',
-    title: 'Visión internacional',
-    text: 'Atendemos negocios hispanos en EE. UU., Latinoamérica y España.',
+    title: 'Cercanía digital',
+    text: 'Unimos estrategia, redes, campañas, websites y automatización para que tu marca se sienta presente.',
   },
 ];
 
@@ -55,8 +55,8 @@ export default function SobrePage() {
       <PageHero
         image={{ src: "/assets/stock/team.jpg", alt: "Equipo de Cluster Media" }}
         eyebrow="Sobre Cluster"
-        title="Somos Cluster Media: comunicación digital que conecta y genera crecimiento."
-        subtitle="Ayudamos a negocios hispanos a construir marcas más fuertes, atraer más clientes y adaptarse a un mercado cada vez más digital."
+        title="Somos Cluster: comunicación digital que sí conecta con tu audiencia."
+        subtitle="Construimos marcas, contenido y sistemas digitales para negocios que quieren salirse del molde corporativo y conectar de forma real."
         whatsappMessage="Hola, quiero conocer más sobre Cluster Media."
       />
 
@@ -64,9 +64,9 @@ export default function SobrePage() {
         <div className="mx-auto max-w-3xl text-center">
           <SectionHeading
             align="center"
-            eyebrow="Nuestra filosofía"
+            eyebrow="Conexión real, cercanía digital"
             title="Conexión real, cercanía digital."
-            description="Las reglas del marketing cambiaron. Las marcas ya no ganan solo por gastar más, sino por conectar mejor, comunicar con claridad y crear sistemas digitales que generen confianza."
+            description="Hoy un contenido auténtico puede mover más que una producción costosa sin alma. Las reglas cambiaron: ahora gana la marca que cuenta historias relevantes, conecta de verdad y se siente cercana."
           />
         </div>
       </Section>
@@ -98,8 +98,8 @@ export default function SobrePage() {
           <SectionHeading
             tone="light"
             eyebrow="Qué creemos"
-            title="Principios que guían cada proyecto."
-            description="No trabajamos por inercia. Cada decisión parte de una idea clara de cómo se construye crecimiento digital sostenible."
+            title="La relevancia se gana contando historias relevantes."
+            description="No creemos en piezas sueltas ni en contenido que nadie recuerda. Creamos comunicación digital con intención, estrategia y cercanía."
           />
           <Reveal delay={120} className="flex items-center">
             <CheckList items={beliefs} tone="light" className="gap-4" />
@@ -112,8 +112,8 @@ export default function SobrePage() {
           <SectionHeading
             align="center"
             eyebrow="Equipo"
-            title="Un equipo que entiende negocios, no solo redes."
-            description="Estrategas, diseñadores, creadores de contenido y especialistas en performance y automatización, trabajando juntos para que tu negocio crezca. Más que proveedores, queremos ser tu socio digital."
+            title="Un equipo para construir algo grande con tu marca."
+            description="Estrategia, diseño, edición audiovisual, contenido, campañas, CRM, automatización y websites trabajando juntos para que tu negocio conecte mejor y crezca."
           />
         </div>
       </Section>

@@ -3,7 +3,7 @@ import { HomeHero } from '@/components/home/HomeHero';
 import { SolutionCard, type SolutionVideo } from '@/components/home/SolutionCard';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { Button } from '@/components/ui/Button';
-import { Icon } from '@/components/ui/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import { ServicesBento } from '@/components/home/ServicesBento';
 import { EcosystemDiagram } from '@/components/home/EcosystemDiagram';
@@ -19,6 +19,7 @@ const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
     text: 'Branding, diseño visual y comunicación clara para verte confiable.',
     video: {
       mp4: '/assets/videos/services/marca-profesional.mp4',
+      webm: '/assets/videos/services/marca-profesional.webm',
       poster: '/assets/videos/services/marca-profesional-poster.jpg',
     },
   },
@@ -35,6 +36,7 @@ const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
     text: 'Redes sociales, Meta Ads, Google Ads y contenido estratégico.',
     video: {
       mp4: '/assets/videos/services/generacion-clientes.mp4',
+      webm: '/assets/videos/services/generacion-clientes.webm',
       poster: '/assets/videos/services/generacion-clientes-poster.jpg',
     },
   },
@@ -48,13 +50,37 @@ const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
   },
 ];
 
-const problems = [
-  'Redes sociales sin estrategia',
-  'Website desactualizado o inexistente',
-  'Campañas mal configuradas',
-  'Leads que escriben y nadie responde a tiempo',
-  'Marca poco profesional',
-  'Dependencia total de referidos',
+const problems: { title: string; text: string; icon: IconName }[] = [
+  {
+    title: 'Redes sin dirección',
+    text: 'Publicas contenido, pero no hay una ruta clara para convertir atención en oportunidades reales.',
+    icon: 'megaphone',
+  },
+  {
+    title: 'Website que no convence',
+    text: 'Tu presencia digital no explica rápido qué haces, por qué confiar y cuál es el siguiente paso.',
+    icon: 'globe',
+  },
+  {
+    title: 'Campañas sin control',
+    text: 'Los anuncios se activan sin estructura de oferta, medición y seguimiento comercial.',
+    icon: 'target',
+  },
+  {
+    title: 'Leads que se enfrían',
+    text: 'Cuando alguien escribe y no recibe respuesta a tiempo, la confianza baja y el cliente se va.',
+    icon: 'bolt',
+  },
+  {
+    title: 'Marca que no transmite valor',
+    text: 'El negocio puede ser bueno, pero si se ve improvisado, compite por precio en vez de autoridad.',
+    icon: 'shield',
+  },
+  {
+    title: 'Dependencia de referidos',
+    text: 'Sin un sistema digital, el crecimiento depende demasiado de suerte, recomendaciones y temporadas.',
+    icon: 'users',
+  },
 ];
 
 
@@ -96,47 +122,81 @@ export default function HomePage() {
       </Section>
 
       {/* Problema */}
-      <Section tone="light">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          <SectionHeading
-            eyebrow="El problema"
-            title={
-              <>
-                Tu negocio puede ser bueno, pero si no se ve profesional en
-                internet, estás{' '}
-                <span className="text-accent">perdiendo clientes</span>.
-              </>
-            }
-            description="Muchos negocios hispanos siguen dependiendo solo de referidos, publicaciones improvisadas o respuestas manuales por WhatsApp. El problema no es la falta de esfuerzo: es no tener un sistema digital que genere confianza, atraiga clientes y dé seguimiento."
-          />
-          <Reveal delay={120} className="flex flex-col justify-center">
-            <p className="mono-label text-faint">Señales de alerta</p>
-            <ul className="mt-7 border-t border-line">
-              {problems.map((p, i) => (
-                <li
-                  key={p}
-                  className="group flex items-baseline gap-6 border-b border-line py-4"
-                >
-                  <span className="font-mono text-xs text-accent">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                  <span className="font-display text-base font-medium uppercase tracking-tight text-muted transition-colors duration-300 group-hover:text-fg sm:text-lg">
-                    {p}
-                  </span>
-                </li>
-              ))}
-            </ul>
+      <Section tone="light" className="paper-grain py-16 sm:py-18 lg:py-20">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-start lg:gap-12">
+          <Reveal>
+            <span className="mono-label inline-flex items-center gap-3 text-accent">
+              <span className="h-px w-8 bg-accent" />
+              El problema
+            </span>
+            <h2 className="mt-4 max-w-xl font-display text-3xl font-bold uppercase leading-[0.98] text-ink-950 sm:text-4xl lg:text-5xl">
+              No necesitas hacer más ruido. Necesitas convertir mejor.
+            </h2>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-ink-700 sm:text-lg">
+              El negocio puede ser bueno y aun así perder clientes si la marca,
+              el website, las campañas y las respuestas trabajan por separado.
+            </p>
+            <div className="mt-6 border-l-2 border-accent pl-4">
+              <p className="font-display text-lg font-semibold uppercase leading-tight text-ink-950">
+                El problema no es la falta de esfuerzo.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600 sm:text-[15px]">
+                Es no tener una presencia digital que genere confianza, capture
+                prospectos y les dé seguimiento antes de que se enfríen.
+              </p>
+            </div>
             <a
               href={whatsappLink('Quiero mejorar mi presencia digital.')}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2 self-start font-mono text-xs font-medium uppercase tracking-[0.16em] text-accent"
+              className="mt-6 inline-flex min-h-11 items-center gap-3 bg-ink-950 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors duration-300 hover:bg-accent hover:text-ink-950"
             >
-              <span className="link-underline">
-                Quiero mejorar mi presencia digital
-              </span>
+              Revisar mi sistema
               <Icon name="arrow-right" size={16} />
             </a>
+          </Reveal>
+
+          <Reveal delay={90}>
+            <div>
+              <div className="grid gap-2 bg-ink-950 px-4 py-4 text-white sm:grid-cols-[auto_1fr] sm:gap-4 sm:px-5">
+                <span className="mono-label text-accent">Diagnóstico</span>
+                <p className="text-sm leading-relaxed text-white/70">
+                  Señales de que el marketing está trabajando, pero no está
+                  empujando ventas con claridad.
+                </p>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {problems.map((problem, i) => (
+                  <article
+                    key={problem.title}
+                    className="group border border-ink-950/10 bg-paper px-4 py-4 transition-colors duration-300 hover:bg-paper-soft"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center border ${
+                          i === 0
+                            ? 'border-accent bg-accent text-ink-950'
+                            : 'border-ink-950/15 bg-paper-soft text-ink-950'
+                        }`}
+                      >
+                        <Icon name={problem.icon} size={18} />
+                      </span>
+                      <div className="min-w-0">
+                        <span className="mono-label text-accent/70">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <h3 className="mt-2 font-display text-lg font-semibold uppercase leading-tight text-ink-950">
+                          {problem.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-relaxed text-ink-600">
+                          {problem.text}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
           </Reveal>
         </div>
       </Section>
@@ -148,7 +208,7 @@ export default function HomePage() {
             eyebrow="Servicios"
             tone="light"
             title="Servicios diseñados para hacer crecer tu negocio."
-            description="Desde branding y websites hasta campañas, contenido y automatizaciones con IA."
+            description="Desde branding y websites hasta redes sociales, campañas, contenido y automatizaciones con IA."
           />
           <Button href="/servicios" variant="ghost" iconRight="arrow-right">
             Ver todos los servicios
@@ -194,12 +254,13 @@ export default function HomePage() {
       </Section>
 
       {/* Planes */}
-      <Section tone="light">
+      <Section id="planes" tone="light" className="paper-grain">
         <SectionHeading
           align="center"
           eyebrow="Planes"
-          title="Elegí el plan para vos."
-          description="Desde tu primera presencia digital hasta un sistema de crecimiento mensual. Empieza donde estás y escala cuando lo necesites."
+          title="Planes claros. Ejecución mensual."
+          description="Elige según la etapa de tu marca: contenido, campañas, asesoría, website y SEO cuando el sistema lo necesite."
+          titleClass="text-4xl text-fg sm:text-5xl lg:text-6xl"
         />
         <PricingPlans />
         <Reveal className="mt-12 text-center">
@@ -208,7 +269,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-2 font-mono text-xs font-medium uppercase tracking-[0.16em] text-accent"
           >
             <span className="link-underline">
-              ¿No sabes cuál elegir? Hacé el diagnóstico
+              ¿No sabes cuál elegir? Haz el diagnóstico
             </span>
             <Icon name="arrow-right" size={16} />
           </Link>
