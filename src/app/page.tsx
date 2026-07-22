@@ -83,7 +83,6 @@ const problems: { title: string; text: string; icon: IconName }[] = [
   },
 ];
 
-
 export default function HomePage() {
   return (
     <>
@@ -104,8 +103,8 @@ export default function HomePage() {
         <SectionHeading
           eyebrow="La solución Cluster"
           tone="light"
-          title="Contenido, campañas y automatización trabajando juntos."
-          description="No vemos el marketing como piezas aisladas. Diseñamos un ecosistema donde tu marca se ve mejor, tus campañas atraen más prospectos y tus automatizaciones ayudan a responder y dar seguimiento."
+          title="Diseñamos un ecosistema de marketing integrado."
+          description="Tu marca destaca, tus campañas atraen prospectos calificados y tus automatizaciones aseguran cada seguimiento."
           titleClass="text-fg text-3xl sm:text-4xl lg:text-4xl xl:text-5xl"
         />
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -130,19 +129,17 @@ export default function HomePage() {
               El problema
             </span>
             <h2 className="mt-4 max-w-xl font-display text-3xl font-bold uppercase leading-[0.98] text-ink-950 sm:text-4xl lg:text-5xl">
-              No necesitas hacer más ruido. Necesitas convertir mejor.
+              Convierte tu atención en resultados.
             </h2>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-ink-700 sm:text-lg">
-              El negocio puede ser bueno y aun así perder clientes si la marca,
-              el website, las campañas y las respuestas trabajan por separado.
+              Un buen negocio puede perder clientes si la marca, el website, las campañas y las respuestas trabajan por separado.
             </p>
             <div className="mt-6 border-l-2 border-accent pl-4">
               <p className="font-display text-lg font-semibold uppercase leading-tight text-ink-950">
-                El problema no es la falta de esfuerzo.
+                El crecimiento exige estrategia.
               </p>
               <p className="mt-2 text-sm leading-relaxed text-ink-600 sm:text-[15px]">
-                Es no tener una presencia digital que genere confianza, capture
-                prospectos y les dé seguimiento antes de que se enfríen.
+                Construimos una presencia digital que genera confianza, captura prospectos y les da seguimiento automático antes de que se enfríen.
               </p>
             </div>
             <a
@@ -219,20 +216,32 @@ export default function HomePage() {
 
       {/* Casos de éxito */}
       <Section tone="soft">
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <SectionHeading
-            eyebrow="Casos de éxito"
-            title="Resultados reales para negocios reales."
-            description="Algunos negocios que confiaron en Cluster Media para crecer."
-          />
-          <Button href="/casos-de-exito" variant="ghost" iconRight="arrow-right">
-            Ver todos los casos
-          </Button>
-        </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {caseStudies.map((study, i) => (
-            <CaseCard key={study.slug} study={study} index={i} />
-          ))}
+        <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:items-center">
+          
+          {/* Columna Izquierda: Textos y CTA */}
+          <div className="flex flex-col items-start gap-8">
+            <SectionHeading
+              eyebrow="Casos de éxito"
+              title="Resultados reales para negocios reales."
+              description="Algunos negocios que confiaron en Cluster Media para crecer."
+            />
+            <Button href="/casos-de-exito" variant="ghost" iconRight="arrow-right">
+              Ver todos los casos
+            </Button>
+          </div>
+
+          {/* Columna Derecha: Carrusel Nativo */}
+          <div className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {caseStudies.map((study, i) => (
+              <div 
+                key={study.slug} 
+                className="w-[85%] shrink-0 snap-start sm:w-[55%] md:w-[45%]"
+              >
+                <CaseCard study={study} index={i} />
+              </div>
+            ))}
+          </div>
+
         </div>
       </Section>
 
@@ -247,7 +256,7 @@ export default function HomePage() {
               Cuatro pilares, <span className="text-accent">un solo sistema</span>.
             </>
           }
-          description="No entregamos piezas sueltas. Marca, contenido, campañas y automatización giran alrededor de un mismo núcleo que atrae, convierte y da seguimiento."
+          description="Creamos sistemas integrales. Marca, contenido, campañas y automatización giran alrededor de un mismo núcleo diseñado para atraer, convertir y dar seguimiento."
           titleClass="text-fg text-3xl sm:text-4xl lg:text-5xl"
         />
         <EcosystemDiagram />
