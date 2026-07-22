@@ -129,8 +129,7 @@ export default function AutomatizacionesPage() {
             <Icon name="bot" size={28} />
           </span>
           <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-4xl">
-            No es solo inteligencia artificial. Es atención comercial
-            automatizada.
+            Un sistema automatizado que asegura el seguimiento comercial sin perder el toque humano.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-white/70">
             La IA debe ayudar a responder, filtrar, orientar, agendar y dar

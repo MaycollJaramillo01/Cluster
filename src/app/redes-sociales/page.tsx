@@ -40,7 +40,7 @@ export default function RedesSocialesPage() {
       <PageHero
         image={{ src: "/assets/stock/social.jpg", alt: "Creación de contenido para redes sociales" }}
         eyebrow="Redes Sociales / Crecimiento"
-        title="Redes sociales para negocios que quieren vender más, no solo publicar más."
+        title="Redes sociales para negocios que quieren vender más."
         subtitle="Creamos contenido, campañas y estrategia mensual para que tu negocio se vea activo, profesional y genere más oportunidades."
         whatsappMessage="Hola, quiero información sobre el manejo de redes sociales."
       />
@@ -51,7 +51,7 @@ export default function RedesSocialesPage() {
             <Icon name="megaphone" size={28} />
           </span>
           <h2 className="mt-6 font-display text-3xl font-semibold text-fg sm:text-4xl lg:text-5xl">
-            Publicar no es una estrategia.
+            Más que publicar, se trata de convertir
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-muted">
             Muchas empresas publican en redes sin una dirección clara. Nosotros
