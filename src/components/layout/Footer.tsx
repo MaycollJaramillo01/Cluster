@@ -96,8 +96,6 @@ export function Footer() {
               <li>
                 <a
                   href={site.calendarUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
                   <Icon name="calendar" size={17} className="text-accent" />
@@ -133,12 +131,8 @@ export function Footer() {
         </div>
 
         {/* Barra inferior */}
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-line py-7 sm:flex-row">
-          <p className="text-sm text-white/45">
-            © {new Date().getFullYear()} {site.name}. Todos los derechos
-            reservados.
-          </p>
-          <div className="flex gap-6">
+        <div className="relative flex flex-col items-center gap-4 border-t border-line py-7">
+          <div className="flex gap-6 sm:absolute sm:left-0 sm:top-1/2 sm:-translate-y-1/2">
             <Link
               href="/privacidad"
               className="text-sm text-white/45 transition-colors hover:text-white/80"
@@ -152,6 +146,10 @@ export function Footer() {
               Terms and Conditions
             </Link>
           </div>
+          <p className="text-center text-sm text-white/45">
+            © {new Date().getFullYear()} {site.name}. Todos los derechos
+            reservados.
+          </p>
         </div>
       </div>
     </footer>

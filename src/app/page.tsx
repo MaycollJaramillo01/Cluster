@@ -322,7 +322,7 @@ export default function HomePage() {
               compromiso — el plan ideal para tu etapa y tu mayor desafío digital.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={site.calendarUrl} external size="lg" iconRight="arrow-right">
+              <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
                 Agendar llamada
               </Button>
               <Button

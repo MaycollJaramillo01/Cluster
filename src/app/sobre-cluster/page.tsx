@@ -53,7 +53,13 @@ export default function SobrePage() {
       />
 
       <PageHero
-        image={{ src: "/assets/stock/team.jpg", alt: "Equipo de Cluster Media" }}
+        image={{
+          src: '/assets/stock/team.jpg',
+          alt: 'Equipo de Cluster Media',
+          // Foto horizontal del equipo: ratio amplio para que se vean los tres
+          aspectClassName: 'aspect-[3/2]',
+          imageClassName: 'object-cover object-center grayscale',
+        }}
         eyebrow="Sobre Cluster"
         title="Somos Cluster: comunicación digital que sí conecta con tu audiencia."
         subtitle="Construimos marcas, contenido y sistemas digitales para negocios que quieren salirse del molde corporativo y conectar de forma real."

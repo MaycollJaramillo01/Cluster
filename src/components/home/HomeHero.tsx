@@ -56,7 +56,7 @@ export function HomeHero() {
 
           <Reveal delay={180}>
             <div className="flex flex-wrap items-center gap-3">
-              <Button href={site.calendarUrl} external size="lg" iconRight="arrow-right">
+              <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
                 Agendar llamada
               </Button>
               <Button

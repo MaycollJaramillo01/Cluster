@@ -12,7 +12,14 @@ type PageHeroProps = {
   price?: { now: string; before?: string; note?: string };
   primaryCta?: { label: string; href: string };
   whatsappMessage?: string;
-  image?: { src: string; alt: string };
+  image?: {
+    src: string;
+    alt: string;
+    /** Clase de aspect ratio del contenedor. Default: portrait en desktop. */
+    aspectClassName?: string;
+    /** Clases extras para el <Image> (object-fit, grayscale, etc.). */
+    imageClassName?: string;
+  };
   visual?: ReactNode;
   children?: ReactNode;
 };
@@ -133,7 +140,11 @@ export function PageHero({
           ) : image ? (
             <Reveal
               delay={160}
-              className="relative aspect-[4/3] min-w-0 overflow-hidden lg:aspect-[4/5]"
+              className={
+                image.aspectClassName
+                  ? `relative min-w-0 overflow-hidden ${image.aspectClassName}`
+                  : 'relative aspect-[4/3] min-w-0 overflow-hidden lg:aspect-[4/5]'
+              }
             >
               <Image
                 src={image.src}
@@ -141,7 +152,10 @@ export function PageHero({
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 45vw"
-                className="object-cover grayscale transition duration-700 hover:grayscale-0"
+                className={
+                  image.imageClassName ??
+                  'object-cover grayscale transition duration-700 hover:grayscale-0'
+                }
               />
               <div
                 className="absolute inset-0 bg-gradient-to-t from-ink-950/60 via-transparent to-transparent"
