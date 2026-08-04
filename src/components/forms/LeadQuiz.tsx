@@ -34,6 +34,7 @@ export function LeadQuiz() {
   const [stage, setStage] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+  const [website, setWebsite] = useState('');
   const [redes, setRedes] = useState('');
   const [sent, setSent] = useState(false);
 
@@ -49,6 +50,7 @@ export function LeadQuiz() {
       `• Nombre: ${data.get('nombre')}%0A` +
       `• Negocio: ${data.get('negocio') || '—'}%0A` +
       `• WhatsApp: ${data.get('whatsapp')}%0A` +
+      `• Website: ${data.get('website') || '—'}%0A` +
       `• Redes: ${data.get('redes') || '—'}`;
     setSent(true);
     window.open(whatsappLink(decodeURIComponent(message)), '_blank');
@@ -195,10 +197,18 @@ export function LeadQuiz() {
             icon="whatsapp"
             name="whatsapp"
             type="tel"
+            inputMode="numeric"
             placeholder="WhatsApp (con código de país)"
             value={whatsapp}
-            onChange={setWhatsapp}
+            onChange={(v) => setWhatsapp(v.replace(/\D/g, ''))}
             required
+          />
+          <IconField
+            icon="globe"
+            name="website"
+            placeholder="Website (opcional)"
+            value={website}
+            onChange={setWebsite}
           />
           <IconField
             icon="instagram"
@@ -291,6 +301,7 @@ function IconField({
   name,
   placeholder,
   type = 'text',
+  inputMode,
   required,
   value,
   onChange,
@@ -299,6 +310,7 @@ function IconField({
   name: string;
   placeholder: string;
   type?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>['inputMode'];
   required?: boolean;
   value?: string;
   onChange?: (v: string) => void;
@@ -312,6 +324,7 @@ function IconField({
         id={name}
         name={name}
         type={type}
+        inputMode={inputMode}
         placeholder={placeholder}
         required={required}
         value={value}

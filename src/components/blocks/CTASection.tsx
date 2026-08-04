@@ -6,12 +6,14 @@ type CTASectionProps = {
   title?: string;
   text?: string;
   whatsappMessage?: string;
+  primaryCta?: { label: string; href: string };
 };
 
 export function CTASection({
   title = '¿Listo para hacer crecer tu negocio?',
   text = 'Agenda una llamada y cuéntanos qué necesita tu negocio. Te ayudaremos a identificar la mejor ruta para mejorar tu presencia digital, generar clientes o automatizar tu atención comercial.',
   whatsappMessage,
+  primaryCta = { label: 'Agendar llamada', href: site.calendarUrl },
 }: CTASectionProps) {
   return (
     <section className="theme-dark relative overflow-hidden bg-ink-950 py-24 text-fg sm:py-32">
@@ -35,8 +37,13 @@ export function CTASection({
             {text}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Button href={site.calendarUrl} external size="lg" iconRight="arrow-right">
-              Agendar llamada
+            <Button
+              href={primaryCta.href}
+              external={primaryCta.href.startsWith('http')}
+              size="lg"
+              iconRight="arrow-right"
+            >
+              {primaryCta.label}
             </Button>
             <Button
               href={whatsappLink(whatsappMessage)}

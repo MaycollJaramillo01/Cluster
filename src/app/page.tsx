@@ -13,10 +13,16 @@ import { LogoWall } from '@/components/blocks/LogoWall';
 import { LeadQuiz } from '@/components/forms/LeadQuiz';
 import { caseStudies, site, whatsappLink } from '@/lib/site';
 
-const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
+const solutions: {
+  title: string;
+  text: string;
+  href: string;
+  video?: SolutionVideo;
+}[] = [
   {
     title: 'Marca profesional',
-    text: 'Branding, diseño visual y comunicación clara para verte confiable.',
+    text: 'Branding, diseño visual, campañas en redes sociales y Google Ads.',
+    href: '/branding',
     video: {
       mp4: '/assets/videos/services/marca-profesional.mp4',
       webm: '/assets/videos/services/marca-profesional.webm',
@@ -25,7 +31,8 @@ const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
   },
   {
     title: 'Presencia digital',
-    text: 'Website, Google Business Profile, landing pages y SEO básico.',
+    text: 'Website, Google Business Profile, landing pages y SEO.',
+    href: '/websites-seo',
     video: {
       mp4: '/assets/videos/services/presencia-digital.mp4',
       poster: '/assets/videos/services/presencia-digital-poster.jpg',
@@ -34,6 +41,7 @@ const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
   {
     title: 'Generación de clientes',
     text: 'Redes sociales, Meta Ads, Google Ads y contenido estratégico.',
+    href: '/redes-sociales',
     video: {
       mp4: '/assets/videos/services/generacion-clientes.mp4',
       webm: '/assets/videos/services/generacion-clientes.webm',
@@ -43,6 +51,7 @@ const solutions: { title: string; text: string; video?: SolutionVideo }[] = [
   {
     title: 'Automatización comercial',
     text: 'WhatsApp, CRM, agentes IA, workflows y seguimiento automático.',
+    href: '/automatizaciones-ia',
     video: {
       mp4: '/assets/videos/services/automatizacion.mp4',
       poster: '/assets/videos/services/automatizacion-poster.jpg',
@@ -113,6 +122,7 @@ export default function HomePage() {
               key={s.title}
               title={s.title}
               text={s.text}
+              href={s.href}
               video={s.video}
               index={i}
             />
@@ -142,15 +152,13 @@ export default function HomePage() {
                 Construimos una presencia digital que genera confianza, captura prospectos y les da seguimiento automático antes de que se enfríen.
               </p>
             </div>
-            <a
-              href={whatsappLink('Quiero mejorar mi presencia digital.')}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/contacto"
               className="mt-6 inline-flex min-h-11 items-center gap-3 bg-ink-950 px-5 py-3 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-white transition-colors duration-300 hover:bg-accent hover:text-ink-950"
             >
               Revisar mi sistema
               <Icon name="arrow-right" size={16} />
-            </a>
+            </Link>
           </Reveal>
 
           <Reveal delay={90}>
