@@ -25,7 +25,7 @@ const cards: BentoCard[] = [
     title: 'RRSS y ADS',
     href: '/redes-sociales',
     cta: 'Ver RRSS y ADS',
-    tags: 'Meta Ads · Google Ads · Reels',
+    tags: 'Meta Ads · Google Ads · TikTok Ads',
     variant: 'accent',
     gridClass: 'md:col-span-2 md:row-span-2 min-h-72',
     titleClass: 'text-5xl lg:text-6xl xl:text-[5.5rem]',

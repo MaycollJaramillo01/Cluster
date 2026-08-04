@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
-import { plans, whatsappLink } from '@/lib/site';
+import { plans } from '@/lib/site';
 
 // Each tier: dark gradient panel behind the white logo + accent color for values
 const tierMark = [
@@ -46,15 +46,15 @@ const tierMark = [
 
 type FVal = string | boolean;
 
-const features: { label: string; values: FVal[] }[] = [
-  { label: 'Redes sociales', values: ['2', '3', '4', '4'] },
+const features: { label: string; note?: string; values: FVal[] }[] = [
+  { label: 'Redes sociales', values: ['2', '3', '4', '5'] },
   { label: 'Piezas de contenido', values: ['12/mes', '20/mes', '20/mes', '24/mes'] },
-  { label: 'Stories mensuales', values: [false, '12', '16', '20'] },
+  { label: 'Stories mensuales', values: [false, '8', '12', '16'] },
   { label: 'Meta Ads', values: ['1 campaña', '3 campañas', '3 campañas', '5 campañas'] },
-  { label: 'Google Ads', values: ['1 campaña', '1 campaña', '3 campañas', '3 campañas'] },
+  { label: 'Google Ads', values: ['1 campaña', '1 campaña', '3 campañas', '5 campañas'] },
   { label: 'Perfil Google Business', values: [false, true, true, true] },
   { label: 'Actualización de website', values: [false, false, true, true] },
-  { label: 'Asesoría de marketing', values: [false, true, true, true] },
+  { label: 'Asesoría de marketing', note: '(con nuestro director)', values: [false, false, false, true] },
   { label: 'SEO', values: [false, false, false, true] },
 ];
 
@@ -249,8 +249,7 @@ export function PricingPlans() {
                         </div>
 
                         <Button
-                          href={whatsappLink(plan.whatsapp)}
-                          external
+                          href={`/planes/${plan.slug}`}
                           variant={isHL ? 'accent' : 'primary'}
                           size="sm"
                           className="w-full"
@@ -277,6 +276,7 @@ export function PricingPlans() {
                       color: 'rgba(17,17,17,0.58)',
                     }}>
                       {row.label}
+                      {row.note ? ` ${row.note}` : null}
                     </td>
                     {row.values.map((val, ci) => {
                       const tier = tierMark[ci];
@@ -315,8 +315,7 @@ export function PricingPlans() {
                   return (
                     <td key={plan.name} style={{ border: BORDER, background: 'transparent', padding: '20px 16px', textAlign: 'center' }}>
                       <Button
-                        href={whatsappLink(plan.whatsapp)}
-                        external
+                        href={`/planes/${plan.slug}`}
                         variant={isHL ? 'accent' : 'secondary'}
                         size="sm"
                         className="w-full"

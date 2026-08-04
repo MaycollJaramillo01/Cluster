@@ -31,8 +31,7 @@ const body = DM_Sans({
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap',
-  weight: ['300', '400', '500', '600'],
-  style: ['normal', 'italic'],
+  weight: ['400', '500', '600'],
 });
 
 // Etiquetas técnicas monoespaciadas
@@ -48,7 +47,7 @@ const brand = Montserrat({
   subsets: ['latin'],
   variable: '--font-brand',
   display: 'swap',
-  weight: ['300', '400', '700', '800'],
+  weight: ['300', '800'],
 });
 
 export const metadata: Metadata = {
@@ -117,6 +116,14 @@ export default function RootLayout({
       lang="es"
       className={`${display.variable} ${body.variable} ${mono.variable} ${brand.variable}`}
     >
+      <head>
+        <link
+          rel="preload"
+          as="image"
+          href="/assets/hero-poster.jpg"
+          fetchPriority="high"
+        />
+      </head>
       <body suppressHydrationWarning>
         <JsonLd data={organizationSchema} />
         <JsonLd data={localBusinessSchema} />

@@ -195,26 +195,58 @@ export const services: Service[] = [
 // ─────────────────────────────────────────────────────────────
 // Planes / Precios (sección "Elegí el plan para vos")
 // ─────────────────────────────────────────────────────────────
+export type PlanSlug = 'next' | 'advance' | 'enterprise' | 'cluster';
+
 export type PricingPlan = {
+  slug: PlanSlug;
   name: string;
   kicker: string; // etiqueta mono sobre el nombre
   price: string;
   period?: string; // ej. '/mes'
   note: string;
+  headline: string;
+  subtitle: string;
+  idealFor: string[];
+  faqs: { q: string; a: string }[];
   features: string[];
   cta: string;
   whatsapp: string;
+  stripeUrl: string;
   highlight?: boolean;
   badge?: string;
 };
 
 export const plans: PricingPlan[] = [
   {
+    slug: 'next',
     name: 'Next',
     kicker: 'Mensual',
     price: 'USD 480',
     period: '/mes',
     note: 'Contenido y campañas para empezar con estructura',
+    headline: 'Empieza con estructura: contenido y campañas que trabajan juntos.',
+    subtitle:
+      'El plan Next arma la base digital de tu negocio: presencia constante en redes y campañas iniciales en Meta y Google para empezar a generar demanda con orden.',
+    idealFor: [
+      'Negocios que recién empiezan en digital',
+      'Marcas con poco o nada de contenido activo',
+      'Equipos que necesitan ritmo mensual sin complejidad',
+      'Quienes quieren probar campañas con presupuesto controlado',
+    ],
+    faqs: [
+      {
+        q: '¿Qué redes incluye el plan Next?',
+        a: 'Trabajamos contenido para 2 redes sociales. Definimos juntos cuáles tienen más sentido según tu audiencia y tu oferta.',
+      },
+      {
+        q: '¿Las campañas de ads están incluidas en la gestión?',
+        a: 'Sí. Incluye 1 campaña de Meta Ads y 1 de Google Ads. El presupuesto publicitario (media spend) lo define el cliente aparte.',
+      },
+      {
+        q: '¿Puedo subir de plan después?',
+        a: 'Sí. Cuando necesites más volumen de contenido, stories o más campañas, puedes pasar a Advance, Enterprise o Cluster sin reiniciar desde cero.',
+      },
+    ],
     features: [
       'Contenido para 2 redes sociales',
       '3 piezas de contenido semanales',
@@ -224,8 +256,10 @@ export const plans: PricingPlan[] = [
     ],
     cta: 'Elegir plan',
     whatsapp: 'Hola, quiero el paquete Next (USD 480).',
+    stripeUrl: '',
   },
   {
+    slug: 'advance',
     name: 'Advance',
     kicker: 'Mensual',
     price: 'USD 680',
@@ -233,6 +267,29 @@ export const plans: PricingPlan[] = [
     note: 'Más contenido, stories y asesoría mensual',
     highlight: true,
     badge: 'Recomendado',
+    headline: 'El equilibrio ideal entre contenido, campañas y asesoría.',
+    subtitle:
+      'Advance es el punto más balanceado para marcas en crecimiento: más piezas, stories, perfil de Google, campañas ampliadas y acompañamiento de marketing cada mes.',
+    idealFor: [
+      'Negocios con 1–3 años operando',
+      'Marcas que ya publican pero sin sistema claro',
+      'Equipos que quieren más volumen y stories',
+      'Quienes necesitan asesoría mensual para priorizar',
+    ],
+    faqs: [
+      {
+        q: '¿Por qué Advance es el plan recomendado?',
+        a: 'Porque equilibra volumen de contenido, stories, campañas y asesoría sin llegar al alcance completo de Enterprise o Cluster. Es el salto natural cuando Next se queda corto.',
+      },
+      {
+        q: '¿Qué incluye la asesoría de marketing?',
+        a: 'Revisión mensual de prioridades, mensajes y oportunidades de mejora en contenido y campañas, para que la ejecución no se desvíe del objetivo comercial.',
+      },
+      {
+        q: '¿Incluye gestión del perfil de Google?',
+        a: 'Sí. Incluye gestión de tu perfil de negocio en Google para reforzar presencia local y confianza.',
+      },
+    ],
     features: [
       'Contenido para 3 redes sociales',
       '5 piezas semanales / 20 mensuales',
@@ -244,13 +301,38 @@ export const plans: PricingPlan[] = [
     ],
     cta: 'Elegir plan',
     whatsapp: 'Hola, quiero el paquete Advance (USD 680).',
+    stripeUrl: '',
   },
   {
+    slug: 'enterprise',
     name: 'Enterprise',
     kicker: 'Mensual',
     price: 'USD 780',
     period: '/mes',
     note: 'Gestión más completa para marcas en crecimiento',
+    headline: 'Más redes, más campañas y website siempre al día.',
+    subtitle:
+      'Enterprise suma actualización de website, más stories y mayor capacidad de campañas para marcas que ya tienen demanda y necesitan ejecución constante en varios frentes.',
+    idealFor: [
+      'Marcas con presencia digital activa',
+      'Negocios que necesitan actualizar su website con frecuencia',
+      'Equipos que corren varias campañas a la vez',
+      'Operaciones que quieren más cobertura en redes',
+    ],
+    faqs: [
+      {
+        q: '¿Qué significa actualización de website?',
+        a: 'Ajustes y mejoras puntuales de tu sitio existente (textos, secciones, CTAs, páginas clave) para mantenerlo alineado con tus campañas y oferta.',
+      },
+      {
+        q: '¿Cuántas campañas puedo tener activas?',
+        a: 'El plan contempla 3 campañas de Google y 3 de Meta al mes, con gestión y optimización continua según rendimiento.',
+      },
+      {
+        q: '¿Incluye asesoría de marketing?',
+        a: 'Sí. Enterprise incluye asesoría de marketing para ordenar prioridades entre contenido, campañas y website.',
+      },
+    ],
     features: [
       'Contenido para hasta 4 redes sociales',
       '5 piezas semanales / 20 mensuales',
@@ -263,13 +345,38 @@ export const plans: PricingPlan[] = [
     ],
     cta: 'Elegir plan',
     whatsapp: 'Hola, quiero el paquete Enterprise (USD 780).',
+    stripeUrl: '',
   },
   {
+    slug: 'cluster',
     name: 'Cluster',
     kicker: 'Mensual',
     price: 'USD 900',
     period: '/mes',
     note: 'El sistema más completo de contenido, campañas y SEO',
+    headline: 'El sistema completo: contenido, campañas, SEO y asesoría.',
+    subtitle:
+      'Cluster es el plan más completo: máximo volumen de contenido, más campañas, website, SEO y asesoría con nuestro director para marcas que quieren operar con un sistema digital integrado.',
+    idealFor: [
+      'Marcas que quieren el sistema completo',
+      'Negocios listos para escalar adquisición',
+      'Equipos que necesitan SEO además de ads',
+      'Operaciones que valoran asesoría de dirección',
+    ],
+    faqs: [
+      {
+        q: '¿Qué incluye el SEO en el plan Cluster?',
+        a: 'Trabajo continuo de optimización on-page y estructura de contenidos para mejorar visibilidad orgánica, complementando las campañas pagadas.',
+      },
+      {
+        q: '¿La asesoría es con el director?',
+        a: 'Sí. En Cluster la asesoría de marketing se trabaja con nuestro director para alinear estrategia, prioridades y ejecución del sistema completo.',
+      },
+      {
+        q: '¿Es un contrato largo?',
+        a: 'No. Los planes son mensuales, sin contratos eternos. Recomendamos continuidad para ver resultados, pero puedes ajustar o pausar según tu etapa.',
+      },
+    ],
     features: [
       'Contenido para hasta 4 redes sociales',
       '6 piezas semanales / 24 mensuales',
@@ -283,8 +390,15 @@ export const plans: PricingPlan[] = [
     ],
     cta: 'Elegir plan',
     whatsapp: 'Hola, quiero el paquete Cluster (USD 900).',
+    stripeUrl: '',
   },
 ];
+
+export const planSlugs: PlanSlug[] = plans.map((plan) => plan.slug);
+
+export function getPlanBySlug(slug: string): PricingPlan | undefined {
+  return plans.find((plan) => plan.slug === slug);
+}
 
 // ─────────────────────────────────────────────────────────────
 // Paquetes de Redes Sociales

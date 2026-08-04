@@ -12,6 +12,7 @@ export function HomeHero() {
         muted
         loop
         playsInline
+        preload="metadata"
         poster="/assets/hero-poster.jpg"
         className="absolute inset-0 h-full w-full object-cover opacity-55"
       >
@@ -38,7 +39,7 @@ export function HomeHero() {
       </div>
 
       {/* Contenido */}
-      <div className="container-x relative z-[1] flex flex-1 flex-col justify-end pb-12 pt-32 sm:pb-16">
+      <div className="container-x relative z-[1] flex flex-1 flex-col justify-end pb-12 pt-32 sm:pb-0">
         {/* H1 oculto: necesario para SEO aunque el hero sea solo video */}
         <h1 className="sr-only">
           Cluster Media — Comunicación digital que conecta con tu audiencia.

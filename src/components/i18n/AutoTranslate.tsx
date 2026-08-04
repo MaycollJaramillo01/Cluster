@@ -183,7 +183,7 @@ export function AutoTranslate() {
         aria-hidden="true"
       />
       {enabled && (
-        <Script src={GOOGLE_TRANSLATE_SRC} strategy="afterInteractive" />
+        <Script src={GOOGLE_TRANSLATE_SRC} strategy="lazyOnload" />
       )}
     </>
   );
