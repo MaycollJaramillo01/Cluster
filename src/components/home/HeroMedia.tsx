@@ -3,10 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-/**
- * Poster paints first (LCP). Video mounts after idle on all viewports
- * so the heavy download doesn't block the initial paint.
- */
+
 export function HeroMedia() {
   const [playVideo, setPlayVideo] = useState(false);
 
@@ -16,20 +13,13 @@ export function HeroMedia() {
 
     const enable = () => setPlayVideo(true);
 
-    let idleId: number | undefined;
-    let timeoutId: number | undefined;
-
-    // Delay so LCP can settle on the poster before fetching 2–4 MB of video.
-    if ('requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(enable, { timeout: 3000 });
-    } else {
-      timeoutId = window.setTimeout(enable, 2000);
+    if (typeof window.requestIdleCallback === 'function') {
+      const idleId = window.requestIdleCallback(enable, { timeout: 3000 });
+      return () => window.cancelIdleCallback(idleId);
     }
 
-    return () => {
-      if (idleId !== undefined) window.cancelIdleCallback(idleId);
-      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
-    };
+    const timeoutId = window.setTimeout(enable, 2000);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   return (
