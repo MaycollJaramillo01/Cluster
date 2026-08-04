@@ -104,7 +104,7 @@ export default function ContactoPage() {
                       className="mt-4"
                       icon="whatsapp"
                     >
-                      Escribir por WhatsApp
+                      WhatsApp
                     </Button>
                   </div>
                 </div>

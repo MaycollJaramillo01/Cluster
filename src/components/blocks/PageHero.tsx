@@ -114,7 +114,7 @@ export function PageHero({
                   size="lg"
                   icon="whatsapp"
                 >
-                  Escribir por WhatsApp
+                  WhatsApp
                 </Button>
               </div>
             </Reveal>

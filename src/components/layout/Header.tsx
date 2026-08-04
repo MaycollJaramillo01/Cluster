@@ -174,7 +174,7 @@ export function Header() {
               variant="whatsapp"
               icon="whatsapp"
             >
-              Escribir por WhatsApp
+              WhatsApp
             </Button>
           </div>
         </nav>

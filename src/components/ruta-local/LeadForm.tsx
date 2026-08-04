@@ -72,7 +72,7 @@ export function LeadForm() {
           size="lg"
           className="mt-7"
         >
-          Escribir por WhatsApp
+          WhatsApp
         </Button>
       </div>
     );

@@ -52,7 +52,7 @@ export function CTASection({
               size="lg"
               icon="whatsapp"
             >
-              Escribir por WhatsApp
+              WhatsApp
             </Button>
             <Button href="/contacto" variant="ghost" size="lg">
               Solicitar información
