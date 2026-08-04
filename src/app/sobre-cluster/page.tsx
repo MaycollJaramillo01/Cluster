@@ -5,6 +5,7 @@ import { CheckList } from '@/components/blocks/Blocks';
 import { CTASection } from '@/components/blocks/CTASection';
 import { Reveal } from '@/components/ui/Reveal';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { TeamCarousel } from '@/components/home/TeamCarousel';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/JsonLd';
 import { site } from '@/lib/site';
 
@@ -122,6 +123,9 @@ export default function SobrePage() {
             description="Estrategia, diseño, edición audiovisual, contenido, campañas, CRM, automatización y websites trabajando juntos para que tu negocio conecte mejor y crezca."
           />
         </div>
+        <Reveal delay={120}>
+          <TeamCarousel />
+        </Reveal>
       </Section>
 
       <CTASection
