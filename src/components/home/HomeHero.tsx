@@ -1,24 +1,15 @@
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { Reveal } from '@/components/ui/Reveal';
+import { HeroMedia } from '@/components/home/HeroMedia';
 import { site, whatsappLink } from '@/lib/site';
 
 export function HomeHero() {
   return (
     <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-ink-950">
-      {/* Video de fondo */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        poster="/assets/hero-poster.jpg"
-        className="absolute inset-0 h-full w-full object-cover opacity-55"
-      >
-        <source src="/assets/hero.webm" type="video/webm" />
-        <source src="/assets/hero.mp4" type="video/mp4" />
-      </video>
+      {/* Poster inmediato (LCP); video diferido en desktop */}
+      <div className="absolute inset-0">
+        <HeroMedia />
+      </div>
 
       {/* Capas de oscurecimiento para legibilidad */}
       <div
@@ -46,55 +37,49 @@ export function HomeHero() {
         </h1>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <Reveal delay={120}>
-            <p className="max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
-              Construimos marcas que conectan con tu audiencia: contenido real,
-              campañas, websites y automatizaciones para salir del molde
-              corporativo.
-            </p>
-          </Reveal>
+          <p className="max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
+            Construimos marcas que conectan con tu audiencia: contenido real,
+            campañas, websites y automatizaciones para salir del molde
+            corporativo.
+          </p>
 
-          <Reveal delay={180}>
-            <div className="flex flex-wrap items-center gap-3">
-              <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
-                Agendar llamada
-              </Button>
-              <Button
-                href={whatsappLink('Hola Cluster Media, quiero hacer crecer mi negocio.')}
-                external
-                variant="ghost"
-                size="lg"
-                icon="whatsapp"
-              >
-                WhatsApp
-              </Button>
-            </div>
-          </Reveal>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
+              Agendar llamada
+            </Button>
+            <Button
+              href={whatsappLink('Hola Cluster Media, quiero hacer crecer mi negocio.')}
+              external
+              variant="ghost"
+              size="lg"
+              icon="whatsapp"
+            >
+              WhatsApp
+            </Button>
+          </div>
         </div>
 
         {/* Barra de métricas */}
-        <Reveal delay={300}>
-          <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-surface backdrop-blur-sm sm:grid-cols-4">
-            {[
-              { value: '+50', label: 'negocios atendidos' },
-              { value: '~20', label: 'leads/día en campañas' },
-              { value: '3', label: 'mercados: EE.UU · LATAM · ES' },
-              { value: '17', label: 'servicios digitales' },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="border-line px-5 py-5 [&:not(:last-child)]:border-r"
-              >
-                <div className="font-display text-4xl font-bold text-fg sm:text-5xl">
-                  {stat.value}
-                </div>
-                <div className="mono-label mt-2 text-[10px] leading-tight text-faint">
-                  {stat.label}
-                </div>
+        <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-surface backdrop-blur-sm sm:grid-cols-4">
+          {[
+            { value: '+50', label: 'negocios atendidos' },
+            { value: '~20', label: 'leads/día en campañas' },
+            { value: '3', label: 'mercados: EE.UU · LATAM · ES' },
+            { value: '17', label: 'servicios digitales' },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="border-line px-5 py-5 [&:not(:last-child)]:border-r"
+            >
+              <div className="font-display text-4xl font-bold text-fg sm:text-5xl">
+                {stat.value}
               </div>
-            ))}
-          </div>
-        </Reveal>
+              <div className="mono-label mt-2 text-[10px] leading-tight text-faint">
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Indicador de scroll */}
