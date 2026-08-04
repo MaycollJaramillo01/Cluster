@@ -4,38 +4,29 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 /**
- * Poster as LCP on all viewports. Video only on desktop after idle so
- * mobile doesn't download 2–4 MB before the first paint settles.
+ * Poster paints first (LCP). Video mounts after idle on all viewports
+ * so the heavy download doesn't block the initial paint.
  */
 export function HeroMedia() {
   const [playVideo, setPlayVideo] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia(
-      '(min-width: 768px) and (prefers-reduced-motion: no-preference)'
-    );
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reduceMotion.matches) return;
 
-    const enable = () => {
-      if (mq.matches) setPlayVideo(true);
-    };
+    const enable = () => setPlayVideo(true);
 
     let idleId: number | undefined;
     let timeoutId: number | undefined;
 
+    // Delay so LCP can settle on the poster before fetching 2–4 MB of video.
     if ('requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(enable, { timeout: 2500 });
+      idleId = window.requestIdleCallback(enable, { timeout: 3000 });
     } else {
-      timeoutId = window.setTimeout(enable, 1200);
+      timeoutId = window.setTimeout(enable, 2000);
     }
 
-    const onChange = () => {
-      if (!mq.matches) setPlayVideo(false);
-      else enable();
-    };
-    mq.addEventListener('change', onChange);
-
     return () => {
-      mq.removeEventListener('change', onChange);
       if (idleId !== undefined) window.cancelIdleCallback(idleId);
       if (timeoutId !== undefined) window.clearTimeout(timeoutId);
     };
