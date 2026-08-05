@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { HomeHero } from '@/components/home/HomeHero';
 import { SolutionCard, type SolutionVideo } from '@/components/home/SolutionCard';
 import { Section, SectionHeading } from '@/components/ui/Section';
@@ -6,12 +7,24 @@ import { Button } from '@/components/ui/Button';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import { ServicesBento } from '@/components/home/ServicesBento';
-import { EcosystemDiagram } from '@/components/home/EcosystemDiagram';
-import { PricingPlans } from '@/components/home/PricingPlans';
+import { TeamSection } from '@/components/home/TeamSection';
 import { CaseCard } from '@/components/blocks/CaseCard';
 import { LogoWall } from '@/components/blocks/LogoWall';
-import { LeadQuiz } from '@/components/forms/LeadQuiz';
 import { caseStudies, site, whatsappLink } from '@/lib/site';
+
+const EcosystemDiagram = dynamic(
+  () =>
+    import('@/components/home/EcosystemDiagram').then((m) => m.EcosystemDiagram),
+  { ssr: true }
+);
+const PricingPlans = dynamic(
+  () => import('@/components/home/PricingPlans').then((m) => m.PricingPlans),
+  { ssr: true }
+);
+const LeadQuiz = dynamic(
+  () => import('@/components/forms/LeadQuiz').then((m) => m.LeadQuiz),
+  { ssr: true }
+);
 
 const solutions: {
   title: string;
@@ -253,6 +266,8 @@ export default function HomePage() {
         </div>
       </Section>
 
+      <TeamSection />
+
       {/* Ecosistema — un solo sistema (cierre) */}
       <Section tone="brand">
         <SectionHeading
@@ -322,7 +337,7 @@ export default function HomePage() {
               compromiso — el plan ideal para tu etapa y tu mayor desafío digital.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={site.calendarUrl} external size="lg" iconRight="arrow-right">
+              <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
                 Agendar llamada
               </Button>
               <Button

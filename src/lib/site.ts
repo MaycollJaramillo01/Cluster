@@ -9,7 +9,10 @@ export const site = {
   email: 'info@cluster.marketing',
   phoneDisplay: '(305) 479-9896',
   whatsappNumber: '13054799896', // sin signos, para wa.me
-  calendarUrl: 'https://calendly.com/clustermedia/llamada', // reemplazar por el embed real
+  calendarUrl: '/agendar',
+  calendarEmbedUrl:
+    'https://api.leadconnectorhq.com/widget/booking/vooJAmnWHNtuxm9K7TqU',
+  bookingScriptUrl: 'https://link.msgsndr.com/js/form_embed.js',
   location: 'Miami, FL · Estados Unidos',
   tagline: 'Comunicación digital que conecta con tu audiencia.',
   description:

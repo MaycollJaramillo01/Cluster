@@ -73,7 +73,6 @@ export default function ContactoPage() {
                     </p>
                     <Button
                       href={site.calendarUrl}
-                      external
                       size="sm"
                       className="mt-4"
                       icon="calendar"
@@ -104,7 +103,7 @@ export default function ContactoPage() {
                       className="mt-4"
                       icon="whatsapp"
                     >
-                      Escribir por WhatsApp
+                      WhatsApp
                     </Button>
                   </div>
                 </div>

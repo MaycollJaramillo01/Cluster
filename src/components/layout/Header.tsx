@@ -94,7 +94,7 @@ export function Header() {
           >
             <Icon name="whatsapp" size={18} />
           </a>
-          <Button href={site.calendarUrl} external size="sm" iconRight="arrow-right">
+          <Button href={site.calendarUrl} size="sm" iconRight="arrow-right">
             Agendar llamada
           </Button>
         </div>
@@ -165,7 +165,7 @@ export function Header() {
             );
           })}
           <div className="mt-5 flex flex-col gap-2.5">
-            <Button href={site.calendarUrl} external icon="calendar">
+            <Button href={site.calendarUrl} icon="calendar">
               Agendar llamada
             </Button>
             <Button
@@ -174,7 +174,7 @@ export function Header() {
               variant="whatsapp"
               icon="whatsapp"
             >
-              Escribir por WhatsApp
+              WhatsApp
             </Button>
           </div>
         </nav>

@@ -22,7 +22,6 @@ export function Logo({ variant = 'light', className = '' }: LogoProps) {
         alt="Cluster Media"
         width={400}
         height={222}
-        priority
         className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
       />
       <span

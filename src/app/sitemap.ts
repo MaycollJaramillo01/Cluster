@@ -21,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/sobre-cluster', priority: 0.6, freq: 'monthly' as const },
     { path: '/blog', priority: 0.7, freq: 'weekly' as const },
     { path: '/contacto', priority: 0.6, freq: 'yearly' as const },
+    { path: '/agendar', priority: 0.8, freq: 'monthly' as const },
   ];
 
   const now = new Date();

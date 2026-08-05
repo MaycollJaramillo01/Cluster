@@ -5,6 +5,7 @@ import { CheckList } from '@/components/blocks/Blocks';
 import { CTASection } from '@/components/blocks/CTASection';
 import { Reveal } from '@/components/ui/Reveal';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { TeamCarousel } from '@/components/home/TeamCarousel';
 import { JsonLd, breadcrumbSchema } from '@/components/seo/JsonLd';
 import { site } from '@/lib/site';
 
@@ -53,7 +54,13 @@ export default function SobrePage() {
       />
 
       <PageHero
-        image={{ src: "/assets/stock/team.jpg", alt: "Equipo de Cluster Media" }}
+        image={{
+          src: '/assets/stock/team.jpg',
+          alt: 'Equipo de Cluster Media',
+          // Foto horizontal del equipo: ratio amplio para que se vean los tres
+          aspectClassName: 'aspect-[3/2]',
+          imageClassName: 'object-cover object-center grayscale',
+        }}
         eyebrow="Sobre Cluster"
         title="Somos Cluster: comunicación digital que sí conecta con tu audiencia."
         subtitle="Construimos marcas, contenido y sistemas digitales para negocios que quieren salirse del molde corporativo y conectar de forma real."
@@ -116,6 +123,9 @@ export default function SobrePage() {
             description="Estrategia, diseño, edición audiovisual, contenido, campañas, CRM, automatización y websites trabajando juntos para que tu negocio conecte mejor y crezca."
           />
         </div>
+        <Reveal delay={120}>
+          <TeamCarousel />
+        </Reveal>
       </Section>
 
       <CTASection
