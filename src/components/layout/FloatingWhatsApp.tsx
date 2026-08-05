@@ -15,7 +15,6 @@ export function FloatingWhatsApp() {
       <span className="hidden text-sm font-semibold sm:inline">
         Escríbenos
       </span>
-      <span className="absolute inset-0 -z-10 animate-ping bg-[#25D366] opacity-20" />
     </a>
   );
 }

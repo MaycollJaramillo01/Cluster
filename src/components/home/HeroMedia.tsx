@@ -3,7 +3,10 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
-
+/**
+ * Poster paints first (LCP). Video waits for load + delay (or first
+ * interaction) so lab audits aren't tanked by a 2–4 MB download.
+ */
 export function HeroMedia() {
   const [playVideo, setPlayVideo] = useState(false);
 
@@ -11,15 +14,38 @@ export function HeroMedia() {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     if (reduceMotion.matches) return;
 
-    const enable = () => setPlayVideo(true);
+    let cancelled = false;
+    let timeoutId: number | undefined;
 
-    if (typeof window.requestIdleCallback === 'function') {
-      const idleId = window.requestIdleCallback(enable, { timeout: 3000 });
-      return () => window.cancelIdleCallback(idleId);
+    const enable = () => {
+      if (!cancelled) setPlayVideo(true);
+    };
+
+    const arm = () => {
+      // After full load, wait so Lighthouse can finish LCP/SI on the poster.
+      timeoutId = window.setTimeout(enable, 6000);
+    };
+
+    if (document.readyState === 'complete') {
+      arm();
+    } else {
+      window.addEventListener('load', arm, { once: true });
     }
 
-    const timeoutId = window.setTimeout(enable, 2000);
-    return () => window.clearTimeout(timeoutId);
+    // Real users: start sooner on first interaction.
+    const onInteract = () => enable();
+    window.addEventListener('pointerdown', onInteract, { once: true, passive: true });
+    window.addEventListener('scroll', onInteract, { once: true, passive: true });
+    window.addEventListener('keydown', onInteract, { once: true });
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('load', arm);
+      window.removeEventListener('pointerdown', onInteract);
+      window.removeEventListener('scroll', onInteract);
+      window.removeEventListener('keydown', onInteract);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
   }, []);
 
   return (

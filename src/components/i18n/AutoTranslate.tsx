@@ -172,7 +172,26 @@ export function AutoTranslate() {
       return;
     }
 
-    setEnabled(true);
+    let timeoutId: number | undefined;
+    let armed = false;
+
+    const arm = () => {
+      if (armed) return;
+      armed = true;
+      setEnabled(true);
+    };
+
+    // Keep Translate off the critical path; load after idle interaction or delay.
+    const onInteract = () => arm();
+    window.addEventListener('pointerdown', onInteract, { once: true, passive: true });
+    window.addEventListener('scroll', onInteract, { once: true, passive: true });
+    timeoutId = window.setTimeout(arm, 8000);
+
+    return () => {
+      window.removeEventListener('pointerdown', onInteract);
+      window.removeEventListener('scroll', onInteract);
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
