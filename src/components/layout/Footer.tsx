@@ -98,7 +98,11 @@ export function Footer() {
                   href={site.calendarUrl}
                   className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
-                  <Icon name="calendar" size={17} className="text-accent" />
+                  <Icon
+                    name="calendar"
+                    size={17}
+                    className="shrink-0 text-accent"
+                  />
                   Agendar llamada
                 </a>
               </li>
@@ -109,7 +113,11 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
-                  <Icon name="whatsapp" size={17} className="text-accent" />
+                  <Icon
+                    name="whatsapp"
+                    size={17}
+                    className="shrink-0 text-accent"
+                  />
                   WhatsApp
                 </a>
               </li>
@@ -118,13 +126,21 @@ export function Footer() {
                   href={`mailto:${site.email}`}
                   className="inline-flex items-center gap-2.5 text-[15px] text-white/65 transition-colors hover:text-accent"
                 >
-                  <Icon name="mail" size={17} className="text-accent" />
+                  <Icon name="mail" size={17} className="shrink-0 text-accent" />
                   {site.email}
                 </a>
               </li>
-              <li className="inline-flex items-center gap-2.5 text-[15px] text-white/65">
-                <Icon name="pin" size={17} className="text-accent" />
-                {site.location}
+              <li className="flex items-start gap-2.5 text-[15px] text-white/65">
+                <Icon
+                  name="pin"
+                  size={17}
+                  className="mt-0.5 shrink-0 text-accent"
+                />
+                <span className="leading-snug">
+                  2 S Biscayne Boulevard Suite 3200 - 6719
+                  <br />
+                  Miami, Florida 33131, United States
+                </span>
               </li>
             </ul>
           </div>

@@ -36,8 +36,10 @@ export const localBusinessSchema = {
   areaServed: ['US', 'HN', 'MX', 'ES', 'Latinoamérica'],
   address: {
     '@type': 'PostalAddress',
+    streetAddress: '2 S Biscayne Boulevard Suite 3200 - 6719',
     addressLocality: 'Miami',
     addressRegion: 'FL',
+    postalCode: '33131',
     addressCountry: 'US',
   },
   priceRange: '$$',

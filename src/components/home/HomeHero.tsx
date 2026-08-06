@@ -62,7 +62,7 @@ export function HomeHero() {
         {/* Barra de métricas */}
         <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-surface backdrop-blur-sm sm:grid-cols-4">
           {[
-            { value: '+50', label: 'negocios atendidos' },
+            { value: '+200', label: 'negocios atendidos' },
             { value: '~20', label: 'leads/día en campañas' },
             { value: '3', label: 'mercados: EE.UU · LATAM · ES' },
             { value: '17', label: 'servicios digitales' },

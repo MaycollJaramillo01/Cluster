@@ -34,6 +34,145 @@
   --card-shadow: 0 30px 60px -30px rgba(17, 17, 17, 0.18);
 }
 
+/* Ruta Local: acentos Marca País Honduras (solo /ruta-local) */
+.theme-ruta-local {
+  --hn-navy: #0a0a4a;
+  --hn-yellow: #f5c518;
+  --hn-orange: #f07a20;
+  --hn-magenta: #c41e8a;
+  --hn-blue: #2b4db8;
+  --hn-cyan: #2eb8e0;
+  --hn-lime: #7bc142;
+  --hn-ribbon: linear-gradient(
+    90deg,
+    var(--hn-yellow) 0%,
+    var(--hn-orange) 18%,
+    var(--hn-magenta) 38%,
+    var(--hn-blue) 58%,
+    var(--hn-cyan) 78%,
+    var(--hn-lime) 100%
+  );
+}
+
+.theme-ruta-local .theme-dark {
+  --accent: var(--hn-cyan);
+  --accent-fg: #0a0a4a;
+  --surface: rgba(46, 184, 224, 0.14);
+  --surface-2: rgba(196, 30, 138, 0.14);
+  --line: rgba(170, 220, 240, 0.2);
+  --card-shadow: 0 30px 60px -30px rgba(10, 10, 74, 0.55);
+}
+
+.theme-ruta-local .theme-light {
+  --accent: var(--hn-magenta);
+  --accent-fg: #ffffff;
+  --surface: rgba(43, 77, 184, 0.06);
+  --surface-2: rgba(245, 197, 24, 0.12);
+  --line: rgba(10, 10, 74, 0.12);
+  --card-shadow: 0 30px 60px -30px rgba(10, 10, 74, 0.14);
+}
+
+.theme-ruta-local .hn-glow {
+  background: radial-gradient(
+    circle,
+    rgba(46, 184, 224, 0.45),
+    rgba(196, 30, 138, 0.22) 40%,
+    transparent 70%
+  );
+}
+
+.theme-ruta-local .hn-glow-alt {
+  background: radial-gradient(
+    circle,
+    rgba(123, 193, 66, 0.35),
+    rgba(240, 122, 32, 0.2) 42%,
+    transparent 72%
+  );
+}
+
+.theme-ruta-local .hn-ribbon {
+  background-image: var(--hn-ribbon);
+}
+
+.theme-ruta-local .hn-stripe {
+  display: block;
+  height: 4px;
+  width: 5.5rem;
+  background-image: var(--hn-ribbon);
+}
+
+.theme-ruta-local .hn-accent-0 {
+  color: var(--hn-yellow);
+  background-color: rgba(245, 197, 24, 0.16);
+}
+.theme-ruta-local .hn-accent-1 {
+  color: var(--hn-magenta);
+  background-color: rgba(196, 30, 138, 0.16);
+}
+.theme-ruta-local .hn-accent-2 {
+  color: var(--hn-cyan);
+  background-color: rgba(46, 184, 224, 0.16);
+}
+.theme-ruta-local .hn-accent-3 {
+  color: var(--hn-lime);
+  background-color: rgba(123, 193, 66, 0.16);
+}
+.theme-ruta-local .hn-accent-4 {
+  color: var(--hn-orange);
+  background-color: rgba(240, 122, 32, 0.16);
+}
+.theme-ruta-local .hn-accent-5 {
+  color: var(--hn-blue);
+  background-color: rgba(43, 77, 184, 0.16);
+}
+
+.theme-ruta-local .hn-dot-0 {
+  background-color: var(--hn-yellow);
+}
+.theme-ruta-local .hn-dot-1 {
+  background-color: var(--hn-magenta);
+}
+.theme-ruta-local .hn-dot-2 {
+  background-color: var(--hn-cyan);
+}
+.theme-ruta-local .hn-dot-3 {
+  background-color: var(--hn-lime);
+}
+.theme-ruta-local .hn-dot-4 {
+  background-color: var(--hn-orange);
+}
+.theme-ruta-local .hn-dot-5 {
+  background-color: var(--hn-blue);
+}
+
+.theme-ruta-local .hn-num-0 {
+  color: var(--hn-yellow);
+}
+.theme-ruta-local .hn-num-1 {
+  color: var(--hn-magenta);
+}
+.theme-ruta-local .hn-num-2 {
+  color: var(--hn-cyan);
+}
+.theme-ruta-local .hn-num-3 {
+  color: var(--hn-lime);
+}
+.theme-ruta-local .hn-num-4 {
+  color: var(--hn-orange);
+}
+.theme-ruta-local .hn-num-5 {
+  color: var(--hn-blue);
+}
+
+.theme-ruta-local .hn-tag {
+  border-left: 3px solid var(--hn-cyan);
+}
+
+.theme-ruta-local .hn-card-bar {
+  height: 4px;
+  background-image: var(--hn-ribbon);
+}
+
 @layer base {
   * {
     border-color: var(--line);

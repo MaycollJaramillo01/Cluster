@@ -21,7 +21,7 @@ export const reachMetrics: ReachMetric[] = [
   { platform: 'TikTok', value: '14.3M', icon: 'bolt' },
   { platform: 'Facebook', value: '5.3M', icon: 'facebook' },
   { platform: 'YouTube', value: '840K', icon: 'youtube' },
-  { platform: 'Instagram', value: '47K', icon: 'instagram' },
+  { platform: 'Instagram', value: '3.2M', icon: 'instagram' },
 ];
 
 export const newFollowers = '+8,000';
@@ -42,7 +42,7 @@ export const municipios: CaseMunicipio[] = [
     blurb:
       'Recorrimos su centro histórico, su cultura cafetalera y su gastronomía con podcast, reels y tomas aéreas.',
     tags: ['Podcast', 'Dron', 'Cultura', 'Gastronomía'],
-    image: '/assets/stock/creative.jpg',
+    image: '/assets/stock/ruta-local/santa-rosa.jpg',
   },
   {
     name: 'San Juan, Intibucá',
@@ -50,15 +50,15 @@ export const municipios: CaseMunicipio[] = [
     blurb:
       'Contamos la identidad lenca, sus paisajes y sus líderes locales en una serie de contenido para redes.',
     tags: ['Reels', 'Identidad', 'Paisaje', 'Líderes'],
-    image: '/assets/stock/strategy2.jpg',
+    image: '/assets/stock/ruta-local/san-juan.png',
   },
   {
-    name: 'San Marcos',
+    name: 'San Marcos, Ocotepeque',
     region: 'Ocotepeque · Honduras',
     blurb:
       'Mostramos su turismo, sus tradiciones y su gente con vlogs, transmisiones en vivo y miniaturas para video.',
     tags: ['Vlog', 'En vivo', 'Turismo', 'Tradición'],
-    image: '/assets/stock/collaboration.jpg',
+    image: '/assets/stock/ruta-local/san-marcos.webp',
   },
 ];
 
