@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { PageHero } from '@/components/blocks/PageHero';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { CheckList } from '@/components/blocks/Blocks';
@@ -12,34 +13,78 @@ import { site } from '@/lib/site';
 export const metadata: Metadata = {
   title: 'Sobre Cluster Media | Agencia digital para negocios hispanos',
   description:
-    'Conoce a Cluster Media, agencia de comunicación digital que construye marcas, contenido y sistemas para conectar con audiencias reales.',
+    'Conoce a Cluster Media: branding, websites, campañas, redes, automatización e IA para hacer crecer negocios.',
   alternates: { canonical: '/sobre-cluster' },
 };
 
 const beliefs = [
-  'La relevancia ya no se compra: se gana contando historias relevantes.',
-  'El contenido debe sentirse cercano, real y distinto.',
-  'Una marca debe conectar antes de intentar vender.',
-  'Las campañas funcionan mejor cuando parten de una historia clara.',
-  'La tecnología debe ayudar a responder, ordenar y vender mejor.',
-  'Cada pieza digital debe salir del molde corporativo.',
+  'Una marca clara es la base: si no se entiende quién eres, cuesta vender.',
+  'El website y el SEO deben convertir atención en oportunidades reales.',
+  'Las campañas rinden más cuando hay oferta, medición y seguimiento.',
+  'El contenido acerca; la automatización responde a tiempo y no pierde leads.',
+  'La tecnología (CRM, WhatsApp, IA) debe ordenar y vender mejor, no complicar.',
+  'Todo el ecosistema digital debe trabajar junto, no en piezas sueltas.',
 ];
 
 const values: { icon: IconName; title: string; text: string }[] = [
   {
-    icon: 'users',
-    title: 'Conexión real',
-    text: 'Creamos comunicación cercana y humana para que tu marca conecte de verdad con las personas.',
+    icon: 'shield',
+    title: 'Marca con autoridad',
+    text: 'Branding, identidad y posicionamiento para que tu negocio se vea profesional y genere confianza.',
   },
   {
-    icon: 'megaphone',
-    title: 'Contenido que rompe el molde',
-    text: 'Lo que funciona hoy no es gritar más, sino crear piezas que la audiencia quiera ver y recordar.',
+    icon: 'target',
+    title: 'Crecimiento medible',
+    text: 'Campañas, redes y performance orientados a leads, ventas y resultados que se puedan seguir.',
+  },
+  {
+    icon: 'bolt',
+    title: 'Sistemas que responden',
+    text: 'Websites, CRM, automatizaciones e IA para captar, atender y dar seguimiento sin perder oportunidades.',
+  },
+];
+
+const capabilities: {
+  icon: IconName;
+  title: string;
+  text: string;
+  href: string;
+}[] = [
+  {
+    icon: 'sparkles',
+    title: 'Branding',
+    text: 'Identidad visual, manual de marca y posicionamiento.',
+    href: '/branding',
   },
   {
     icon: 'globe',
-    title: 'Cercanía digital',
-    text: 'Unimos estrategia, redes, campañas, websites y automatización para que tu marca se sienta presente.',
+    title: 'Websites / SEO',
+    text: 'Sitios y landings pensados para convertir y posicionar.',
+    href: '/websites-seo',
+  },
+  {
+    icon: 'megaphone',
+    title: 'Redes y contenido',
+    text: 'Estrategia y piezas para conectar con tu audiencia.',
+    href: '/redes-sociales',
+  },
+  {
+    icon: 'target',
+    title: 'Google Ads',
+    text: 'Campañas de performance cuando tu cliente ya busca.',
+    href: '/google-ads',
+  },
+  {
+    icon: 'bolt',
+    title: 'IA / Automatizaciones',
+    text: 'WhatsApp, CRM y workflows para no perder leads.',
+    href: '/automatizaciones-ia',
+  },
+  {
+    icon: 'search',
+    title: 'SEO Audit',
+    text: 'Diagnóstico para saber qué frena tu website.',
+    href: '/seo-audit',
   },
 ];
 
@@ -62,8 +107,8 @@ export default function SobrePage() {
           imageClassName: 'object-cover object-center grayscale',
         }}
         eyebrow="Sobre Cluster"
-        title="Somos Cluster: comunicación digital que sí conecta con tu audiencia."
-        subtitle="Construimos marcas, contenido y sistemas digitales para negocios que quieren salirse del molde corporativo y conectar de forma real."
+        title="Somos Cluster: la agencia digital que hace crecer tu negocio."
+        subtitle="Integramos marca, website, campañas, redes y automatización para que tu negocio conecte, convierta y escale."
         whatsappMessage="Hola, quiero conocer más sobre Cluster Media."
       />
 
@@ -71,9 +116,9 @@ export default function SobrePage() {
         <div className="mx-auto max-w-3xl text-center">
           <SectionHeading
             align="center"
-            eyebrow="Conexión real, cercanía digital"
-            title="Conexión real, cercanía digital."
-            description="Hoy un contenido auténtico puede mover más que una producción costosa sin alma. Las reglas cambiaron: ahora gana la marca que cuenta historias relevantes, conecta de verdad y se siente cercana."
+            eyebrow="Un solo sistema"
+            title="No vendemos piezas sueltas. Construimos un ecosistema."
+            description="Branding, presencia digital, generación de clientes y automatización comercial trabajando juntos: para que tu marca se vea bien, atraiga prospectos y les dé seguimiento a tiempo."
           />
         </div>
       </Section>
@@ -101,26 +146,59 @@ export default function SobrePage() {
       </Section>
 
       <Section tone="dark">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-          <SectionHeading
-            tone="light"
-            eyebrow="Qué creemos"
-            title="La relevancia se gana contando historias relevantes."
-            description="No creemos en piezas sueltas ni en contenido que nadie recuerda. Creamos comunicación digital con intención, estrategia y cercanía."
-          />
-          <Reveal delay={120} className="flex items-center">
-            <CheckList items={beliefs} tone="light" className="gap-4" />
-          </Reveal>
+        <SectionHeading
+          tone="light"
+          eyebrow="Qué hacemos"
+          title="Servicios para cada etapa de tu crecimiento."
+          description="Desde la identidad de marca hasta campañas, websites y sistemas con IA: todo bajo un mismo equipo."
+          className="mb-12"
+        />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {capabilities.map((c, i) => (
+            <Reveal key={c.title} delay={i * 60}>
+              <Link
+                href={c.href}
+                className="group flex h-full flex-col bg-surface p-7 transition-colors duration-300 hover:bg-surface-2"
+              >
+                <span className="flex h-11 w-11 items-center justify-center bg-surface-2 text-accent transition-colors group-hover:bg-accent group-hover:text-accent-fg">
+                  <Icon name={c.icon} size={22} />
+                </span>
+                <h3 className="mt-5 font-display text-lg font-semibold text-fg">
+                  {c.title}
+                </h3>
+                <p className="mt-2 flex-1 text-[15px] leading-relaxed text-muted">
+                  {c.text}
+                </p>
+                <span className="mono-label mt-5 inline-flex items-center gap-2 text-accent">
+                  Ver servicio
+                  <Icon name="arrow-right" size={14} />
+                </span>
+              </Link>
+            </Reveal>
+          ))}
         </div>
       </Section>
 
       <Section tone="light">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          <SectionHeading
+            eyebrow="Qué creemos"
+            title="El crecimiento exige marca, sistema y seguimiento."
+            description="No creemos en marketing aislado. Construimos presencia digital con estrategia: para atraer, convertir y responder antes de que el lead se enfríe."
+          />
+          <Reveal delay={120} className="flex items-center">
+            <CheckList items={beliefs} className="gap-4" />
+          </Reveal>
+        </div>
+      </Section>
+
+      <Section tone="soft">
         <div className="mx-auto max-w-3xl text-center">
           <SectionHeading
             align="center"
             eyebrow="Equipo"
             title="Un equipo para construir algo grande con tu marca."
-            description="Estrategia, diseño, edición audiovisual, contenido, campañas, CRM, automatización y websites trabajando juntos para que tu negocio conecte mejor y crezca."
+            description="Estrategia, diseño, websites, SEO, campañas, redes, CRM, automatización e IA trabajando juntos para que tu negocio conecte mejor y crezca."
           />
         </div>
         <Reveal delay={120}>

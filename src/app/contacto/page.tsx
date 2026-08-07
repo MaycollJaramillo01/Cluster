@@ -125,7 +125,7 @@ export default function ContactoPage() {
                       <div className="font-medium">{site.email}</div>
                     </div>
                   </a>
-                  <div className="flex items-center gap-4 text-muted">
+                  <div className="flex items-start gap-4 text-muted">
                     <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl bg-surface text-accent">
                       <Icon name="pin" size={22} />
                     </span>
@@ -133,7 +133,11 @@ export default function ContactoPage() {
                       <div className="font-mono text-xs uppercase tracking-wider text-faint">
                         Ubicación
                       </div>
-                      <div className="font-medium">{site.location}</div>
+                      <div className="font-medium leading-snug">
+                        2 S Biscayne Boulevard Suite 3200 - 6719
+                        <br />
+                        Miami, Florida 33131, United States
+                      </div>
                     </div>
                   </div>
                 </div>

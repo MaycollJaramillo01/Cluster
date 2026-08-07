@@ -5,7 +5,8 @@ import Honduras from '@react-map/honduras';
 // Departamentos donde Ruta Local ya ejecutó producciones.
 // (Santa Rosa → Copán · San Juan → Intibucá · San Marcos → Ocotepeque)
 const activeDepts = ['Copán', 'Intibucá', 'Ocotepeque'];
-const accent = '#02C39A';
+// Cian Marca País Honduras
+const accent = '#2EB8E0';
 
 const cityColors = Object.fromEntries(
   activeDepts.map((d) => [d, accent])
@@ -17,10 +18,10 @@ export function HondurasMap() {
       <Honduras
         type="select-multiple"
         size={560}
-        mapColor="#262626"
-        strokeColor="rgba(249,249,249,0.22)"
+        mapColor="#16182a"
+        strokeColor="rgba(170,210,245,0.28)"
         strokeWidth={0.8}
-        hoverColor="rgba(2,195,154,0.55)"
+        hoverColor="rgba(196,30,138,0.45)"
         selectColor={accent}
         cityColors={cityColors}
         disableClick

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 
 export default function RutaLocalPage() {
   return (
-    <>
+    <div className="theme-ruta-local">
       <JsonLd
         data={serviceSchema({
           name: 'Ruta Local by Cluster',
@@ -55,7 +55,7 @@ export default function RutaLocalPage() {
       <IdealParaSection />
       <BeneficiosSection />
       <FormularioSection />
-    </>
+    </div>
   );
 }
 
@@ -68,16 +68,21 @@ function Hero() {
         aria-hidden="true"
       />
       <div
-        className="absolute -left-40 -top-20 h-[32rem] w-[32rem] rounded-full bg-surface blur-[130px]"
+        className="hn-glow absolute -left-40 -top-20 h-[32rem] w-[32rem] rounded-full blur-[130px]"
+        aria-hidden="true"
+      />
+      <div
+        className="hn-glow-alt absolute -right-32 bottom-0 h-[24rem] w-[24rem] rounded-full blur-[120px] opacity-90"
         aria-hidden="true"
       />
       <div className="grain absolute inset-0" aria-hidden="true" />
+      <div className="hn-ribbon absolute inset-x-0 top-0 h-1.5" aria-hidden="true" />
 
       <div className="container-x relative z-[1]">
         <div className="grid min-w-0 grid-cols-1 items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
-          {/* Texto */}
           <div className="min-w-0">
             <Reveal>
+              <div className="hn-stripe mb-4" aria-hidden="true" />
               <Eyebrow>Ruta Local by Cluster</Eyebrow>
             </Reveal>
             <Reveal delay={60}>
@@ -94,7 +99,7 @@ function Hero() {
             </Reveal>
 
             <Reveal delay={160}>
-              <div className="mt-9 inline-flex items-end gap-3 bg-surface px-6 py-4 backdrop-blur-sm">
+              <div className="mt-9 inline-flex items-end gap-3 border border-[color:rgba(46,184,224,0.5)] bg-surface px-6 py-4 backdrop-blur-sm">
                 <span className="font-display text-4xl font-semibold text-accent">
                   {totalReach}
                 </span>
@@ -116,8 +121,8 @@ function Hero() {
             </Reveal>
           </div>
 
-          {/* Collage visual */}
           <Reveal delay={160} className="relative min-w-0">
+            <div className="hn-card-bar absolute inset-x-0 top-0 z-[1]" aria-hidden="true" />
             <div className="grid grid-cols-2 gap-3">
               <div className="relative aspect-[3/4] overflow-hidden">
                 <Image
@@ -140,7 +145,7 @@ function Hero() {
               </div>
             </div>
             <div
-              className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10"
+              className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-[color:rgba(46,184,224,0.45)]"
               aria-hidden="true"
             />
           </Reveal>
@@ -181,18 +186,25 @@ function TerritoryMap() {
         className="absolute inset-0 bg-grid-fade [background-size:40px_40px] opacity-50"
         aria-hidden="true"
       />
+      <div
+        className="hn-glow pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full blur-[80px]"
+        aria-hidden="true"
+      />
       <div className="grain absolute inset-0" aria-hidden="true" />
       <div className="relative z-[1]">
-        <span className="mono-label text-faint">
-          Honduras · Municipios ejecutados
-        </span>
+        <div className="flex items-center justify-between gap-4">
+          <span className="mono-label text-faint">
+            Honduras · Municipios ejecutados
+          </span>
+          <div className="hn-stripe" aria-hidden="true" />
+        </div>
         <div className="mt-4">
           <HondurasMap />
         </div>
         <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-3 border-t border-line pt-5">
-          {legend.map((l) => (
+          {legend.map((l, i) => (
             <li key={l.name} className="flex items-center gap-2.5">
-              <span className="h-2.5 w-2.5 flex-none bg-accent" />
+              <span className={`h-2.5 w-2.5 flex-none hn-dot-${i}`} />
               <span className="font-display text-base font-semibold uppercase text-fg">
                 {l.name}
               </span>
@@ -211,14 +223,17 @@ function TerritoryMap() {
 function AlcanceSection() {
   return (
     <Section tone="dark">
-      <SectionHeading
-        eyebrow="Alcance y métricas"
-        align="center"
-        title="Más de 20 millones de visualizaciones."
-        description="Los contenidos de Ruta Local llegan a audiencias reales en todas las plataformas."
-        className="mb-14"
-      />
-
+      <div className="mb-14 text-center">
+        <SectionHeading
+          eyebrow="Alcance y métricas"
+          align="center"
+          title="Más de 20 millones de visualizaciones."
+          description="Los contenidos de Ruta Local llegan a audiencias reales en todas las plataformas."
+        />
+        <p className="mt-3 font-mono text-[11px] tracking-wide text-faint">
+          *Promedio mensual
+        </p>
+      </div>
       <div className="grid gap-px overflow-hidden bg-surface-2 sm:grid-cols-2 lg:grid-cols-4">
         {reachMetrics.map((m, i) => (
           <Reveal
@@ -226,7 +241,9 @@ function AlcanceSection() {
             delay={i * 60}
             className="group bg-theme p-8 transition-colors duration-500 hover:bg-surface"
           >
-            <span className="flex h-12 w-12 items-center justify-center bg-surface text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-accent-fg">
+            <span
+              className={`flex h-12 w-12 items-center justify-center transition-transform duration-500 group-hover:scale-105 hn-accent-${i}`}
+            >
               <Icon name={m.icon} size={24} />
             </span>
             <p className="mt-6 font-display text-5xl font-semibold text-fg">
@@ -241,12 +258,12 @@ function AlcanceSection() {
 
       <Reveal
         delay={120}
-        className="mt-px flex flex-col items-center justify-between gap-4 bg-accent px-8 py-7 text-center text-accent-fg sm:flex-row sm:text-left"
+        className="hn-ribbon mt-px flex flex-col items-center justify-between gap-4 px-8 py-7 text-center text-white sm:flex-row sm:text-left"
       >
         <p className="font-display text-3xl font-semibold sm:text-4xl">
           {newFollowers} seguidores nuevos
         </p>
-        <p className="max-w-md font-mono text-sm uppercase tracking-wider opacity-80">
+        <p className="max-w-md font-mono text-sm uppercase tracking-wider text-white/85">
           Comunidad creciente que sigue las historias de cada municipio.
         </p>
       </Reveal>
@@ -272,6 +289,7 @@ function CasosSection() {
             as="article"
             className="group flex flex-col overflow-hidden bg-surface transition-colors duration-500 hover:bg-surface-2"
           >
+            <div className="hn-card-bar" aria-hidden="true" />
             <div className="relative aspect-[4/3] overflow-hidden">
               <Image
                 src={m.image}
@@ -280,7 +298,9 @@ function CasosSection() {
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover grayscale transition duration-700 group-hover:scale-105 group-hover:grayscale-0"
               />
-              <span className="absolute left-4 top-4 flex h-11 w-11 items-center justify-center bg-ink-950/70 text-accent backdrop-blur-sm">
+              <span
+                className={`absolute left-4 top-4 flex h-11 w-11 items-center justify-center backdrop-blur-sm hn-accent-${i}`}
+              >
                 <Icon name="pin" size={20} />
               </span>
             </div>
@@ -296,7 +316,7 @@ function CasosSection() {
                 {m.tags.map((t) => (
                   <span
                     key={t}
-                    className="bg-surface-2 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-muted"
+                    className="hn-tag bg-surface-2 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-muted"
                   >
                     {t}
                   </span>
@@ -326,14 +346,15 @@ function PaquetesSection() {
           <Reveal
             key={p.name}
             delay={i * 80}
-            className={`group relative flex flex-col p-8 transition-all duration-500 hover:-translate-y-1.5 ${
+            className={`group relative flex flex-col overflow-hidden p-8 transition-all duration-500 hover:-translate-y-1.5 ${
               p.highlight
                 ? 'bg-surface-2 shadow-glow ring-1 ring-inset ring-[color:var(--accent)] lg:-mt-4 lg:pb-12'
                 : 'bg-surface hover:bg-surface-2'
             }`}
           >
+            <div className="hn-card-bar absolute inset-x-0 top-0" aria-hidden="true" />
             {p.badge && (
-              <span className="mono-label absolute -top-3 left-8 whitespace-nowrap bg-accent px-4 py-1.5 text-accent-fg">
+              <span className="mono-label absolute -top-3 left-8 z-[1] whitespace-nowrap bg-accent px-4 py-1.5 text-accent-fg">
                 {p.badge}
               </span>
             )}
@@ -347,7 +368,9 @@ function PaquetesSection() {
             <ul className="mt-6 flex-1 space-y-3 border-t border-line pt-6">
               {p.features.map((f) => (
                 <li key={f} className="flex items-start gap-3 text-[15px] text-muted">
-                  <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center bg-surface text-accent">
+                  <span
+                    className={`mt-0.5 flex h-5 w-5 flex-none items-center justify-center hn-accent-${i}`}
+                  >
                     <Icon name="check" size={13} strokeWidth={2.5} />
                   </span>
                   {f}
@@ -387,7 +410,9 @@ function IdealParaSection() {
             delay={i * 50}
             className="group flex items-center gap-4 bg-theme p-6 transition-colors duration-500 hover:bg-surface"
           >
-            <span className="flex h-11 w-11 flex-none items-center justify-center bg-surface text-accent transition-colors duration-500 group-hover:bg-accent group-hover:text-accent-fg">
+            <span
+              className={`flex h-11 w-11 flex-none items-center justify-center transition-transform duration-500 group-hover:scale-105 hn-accent-${i}`}
+            >
               <Icon name={a.icon} size={22} />
             </span>
             <span className="font-display text-lg font-semibold uppercase text-fg">
@@ -416,10 +441,12 @@ function BeneficiosSection() {
             delay={i * 50}
             className="group relative bg-theme p-8 transition-colors duration-500 hover:bg-surface"
           >
-            <span className="mono-label absolute right-6 top-6 text-faint">
+            <span className={`mono-label absolute right-6 top-6 hn-num-${i % 6}`}>
               {String(i + 1).padStart(2, '0')}
             </span>
-            <span className="flex h-12 w-12 items-center justify-center bg-surface text-accent transition-all duration-500 group-hover:bg-accent group-hover:text-accent-fg">
+            <span
+              className={`flex h-12 w-12 items-center justify-center transition-transform duration-500 group-hover:scale-105 hn-accent-${i % 6}`}
+            >
               <Icon name={b.icon} size={24} />
             </span>
             <h3 className="mt-5 font-display text-xl font-semibold text-fg">

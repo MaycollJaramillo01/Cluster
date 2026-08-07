@@ -13,7 +13,7 @@ export const site = {
   calendarEmbedUrl:
     'https://api.leadconnectorhq.com/widget/booking/vooJAmnWHNtuxm9K7TqU',
   bookingScriptUrl: 'https://link.msgsndr.com/js/form_embed.js',
-  location: 'Miami, FL · Estados Unidos',
+  location: '2 S Biscayne Boulevard Suite 3200 - 6719, Miami, Florida 33131, United States',
   tagline: 'Comunicación digital que conecta con tu audiencia.',
   description:
     'Construimos marcas, contenido, campañas, websites y automatizaciones para conectar con audiencias reales y generar crecimiento.',
@@ -47,7 +47,8 @@ export const mainNav = [
       { label: 'SEO Audit', href: '/seo-audit' },
     ],
   },
-  { label: 'Ruta Local', href: '/ruta-local' },
+  // Ruta Local es tratada como landing page, por lo que no se incluye en la navegación principal.
+  //{ label: 'Ruta Local', href: '/ruta-local' },
   { label: 'Planes', href: '/#planes' },
   { label: 'Casos de Éxito', href: '/casos-de-exito' },
   { label: 'Sobre Cluster', href: '/sobre-cluster' },
