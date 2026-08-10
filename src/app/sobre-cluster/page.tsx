@@ -65,7 +65,7 @@ const capabilities: {
   {
     icon: 'megaphone',
     title: 'Redes y contenido',
-    text: 'Estrategia y piezas para conectar con tu audiencia.',
+    text: 'Estrategia web con las y piezas para conectar con tu audiencia.',
     href: '/redes-sociales',
   },
   {

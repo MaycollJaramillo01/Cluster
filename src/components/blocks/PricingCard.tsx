@@ -14,7 +14,7 @@ export function PricingCard({ plan, index = 0 }: { plan: Plan; index?: number })
       }`}
     >
       {plan.highlight && (
-        <span className="mono-label absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-accent px-4 py-1.5 text-accent-fg">
+        <span className="mono-label mb-4 inline-flex w-fit bg-accent px-4 py-1.5 text-accent-fg">
           Más popular
         </span>
       )}
