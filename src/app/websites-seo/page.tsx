@@ -69,18 +69,45 @@ export default function WebsitesSeoPage() {
         </div>
       </Section>
 
-      {/* Conexión con Paquete Inicial */}
+      {/* Planes de desarrollo y mantenimiento */}
       <Section tone="dark">
+        <Reveal className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-surface p-8 text-center sm:flex-row sm:text-left lg:p-10">
+          <div className="flex items-center gap-5">
+            <span className="hidden h-14 w-14 flex-none items-center justify-center rounded-2xl bg-surface text-accent sm:flex">
+              <Icon name="globe" size={28} />
+            </span>
+            <div>
+              <h3 className="font-display text-xl font-bold text-white">
+                Desarrollo y mantenimiento web
+              </h3>
+              <p className="mt-1.5 text-white/65">
+                Planes desde USD 99/mes: Website, Plus, Leads, SEO y más.
+              </p>
+            </div>
+          </div>
+          <Button
+            href="/desarrollo-web"
+            size="lg"
+            className="flex-none"
+            iconRight="arrow-right"
+          >
+            Ver planes web
+          </Button>
+        </Reveal>
+      </Section>
+
+      {/* Conexión con Paquete Inicial */}
+      <Section tone="soft">
         <Reveal className="flex flex-col items-center justify-between gap-6 rounded-3xl bg-surface p-8 text-center sm:flex-row sm:text-left lg:p-10">
           <div className="flex items-center gap-5">
             <span className="hidden h-14 w-14 flex-none items-center justify-center rounded-2xl bg-surface text-accent sm:flex">
               <Icon name="rocket" size={28} />
             </span>
             <div>
-              <h3 className="font-display text-xl font-bold text-white">
+              <h3 className="font-display text-xl font-bold text-fg">
                 ¿Necesitas empezar rápido?
               </h3>
-              <p className="mt-1.5 text-white/65">
+              <p className="mt-1.5 text-muted">
                 Conoce nuestro Paquete Digital Inicial por USD 590.
               </p>
             </div>

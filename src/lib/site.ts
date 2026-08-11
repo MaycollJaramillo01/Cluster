@@ -44,6 +44,7 @@ export const mainNav = [
       { label: 'Google Ads', href: '/google-ads' },
       { label: 'IA / Automatizaciones', href: '/automatizaciones-ia' },
       { label: 'Websites / SEO', href: '/websites-seo' },
+      { label: 'Desarrollo web', href: '/desarrollo-web' },
       { label: 'SEO Audit', href: '/seo-audit' },
     ],
   },

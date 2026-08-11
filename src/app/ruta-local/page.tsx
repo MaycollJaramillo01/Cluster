@@ -346,7 +346,7 @@ function PaquetesSection() {
           <Reveal
             key={p.name}
             delay={i * 80}
-            className={`group relative flex flex-col overflow-hidden p-8 transition-all duration-500 hover:-translate-y-1.5 ${
+            className={`group relative flex flex-col p-8 transition-all duration-500 hover:-translate-y-1.5 ${
               p.highlight
                 ? 'bg-surface-2 shadow-glow ring-1 ring-inset ring-[color:var(--accent)] lg:-mt-4 lg:pb-12'
                 : 'bg-surface hover:bg-surface-2'
@@ -354,7 +354,7 @@ function PaquetesSection() {
           >
             <div className="hn-card-bar absolute inset-x-0 top-0" aria-hidden="true" />
             {p.badge && (
-              <span className="mono-label absolute -top-3 left-8 z-[1] whitespace-nowrap bg-accent px-4 py-1.5 text-accent-fg">
+              <span className="mono-label mb-3 inline-flex w-fit bg-accent px-4 py-1.5 text-accent-fg">
                 {p.badge}
               </span>
             )}
