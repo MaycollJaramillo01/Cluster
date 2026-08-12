@@ -34,7 +34,6 @@ export const websitePlans: WebsitePlan[] = [
   {
     slug: 'website',
     name: 'Website',
-    kicker: 'Plan 1',
     headline: 'Presencia web profesional por una mensualidad accesible.',
     tagline: 'Presencia web profesional por una mensualidad accesible.',
     price: 99,
@@ -77,7 +76,10 @@ export const websitePlans: WebsitePlan[] = [
     tagline: 'Tu presencia web completa, administrada y siempre activa.',
     price: 129,
     features: [
-      'Todo lo del plan Website',
+      'Hasta 7 páginas',
+      'Diseño responsive',
+      'Formulario de contacto + WhatsApp',
+      '1 ronda de cambios al mes',
       'Dominio incluido',
       'Hosting + SSL',
       'Backups periódicos',
@@ -91,7 +93,7 @@ export const websitePlans: WebsitePlan[] = [
     faqs: [
       {
         q: '¿Qué suma Website Plus frente a Website?',
-        a: 'Incluye todo lo del plan Website y agrega dominio, backups periódicos y monitoreo de salud web para operar sin fricción.',
+        a: 'Agrega dominio incluido, backups periódicos y monitoreo de salud web, además de todo lo de Website.',
       },
       {
         q: '¿El dominio queda a mi nombre?',
@@ -116,7 +118,14 @@ export const websitePlans: WebsitePlan[] = [
       'Tu sitio web y una estrategia enfocada en generar oportunidades de negocio.',
     price: 279,
     features: [
-      'Todo lo del plan Website Plus',
+      'Hasta 7 páginas',
+      'Diseño responsive',
+      'Formulario de contacto + WhatsApp',
+      '1 ronda de cambios al mes',
+      'Dominio incluido',
+      'Hosting + SSL',
+      'Backups periódicos',
+      'Monitoreo y salud web',
       'Campaña de Google Ads',
       'Enfoque en generación de leads',
       'Optimización y seguimiento mensual',
@@ -137,8 +146,8 @@ export const websitePlans: WebsitePlan[] = [
         a: 'Configuración, optimización y seguimiento mensual con enfoque en generar leads calificados hacia tu website.',
       },
       {
-        q: '¿Necesito tener Website Plus antes?',
-        a: 'Este plan ya incluye todo lo de Website Plus, así que partes con web administrada + generación de leads.',
+        q: '¿Incluye mantenimiento web?',
+        a: 'Sí. Incluye dominio, hosting, SSL, backups, monitoreo y las mismas bases del plan Website Plus.',
       },
     ],
     note: 'Inversión publicitaria no incluida',
@@ -157,7 +166,14 @@ export const websitePlans: WebsitePlan[] = [
     tagline: 'Tu sitio web con visibilidad en Google para crecer orgánicamente.',
     price: 350,
     features: [
-      'Todo lo del plan Website Plus',
+      'Hasta 7 páginas',
+      'Diseño responsive',
+      'Formulario de contacto + WhatsApp',
+      '1 ronda de cambios al mes',
+      'Dominio incluido',
+      'Hosting + SSL',
+      'Backups periódicos',
+      'Monitoreo y salud web',
       'SEO local y on-page',
       'Hasta 15 keywords prioritarias',
       'Optimización mensual + 1 artículo',
@@ -196,12 +212,22 @@ export const websitePlans: WebsitePlan[] = [
       'Tu sitio web, tu posicionamiento y tus leads en una sola estrategia.',
     price: 499,
     features: [
-      'Todo lo del plan Website Plus',
+      'Hasta 7 páginas',
+      'Diseño responsive',
+      'Formulario de contacto + WhatsApp',
+      '1 ronda de cambios al mes',
+      'Dominio incluido',
+      'Hosting + SSL',
+      'Backups periódicos',
+      'Monitoreo y salud web',
       'Campaña de Google Ads',
       'SEO mensual',
+      'SEO local y on-page',
       'Hasta 15 keywords prioritarias',
       '1 artículo SEO al mes',
       'Perfil de Negocio de Google optimizado',
+      'Optimización y seguimiento mensual',
+      'Enfoque en generación de leads',
     ],
     idealFor: [
       'Marcas que quieren crecimiento integral (orgánico + pagado)',
@@ -211,7 +237,7 @@ export const websitePlans: WebsitePlan[] = [
     faqs: [
       {
         q: '¿Qué diferencia tiene frente a Website + Leads o + SEO?',
-        a: 'Une ambos enfoques: mantienes la web administrada, sumas SEO mensual y también campaña de Google Ads para captar demanda.',
+        a: 'Combina web administrada, SEO mensual y campaña de Google Ads para captar demanda orgánica y pagada.',
       },
       {
         q: '¿La pauta de Ads está incluida?',
@@ -239,6 +265,17 @@ export function getWebsitePlanBySlug(slug: string): WebsitePlan | undefined {
   return websitePlans.find((plan) => plan.slug === slug);
 }
 
+export const websitePlansBasic = websitePlans.filter(
+  (plan) => plan.slug === 'website' || plan.slug === 'website-plus'
+);
+
+export const websitePlansComplete = websitePlans.filter(
+  (plan) =>
+    plan.slug === 'website-leads' ||
+    plan.slug === 'website-seo' ||
+    plan.slug === 'website-seo-leads'
+);
+
 export const websitePlanBenefits: {
   icon: IconName;
   title: string;
@@ -247,40 +284,56 @@ export const websitePlanBenefits: {
   {
     icon: 'globe',
     title: 'Desarrollo web',
-    text: 'Sitios claros, modernos y pensados para convertir visitas en contactos.',
+    text: 'Sitios claros y profesionales, pensados para convertir visitas en oportunidades reales.',
   },
   {
     icon: 'shield',
-    title: 'Mantenimiento',
-    text: 'Hosting, SSL, backups y monitoreo para que tu web esté siempre activa.',
+    title: 'Mantenimiento continuo',
+    text: 'Hosting, SSL, backups y monitoreo para que tu web esté activa, segura y al día.',
   },
   {
-    icon: 'search',
-    title: 'SEO',
-    text: 'Posicionamiento local y on-page para aparecer cuando te buscan.',
+    icon: 'users',
+    title: 'Acompañamiento',
+    text: 'Un equipo que te guía de punta a punta: de la publicación a la monetización de tu presencia digital.',
   },
   {
-    icon: 'target',
-    title: 'Leads',
-    text: 'Campañas y seguimiento para captar clientes con enfoque comercial.',
+    icon: 'chart',
+    title: 'Crecimiento',
+    text: 'SEO, campañas y seguimiento para atraer demanda y hacer crecer el negocio desde la web.',
   },
 ];
 
 export const websitePlanFaqs = [
   {
+    q: '¿Qué significa acompañamiento de punta a punta?',
+    a: 'No solo entregamos un website: te acompañamos en mantenimiento, optimización y, en los planes completos, en SEO y generación de leads para que la web trabaje por tu negocio.',
+  },
+  {
+    q: '¿Cuál es la diferencia entre planes básicos y completos?',
+    a: 'Los básicos (Website y Website Plus) cubren desarrollo, presencia y mantenimiento. Los completos suman SEO y/o Google Ads para crecimiento y monetización activa.',
+  },
+  {
+    q: '¿Qué valor agrega el SEO en estos planes?',
+    a: 'El SEO mejora tu visibilidad en Google con keywords prioritarias, optimización on-page/local, contenido mensual y perfil de negocio, para atraer tráfico orgánico sostenible.',
+  },
+  {
+    q: '¿Por qué elegir una solución integral y no solo una web suelta?',
+    a: 'Porque una web sin mantenimiento, seguimiento o estrategia comercial se estanca. Aquí unimos desarrollo, operación y crecimiento en un solo sistema con acompañamiento continuo.',
+  },
+  {
     q: '¿Los planes son mensuales?',
-    a: 'Sí. Todos los planes de desarrollo y mantenimiento web se facturan mensualmente. Puedes empezar por el nivel que necesitas y subir cuando quieras más alcance.',
+    a: 'Sí. Se facturan mensualmente. Puedes empezar por un plan básico y subir a uno completo cuando quieras más alcance.',
   },
   {
     q: '¿El dominio está incluido?',
-    a: 'En el plan Website el dominio no está incluido. A partir de Website Plus el dominio sí está incluido, junto con hosting, SSL y mantenimiento.',
+    a: 'En Website el dominio no está incluido. A partir de Website Plus sí, junto con hosting, SSL y mantenimiento.',
   },
   {
     q: '¿La inversión de Google Ads está incluida?',
-    a: 'No. En los planes con Leads incluimos la gestión y optimización de la campaña. El presupuesto publicitario que pagas a Google es aparte.',
+    a: 'No. En los planes con Leads gestionamos y optimizamos la campaña; el presupuesto publicitario que pagas a Google es aparte.',
   },
   {
     q: '¿Puedo cambiar de plan después?',
-    a: 'Sí. Si empiezas con Website o Website Plus y luego quieres sumar SEO o generación de leads, podemos subir tu plan sin reinventar todo desde cero.',
+    a: 'Sí. Si empiezas con Website o Website Plus y luego quieres sumar SEO o leads, podemos subir tu plan sin reinventar todo desde cero.',
   },
 ];

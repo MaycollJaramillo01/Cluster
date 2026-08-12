@@ -173,6 +173,61 @@
   background-image: var(--hn-ribbon);
 }
 
+/* Desarrollo web */
+.theme-desarrollo-web {
+  --web-mint: #02c39a;
+  --web-cyan: #14b8a6;
+  --web-sky: #38bdf8;
+  --web-lime: #84cc16;
+  --web-wash: linear-gradient(
+    135deg,
+    rgba(2, 195, 154, 0.18),
+    rgba(56, 189, 248, 0.1) 50%,
+    rgba(132, 204, 22, 0.08)
+  );
+}
+
+.theme-desarrollo-web .web-glow {
+  background: radial-gradient(
+    circle,
+    rgba(2, 195, 154, 0.35),
+    rgba(56, 189, 248, 0.12) 45%,
+    transparent 70%
+  );
+}
+
+.theme-desarrollo-web .web-panel {
+  background: var(--web-wash);
+  border: 1px solid rgba(2, 195, 154, 0.22);
+}
+
+.theme-desarrollo-web .web-accent-0 {
+  color: #02c39a;
+  background-color: rgba(2, 195, 154, 0.16);
+}
+.theme-desarrollo-web .web-accent-1 {
+  color: #0d9488;
+  background-color: rgba(13, 148, 136, 0.16);
+}
+.theme-desarrollo-web .web-accent-2 {
+  color: #0284c7;
+  background-color: rgba(2, 132, 199, 0.14);
+}
+.theme-desarrollo-web .web-accent-3 {
+  color: #65a30d;
+  background-color: rgba(101, 163, 13, 0.16);
+}
+
+.theme-desarrollo-web .web-card-bar {
+  height: 4px;
+  background: linear-gradient(90deg, #02c39a, #38bdf8, #84cc16);
+}
+
+.theme-desarrollo-web .web-stat {
+  border-left: 3px solid #02c39a;
+  background: rgba(2, 195, 154, 0.08);
+}
+
 @layer base {
   * {
     border-color: var(--line);
