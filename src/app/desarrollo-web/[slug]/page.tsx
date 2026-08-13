@@ -14,7 +14,7 @@ import {
   faqSchema,
   breadcrumbSchema,
 } from '@/components/seo/JsonLd';
-import { site } from '@/lib/site';
+import { site, whatsappLink } from '@/lib/site';
 import {
   getWebsitePlanBySlug,
   websitePlanDisplayName,
@@ -89,7 +89,7 @@ export default async function WebsitePlanLandingPage({ params }: Params) {
         subtitle={plan.tagline}
         price={{
           now: `$${plan.price}`,
-          note: '/mes',
+          note: 'cuota /mes',
         }}
         primaryCta={{
           label: hireLabel,
@@ -124,11 +124,25 @@ export default async function WebsitePlanLandingPage({ params }: Params) {
                 ⓘ {plan.note}
               </p>
             )}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button href={hireHref} size="lg" iconRight="arrow-right">
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              <Button
+                href={hireHref}
+                external={hireHref.startsWith('http')}
+                size="sm"
+                iconRight="arrow-right"
+              >
                 {hireLabel}
               </Button>
-              <Button href="#faq" variant="ghost" size="lg">
+              <Button
+                href={whatsappLink(plan.whatsapp)}
+                external
+                variant="whatsapp"
+                size="sm"
+                icon="whatsapp"
+              >
+                WhatsApp
+              </Button>
+              <Button href="#faq" variant="ghost" size="sm">
                 Ver preguntas
               </Button>
             </div>
@@ -183,7 +197,7 @@ export default async function WebsitePlanLandingPage({ params }: Params) {
                 <p className="mt-3 font-display text-3xl font-bold text-ink-950">
                   ${other.price}
                   <span className="ml-1 font-mono text-xs font-medium uppercase tracking-wider text-ink-600">
-                    /mes
+                    cuota /mes
                   </span>
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-ink-600">
