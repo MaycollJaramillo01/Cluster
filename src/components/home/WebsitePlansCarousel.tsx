@@ -55,7 +55,7 @@ export function WebsitePlansCarousel({
               <span className="font-display text-5xl font-bold leading-none text-fg">
                 {plan.price}
               </span>
-              <span className="pb-1 font-mono text-sm text-accent">/mes</span>
+              <span className="pb-1 font-mono text-sm text-accent">/mes*</span>
             </p>
 
             <ul className="mt-6 flex-1 space-y-3 border-t border-line pt-6">
@@ -103,6 +103,9 @@ export function WebsitePlansCarousel({
           </article>
         ))}
       </div>
+      <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-faint">
+        * Financiación en cuotas mensuales
+      </p>
     </div>
   );
 }

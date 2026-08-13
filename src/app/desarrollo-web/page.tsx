@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
+import { WebDevHeroGraphic } from '@/components/desarrollo-web/WebDevHeroGraphic';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { CTASection } from '@/components/blocks/CTASection';
 import { FAQ } from '@/components/blocks/FAQ';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import { WebsitePlansCarousel } from '@/components/home/WebsitePlansCarousel';
+import { WebsiteCasesCarousel } from '@/components/home/WebsiteCasesCarousel';
 import {
   JsonLd,
   serviceSchema,
@@ -16,8 +18,8 @@ import {
 import { site, whatsappLink } from '@/lib/site';
 import {
   websitePlans,
-  websitePlansBasic,
-  websitePlansComplete,
+  websitePlansStarter,
+  websitePlansAdvance,
   websitePlanBenefits,
   websitePlanFaqs,
 } from '@/lib/website-plans';
@@ -25,14 +27,14 @@ import {
 export const metadata: Metadata = {
   title: 'Desarrollo y mantenimiento web | Soluciones integrales Cluster Media',
   description:
-    'Desarrollo, mantenimiento, acompañamiento y crecimiento web: planes básicos y completos con SEO, leads y monetización de punta a punta.',
+    'Desarrollo, mantenimiento, acompañamiento y crecimiento web: Starter y Advance con SEO, leads y monetización en un servicio integral.',
   alternates: { canonical: '/desarrollo-web' },
 };
 
 const journey = [
   { n: '01', title: 'Crear', text: 'Website profesional listo para representar tu negocio.' },
   { n: '02', title: 'Mantener', text: 'Hosting, SSL, backups y monitoreo continuo.' },
-  { n: '03', title: 'Crecer', text: 'SEO y leads para atraer demanda real.' },
+  { n: '03', title: 'Crecer', text: 'SEO y leads para conseguir más ventas.' },
   { n: '04', title: 'Monetizar', text: 'Acompañamiento para convertir visitas en clientes.' },
 ];
 
@@ -80,13 +82,7 @@ export default function DesarrolloWebPage() {
       />
 
       <PageHero
-        image={{
-          src: '/assets/stock/laptop.jpg',
-          alt: 'Desarrollo y mantenimiento web Cluster Media',
-          aspectClassName: 'aspect-[4/3]',
-          imageClassName:
-            'object-cover object-center grayscale-[0.35] transition duration-700 hover:grayscale-0',
-        }}
+        visual={<WebDevHeroGraphic />}
         eyebrow="Desarrollo y mantenimiento web"
         title={
           <>
@@ -94,9 +90,26 @@ export default function DesarrolloWebPage() {
             <span className="text-accent">monetizar</span> tu website.
           </>
         }
-        subtitle="Acompañamiento de punta a punta: desarrollo, mantenimiento continuo y crecimiento con SEO y leads, para que tu web no solo exista, sino que genere resultados."
+        subtitle="Servicio integral: desarrollo, mantenimiento continuo y crecimiento con SEO y leads, para que tu web no solo exista, sino que genere resultados."
         whatsappMessage="Hola, quiero información sobre soluciones integrales de desarrollo y mantenimiento web."
       />
+
+      <Section tone="dark" id="casos">
+        <div className="web-glow pointer-events-none absolute left-10 top-8 h-56 w-56 rounded-full blur-[100px] opacity-50" />
+        <SectionHeading
+          tone="light"
+          eyebrow="Casos de éxito"
+          title={
+            <>
+              Websites que ya están{' '}
+              <span className="text-accent">trabajando</span> por el negocio.
+            </>
+          }
+          description="Proyectos reales de e-commerce y servicios. Pausa al pasar el cursor y entra a cada sitio."
+          className="mb-10"
+        />
+        <WebsiteCasesCarousel />
+      </Section>
 
       <Section tone="light">
         <SectionHeading
@@ -141,14 +154,14 @@ export default function DesarrolloWebPage() {
           <SectionHeading
             tone="light"
             align="center"
-            eyebrow="De punta a punta"
+            eyebrow="Servicio integral"
             title={
               <>
                 Tu web trabajando por el negocio,{' '}
                 <span className="text-accent">no solo como vitrina</span>.
               </>
             }
-            description="Desde la publicación hasta la monetización: presencia profesional, operación estable y estrategias de crecimiento integradas en un solo acompañamiento."
+            description="Desde la publicación hasta la monetización: presencia profesional, operación estable y estrategias de crecimiento integradas en un servicio integral."
             className="mb-12"
           />
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -177,7 +190,7 @@ export default function DesarrolloWebPage() {
             </Button>
             <Button
               href={whatsappLink(
-                'Hola, quiero acompañamiento integral para monetizar mi website.'
+                'Hola, quiero un servicio integral para monetizar mi website.'
               )}
               external
               variant="whatsapp"
@@ -201,7 +214,7 @@ export default function DesarrolloWebPage() {
                 <span className="text-accent">etapa</span>.
               </>
             }
-            description="Separados en básicos (presencia y mantenimiento) y completos (crecimiento con SEO y leads). Mismo acompañamiento; distinto alcance."
+            description="Starter (web y mantenimiento) y Advance (SEO y leads para vender más). Misma financiación mensual; distinto alcance."
           />
           <Reveal
             delay={100}
@@ -212,7 +225,7 @@ export default function DesarrolloWebPage() {
             </Button>
             <Button
               href={whatsappLink(
-                'Hola, quiero ayuda para elegir entre planes básicos y completos de website.'
+                'Hola, quiero ayuda para elegir entre Starter y Advance de website.'
               )}
               external
               variant="whatsapp"
@@ -224,26 +237,26 @@ export default function DesarrolloWebPage() {
           </Reveal>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <a
-              href="#planes-basicos"
+              href="#starter"
               className="mono-label inline-flex items-center gap-2 border border-[color:rgba(2,195,154,0.35)] bg-[color:rgba(2,195,154,0.1)] px-4 py-2 text-accent transition-colors hover:bg-[color:rgba(2,195,154,0.18)]"
             >
-              Básicos
+              Starter
             </a>
             <a
-              href="#planes-completos"
+              href="#advance"
               className="mono-label inline-flex items-center gap-2 border border-[color:rgba(56,189,248,0.4)] bg-[color:rgba(56,189,248,0.12)] px-4 py-2 text-[color:#0284c7] transition-colors hover:bg-[color:rgba(56,189,248,0.2)]"
             >
-              Completos
+              Advance
             </a>
           </div>
         </div>
       </Section>
 
-      <Section tone="dark" id="planes-basicos">
+      <Section tone="dark" id="starter">
         <div className="web-glow pointer-events-none absolute left-1/2 top-0 h-56 w-56 -translate-x-1/2 rounded-full blur-[100px] opacity-60" />
         <SectionHeading
           tone="light"
-          eyebrow="Planes básicos"
+          eyebrow="Starter"
           title={
             <>
               Presencia web +{' '}
@@ -253,24 +266,24 @@ export default function DesarrolloWebPage() {
           description="Ideal para arrancar o estabilizar: website profesional, hosting y acompañamiento operativo."
           className="mb-10"
         />
-        <WebsitePlansCarousel plans={websitePlansBasic} />
+        <WebsitePlansCarousel plans={websitePlansStarter} />
       </Section>
 
-      <Section tone="brand" id="planes-completos">
+      <Section tone="brand" id="advance">
         <div className="web-glow pointer-events-none absolute right-10 top-16 h-64 w-64 rounded-full blur-[100px]" />
         <SectionHeading
           tone="light"
-          eyebrow="Planes completos"
+          eyebrow="Advance"
           title={
             <>
               Crecimiento y{' '}
               <span className="text-accent">monetización</span>.
             </>
           }
-          description="Para negocios listos a atraer demanda: SEO, Google Ads y seguimiento, sobre una web administrada."
+          description="Para negocios listos a vender más: SEO, Google Ads y seguimiento, sobre una web administrada."
           className="mb-10"
         />
-        <WebsitePlansCarousel plans={websitePlansComplete} />
+        <WebsitePlansCarousel plans={websitePlansAdvance} />
       </Section>
 
       <Section tone="light" id="faq">
@@ -280,20 +293,19 @@ export default function DesarrolloWebPage() {
               eyebrow="Preguntas frecuentes"
               title={
                 <>
-                  SEO, valor agregado y cómo{' '}
+                  SEO, financiación y cómo{' '}
                   <span className="text-accent">elegir</span>.
                 </>
               }
-              description="Resolvemos dudas sobre acompañamiento, planes básicos vs completos, SEO y monetización de tu website."
+              description="Dudas sobre la financiación, Starter vs Advance, SEO y cómo vender más con tu website."
             />
             <div className="web-stat mt-8 p-5">
               <p className="font-display text-lg font-semibold uppercase text-ink-950">
                 Tip rápido
               </p>
               <p className="mt-2 text-sm leading-relaxed text-ink-700">
-                Si necesitas presencia estable, empieza por un plan básico. Si
-                ya quieres demanda activa, ve a un plan completo con SEO o
-                leads.
+                Si necesitas presencia estable, empieza por Starter. Si ya
+                quieres más ventas, ve a Advance con SEO o leads.
               </p>
             </div>
           </div>
@@ -303,7 +315,7 @@ export default function DesarrolloWebPage() {
 
       <CTASection
         title="Hablemos de tu website y cómo monetizarlo."
-        text="Agenda una llamada o escríbenos: te ayudamos a elegir entre un plan básico de mantenimiento o una solución completa de crecimiento."
+        text="Agenda una llamada o escríbenos: te ayudamos a elegir entre Starter (mantenimiento) o Advance (crecimiento)."
         whatsappMessage="Hola, quiero asesoría para una solución integral de desarrollo, mantenimiento y crecimiento web."
       />
     </div>

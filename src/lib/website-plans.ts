@@ -34,8 +34,8 @@ export const websitePlans: WebsitePlan[] = [
   {
     slug: 'website',
     name: 'Website',
-    headline: 'Presencia web profesional por una mensualidad accesible.',
-    tagline: 'Presencia web profesional por una mensualidad accesible.',
+    headline: 'Presencia web profesional con financiación mensual.',
+    tagline: 'Presencia web profesional con financiación mensual.',
     price: 99,
     features: [
       'Hasta 7 páginas',
@@ -97,7 +97,7 @@ export const websitePlans: WebsitePlan[] = [
       },
       {
         q: '¿El dominio queda a mi nombre?',
-        a: 'Sí. Te acompañamos en la gestión del dominio como parte del plan mensual.',
+        a: 'Sí. Te acompañamos en la gestión del dominio como parte de la financiación mensual.',
       },
       {
         q: '¿Hay monitoreo incluido?',
@@ -133,7 +133,7 @@ export const websitePlans: WebsitePlan[] = [
     ],
     idealFor: [
       'Negocios listos para captar clientes de forma activa',
-      'Marcas que ya tienen oferta clara y quieren demanda',
+      'Marcas que ya tienen oferta clara y quieren más ventas',
       'Equipos que necesitan seguimiento mensual de campañas',
     ],
     faqs: [
@@ -232,12 +232,12 @@ export const websitePlans: WebsitePlan[] = [
     idealFor: [
       'Marcas que quieren crecimiento integral (orgánico + pagado)',
       'Negocios listos para operar web, SEO y Ads juntos',
-      'Equipos que buscan un solo partner para presencia y demanda',
+      'Equipos que buscan un solo partner para presencia y ventas',
     ],
     faqs: [
       {
         q: '¿Qué diferencia tiene frente a Website + Leads o + SEO?',
-        a: 'Combina web administrada, SEO mensual y campaña de Google Ads para captar demanda orgánica y pagada.',
+        a: 'Junta web, SEO y Google Ads para conseguir más visitas y más ventas, sin contratar cada servicio por separado.',
       },
       {
         q: '¿La pauta de Ads está incluida?',
@@ -265,11 +265,11 @@ export function getWebsitePlanBySlug(slug: string): WebsitePlan | undefined {
   return websitePlans.find((plan) => plan.slug === slug);
 }
 
-export const websitePlansBasic = websitePlans.filter(
+export const websitePlansStarter = websitePlans.filter(
   (plan) => plan.slug === 'website' || plan.slug === 'website-plus'
 );
 
-export const websitePlansComplete = websitePlans.filter(
+export const websitePlansAdvance = websitePlans.filter(
   (plan) =>
     plan.slug === 'website-leads' ||
     plan.slug === 'website-seo' ||
@@ -294,46 +294,46 @@ export const websitePlanBenefits: {
   {
     icon: 'users',
     title: 'Acompañamiento',
-    text: 'Un equipo que te guía de punta a punta: de la publicación a la monetización de tu presencia digital.',
+    text: 'Un equipo que te guía con un servicio integral: de la publicación a la monetización de tu presencia digital.',
   },
   {
     icon: 'chart',
     title: 'Crecimiento',
-    text: 'SEO, campañas y seguimiento para atraer demanda y hacer crecer el negocio desde la web.',
+    text: 'SEO, campañas y seguimiento para atraer clientes y vender más desde la web.',
   },
 ];
 
 export const websitePlanFaqs = [
   {
-    q: '¿Qué significa acompañamiento de punta a punta?',
-    a: 'No solo entregamos un website: te acompañamos en mantenimiento, optimización y, en los planes completos, en SEO y generación de leads para que la web trabaje por tu negocio.',
+    q: '¿Qué es el servicio integral?',
+    a: 'Hacemos la web, el mantenimiento y, en Advance, el SEO y los anuncios en un solo paquete. Sale más económico que contratar cada cosa por separado.',
   },
   {
-    q: '¿Cuál es la diferencia entre planes básicos y completos?',
-    a: 'Los básicos (Website y Website Plus) cubren desarrollo, presencia y mantenimiento. Los completos suman SEO y/o Google Ads para crecimiento y monetización activa.',
+    q: '¿Cuál es la diferencia entre Starter y Advance?',
+    a: 'Starter es para tener y cuidar tu web. Advance suma SEO y/o Google Ads para que la web te ayude a vender.',
   },
   {
-    q: '¿Qué valor agrega el SEO en estos planes?',
-    a: 'El SEO mejora tu visibilidad en Google con keywords prioritarias, optimización on-page/local, contenido mensual y perfil de negocio, para atraer tráfico orgánico sostenible.',
+    q: '¿El SEO ayuda a vender?',
+    a: 'Sí. Hace que te encuentren en Google cuando buscan lo que ofreces, con palabras clave, contenido y tu perfil de negocio.',
   },
   {
-    q: '¿Por qué elegir una solución integral y no solo una web suelta?',
-    a: 'Porque una web sin mantenimiento, seguimiento o estrategia comercial se estanca. Aquí unimos desarrollo, operación y crecimiento en un solo sistema con acompañamiento continuo.',
+    q: '¿Por qué no hacerlo por separado?',
+    a: 'Porque pagar web, hosting, SEO y anuncios cada uno por su lado sale más caro y se desordena. Aquí va todo junto, en una financiación mensual.',
   },
   {
-    q: '¿Los planes son mensuales?',
-    a: 'Sí. Se facturan mensualmente. Puedes empezar por un plan básico y subir a uno completo cuando quieras más alcance.',
+    q: '¿Es un pago mensual o una financiación?',
+    a: 'Es una financiación en cuotas mensuales: no pagas el proyecto de golpe. Puedes empezar en Starter y subir a Advance cuando quieras.',
   },
   {
     q: '¿El dominio está incluido?',
-    a: 'En Website el dominio no está incluido. A partir de Website Plus sí, junto con hosting, SSL y mantenimiento.',
+    a: 'En Website no. Desde Website Plus sí, junto con hosting, SSL y mantenimiento.',
   },
   {
-    q: '¿La inversión de Google Ads está incluida?',
-    a: 'No. En los planes con Leads gestionamos y optimizamos la campaña; el presupuesto publicitario que pagas a Google es aparte.',
+    q: '¿La pauta de Google Ads está incluida?',
+    a: 'No. En los planes con Leads nosotros armamos y cuidamos la campaña; lo que pagas a Google va aparte.',
   },
   {
     q: '¿Puedo cambiar de plan después?',
-    a: 'Sí. Si empiezas con Website o Website Plus y luego quieres sumar SEO o leads, podemos subir tu plan sin reinventar todo desde cero.',
+    a: 'Sí. Si empiezas con Website o Website Plus y luego quieres SEO o leads, subimos tu plan sin empezar de cero.',
   },
 ];
