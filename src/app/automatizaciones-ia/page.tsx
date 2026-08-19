@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
+import { AutomationHeroGraphic } from '@/components/automatizaciones-ia/AutomationHeroGraphic';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { CTASection } from '@/components/blocks/CTASection';
 import { FAQ } from '@/components/blocks/FAQ';
@@ -75,10 +76,10 @@ export default function AutomatizacionesPage() {
       />
 
       <PageHero
-        image={{ src: "/assets/stock/workspace.jpg", alt: "Automatización y flujos de trabajo con IA" }}
+        visual={<AutomationHeroGraphic />}
         eyebrow="IA / Automatizaciones"
         title="Deja de perder clientes por responder tarde."
-        subtitle="Automatizamos WhatsApp, Messenger, Instagram Inbox y el seguimiento de tus leads para que tu negocio responda más rápido y venda mejor."
+        subtitle="Automatizamos WhatsApp, Messenger, Instagram Inbox y seguimiento comercial para que respondas más rápido y vendas mejor."
         whatsappMessage="Hola, quiero automatizar la atención de mi negocio con IA."
       />
 
@@ -132,9 +133,9 @@ export default function AutomatizacionesPage() {
             Un sistema automatizado que asegura el seguimiento comercial sin perder el toque humano.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-white/70">
-            La IA debe ayudar a responder, filtrar, orientar, agendar y dar
-            seguimiento. El objetivo no es reemplazar la venta humana, sino
-            evitar que los leads se pierdan antes de hablar con una persona.
+            La IA te ayuda a responder, filtrar, orientar, agendar y dar
+            seguimiento. No reemplaza a tu equipo: evita que los prospectos se
+            enfríen antes de hablar con una persona.
           </p>
         </div>
       </Section>
@@ -150,8 +151,8 @@ export default function AutomatizacionesPage() {
       </Section>
 
       <CTASection
-        title="Automatiza tu atención y deja de perder leads."
-        whatsappMessage="Hola, quiero automatizar WhatsApp y el seguimiento de mis leads."
+        title="Automatiza tu atención y deja de perder prospectos."
+        whatsappMessage="Hola, quiero automatizar WhatsApp y el seguimiento de mis prospectos."
       />
     </>
   );

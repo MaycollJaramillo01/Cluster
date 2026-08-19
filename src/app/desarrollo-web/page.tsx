@@ -27,7 +27,7 @@ import {
 export const metadata: Metadata = {
   title: 'Desarrollo y mantenimiento web | Soluciones integrales Cluster Media',
   description:
-    'Desarrollo, mantenimiento, acompañamiento y crecimiento web: Starter y Advance con SEO, leads y monetización en un servicio integral.',
+    'Desarrollo, mantenimiento y crecimiento web: planes Starter y Advance con SEO, leads y enfoque en ventas.',
   alternates: { canonical: '/desarrollo-web' },
 };
 
@@ -86,11 +86,11 @@ export default function DesarrolloWebPage() {
         eyebrow="Desarrollo y mantenimiento web"
         title={
           <>
-            Soluciones integrales para crear, mantener y{' '}
+            Servicio integral para crear, mantener y{' '}
             <span className="text-accent">monetizar</span> tu website.
           </>
         }
-        subtitle="Servicio integral: desarrollo, mantenimiento continuo y crecimiento con SEO y leads, para que tu web no solo exista, sino que genere resultados."
+        subtitle="Desarrollo, mantenimiento continuo y crecimiento con SEO y leads para que tu web no solo esté bonita, sino que venda."
         whatsappMessage="Hola, quiero información sobre soluciones integrales de desarrollo y mantenimiento web."
       />
 
@@ -121,7 +121,7 @@ export default function DesarrolloWebPage() {
               <span className="text-accent">crecimiento</span>.
             </>
           }
-          description="No entregamos una web y desaparecemos. Operamos contigo: cuidamos la plataforma, te guiamos y activamos canales para atraer y convertir clientes."
+          description="No entregamos una web y desaparecemos. Te acompañamos para mantenerla estable y convertirla en una herramienta de ventas."
           className="mb-12"
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -214,7 +214,7 @@ export default function DesarrolloWebPage() {
                 <span className="text-accent">etapa</span>.
               </>
             }
-            description="Starter (web y mantenimiento) y Advance (SEO y leads para vender más). Misma financiación mensual; distinto alcance."
+            description="Starter: web y mantenimiento. Advance: SEO y leads para vender más. Misma financiación mensual, distinto alcance."
           />
           <Reveal
             delay={100}
@@ -280,7 +280,7 @@ export default function DesarrolloWebPage() {
               <span className="text-accent">monetización</span>.
             </>
           }
-          description="Para negocios listos a vender más: SEO, Google Ads y seguimiento, sobre una web administrada."
+          description="Para negocios que quieren crecer en ventas con SEO, Google Ads y seguimiento sobre una web bien administrada."
           className="mb-10"
         />
         <WebsitePlansCarousel plans={websitePlansAdvance} />
@@ -305,7 +305,7 @@ export default function DesarrolloWebPage() {
               </p>
               <p className="mt-2 text-sm leading-relaxed text-ink-700">
                 Si necesitas presencia estable, empieza por Starter. Si ya
-                quieres más ventas, ve a Advance con SEO o leads.
+                buscas más ventas, pasa a Advance con SEO o leads.
               </p>
             </div>
           </div>

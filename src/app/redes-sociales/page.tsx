@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
+import { SocialHeroGraphic } from '@/components/redes-sociales/SocialHeroGraphic';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { PricingCard } from '@/components/blocks/PricingCard';
 import { CTASection } from '@/components/blocks/CTASection';
@@ -38,10 +39,10 @@ export default function RedesSocialesPage() {
       />
 
       <PageHero
-        image={{ src: "/assets/stock/social.jpg", alt: "Creación de contenido para redes sociales" }}
+        visual={<SocialHeroGraphic />}
         eyebrow="Redes Sociales / Crecimiento"
         title="Redes sociales para negocios que quieren vender más."
-        subtitle="Creamos contenido, campañas y estrategia mensual para que tu negocio se vea activo, profesional y genere más oportunidades."
+        subtitle="Creamos contenido, campañas y estrategia mensual para que tu negocio se vea activo, profesional y venda más."
         whatsappMessage="Hola, quiero información sobre el manejo de redes sociales."
       />
 
@@ -54,11 +55,26 @@ export default function RedesSocialesPage() {
             Más que publicar, se trata de convertir
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-muted">
-            Muchas empresas publican en redes sin una dirección clara. Nosotros
-            creamos contenido alineado a objetivos comerciales: atraer clientes,
-            generar confianza y mantener tu negocio presente en la mente de tu
-            audiencia.
+            Muchas empresas publican sin un plan claro. Nosotros conectamos
+            contenido y campañas con un objetivo simple: atraer clientes,
+            generar confianza y convertir más.
           </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {[
+              { label: 'Contenido', tint: 'bg-[color:rgba(2,195,154,0.12)] text-accent' },
+              { label: 'Reels', tint: 'bg-[color:rgba(56,189,248,0.16)] text-[color:#0369a1]' },
+              { label: 'Campañas', tint: 'bg-[color:rgba(236,72,153,0.14)] text-[color:#be185d]' },
+              { label: 'Ventas', tint: 'bg-[color:rgba(234,179,8,0.16)] text-[color:#a16207]' },
+            ].map((pill, i) => (
+              <span
+                key={pill.label}
+                className={`mono-label rise-in px-3 py-1.5 ${pill.tint}`}
+                style={{ animationDelay: `${120 + i * 90}ms` }}
+              >
+                {pill.label}
+              </span>
+            ))}
+          </div>
         </div>
       </Section>
 
@@ -67,7 +83,7 @@ export default function RedesSocialesPage() {
           eyebrow="Paquetes"
           align="center"
           title="Elige el plan que mejor se adapta a tu negocio."
-          description="Todos incluyen contenido, campañas y estrategia. Crecen contigo a medida que tu negocio avanza."
+          description="Todos incluyen contenido, campañas y estrategia. Tú eliges el nivel según tu etapa."
           className="mb-16"
         />
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
+import { BrandingHeroGraphic } from '@/components/branding/BrandingHeroGraphic';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { CheckList } from '@/components/blocks/Blocks';
 import { CTASection } from '@/components/blocks/CTASection';
@@ -22,12 +23,10 @@ export const metadata: Metadata = {
 };
 
 const includes = [
-  'Logotipo y versiones',
-  'Paleta de colores',
-  'Tipografías',
-  'Línea gráfica',
-  'Manual básico de marca',
-  'Aplicaciones visuales según paquete',
+  'Logo principal + versiones',
+  'Colores y tipografías',
+  'Mini guía de uso',
+  'Piezas base para redes',
 ];
 
 const faqs = [
@@ -64,10 +63,15 @@ export default function BrandingPage() {
       />
 
       <PageHero
-        image={{ src: "/assets/stock/creative.jpg", alt: "Diseño y dirección de arte de marca" }}
+        visual={<BrandingHeroGraphic />}
         eyebrow="Branding"
-        title="Haz que tu negocio se vea como una marca seria."
-        subtitle="Diseñamos logotipos, manuales de marca e identidad visual para que tu negocio proyecte confianza desde el primer contacto."
+        title={
+          <>
+            Haz que tu negocio se vea{' '}
+            <span className="text-accent">como una marca seria</span>.
+          </>
+        }
+        subtitle="Creamos tu logo e identidad visual para que tu marca se vea profesional, clara y confiable desde el primer vistazo."
         whatsappMessage="Hola, quiero información sobre branding para mi negocio."
       />
 
@@ -75,8 +79,8 @@ export default function BrandingPage() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <SectionHeading
             eyebrow="Qué incluye"
-            title="Una identidad completa, lista para aplicar."
-            description="Construimos los elementos esenciales para que tu marca se vea coherente en cada punto de contacto con tus clientes."
+            title="Lo esencial para lanzar una marca sólida."
+            description="Sin relleno: solo lo necesario para verte profesional y mantener coherencia en todos tus canales."
           />
           <Reveal delay={120} className="flex flex-col justify-center rounded-3xl bg-surface p-8">
             <CheckList items={includes} columns={1} className="gap-4" />
@@ -98,6 +102,27 @@ export default function BrandingPage() {
             ayuda a que tu negocio se perciba más serio, más claro y más
             preparado para competir.
           </p>
+        </div>
+      </Section>
+
+      <Section tone="soft">
+        <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
+          <SectionHeading
+            eyebrow="Manual de marca"
+            title="Qué es y por qué necesitas uno."
+            description="Es una guía corta con reglas claras de tu marca: cómo usar logo, colores, tipografías y tono de comunicación."
+          />
+          <Reveal delay={120} className="bg-surface p-7">
+            <h3 className="font-display text-2xl font-semibold uppercase text-fg">
+              Por qué conviene tenerlo
+            </h3>
+            <ul className="mt-5 space-y-3 text-[15px] leading-relaxed text-muted">
+              <li>Evita que cada persona diseñe distinto y tu marca se vea desordenada.</li>
+              <li>Te ahorra tiempo al crear posts, piezas y anuncios.</li>
+              <li>Hace que tu negocio se vea profesional en todos los canales.</li>
+              <li>Reduce errores cuando trabajas con diseño, web o imprenta.</li>
+            </ul>
+          </Reveal>
         </div>
       </Section>
 

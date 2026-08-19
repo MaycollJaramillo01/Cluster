@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PageHero } from '@/components/blocks/PageHero';
+import { GoogleAdsHeroGraphic } from '@/components/google-ads/GoogleAdsHeroGraphic';
 import { Section, SectionHeading } from '@/components/ui/Section';
 import { CheckList, PillList } from '@/components/blocks/Blocks';
 import { CTASection } from '@/components/blocks/CTASection';
@@ -49,8 +50,8 @@ const faqs = [
     a: 'No. El precio desde USD 150/mes corresponde a la gestión profesional de tus campañas. La inversión publicitaria (lo que pagas a Google) se define según tu presupuesto y objetivos.',
   },
   {
-    q: '¿Por qué recomiendan un compromiso de 6 meses?',
-    a: 'Google Ads necesita tiempo para recolectar datos y optimizar. En los primeros meses ajustamos palabras clave, anuncios y segmentación; los mejores resultados llegan con consistencia.',
+    q: '¿Por qué Google Ads se paga mes a mes?',
+    a: 'Porque no es algo que se configura una sola vez. Cada mes revisamos datos, ajustamos anuncios y optimizamos presupuesto para mejorar resultados y ventas.',
   },
   {
     q: '¿Cuánto debo invertir en pauta?',
@@ -78,10 +79,10 @@ export default function GoogleAdsPage() {
       />
 
       <PageHero
-        image={{ src: "/assets/stock/analytics.jpg", alt: "Análisis de campañas y métricas de Google Ads" }}
+        visual={<GoogleAdsHeroGraphic />}
         eyebrow="Google Ads / Performance"
         title="Aparece cuando tus clientes ya están buscando tus servicios."
-        subtitle="Gestionamos campañas de Google Ads para negocios que quieren generar prospectos desde búsquedas reales."
+        subtitle="Gestionamos campañas de Google Ads para negocios que quieren vender más con búsquedas reales."
         price={{
           now: 'Desde USD 150/mes',
           note: 'inversión no incluida',
@@ -108,8 +109,8 @@ export default function GoogleAdsPage() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <SectionHeading
             eyebrow="Qué incluye"
-            title="Gestión profesional, mes a mes."
-            description="Nos encargamos de configurar, optimizar y dar seguimiento para que tu inversión trabaje mejor."
+            title="Gestión activa de Ads, mes a mes."
+            description="Tu mercado cambia todo el tiempo. Por eso optimizamos cada mes para bajar costos y aumentar contactos de calidad."
           />
           <Reveal delay={120} className="rounded-3xl bg-surface p-8">
             <CheckList items={includes} className="gap-4" />
@@ -120,7 +121,7 @@ export default function GoogleAdsPage() {
       <Section tone="soft">
         <SectionHeading
           eyebrow="Para quién es"
-          title="Ideal para negocios de servicios con demanda de búsqueda."
+          title="Ideal para negocios de servicios con búsquedas activas."
           description="Si tus clientes te buscan en Google, ahí debes aparecer."
           className="mb-10"
         />
@@ -133,12 +134,12 @@ export default function GoogleAdsPage() {
             <Icon name="search" size={28} />
           </span>
           <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-4xl">
-            Google Ads funciona porque llega a personas con intención.
+            Google Ads funciona cuando se optimiza constantemente.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-white/70">
-            En redes sociales muchas veces interrumpimos. En Google, muchas
-            veces aparecemos cuando alguien ya está buscando una solución. Por
-            eso es una herramienta clave para negocios de servicios.
+            En Google apareces frente a personas que ya buscan un servicio como
+            el tuyo. Al trabajarlo mes a mes, afinamos palabras clave, anuncios
+            y presupuesto para generar más oportunidades de venta.
           </p>
         </div>
       </Section>
