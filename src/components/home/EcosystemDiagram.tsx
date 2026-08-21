@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Reveal } from '@/components/ui/Reveal';
 
 type Pillar = {
@@ -9,34 +10,7 @@ type Pillar = {
   items: string[];
 };
 
-// Cuatro pilares que orbitan el núcleo "Un solo sistema".
-const pillars: Pillar[] = [
-  {
-    n: '01',
-    title: 'Marca & Branding',
-    items: ['Identidad visual', 'Manual de marca', 'Posicionamiento'],
-  },
-  {
-    n: '02',
-    title: 'RRSS y ADS',
-    items: ['Meta Ads', 'Google Ads', 'KPIs reales'],
-  },
-  {
-    n: '03',
-    title: 'Automatización & CRM',
-    items: ['Workflows', 'Lead scoring', 'Seguimiento'],
-  },
-  {
-    n: '04',
-    title: 'Contenido & Web',
-    items: ['Website', 'Landing pages', 'SEO'],
-  },
-];
-
-// ── Geometría de la brújula (viewBox 600×600, centro 300,300) ──
 const C = 300;
-
-// Redondeamos para evitar discrepancias de punto flotante entre SSR y cliente.
 const round = (n: number) => Math.round(n * 100) / 100;
 
 const polar = (r: number, deg: number) => {
@@ -44,7 +18,6 @@ const polar = (r: number, deg: number) => {
   return { x: round(C + r * Math.sin(a)), y: round(C - r * Math.cos(a)) };
 };
 
-// 72 marcas (cada 5°); las mayores cada 30°.
 const ticks = Array.from({ length: 72 }, (_, i) => {
   const deg = i * 5;
   const major = i % 6 === 0;
@@ -53,12 +26,11 @@ const ticks = Array.from({ length: 72 }, (_, i) => {
   return { ...{ x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y }, major, deg };
 });
 
-// Rutas de los cuatro ejes (pulsos que convergen al núcleo).
 const axes = [
-  'M300,78 L300,226', // N
-  'M522,300 L374,300', // E
-  'M300,522 L300,374', // S
-  'M78,300 L226,300', // W
+  'M300,78 L300,226',
+  'M522,300 L374,300',
+  'M300,522 L300,374',
+  'M78,300 L226,300',
 ];
 
 function useReducedMotion() {
@@ -97,7 +69,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         </linearGradient>
       </defs>
 
-      {/* Resplandor del núcleo */}
       <circle cx={C} cy={C} r="120" fill="url(#coreGlow)">
         {motion && (
           <animate
@@ -109,7 +80,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         )}
       </circle>
 
-      {/* Anillos concéntricos base */}
       {[283, 232, 178, 120].map((r) => (
         <circle
           key={r}
@@ -123,11 +93,9 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         />
       ))}
 
-      {/* Cruz de mira */}
       <line x1="20" y1={C} x2="580" y2={C} stroke="var(--fg)" strokeWidth="0.6" strokeOpacity="0.08" />
       <line x1={C} y1="20" x2={C} y2="580" stroke="var(--fg)" strokeWidth="0.6" strokeOpacity="0.08" />
 
-      {/* Barrido de radar */}
       <g>
         {motion && (
           <animateTransform
@@ -143,7 +111,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         <line x1={C} y1={C} x2={C} y2="42" stroke="var(--accent)" strokeWidth="1.4" strokeOpacity="0.55" />
       </g>
 
-      {/* Marcas de la brújula */}
       <g>
         {ticks.map((t) => (
           <line
@@ -159,7 +126,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         ))}
       </g>
 
-      {/* Anillo punteado exterior — gira en sentido horario */}
       <g>
         {motion && (
           <animateTransform
@@ -181,11 +147,9 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
           strokeOpacity="0.5"
           strokeDasharray="2 12"
         />
-        {/* Punto en órbita exterior */}
         <circle cx={C} cy={C - 232} r="3.5" fill="var(--accent)" />
       </g>
 
-      {/* Anillo interior — gira en sentido antihorario */}
       <g>
         {motion && (
           <animateTransform
@@ -211,7 +175,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         <circle cx={C + 178} cy={C} r="2.5" fill="var(--accent)" />
       </g>
 
-      {/* Aguja de la brújula — deriva lenta */}
       <g>
         {motion && (
           <animateTransform
@@ -231,7 +194,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         <circle cx={C} cy={C} r="9" fill="none" stroke="var(--accent)" strokeWidth="1" strokeOpacity="0.5" />
       </g>
 
-      {/* Anillo de pulso del núcleo */}
       <circle cx={C} cy={C} r="70" fill="none" stroke="var(--accent)" strokeWidth="1" strokeOpacity="0.3">
         {motion && (
           <>
@@ -241,7 +203,6 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
         )}
       </circle>
 
-      {/* Pulsos de datos convergiendo al núcleo */}
       {motion &&
         axes.map((d, i) => (
           <circle key={d} r="3.5" fill="var(--accent)">
@@ -261,20 +222,21 @@ function Compass({ motion, className }: { motion: boolean; className: string }) 
 }
 
 function Core() {
+  const t = useTranslations('Ecosystem');
+
   return (
     <div className="relative z-20 flex aspect-square w-40 flex-col items-center justify-center border border-accent/40 bg-ink-950/70 p-4 text-center backdrop-blur-sm sm:w-48 lg:w-52">
       <span className="pointer-events-none absolute -inset-px border border-accent/15" />
-      {/* Marcas de esquina tipo visor */}
       {['-top-px -left-px border-t border-l', '-top-px -right-px border-t border-r', '-bottom-px -left-px border-b border-l', '-bottom-px -right-px border-b border-r'].map(
         (pos) => (
           <span key={pos} className={`pointer-events-none absolute h-3 w-3 border-accent ${pos}`} />
         ),
       )}
-      <span className="mono-label text-faint">Un solo</span>
+      <span className="mono-label text-faint">{t('coreBefore')}</span>
       <span className="font-display text-2xl font-bold uppercase leading-none text-fg sm:text-3xl">
-        Sistema
+        {t('coreTitle')}
       </span>
-      <span className="mt-2 mono-label text-accent">Cluster</span>
+      <span className="mt-2 mono-label text-accent">{t('coreBrand')}</span>
     </div>
   );
 }
@@ -304,17 +266,17 @@ function PillarCard({ pillar }: { pillar: Pillar }) {
 }
 
 export function EcosystemDiagram() {
+  const t = useTranslations('Ecosystem');
+  const pillars = t.raw('pillars') as Pillar[];
   const reduced = useReducedMotion();
 
   return (
     <Reveal className="relative mx-auto mt-16 w-full max-w-4xl">
-      {/* Brújula / radar (md+) */}
       <Compass
         motion={!reduced}
         className="pointer-events-none absolute left-1/2 top-1/2 z-0 hidden h-[128%] w-[128%] -translate-x-1/2 -translate-y-1/2 md:block"
       />
 
-      {/* Versión radial (md+) */}
       <div className="relative z-10 hidden grid-cols-3 grid-rows-3 place-items-center gap-4 md:grid">
         <div className="col-start-2 row-start-1 flex justify-center">
           <PillarCard pillar={pillars[0]} />
@@ -333,7 +295,6 @@ export function EcosystemDiagram() {
         </div>
       </div>
 
-      {/* Versión móvil: brújula animada + pilares apilados */}
       <div className="md:hidden">
         <div className="relative mx-auto aspect-square w-full max-w-[20rem]">
           <Compass

@@ -228,6 +228,15 @@
   background: rgba(2, 195, 154, 0.08);
 }
 
+.theme-desarrollo-web .web-hero-mark {
+  display: inline;
+  background: #02c39a;
+  color: #111111;
+  padding: 0.04em 0.18em 0.06em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
 @layer base {
   * {
     border-color: var(--line);
@@ -244,15 +253,6 @@
     color: var(--fg);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    top: 0 !important;
-  }
-
-  .cluster-translate-element,
-  .goog-te-banner-frame,
-  .goog-te-balloon-frame,
-  .goog-te-gadget,
-  #goog-gt-tt {
-    display: none !important;
   }
 
   ::selection {
@@ -371,6 +371,17 @@
 }
 
 @layer utilities {
+  /* Degradé verde suave arriba→abajo para heroes sin media */
+  .hero-accent-fade {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--accent) 20%, transparent) 0%,
+      color-mix(in srgb, var(--accent) 8%, transparent) 38%,
+      transparent 72%
+    );
+    pointer-events: none;
+  }
+
   /* ── Animaciones de entrada (todo el site) ─────────────── */
   @keyframes pageEnter {
     from {

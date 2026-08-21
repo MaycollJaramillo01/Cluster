@@ -1,17 +1,22 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { HeroMedia } from '@/components/home/HeroMedia';
 import { site, whatsappLink } from '@/lib/site';
 
 export function HomeHero() {
+  const t = useTranslations('Home');
+  const tc = useTranslations('Common');
+  const stats = t.raw('stats') as { value: string; label: string }[];
+
   return (
     <section className="relative flex min-h-[100svh] flex-col overflow-hidden bg-ink-950">
-      {/* Poster inmediato (LCP); video diferido en desktop */}
       <div className="absolute inset-0">
         <HeroMedia />
       </div>
 
-      {/* Capas de oscurecimiento para legibilidad */}
       <div
         className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/55 to-ink-950/70"
         aria-hidden="true"
@@ -22,51 +27,36 @@ export function HomeHero() {
       />
       <div className="grain absolute inset-0" aria-hidden="true" />
 
-      {/* Etiqueta vertical lateral */}
       <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 rotate-90 lg:block">
-        <span className="mono-label text-faint">
-          Cluster Media — EST. Miami
-        </span>
+        <span className="mono-label text-faint">{t('heroSideLabel')}</span>
       </div>
 
-      {/* Contenido */}
       <div className="container-x relative z-[1] flex flex-1 flex-col justify-end pb-12 pt-32 sm:pb-0">
-        {/* H1 oculto: necesario para SEO aunque el hero sea solo video */}
-        <h1 className="sr-only">
-          Cluster Media — Comunicación digital que conecta con tu audiencia.
-        </h1>
+        <h1 className="sr-only">{t('heroH1')}</h1>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <p className="max-w-xl text-xl leading-relaxed text-muted sm:text-2xl">
-            Construimos marcas que conectan con tu audiencia: contenido real,
-            campañas, websites y automatizaciones para salir del molde
-            corporativo.
+            {t('heroText')}
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
             <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
-              Agendar llamada
+              {tc('scheduleCall')}
             </Button>
             <Button
-              href={whatsappLink('Hola Cluster Media, quiero hacer crecer mi negocio.')}
+              href={whatsappLink(t('heroWhatsapp'))}
               external
               variant="ghost"
               size="lg"
               icon="whatsapp"
             >
-              WhatsApp
+              {tc('whatsapp')}
             </Button>
           </div>
         </div>
 
-        {/* Barra de métricas */}
         <div className="mt-12 grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-surface backdrop-blur-sm sm:grid-cols-4">
-          {[
-            { value: '+200', label: 'negocios atendidos' },
-            { value: '~20', label: 'leads/día en campañas' },
-            { value: '3', label: 'mercados: EE.UU · LATAM · ES' },
-            { value: '17', label: 'servicios digitales' },
-          ].map((stat) => (
+          {stats.map((stat) => (
             <div
               key={stat.label}
               className="border-line px-5 py-5 [&:not(:last-child)]:border-r"
@@ -82,10 +72,9 @@ export function HomeHero() {
         </div>
       </div>
 
-      {/* Indicador de scroll */}
       <div className="pointer-events-none absolute bottom-6 left-1/2 z-[1] hidden -translate-x-1/2 items-center gap-2 text-faint sm:flex">
         <Icon name="chevron-down" size={16} className="animate-bounce" />
-        <span className="mono-label">Scroll</span>
+        <span className="mono-label">{tc('scroll')}</span>
       </div>
     </section>
   );

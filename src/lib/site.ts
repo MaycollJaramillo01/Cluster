@@ -543,8 +543,10 @@ export const clients: Client[] = [
   { name: 'Ink Express', logo: '/assets/logos/ink-express-transparent.png' },
   { name: 'Kielsa', logo: '/assets/logos/kielsa.webp' },
   { name: 'Luxo Boutique', logo: '/assets/logos/luxo-boutique-transparent.png' },
+  { name: 'Mr. Lobo', logo: '/assets/logos/mr-lobo-transparent.png' },
   { name: 'Seguros Atlántida', logo: '/assets/logos/seguros-atlantida.svg' },
   { name: 'Travel Diunsa', logo: '/assets/logos/travel-diunsa-transparent.png' },
+  { name: 'Vakamoo', logo: '/assets/logos/vakamoo-transparent.png' },
 ];
 
 // ─────────────────────────────────────────────────────────────

@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-map/honduras": "^1.0.9",
     "next": "15.3.9",
+    "next-intl": "^4.13.7",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
@@ -20,6 +21,7 @@
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "autoprefixer": "10.4.20",
+    "ffmpeg-static": "^5.3.0",
     "postcss": "8.5.1",
     "tailwindcss": "3.4.17",
     "typescript": "5.7.3"

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Reveal } from '@/components/ui/Reveal';
 import type { Service } from '@/lib/site';

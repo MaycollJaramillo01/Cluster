@@ -1,7 +1,7 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useRef, type ReactNode } from 'react';
+import { usePathname } from '@/i18n/navigation';
 
 // Reproduce una animación de entrada cada vez que cambia la ruta.
 // El `key={pathname}` fuerza el re-montaje para relanzar la animación.

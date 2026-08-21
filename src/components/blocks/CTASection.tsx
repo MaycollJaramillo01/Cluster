@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Reveal } from '@/components/ui/Reveal';
 import { site, whatsappLink } from '@/lib/site';
@@ -10,15 +13,24 @@ type CTASectionProps = {
 };
 
 export function CTASection({
-  title = '¿Listo para hacer crecer tu negocio?',
-  text = 'Agenda una llamada y cuéntanos qué necesita tu negocio. Te ayudaremos a identificar la mejor ruta para mejorar tu presencia digital, generar clientes o automatizar tu atención comercial.',
+  title,
+  text,
   whatsappMessage,
-  primaryCta = { label: 'Agendar llamada', href: site.calendarUrl },
+  primaryCta,
 }: CTASectionProps) {
+  const t = useTranslations('CTASection');
+  const tc = useTranslations('Common');
+
+  const resolvedTitle = title ?? t('defaultTitle');
+  const resolvedText = text ?? t('defaultText');
+  const resolvedPrimaryCta = primaryCta ?? {
+    label: t('primaryCta'),
+    href: site.calendarUrl,
+  };
+
   return (
     <section className="theme-dark relative overflow-hidden bg-ink-950 py-24 text-fg sm:py-32">
       <div className="grain absolute inset-0" aria-hidden="true" />
-      {/* Glow grande de marca */}
       <div
         className="absolute left-1/2 top-1/2 h-[40rem] w-[40rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-surface blur-[140px]"
         aria-hidden="true"
@@ -31,19 +43,19 @@ export function CTASection({
       <div className="container-x relative z-[1]">
         <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className="text-4xl font-semibold leading-[1.02] tracking-[-0.03em] text-fg sm:text-5xl lg:text-6xl">
-            {title}
+            {resolvedTitle}
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-            {text}
+            {resolvedText}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Button
-              href={primaryCta.href}
-              external={primaryCta.href.startsWith('http')}
+              href={resolvedPrimaryCta.href}
+              external={resolvedPrimaryCta.href.startsWith('http')}
               size="lg"
               iconRight="arrow-right"
             >
-              {primaryCta.label}
+              {resolvedPrimaryCta.label}
             </Button>
             <Button
               href={whatsappLink(whatsappMessage)}
@@ -52,10 +64,10 @@ export function CTASection({
               size="lg"
               icon="whatsapp"
             >
-              WhatsApp
+              {tc('whatsapp')}
             </Button>
             <Button href="/contacto" variant="ghost" size="lg">
-              Solicitar información
+              {tc('requestInfo')}
             </Button>
           </div>
         </Reveal>

@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Link } from '@/i18n/navigation';
 import { Icon, type IconName } from './Icon';
 
 type Variant =
@@ -50,7 +50,7 @@ type ButtonAsLink = CommonProps & {
   href: string;
   external?: boolean;
   type?: never;
-  onClick?: never;
+  onClick?: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
 };
 
 type ButtonAsButton = CommonProps & {
@@ -94,13 +94,14 @@ export function Button(props: ButtonAsLink | ButtonAsButton) {
           target="_blank"
           rel="noopener noreferrer"
           className={classes}
+          onClick={props.onClick}
         >
           {inner}
         </a>
       );
     }
     return (
-      <Link href={props.href} className={classes}>
+      <Link href={props.href} className={classes} onClick={props.onClick}>
         {inner}
       </Link>
     );

@@ -1,5 +1,8 @@
+'use client';
+
 import Image from 'next/image';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { site } from '@/lib/site';
 
 type LogoProps = {
@@ -9,12 +12,13 @@ type LogoProps = {
 
 // Logo oficial de Cluster Media (marca de "clúster" de tres figuras entrelazadas).
 export function Logo({ variant = 'light', className = '' }: LogoProps) {
+  const t = useTranslations('Common');
   const isLight = variant === 'light';
 
   return (
     <Link
       href="/"
-      aria-label={`${site.name} — Inicio`}
+      aria-label={t('homeAria', { name: site.name })}
       className={`group inline-flex items-center gap-2.5 ${className}`}
     >
       <Image
