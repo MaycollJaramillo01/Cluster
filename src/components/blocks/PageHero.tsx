@@ -28,7 +28,7 @@ type PageHeroProps = {
   children?: ReactNode;
 };
 
-function HeroBackgroundVideo({ src }: { src: string }) {
+export function HeroBackgroundVideo({ src }: { src: string }) {
   const [playVideo, setPlayVideo] = useState(false);
 
   useEffect(() => {

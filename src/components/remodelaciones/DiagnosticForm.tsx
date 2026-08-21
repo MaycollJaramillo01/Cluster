@@ -206,8 +206,7 @@ export function DiagnosticForm({ market, id = 'diagnostico' }: DiagnosticFormPro
         />
       </div>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-faint">{t('formMicro')}</p>
+      <div className="mt-8 flex justify-end">
         <Button type="submit" size="lg" disabled={status === 'loading'}>
           {status === 'loading' ? tc('sending') : t('formCta')}
         </Button>

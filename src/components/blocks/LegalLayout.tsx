@@ -29,7 +29,7 @@ export function LegalLayout({
             {title}
           </h1>
           <p className="mt-4 font-mono text-sm text-faint">
-            {tc('lastUpdated')}: {updated}
+            {tc('lastUpdated', { date: updated })}
           </p>
         </div>
       </section>

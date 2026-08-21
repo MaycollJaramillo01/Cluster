@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, MouseEventHandler, ReactNode } from 'react';
 import { Link } from '@/i18n/navigation';
 import { Icon, type IconName } from './Icon';
 
@@ -44,19 +44,18 @@ type CommonProps = {
   iconRight?: IconName;
   children: ReactNode;
   className?: string;
+  onClick?: MouseEventHandler<HTMLElement>;
 };
 
 type ButtonAsLink = CommonProps & {
   href: string;
   external?: boolean;
   type?: never;
-  onClick?: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
 };
 
 type ButtonAsButton = CommonProps & {
   href?: undefined;
   type?: ButtonHTMLAttributes<HTMLButtonElement>['type'];
-  onClick?: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   disabled?: boolean;
 };
 

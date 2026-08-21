@@ -35,7 +35,7 @@ export const REMODELACIONES_MARKETS: Record<RemodelacionesMarketId, Remodelacion
     implementationFromLocal: null, // se define comercialmente
     showMonthly: false,
     monthlyFromUsd: null,
-    videoSrc: null,
+    videoSrc: '/assets/videos/heroes/remodelaciones.mp4',
     privacyPath: '/privacidad',
   },
   es: {
@@ -52,7 +52,7 @@ export const REMODELACIONES_MARKETS: Record<RemodelacionesMarketId, Remodelacion
     implementationFromLocal: null,
     showMonthly: false,
     monthlyFromUsd: null,
-    videoSrc: null,
+    videoSrc: '/assets/videos/heroes/remodelaciones.mp4',
     privacyPath: '/privacidad',
   },
   mx: {
@@ -69,7 +69,7 @@ export const REMODELACIONES_MARKETS: Record<RemodelacionesMarketId, Remodelacion
     implementationFromLocal: null,
     showMonthly: false,
     monthlyFromUsd: null,
-    videoSrc: null,
+    videoSrc: '/assets/videos/heroes/remodelaciones.mp4',
     privacyPath: '/privacidad',
   },
   pa: {
@@ -86,7 +86,7 @@ export const REMODELACIONES_MARKETS: Record<RemodelacionesMarketId, Remodelacion
     implementationFromLocal: null,
     showMonthly: false,
     monthlyFromUsd: null,
-    videoSrc: null,
+    videoSrc: '/assets/videos/heroes/remodelaciones.mp4',
     privacyPath: '/privacidad',
   },
 };

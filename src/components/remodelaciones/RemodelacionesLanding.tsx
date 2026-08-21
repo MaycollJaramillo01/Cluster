@@ -5,14 +5,12 @@ import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { FAQ } from '@/components/blocks/FAQ';
+import { HeroBackgroundVideo } from '@/components/blocks/PageHero';
 import { Section, SectionHeading, Eyebrow } from '@/components/ui/Section';
 import { Reveal } from '@/components/ui/Reveal';
 import { BudgetCalculator } from '@/components/remodelaciones/BudgetCalculator';
-import { PipelineVisual } from '@/components/remodelaciones/PipelineVisual';
-import { DemoDashboard } from '@/components/remodelaciones/DemoDashboard';
 import { DiagnosticForm } from '@/components/remodelaciones/DiagnosticForm';
 import { StickyCta } from '@/components/remodelaciones/StickyCta';
-import { VideoPlaceholder } from '@/components/remodelaciones/VideoPlaceholder';
 import { trackEvent } from '@/lib/analytics';
 import { site, whatsappLink } from '@/lib/site';
 import type { RemodelacionesMarket } from '@/lib/remodelaciones/markets';
@@ -42,58 +40,58 @@ export function RemodelacionesLanding({ market }: Props) {
     <div className="pb-20 md:pb-0">
       {/* HERO */}
       <section className="relative overflow-hidden bg-ink-950 pt-36 pb-20 sm:pt-44 sm:pb-28">
-        <div className="hero-accent-fade absolute inset-0" aria-hidden="true" />
-        <div
-          className="absolute inset-0 bg-grid-fade [background-size:64px_64px] opacity-30 [mask-image:radial-gradient(70%_55%_at_20%_0%,black,transparent)]"
-          aria-hidden="true"
-        />
+        {market.videoSrc ? (
+          <HeroBackgroundVideo src={market.videoSrc} />
+        ) : (
+          <>
+            <div className="hero-accent-fade absolute inset-0" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-grid-fade [background-size:64px_64px] opacity-30 [mask-image:radial-gradient(70%_55%_at_20%_0%,black,transparent)]"
+              aria-hidden="true"
+            />
+          </>
+        )}
         <div className="grain absolute inset-0" aria-hidden="true" />
 
         <div className="container-x relative z-[1]">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-            <div className="max-w-xl">
-              <Reveal>
-                <Eyebrow>{t('heroEyebrow')}</Eyebrow>
-              </Reveal>
-              <Reveal delay={60}>
-                <h1 className="mt-6 text-[2.35rem] font-semibold leading-[0.98] tracking-tight text-fg sm:text-5xl lg:text-6xl">
-                  {t('heroTitle')}
-                </h1>
-              </Reveal>
-              <Reveal delay={120}>
-                <p className="mt-6 text-base leading-relaxed text-muted sm:text-lg">
-                  {t('heroSubtitle')}
-                </p>
-              </Reveal>
-              <Reveal delay={180}>
-                <div className="mt-9 flex flex-wrap items-center gap-3">
-                  <Button
-                    href="#diagnostico"
-                    size="lg"
-                    iconRight="arrow-right"
-                    onClick={() =>
-                      trackEvent('click_cta_primary', { source: 'hero' })
-                    }
-                  >
-                    {t('heroCta')}
-                  </Button>
-                  <Button
-                    href="#como-funciona"
-                    variant="ghost"
-                    size="lg"
-                    onClick={() =>
-                      trackEvent('click_cta_secondary', { source: 'hero' })
-                    }
-                  >
-                    {t('heroCtaSecondary')}
-                  </Button>
-                </div>
-                <p className="mt-4 font-mono text-xs text-faint">{t('heroMicro')}</p>
-              </Reveal>
-            </div>
-
-            <Reveal delay={160}>
-              <PipelineVisual />
+          <div className="max-w-xl">
+            <Reveal>
+              <Eyebrow>{t('heroEyebrow')}</Eyebrow>
+            </Reveal>
+            <Reveal delay={60}>
+              <h1 className="mt-6 text-[2.35rem] font-semibold leading-[0.98] tracking-tight text-fg sm:text-5xl lg:text-6xl">
+                {t('heroTitle')}
+              </h1>
+            </Reveal>
+            <Reveal delay={120}>
+              <p className="mt-6 text-base leading-relaxed text-muted sm:text-lg">
+                {t('heroSubtitle')}
+              </p>
+            </Reveal>
+            <Reveal delay={180}>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <Button
+                  href="#diagnostico"
+                  size="lg"
+                  iconRight="arrow-right"
+                  onClick={() =>
+                    trackEvent('click_cta_primary', { source: 'hero' })
+                  }
+                >
+                  {t('heroCta')}
+                </Button>
+                <Button
+                  href="#como-funciona"
+                  variant="ghost"
+                  size="lg"
+                  onClick={() =>
+                    trackEvent('click_cta_secondary', { source: 'hero' })
+                  }
+                >
+                  {t('heroCtaSecondary')}
+                </Button>
+              </div>
+              <p className="mt-4 font-mono text-xs text-faint">{t('heroMicro')}</p>
             </Reveal>
           </div>
         </div>
@@ -222,27 +220,6 @@ export function RemodelacionesLanding({ market }: Props) {
         <p className="mt-8 max-w-2xl text-[15px] text-muted">{t('integrateFocus')}</p>
       </Section>
 
-      {/* DASHBOARD */}
-      <Section tone="soft">
-        <SectionHeading
-          eyebrow={t('dashSectionEyebrow')}
-          title={t('dashSectionTitle')}
-          description={t('dashSectionDesc')}
-          className="mb-10 max-w-3xl"
-        />
-        <DemoDashboard market={market} />
-      </Section>
-
-      {/* VIDEO */}
-      <Section tone="light" id="video">
-        <SectionHeading
-          eyebrow={t('videoEyebrow')}
-          title={t('videoTitle')}
-          className="mb-10 max-w-3xl"
-        />
-        <VideoPlaceholder src={market.videoSrc} />
-      </Section>
-
       {/* DIFERENCIACIÓN */}
       <Section tone="dark">
         <SectionHeading
@@ -364,14 +341,44 @@ export function RemodelacionesLanding({ market }: Props) {
 
       {/* FORMULARIO */}
       <Section tone="dark" id="diagnostico">
-        <SectionHeading
-          tone="light"
-          eyebrow={t('formEyebrow')}
-          title={t('formTitle')}
-          description={t('formDesc')}
-          className="mb-10 max-w-3xl"
-        />
-        <DiagnosticForm market={market} />
+        <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-16">
+          <div>
+            <SectionHeading
+              tone="light"
+              eyebrow={t('formEyebrow')}
+              title={t('formTitle')}
+              description={t('formDesc')}
+            />
+            <p className="mt-6 text-[15px] leading-relaxed text-muted">
+              {t('formMicro')}
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button
+                href={site.calendarUrl}
+                size="lg"
+                iconRight="arrow-right"
+                onClick={() =>
+                  trackEvent('click_agenda', { source: 'form_aside' })
+                }
+              >
+                {t('thanksSchedule')}
+              </Button>
+              <Button
+                href={whatsappLink(market.whatsappMessage)}
+                external
+                variant="whatsapp"
+                size="lg"
+                icon="whatsapp"
+                onClick={() =>
+                  trackEvent('click_whatsapp', { source: 'form_aside' })
+                }
+              >
+                WhatsApp
+              </Button>
+            </div>
+          </div>
+          <DiagnosticForm market={market} />
+        </div>
       </Section>
 
       {/* FAQ */}
