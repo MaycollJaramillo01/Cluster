@@ -1,9 +1,15 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
 import { Reveal } from '@/components/ui/Reveal';
 import { whatsappLink, type Plan } from '@/lib/site';
 
 export function PricingCard({ plan, index = 0 }: { plan: Plan; index?: number }) {
+  const tc = useTranslations('Common');
+  const ts = useTranslations('Social');
+
   return (
     <Reveal
       delay={index * 80}
@@ -15,20 +21,16 @@ export function PricingCard({ plan, index = 0 }: { plan: Plan; index?: number })
     >
       {plan.highlight && (
         <span className="mono-label mb-4 inline-flex w-fit bg-accent px-4 py-1.5 text-accent-fg">
-          Más popular
+          {tc('popular')}
         </span>
       )}
 
-      <h3 className="font-display text-lg font-semibold text-fg">
-        {plan.name}
-      </h3>
+      <h3 className="font-display text-lg font-semibold text-fg">{plan.name}</h3>
       <div className="mt-3 flex items-end gap-1">
         <span className="font-display text-4xl font-semibold tracking-tight text-fg">
           {plan.price}
         </span>
-        <span className="pb-1.5 font-mono text-sm text-faint">
-          {plan.period}
-        </span>
+        <span className="pb-1.5 font-mono text-sm text-faint">{plan.period}</span>
       </div>
 
       <ul className="mt-6 flex-1 space-y-2.5 border-t border-line pt-6">
@@ -46,12 +48,12 @@ export function PricingCard({ plan, index = 0 }: { plan: Plan; index?: number })
       </ul>
 
       <Button
-        href={whatsappLink(`Hola, quiero el paquete ${plan.name} de redes sociales.`)}
+        href={whatsappLink(ts('pricingCardWhatsapp', { name: plan.name }))}
         external
         variant={plan.highlight ? 'primary' : 'ghost'}
         className="mt-7 w-full"
       >
-        Solicitar {plan.name}
+        {tc('requestPlan', { name: plan.name })}
       </Button>
     </Reveal>
   );

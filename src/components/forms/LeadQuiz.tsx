@@ -1,27 +1,28 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { whatsappLink } from '@/lib/site';
 
 type Option = { id: string; label: string; icon: IconName };
 
-const challenges: Option[] = [
-  { id: 'redes', label: 'No tengo estrategia en redes sociales', icon: 'megaphone' },
-  { id: 'web', label: 'Mi web está desactualizada o no tengo', icon: 'globe' },
-  { id: 'ads', label: 'Invierto en publicidad pero no veo resultados', icon: 'chart' },
-  { id: 'ventas', label: 'Me contactan pero no logro cerrar ventas', icon: 'target' },
-  { id: 'marca', label: 'Mi marca no transmite profesionalismo', icon: 'sparkles' },
-  { id: 'crecer', label: 'Quiero crecer pero no sé por dónde empezar', icon: 'rocket' },
-];
+const challengeIcons: Record<string, IconName> = {
+  redes: 'megaphone',
+  web: 'globe',
+  ads: 'chart',
+  ventas: 'target',
+  marca: 'sparkles',
+  crecer: 'rocket',
+};
 
-const stages: Option[] = [
-  { id: 'inicio', label: 'Estoy empezando, tengo menos de 1 año', icon: 'bolt' },
-  { id: 'escalar', label: 'Llevo 1–3 años y quiero escalar', icon: 'chart' },
-  { id: 'consolidada', label: 'Soy una empresa consolidada (3+ años)', icon: 'shield' },
-  { id: 'freelance', label: 'Soy profesional independiente / freelance', icon: 'users' },
-];
+const stageIcons: Record<string, IconName> = {
+  inicio: 'bolt',
+  escalar: 'chart',
+  consolidada: 'shield',
+  freelance: 'users',
+};
 
 const TOTAL = 3;
 
@@ -29,6 +30,21 @@ const inputClass =
   'w-full bg-surface py-3.5 pl-11 pr-4 text-[15px] text-fg placeholder:text-faint transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[color:var(--accent)]';
 
 export function LeadQuiz() {
+  const t = useTranslations('LeadQuiz');
+  const tc = useTranslations('Common');
+
+  const challenges = (t.raw('challenges') as { id: string; label: string }[]).map(
+    (item) => ({ ...item, icon: challengeIcons[item.id] ?? 'bolt' }),
+  );
+  const stages = (t.raw('stages') as { id: string; label: string }[]).map(
+    (item) => ({ ...item, icon: stageIcons[item.id] ?? 'users' }),
+  );
+  const questions = t.raw('questions') as {
+    step: string;
+    title: string;
+    sub: string;
+  }[];
+
   const [step, setStep] = useState(0);
   const [challenge, setChallenge] = useState<string | null>(null);
   const [stage, setStage] = useState<string | null>(null);
@@ -43,15 +59,15 @@ export function LeadQuiz() {
     const data = new FormData(e.currentTarget);
     const chLabel = challenges.find((c) => c.id === challenge)?.label ?? '—';
     const stLabel = stages.find((s) => s.id === stage)?.label ?? '—';
-    const message =
-      `Quiero mi recomendación personalizada de Cluster Media:%0A` +
-      `• Desafío: ${chLabel}%0A` +
-      `• Etapa: ${stLabel}%0A` +
-      `• Nombre: ${data.get('nombre')}%0A` +
-      `• Negocio: ${data.get('negocio') || '—'}%0A` +
-      `• WhatsApp: ${data.get('whatsapp')}%0A` +
-      `• Website: ${data.get('website') || '—'}%0A` +
-      `• Redes: ${data.get('redes') || '—'}`;
+    const message = t('whatsappTemplate', {
+      challenge: chLabel,
+      stage: stLabel,
+      name: String(data.get('nombre') ?? ''),
+      business: String(data.get('negocio') || '—'),
+      whatsapp: String(data.get('whatsapp') ?? ''),
+      website: String(data.get('website') || '—'),
+      social: String(data.get('redes') || '—'),
+    });
     setSent(true);
     window.open(whatsappLink(decodeURIComponent(message)), '_blank');
   }
@@ -64,49 +80,30 @@ export function LeadQuiz() {
             <Icon name="check" size={32} strokeWidth={2.5} />
           </span>
           <h2 className="mt-6 font-display text-2xl font-bold uppercase tracking-tight text-fg sm:text-3xl">
-            ¡Listo! Vamos a por tu plan.
+            {tc('quizDoneTitle')}
           </h2>
           <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
-            Preparamos tu recomendación con base en tus respuestas. Si WhatsApp no
-            se abrió solo, escríbenos y te enviamos un plan adaptado a tu situación.
+            {tc('quizDoneText')}
           </p>
           <Button
-            href={whatsappLink('Hola, acabo de completar el diagnóstico en su website.')}
+            href={whatsappLink(tc('quizDoneWhatsapp'))}
             external
             variant="accent"
             icon="whatsapp"
             size="lg"
             className="mt-7"
           >
-            Abrir WhatsApp
+            {tc('openWhatsapp')}
           </Button>
         </div>
       </Card>
     );
   }
 
-  const questions = [
-    {
-      paso: 'Paso 1 de 3',
-      title: '¿Cuál es tu mayor desafío digital hoy?',
-      sub: 'Seleccioná la opción que mejor describe tu situación.',
-    },
-    {
-      paso: 'Paso 2 de 3',
-      title: '¿En qué etapa está tu negocio?',
-      sub: 'Esto nos ayuda a recomendarte el plan ideal.',
-    },
-    {
-      paso: 'Paso 3 de 3',
-      title: '¿A dónde te enviamos tu recomendación?',
-      sub: 'Te contactamos con un plan adaptado a tu situación.',
-    },
-  ];
   const q = questions[step];
 
   return (
     <Card>
-      {/* Progreso */}
       <div className="flex items-center gap-2" aria-hidden="true">
         {Array.from({ length: TOTAL }).map((_, i) => (
           <span
@@ -122,13 +119,12 @@ export function LeadQuiz() {
         ))}
       </div>
 
-      <span className="mono-label mt-7 block text-faint">{q.paso}</span>
+      <span className="mono-label mt-7 block text-faint">{q.step}</span>
       <h2 className="mt-3 font-display text-[1.7rem] font-bold uppercase leading-[1.05] tracking-tight text-fg sm:text-4xl">
         {q.title}
       </h2>
       <p className="mt-3 text-[15px] leading-relaxed text-muted">{q.sub}</p>
 
-      {/* Paso 1 — Desafío */}
       {step === 0 && (
         <div className="mt-8 space-y-2.5">
           {challenges.map((opt) => (
@@ -148,13 +144,12 @@ export function LeadQuiz() {
               disabled={!challenge}
               onClick={() => setStep(1)}
             >
-              Siguiente
+              {tc('next')}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Paso 2 — Etapa */}
       {step === 1 && (
         <div className="mt-8 space-y-2.5">
           {stages.map((opt) => (
@@ -175,30 +170,33 @@ export function LeadQuiz() {
               disabled={!stage}
               onClick={() => setStep(2)}
             >
-              Siguiente
+              {tc('next')}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Paso 3 — Datos */}
       {step === 2 && (
         <form onSubmit={handleSubmit} className="mt-8 space-y-3">
           <IconField
             icon="users"
             name="nombre"
-            placeholder="Tu nombre"
+            placeholder={tc('name')}
             value={name}
             onChange={setName}
             required
           />
-          <IconField icon="pin" name="negocio" placeholder="Nombre de tu negocio" />
+          <IconField
+            icon="pin"
+            name="negocio"
+            placeholder={t('businessField')}
+          />
           <IconField
             icon="whatsapp"
             name="whatsapp"
             type="tel"
             inputMode="numeric"
-            placeholder="WhatsApp (con código de país)"
+            placeholder={tc('whatsappWithCountry')}
             value={whatsapp}
             onChange={(v) => setWhatsapp(v.replace(/\D/g, ''))}
             required
@@ -206,14 +204,14 @@ export function LeadQuiz() {
           <IconField
             icon="globe"
             name="website"
-            placeholder="Website (opcional)"
+            placeholder={tc('websiteOptional')}
             value={website}
             onChange={setWebsite}
           />
           <IconField
             icon="instagram"
             name="redes"
-            placeholder="@usuario en Instagram / TikTok (opcional)"
+            placeholder={tc('socialOptional')}
             value={redes}
             onChange={setRedes}
           />
@@ -227,7 +225,7 @@ export function LeadQuiz() {
               className="flex-1 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
               disabled={!name.trim() || !whatsapp.trim()}
             >
-              Recibir recomendación
+              {tc('receiveRecommendation')}
             </Button>
           </div>
         </form>
@@ -239,7 +237,6 @@ export function LeadQuiz() {
 function Card({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative w-full max-w-xl border border-line bg-ink-900/70 p-7 backdrop-blur-md sm:p-10">
-      {/* Marcas de esquina tipo visor */}
       {[
         '-top-px -left-px border-t border-l',
         '-top-px -right-px border-t border-r',
@@ -336,11 +333,13 @@ function IconField({
 }
 
 function BackButton({ onClick }: { onClick: () => void }) {
+  const tc = useTranslations('Common');
+
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label="Volver"
+      aria-label={tc('backAria')}
       className="flex-none border-0 bg-surface px-6 text-fg transition-colors duration-300 hover:bg-surface-2"
     >
       <Icon name="arrow-right" size={18} className="rotate-180" />

@@ -1,0 +1,2684 @@
+{
+  "Meta": {
+    "titleDefault": "Cluster Media | Digital communication that connects with your audience",
+    "titleTemplate": "%s | Cluster Media",
+    "description": "We build brands, content, campaigns, websites and automations to connect with real audiences and drive growth.",
+    "keywords": [
+      "digital communication for brands",
+      "social media content",
+      "digital marketing agency for Hispanics",
+      "digital marketing for Hispanic businesses",
+      "digital marketing in the United States",
+      "social media agency for businesses",
+      "Google Ads campaigns for businesses",
+      "Meta Ads campaigns for businesses",
+      "websites for Hispanic businesses",
+      "audiovisual editing for brands",
+      "photography and podcast for brands",
+      "funnels and email marketing",
+      "WhatsApp automation for businesses",
+      "AI agents for businesses",
+      "branding for businesses",
+      "digital agency in Miami",
+      "marketing for Latino businesses"
+    ]
+  },
+  "Common": {
+    "skipToContent": "Skip to content",
+    "scheduleCall": "Schedule a call",
+    "whatsapp": "WhatsApp",
+    "learnMore": "Learn more",
+    "viewPlans": "View plans",
+    "contactUs": "Contact us",
+    "getStarted": "Get started",
+    "recommended": "Recommended",
+    "monthly": "Monthly",
+    "from": "From",
+    "readMore": "Read more",
+    "allRights": "All rights reserved.",
+    "navAria": "Main",
+    "mobileNavAria": "Mobile",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "showServices": "Show services",
+    "whatsappDefaultMessage": "Hi Cluster Media, I would like more information.",
+    "whatsappServicesMessage": "Hi Cluster Media, I would like more information about your services.",
+    "whatsappWriteUs": "Write us",
+    "whatsappWriteUsAria": "Write us on WhatsApp",
+    "scroll": "Scroll",
+    "requestInfo": "Request information",
+    "seeCase": "View case",
+    "seePlan": "View {name} plan",
+    "seeService": "View service",
+    "hireNow": "Subscribe now",
+    "seeQuestions": "View questions",
+    "comparePlans": "Compare and choose the right level.",
+    "next": "Next",
+    "back": "Back",
+    "backAria": "Back",
+    "sendMessage": "Send message",
+    "openWhatsapp": "Open WhatsApp",
+    "perMonth": "/mo",
+    "usd": "USD",
+    "noContracts": "No contracts.",
+    "cancelAnytime": "Cancel anytime.",
+    "choosePlan": "Choose plan",
+    "choosePlanName": "Choose {name}",
+    "auditNow": "Audit now",
+    "viewCalendar": "View calendar",
+    "featured": "Featured",
+    "readArticle": "Read article",
+    "read": "Read",
+    "readingTime": "{time} read",
+    "important": "Important:",
+    "legal": "Legal",
+    "lastUpdated": "Last updated: {date}",
+    "email": "Email",
+    "location": "Location",
+    "articleNotFound": "Article not found",
+    "planNotFound": "Plan not found",
+    "playVideo": "Play {label}",
+    "previousVideo": "Previous video",
+    "nextVideo": "Next video",
+    "goToVideo": "Go to {label}",
+    "financingNote": "* Monthly installment financing",
+    "monthlyFee": "installment /mo",
+    "oneTimePayment": "one-time payment",
+    "adSpendNotIncluded": "ad spend not included",
+    "adSpendNotIncludedLabel": "Ad spend not included",
+    "managementFrom": "management",
+    "suggestedCommitment": "Suggested commitment:",
+    "months6": "6 months",
+    "popular": "Most popular",
+    "requestPlan": "Request {name}",
+    "contract": "Subscribe",
+    "tipQuick": "Quick tip",
+    "seoScore": "SEO Score",
+    "result": "Result",
+    "status": "Status",
+    "words": "Words",
+    "imagesMissingAlt": "Images missing alt",
+    "impact": "Impact {value}",
+    "effort": "Effort {value}",
+    "selectService": "Select a service",
+    "serviceInterest": "Service of interest",
+    "message": "Message",
+    "name": "Name",
+    "company": "Company",
+    "country": "Country",
+    "city": "City",
+    "phone": "Phone",
+    "consentContact": "By submitting you agree that Cluster Media may contact you about your request.",
+    "consentContactCluster": "By submitting you agree that Cluster may contact you about your request.",
+    "thankYou": "Thank you for reaching out!",
+    "thankYouForm": "We prepared your message. If WhatsApp did not open automatically, write us directly and we will reply as soon as possible.",
+    "thankYouRutaLocal": "Thank you for your interest!",
+    "thankYouRutaLocalText": "Our team will review your request and contact you soon to discuss bringing Ruta Local to your municipality.",
+    "formSentWhatsapp": "Hi, I just filled out the form on your website.",
+    "quizDoneTitle": "Done! Let's find your plan.",
+    "quizDoneText": "We prepared your recommendation based on your answers. If WhatsApp did not open, write us and we will send a plan tailored to your situation.",
+    "quizDoneWhatsapp": "Hi, I just completed the diagnostic on your website.",
+    "receiveRecommendation": "Get recommendation",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms and Conditions",
+    "home": "Home",
+    "breadcrumbPlans": "Plans",
+    "breadcrumbBlog": "Blog",
+    "seeAllServices": "View all services",
+    "seeAllCases": "View all cases",
+    "aboutCluster": "About Cluster",
+    "reviewMySystem": "Review my system",
+    "diagnosticLink": "Not sure which to choose? Take the diagnostic",
+    "teamCarouselAria": "Cluster Media team carousel",
+    "webCasesCarouselAria": "Web success stories carousel",
+    "websiteOf": "Website of {name}",
+    "memberAlt": "{name}, {role}",
+    "chooseLevel": "Choose your level",
+    "featureColumn": "Feature",
+    "marketingAdviceNote": "(with our director)",
+    "starter": "Starter",
+    "advance": "Advance",
+    "seeWebPlans": "View web plans",
+    "seePackage": "View package",
+    "seeFaq": "View FAQ",
+    "wantThisPackage": "I want this package",
+    "requestProposal": "Request proposal",
+    "scheduleWhatsapp": "Schedule a call on WhatsApp",
+    "views": "views",
+    "monthlyAverage": "*Monthly average",
+    "newFollowersLabel": "new followers",
+    "growingCommunity": "A growing community following each municipality's stories.",
+    "hondurasExecuted": "Honduras · Municipalities covered",
+    "productionAlt": "On-location audiovisual production and podcast",
+    "coverageAlt": "Culture and community coverage in the municipality",
+    "rutaLocalProductionAlt": "Ruta Local production in {name}",
+    "noteLabel": "Note:",
+    "templateNote": "this is a template article ready for the content team to complete with final SEO copy.",
+    "backToBlog": "Back to blog",
+    "keepReading": "Keep reading",
+    "readArticleAria": "Read {title}",
+    "analyzing": "Analyzing...",
+    "generateAudit": "Generate audit",
+    "auditFormAria": "SEO audit form",
+    "auditError": "Could not generate the audit.",
+    "scoreSolid": "Solid",
+    "scoreImprove": "Needs improvement",
+    "scoreUrgent": "Urgent",
+    "statusOk": "Good",
+    "statusWarning": "Review",
+    "statusCritical": "Critical",
+    "theChallenge": "The challenge",
+    "theSolution": "The solution",
+    "whatsIncluded": "What's included",
+    "forWhom": "Who it's for",
+    "faq": "FAQ",
+    "otherPlans": "Other plans",
+    "otherWebPlans": "Other web plans",
+    "includesWith": "Everything included with {name}.",
+    "planFitsIf": "{name} fits if your business is at this stage.",
+    "planFitsDescription": "If you recognize yourself in any of these profiles, this plan is a good starting point.",
+    "faqAboutPlan": "Questions about the {name} plan",
+    "startWithPlan": "Let's start with the {name} plan.",
+    "planCtaText": "Subscribe to {name} with Stripe or write us on WhatsApp if you have questions. We will confirm the next step for your stage.",
+    "webPlanCtaText": "Schedule a call to subscribe to {name} or write us on WhatsApp if you have questions. We will confirm the next step.",
+    "compareOtherMonthly": "If you need more or less scope, review the other monthly options.",
+    "compareOtherWeb": "If you need more or less scope, review the other development and maintenance options.",
+    "seeRealCases": "View real cases",
+    "selectOption": "Select an option",
+    "selectPackage": "Select a package",
+    "additionalMessage": "Additional message",
+    "fullName": "Full name",
+    "role": "Role",
+    "municipalityOrg": "Municipality / Organization",
+    "socialWebsite": "Social media / website",
+    "whatToPromote": "What would you like to promote?",
+    "whichPackage": "Which package interests you?",
+    "businessName": "Your business name",
+    "whatsappWithCountry": "WhatsApp (with country code)",
+    "websiteOptional": "Website (optional)",
+    "socialOptional": "@username on Instagram / TikTok (optional)",
+    "countryExample": "E.g. United States",
+    "cityExample": "E.g. Miami",
+    "phoneExample": "+1 ...",
+    "roleExample": "E.g. Mayor, tourism director",
+    "municipalityExample": "E.g. Santa Rosa City Hall",
+    "socialExample": "@username or yourdomain.com",
+    "messagePlaceholder": "Tell us about your business and what you need...",
+    "rutaLocalMessagePlaceholder": "Tell us about your municipality, event or initiative...",
+    "contactPlaceholder": "you@email.com",
+    "namePlaceholder": "Your name",
+    "companyPlaceholder": "Business name",
+    "businessPlaceholder": "Your business name",
+    "urlPlaceholder": "https://yoursite.com",
+    "businessTypePlaceholder": "E.g. roofing, clinic, restaurant",
+    "siteUrl": "Site URL",
+    "businessType": "Business type",
+    "contactTalk": "Contact · Let's talk",
+    "scheduleEyebrow": "Schedule",
+    "language": "Language",
+    "scheduleCallCluster": "Schedule a call with Cluster Media",
+    "sending": "Sending...",
+    "formError": "We couldn’t send your message. Please try again.",
+    "homeAria": "{name} — Home",
+    "brandsCarouselAria": "Carousel of brands that trust Cluster Media",
+    "seoAuditGraphicAria": "Animated SEO audit dashboard with charts, score, and recommendations",
+    "previousPhoto": "Previous photo",
+    "nextPhoto": "Next photo",
+    "goToPhoto": "Go to photo {n}",
+    "teamMemberAlt": "Cluster Media team member",
+    "teamGroupAlt": "Cluster Media team",
+    "teamStudioAlt": "Cluster Media team filming content in studio"
+  },
+  "Nav": {
+    "home": "Home",
+    "services": "Services",
+    "branding": "Branding",
+    "social": "Social Media",
+    "googleAds": "Google Ads",
+    "automation": "AI / Automations",
+    "websitesSeo": "Websites / SEO",
+    "webDev": "Web development",
+    "seoAudit": "SEO Audit",
+    "plans": "Plans",
+    "cases": "Success Stories",
+    "about": "About Cluster",
+    "blog": "Blog",
+    "contact": "Contact",
+    "monthlyPlans": "Monthly plans"
+  },
+  "Footer": {
+    "tagline": "Close, real and distinctive digital communication for brands that want to connect with their audience and grow.",
+    "servicesTitle": "Services",
+    "companyTitle": "Company",
+    "contactTitle": "Contact",
+    "monthlyPlans": "Monthly plans",
+    "addressLine1": "2 S Biscayne Boulevard Suite 3200 - 6719",
+    "addressLine2": "Miami, Florida 33131, United States",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "linkedin": "LinkedIn",
+    "youtube": "YouTube"
+  },
+  "Home": {
+    "heroSideLabel": "Cluster Media — EST. Miami",
+    "heroH1": "Cluster Media — Digital communication that connects with your audience.",
+    "heroText": "We build brands that connect with your audience: real content, campaigns, websites and automations that break the corporate mold.",
+    "heroWhatsapp": "Hi Cluster Media, I want to grow my business.",
+    "stats": [
+      {
+        "value": "+200",
+        "label": "businesses served"
+      },
+      {
+        "value": "~20",
+        "label": "leads/day in campaigns"
+      },
+      {
+        "value": "3",
+        "label": "markets: US · LATAM · ES"
+      },
+      {
+        "value": "17",
+        "label": "digital services"
+      }
+    ],
+    "clientsEyebrow": "Brands that trust Cluster Media",
+    "solutionEyebrow": "The Cluster solution",
+    "solutionTitle": "We design an integrated marketing ecosystem.",
+    "solutionDescription": "Your brand stands out, your campaigns attract qualified prospects and your automations ensure every follow-up.",
+    "solutions": [
+      {
+        "title": "Professional brand",
+        "text": "Branding, visual design, social media and Google Ads campaigns."
+      },
+      {
+        "title": "Digital presence",
+        "text": "Website, Google Business Profile, landing pages and SEO."
+      },
+      {
+        "title": "Client generation",
+        "text": "Social media, Meta Ads, Google Ads and strategic content."
+      },
+      {
+        "title": "Sales automation",
+        "text": "WhatsApp, CRM, AI agents, workflows and automated follow-up."
+      }
+    ],
+    "problemEyebrow": "The problem",
+    "problemTitle": "Turn attention into results.",
+    "problemDescription": "A good business can lose customers when brand, website, campaigns and responses work in silos.",
+    "problemCalloutTitle": "Growth requires strategy.",
+    "problemCalloutText": "We build a digital presence that builds trust, captures prospects and follows up automatically before they go cold.",
+    "diagnosticEyebrow": "Diagnostic",
+    "diagnosticText": "Signs that marketing is working but not clearly driving sales.",
+    "problems": [
+      {
+        "title": "Social without direction",
+        "text": "You post content, but there is no clear path to turn attention into real opportunities."
+      },
+      {
+        "title": "Website that does not convince",
+        "text": "Your digital presence does not quickly explain what you do, why to trust you and what the next step is."
+      },
+      {
+        "title": "Campaigns without control",
+        "text": "Ads go live without offer structure, measurement and sales follow-up."
+      },
+      {
+        "title": "Leads that go cold",
+        "text": "When someone writes and does not get a timely reply, trust drops and the customer leaves."
+      },
+      {
+        "title": "Brand that does not convey value",
+        "text": "The business may be good, but if it looks improvised, it competes on price instead of authority."
+      },
+      {
+        "title": "Referral dependency",
+        "text": "Without a digital system, growth depends too much on luck, referrals and seasons."
+      }
+    ],
+    "servicesEyebrow": "Services",
+    "servicesTitle": "Services designed to grow your business.",
+    "servicesDescription": "From branding and websites to social media, campaigns, content and AI automations.",
+    "casesEyebrow": "Success stories",
+    "casesTitle": "Real results for real businesses.",
+    "casesDescription": "Some businesses that trusted Cluster Media to grow.",
+    "ecosystemEyebrow": "The Cluster ecosystem",
+    "ecosystemTitleBefore": "Four pillars, ",
+    "ecosystemTitleHighlight": "one system",
+    "ecosystemTitleAfter": ".",
+    "ecosystemDescription": "We create integrated systems. Brand, content, campaigns and automation revolve around one core designed to attract, convert and follow up.",
+    "plansEyebrow": "Plans",
+    "plansTitle": "Clear plans. Monthly execution.",
+    "plansDescription": "Choose based on your brand stage: content, campaigns, advisory, website and SEO when the system needs it.",
+    "diagnosticFreeEyebrow": "Free diagnostic",
+    "diagnosticFreeTitle": "Ready to grow your business?",
+    "diagnosticFreeText": "Answer 3 questions and we will send a real recommendation, no commitment — the ideal plan for your stage and biggest digital challenge.",
+    "diagnosticWhatsapp": "Hi, I want to grow my business with Cluster Media.",
+    "diagnosticLink": "Get your free diagnosis"
+  },
+  "Services": {
+    "metaTitle": "Digital communication services for brands",
+    "metaDescription": "Explore Cluster Media services: social media, Google Ads, branding, websites, SEO, audiovisual editing, automations, funnels, photography, podcast and consulting.",
+    "heroEyebrow": "Services",
+    "heroTitle": "Digital services for brands that want to connect.",
+    "heroSubtitle": "Social media, content, audiovisual editing, branding, websites, campaigns, CRM, automations, funnels and consulting to build a complete digital presence.",
+    "heroWhatsapp": "Hi, I would like to learn about Cluster Media services.",
+    "heroImageAlt": "Marketing team working on digital strategy",
+    "categoriesEyebrow": "Main categories",
+    "categoriesTitle": "Everything your business needs in one place.",
+    "categoriesDescription": "Each service works on its own, but together they form a digital ecosystem that generates clients.",
+    "additionalEyebrow": "Other digital services",
+    "additionalTitle": "More capabilities to complete your digital ecosystem.",
+    "additionalDescription": "Beyond core services, we can add production, tools, consulting and training based on your brand stage.",
+    "additionalServices": [
+      "Audiovisual editing",
+      "Videos",
+      "Photography",
+      "Podcast",
+      "AI agents",
+      "Domains",
+      "Corporate email",
+      "Email marketing",
+      "Facebook Ads",
+      "Funnels",
+      "Consulting",
+      "Training"
+    ],
+    "ctaTitle": "Not sure where to start?",
+    "ctaText": "Schedule a free diagnostic call. We review your business and recommend the most effective path to grow.",
+    "ctaWhatsapp": "Hi, I would like a diagnostic call for my business."
+  },
+  "Branding": {
+    "metaTitle": "Branding and brand design for businesses",
+    "metaDescription": "We create logos, brand guidelines and visual identity for businesses that want to look professional, trustworthy and ready to grow.",
+    "heroEyebrow": "Branding",
+    "heroTitleBefore": "Make your business look ",
+    "heroTitleHighlight": "like a serious brand",
+    "heroTitleAfter": ".",
+    "heroSubtitle": "We create your logo and visual identity so your brand looks professional, clear and trustworthy at first glance.",
+    "heroWhatsapp": "Hi, I would like information about branding for my business.",
+    "includesEyebrow": "What's included",
+    "includesTitle": "The essentials to launch a solid brand.",
+    "includesDescription": "No filler: only what you need to look professional and stay consistent across channels.",
+    "includes": [
+      "Main logo + variants",
+      "Colors and typography",
+      "Mini usage guide",
+      "Basic social assets"
+    ],
+    "problemTitle": "An improvised brand can cost you clients.",
+    "problemText": "If your logo, colors and communication do not look professional, many people may distrust you before reaching out. Branding helps your business feel more serious, clear and ready to compete.",
+    "manualEyebrow": "Brand guidelines",
+    "manualTitle": "What it is and why you need one.",
+    "manualDescription": "A brand manual is the document that gathers your visual identity rules: logo (and variants), colors, typography, tone of voice and usage examples. It helps anyone —team, designer or vendor— apply the brand the same way, without improvising.",
+    "manualWhyTitle": "Why it helps",
+    "manualWhyItems": [
+      "Prevents everyone designing differently so your brand looks messy.",
+      "Saves time when creating posts, assets and ads.",
+      "Makes your business look professional on every channel.",
+      "Reduces errors when working with design, web or print."
+    ],
+    "portfolioEyebrow": "Portfolio",
+    "portfolioTitle": "Brand guidelines we’ve created.",
+    "portfolioDescription": "Browse real examples. Open any file to navigate the full PDF and see how a visual identity is documented.",
+    "portfolioCardLabel": "Brand guidelines",
+    "portfolioOpen": "View manual",
+    "portfolioOpenTab": "Open PDF",
+    "portfolioPrev": "Previous manual",
+    "portfolioNext": "Next manual",
+    "portfolioNavHint": "Use keyboard arrows to switch manuals. Inside the PDF you can zoom and turn pages.",
+    "portfolioEmpty": "No manuals loaded yet. Drop PDFs into the assets folder and they appear automatically.",
+    "portfolioEmptyPath": "public/assets/brand-manuals/",
+    "logosEyebrow": "Brands",
+    "logosTitle": "Identities we’ve strengthened.",
+    "logosDescription": "Some of the brands that trust Cluster Media for visual identity and digital presence.",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "We answer your branding questions",
+    "faqs": [
+      {
+        "q": "How long does the branding process take?",
+        "a": "It depends on scope, but a visual identity project usually takes 2 to 4 weeks including review and approval rounds."
+      },
+      {
+        "q": "Does branding include my website design?",
+        "a": "Branding defines visual identity. The website is quoted separately or included in the Digital Starter Package and recurring packages."
+      },
+      {
+        "q": "Do you deliver editable files?",
+        "a": "Yes. We deliver the logo in vector and common formats, plus brand guidelines for consistent application."
+      }
+    ],
+    "ctaTitle": "Let's build a brand that earns trust.",
+    "ctaWhatsapp": "Hi, I would like a quote for a branding project."
+  },
+  "Social": {
+    "metaTitle": "Social media and content for businesses",
+    "metaDescription": "We create content, reels, graphics, Meta campaigns and digital strategies for Hispanic businesses that want to grow and get more clients.",
+    "heroEyebrow": "Social Media / Growth",
+    "heroTitle": "Social media for businesses that want to sell more.",
+    "heroSubtitle": "We create content, campaigns and monthly strategy so your business looks active, professional and sells more.",
+    "heroWhatsapp": "Hi Cluster Media, I want information about Social Media packages.",
+    "convertTitle": "More than posting — it is about converting",
+    "convertText": "Many companies post without a clear plan. We connect content and campaigns with one simple goal: attract clients, build trust and convert more.",
+    "pills": [
+      "Content",
+      "Reels",
+      "Campaigns",
+      "Sales"
+    ],
+    "reelsEyebrow": "Real content",
+    "reelsTitleBefore": "Reels and pieces that ",
+    "reelsTitleHighlight": "connect",
+    "reelsTitleAfter": ".",
+    "reelsDescription": "Examples of content we produce for social. Swipe and play.",
+    "packagesEyebrow": "Packages",
+    "packagesTitle": "Choose the plan that best fits your business.",
+    "packagesDescription": "All include content, campaigns and strategy. You choose the tier based on your stage.",
+    "adSpendNote": "prices do not include ad spend. Ad budget is defined based on each business goals and budget.",
+    "ctaTitle": "Let's turn your social channels into a client pipeline.",
+    "ctaWhatsapp": "Hi, I want a social media plan for my business.",
+    "pricingCardWhatsapp": "Hi, I want the {name} social media package."
+  },
+  "GoogleAds": {
+    "metaTitle": "Google Ads management for Hispanic businesses",
+    "metaDescription": "We manage monthly Google Ads campaigns for Hispanic businesses that want to appear when customers search for services online.",
+    "heroEyebrow": "Google Ads / Performance",
+    "heroTitle": "Show up when your customers are already searching for your services.",
+    "heroSubtitle": "We manage Google Ads campaigns for businesses that want to sell more through real searches.",
+    "heroPrice": "From USD 150/mo",
+    "heroWhatsapp": "Hi Cluster Media, I want information about Google Ads.",
+    "includesEyebrow": "What's included",
+    "includesTitle": "Active Ads management, month after month.",
+    "includesDescription": "Your market changes constantly. That is why we optimize every month to lower costs and increase quality contacts.",
+    "includes": [
+      "Initial account review",
+      "Campaign setup or adjustment",
+      "Keyword selection",
+      "Ad structure",
+      "Geo targeting",
+      "Monthly optimization",
+      "Basic performance report"
+    ],
+    "forWhomEyebrow": "Who it's for",
+    "forWhomTitle": "Ideal for service businesses with active search demand.",
+    "forWhomDescription": "If your clients search for you on Google, that is where you must appear.",
+    "forWhom": [
+      "Construction",
+      "Roofing",
+      "Cleaning",
+      "Restaurants",
+      "Clinics",
+      "Lawyers",
+      "Professional services",
+      "Stores",
+      "Local businesses"
+    ],
+    "insightTitle": "Google Ads works when optimized constantly.",
+    "insightText": "On Google you appear in front of people already searching for a service like yours. Working it month by month, we refine keywords, ads and budget to generate more sales opportunities.",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Everything about our Google Ads campaigns",
+    "faqs": [
+      {
+        "q": "Is ad spend included in the price?",
+        "a": "No. The price from USD 150/mo is for professional campaign management. Ad spend (what you pay Google) is set based on your budget and goals."
+      },
+      {
+        "q": "Why is Google Ads paid monthly?",
+        "a": "Because it is not a one-time setup. Each month we review data, adjust ads and optimize budget to improve results and sales."
+      },
+      {
+        "q": "How much should I invest in ads?",
+        "a": "It depends on your industry and area. In the diagnostic call we review your market and recommend a realistic budget to start generating prospects."
+      }
+    ],
+    "ctaTitle": "Start showing up on Google.",
+    "ctaWhatsapp": "Hi, I want to start Google Ads campaigns."
+  },
+  "Automation": {
+    "metaTitle": "WhatsApp automation and AI for businesses",
+    "metaDescription": "Automate WhatsApp, Messenger, Instagram Inbox and lead follow-up with AI agents, CRM and workflows for Hispanic businesses.",
+    "heroEyebrow": "AI / Automations",
+    "heroTitle": "Stop losing customers by replying too late.",
+    "heroSubtitle": "We automate WhatsApp, Messenger, Instagram Inbox and sales follow-up so you respond faster and sell better.",
+    "heroWhatsapp": "Hi Cluster Media, I want information about AI / Automations.",
+    "problems": [
+      "Many unanswered messages",
+      "Leads going cold",
+      "Customers asking the same questions",
+      "Lack of follow-up",
+      "Poorly coordinated appointments",
+      "Disorganized sales reps",
+      "Lost opportunities"
+    ],
+    "solutions": [
+      "AI agents",
+      "Automated WhatsApp",
+      "CRM",
+      "Workflows",
+      "Appointment calendar",
+      "Automated replies",
+      "Nurturing",
+      "Sales follow-up"
+    ],
+    "insightTitle": "An automated system that keeps sales follow-up running without losing the human touch.",
+    "insightText": "AI helps you reply, filter, guide, schedule and follow up. It does not replace your team: it prevents prospects from going cold before talking to a person.",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Questions about AI and automation",
+    "faqs": [
+      {
+        "q": "Does AI replace my sales team?",
+        "a": "No. AI filters, guides, schedules and follows up so no lead is lost before speaking with a person. The goal is to empower human sales, not replace it."
+      },
+      {
+        "q": "Which channels does it work with?",
+        "a": "We automate WhatsApp, Messenger and Instagram Inbox, connected to a central CRM so every conversation stays organized in one place."
+      },
+      {
+        "q": "What is GoHighLevel / CRM?",
+        "a": "It is the platform where we centralize contacts, conversations, workflows and follow-up. It shows each lead status and automates repetitive tasks."
+      }
+    ],
+    "ctaTitle": "Automate your support and stop losing prospects.",
+    "ctaWhatsapp": "Hi, I want to automate WhatsApp and follow-up for my prospects.",
+    "mapEyebrow": "From chaos to system",
+    "mapTitle": "Every sales friction has an automation.",
+    "mapHint": "Hover or tap each challenge to see how we solve it.",
+    "mapResolved": "Solved with automation"
+  },
+  "WebsitesSeo": {
+    "metaTitle": "Websites and SEO for Hispanic businesses",
+    "metaDescription": "We design websites, landing pages and SEO structures for Hispanic businesses that want to look professional and generate online contacts.",
+    "heroEyebrow": "Websites / SEO",
+    "heroTitle": "Websites built to turn visits into clients.",
+    "heroSubtitle": "We build clear, modern websites focused on making your business look professional and generate contacts.",
+    "heroWhatsapp": "Hi Cluster Media, I want information about Websites / SEO.",
+    "heroImageAlt": "Website development and SEO",
+    "servicesEyebrow": "Services",
+    "servicesTitle": "Sites that look good and work for you.",
+    "servicesDescription": "Every website is built with structure designed to guide visitors toward contact, not just to inform.",
+    "servicesList": [
+      "Informational website",
+      "Landing page",
+      "Basic SEO",
+      "Forms",
+      "WhatsApp integration",
+      "CRM integration",
+      "Conversion structure",
+      "Website updates"
+    ],
+    "webDevTitle": "Web development and maintenance",
+    "webDevText": "Plans from USD 99/mo: Website, Plus, Leads, SEO and more.",
+    "starterTitle": "Need to start fast?",
+    "starterText": "See our Digital Starter Package for USD 590.",
+    "ctaTitle": "Let's build a website that generates contacts.",
+    "ctaWhatsapp": "Hi, I would like a quote for a website."
+  },
+  "WebDev": {
+    "metaTitle": "Web development and maintenance | End-to-end solutions by Cluster Media",
+    "metaDescription": "Web development, maintenance and growth: Starter and Advance plans with SEO, leads and sales focus.",
+    "heroEyebrow": "Web development and maintenance",
+    "heroTitleParts": [
+      {
+        "text": "End-to-end service to create, maintain, and "
+      },
+      {
+        "text": "monetize",
+        "highlight": true
+      },
+      {
+        "text": " your "
+      },
+      {
+        "text": "website",
+        "highlight": true
+      },
+      {
+        "text": "."
+      }
+    ],
+    "heroSubtitle": "Development, ongoing maintenance and growth with SEO and leads so your site not only looks good but sells.",
+    "heroWhatsapp": "Hi Cluster Media, I want information about web development.",
+    "casesEyebrow": "Success stories",
+    "casesTitleBefore": "Websites that are already ",
+    "casesTitleHighlight": "working",
+    "casesTitleAfter": " for the business.",
+    "casesDescription": "Real e-commerce and service projects. Hover to pause and visit each site.",
+    "benefitsEyebrow": "Added value",
+    "benefitsTitleBefore": "Maintenance, support, and ",
+    "benefitsTitleHighlight": "growth",
+    "benefitsTitleAfter": ".",
+    "benefitsDescription": "We do not deliver a website and disappear. We support you to keep it stable and turn it into a sales tool.",
+    "integralEyebrow": "End-to-end service",
+    "integralTitleBefore": "Your site working for the business, ",
+    "integralTitleHighlight": "not just as a showcase",
+    "integralTitleAfter": ".",
+    "integralDescription": "From launch to monetization: professional presence, stable operations and integrated growth strategies in one service.",
+    "journey": [
+      {
+        "n": "01",
+        "title": "Create",
+        "text": "Professional website ready to represent your business."
+      },
+      {
+        "n": "02",
+        "title": "Maintain",
+        "text": "Hosting, SSL, backups and continuous monitoring."
+      },
+      {
+        "n": "03",
+        "title": "Grow",
+        "text": "SEO and leads to get more sales."
+      },
+      {
+        "n": "04",
+        "title": "Monetize",
+        "text": "Support to turn visits into clients."
+      }
+    ],
+    "integralWhatsapp": "Hi, I want an end-to-end service to monetize my website.",
+    "plansEyebrow": "Plans",
+    "plansTitleBefore": "Choose the level based on your ",
+    "plansTitleHighlight": "stage",
+    "plansTitleAfter": ".",
+    "plansDescription": "Starter: website and maintenance. Advance: SEO and leads to sell more. Same monthly financing, different scope.",
+    "chooseWhatsapp": "Hi, I want help choosing between Website Starter and Advance.",
+    "starterSectionEyebrow": "Starter",
+    "starterSectionTitleBefore": "Web presence + ",
+    "starterSectionTitleHighlight": "maintenance",
+    "starterSectionTitleAfter": ".",
+    "starterSectionDescription": "Ideal to launch or stabilize: professional website, hosting and operational support.",
+    "advanceSectionEyebrow": "Advance",
+    "advanceSectionTitleBefore": "Growth and ",
+    "advanceSectionTitleHighlight": "monetization",
+    "advanceSectionTitleAfter": ".",
+    "advanceSectionDescription": "For businesses that want to grow sales with SEO, Google Ads and follow-up on a well-managed website.",
+    "faqEyebrow": "FAQ",
+    "faqTitleBefore": "SEO, financing, and how ",
+    "faqTitleHighlight": "choose",
+    "faqTitleAfter": ".",
+    "faqDescription": "Questions about financing, Starter vs Advance, SEO and how to sell more with your website.",
+    "tipTitle": "Quick tip",
+    "tipText": "If you need stable presence, start with Starter. If you already want more sales, move to Advance with SEO or leads.",
+    "ctaTitle": "Let's talk about your website and how to monetize it.",
+    "ctaText": "Schedule a call or write us: we help you choose between Starter (maintenance) or Advance (growth).",
+    "ctaWhatsapp": "Hi Cluster Media, I want to talk about my website and monetization."
+  },
+  "SeoAudit": {
+    "metaTitle": "AI SEO Audit for Hispanic businesses",
+    "metaDescription": "AI SEO audit to review technical structure, content, local SEO and conversion for Hispanic business websites.",
+    "heroEyebrow": "SEO Audit",
+    "heroTitle": "AI SEO audit to find real opportunities.",
+    "heroSubtitle": "Review your website, detect visibility issues and get clear priorities to improve ranking, trust and conversion.",
+    "heroWhatsapp": "Hi, I want an SEO audit for my website.",
+    "toolEyebrow": "Tool",
+    "toolTitle": "Paste your URL and get an actionable diagnostic.",
+    "toolDescription": "The auditor reads the page, extracts important SEO signals and uses AI to turn them into a priority list.",
+    "reviewEyebrow": "What it reviews",
+    "reviewTitle": "A first filter before investing in SEO.",
+    "reviewDescription": "The audit helps separate technical issues, weak content and commercial friction to decide what to fix first.",
+    "reviewAreas": [
+      {
+        "title": "Technical SEO",
+        "text": "Title, meta description, headings, linking, response status and images missing alt."
+      },
+      {
+        "title": "Content",
+        "text": "Message clarity, keywords, commercial structure and opportunities to better match search intent."
+      },
+      {
+        "title": "Conversion",
+        "text": "Calls to action, trust, contact paths and signals that help turn visits into prospects."
+      }
+    ],
+    "ctaTitle": "Let's turn the diagnostic into real improvements.",
+    "ctaText": "If the report shows clear opportunities, we can help adjust the page, improve content and prepare an SEO strategy.",
+    "ctaWhatsapp": "Hi, I reviewed my SEO Audit and want help with my website."
+  },
+  "About": {
+    "metaTitle": "About Cluster Media | Digital agency for Hispanic businesses",
+    "metaDescription": "Meet Cluster Media: branding, websites, campaigns, social, automation and AI to grow businesses.",
+    "heroEyebrow": "About Cluster",
+    "heroTitle": "We are Cluster: the digital agency that grows your business.",
+    "heroSubtitle": "We integrate brand, website, campaigns, social and automation so your business connects, converts and scales.",
+    "heroImageAlt": "Cluster Media team",
+    "heroWhatsapp": "Hi Cluster Media, I want to learn more about the agency.",
+    "systemEyebrow": "One system",
+    "systemTitle": "We do not sell loose pieces. We build an ecosystem.",
+    "systemDescription": "Branding, digital presence, client generation and sales automation working together: so your brand looks good, attracts prospects and follows up on time.",
+    "values": [
+      {
+        "title": "Brand with authority",
+        "text": "Branding, identity and positioning so your business looks professional and earns trust."
+      },
+      {
+        "title": "Measurable growth",
+        "text": "Campaigns, social and performance focused on leads, sales and trackable results."
+      },
+      {
+        "title": "Systems that respond",
+        "text": "Websites, CRM, automations and AI to capture, serve and follow up without losing opportunities."
+      }
+    ],
+    "capabilitiesEyebrow": "What we do",
+    "capabilitiesTitle": "Services for every stage of your growth.",
+    "capabilitiesDescription": "From brand identity to campaigns, websites and AI systems: all under one team.",
+    "capabilities": [
+      {
+        "title": "Branding",
+        "text": "Visual identity, brand guidelines and positioning."
+      },
+      {
+        "title": "Websites / SEO",
+        "text": "Sites and landings built to convert and rank."
+      },
+      {
+        "title": "Social & content",
+        "text": "Strategy and pieces to connect with your audience."
+      },
+      {
+        "title": "Google Ads",
+        "text": "Performance campaigns when your client is already searching."
+      },
+      {
+        "title": "AI / Automations",
+        "text": "WhatsApp, CRM and workflows so you do not lose leads."
+      },
+      {
+        "title": "SEO Audit",
+        "text": "Diagnostic to see what is holding your website back."
+      }
+    ],
+    "beliefsEyebrow": "What we believe",
+    "beliefsTitle": "Growth needs brand, system, and follow-through.",
+    "beliefsDescription": "We do not believe in isolated marketing. We build digital presence with strategy: to attract, convert and respond before the lead goes cold.",
+    "beliefs": [
+      "A clear brand is the foundation: if people do not understand who you are, it is hard to sell.",
+      "Website and SEO must turn attention into real opportunities.",
+      "Campaigns perform better with offer, measurement and follow-up.",
+      "Content builds connection; automation replies on time and does not lose leads.",
+      "Technology (CRM, WhatsApp, AI) should organize and sell better, not complicate.",
+      "The whole digital ecosystem must work together, not as separate pieces."
+    ],
+    "teamEyebrow": "Team",
+    "teamTitle": "A team to build something big with your brand.",
+    "teamDescription": "Strategy, design, websites, SEO, campaigns, social, CRM, automation and AI working together so your business connects better and grows.",
+    "ctaTitle": "Let's grow your business together.",
+    "ctaWhatsapp": "Hi, I want to work with Cluster Media."
+  },
+  "Cases": {
+    "metaTitle": "Digital marketing success stories",
+    "metaDescription": "Explore Cluster Media success stories in lead generation, automation, social media, branding and digital growth for Hispanic businesses.",
+    "heroEyebrow": "Success stories",
+    "heroTitle": "Real results for businesses that decided to grow.",
+    "heroSubtitle": "These are some businesses that trusted Cluster Media to improve digital presence, generate prospects and organize growth.",
+    "heroImageAlt": "Strategy meeting with a client",
+    "heroWhatsapp": "Hi, I want results like your success stories.",
+    "socialEyebrow": "Social proof",
+    "socialTitle": "Local, regional and international brands.",
+    "socialDescription": "We have worked with family businesses and companies with larger commercial structures.",
+    "ctaTitle": "Want to be the next success story?",
+    "ctaWhatsapp": "Hi, I want to be Cluster Media's next success story."
+  },
+  "Blog": {
+    "metaTitle": "Blog | Digital marketing for Hispanic businesses",
+    "metaDescription": "Articles about digital marketing, Google Ads, social media, branding, AI automation and websites for Hispanic businesses.",
+    "heroEyebrow": "Blog · Insights",
+    "heroTitle": "Ideas to grow your digital business.",
+    "heroSubtitle": "Practical marketing, campaign, branding and automation strategies for Hispanic businesses that want to compete better.",
+    "heroImageAlt": "Team creating content and strategy",
+    "heroWhatsapp": "Hi, I have a question about marketing for my business.",
+    "ctaTitle": "Prefer us to do it for you?",
+    "ctaText": "Reading is the first step. Schedule a call and let's build your business digital strategy together.",
+    "ctaWhatsapp": "Hi, I want help with my business digital strategy."
+  },
+  "BlogArticle": {
+    "introTemplate": "At {siteName} we help Hispanic businesses compete in increasingly digital markets. In this article we cover how to apply these ideas practically in your business, without unnecessary jargon and with a commercial focus.",
+    "whyTitle": "Why this matters for your business",
+    "whyText": "Today people search on Google, check social media, compare options and decide quickly. Having a clear strategy —and the right tools— makes the difference between relying on referrals or building a steady client flow.",
+    "howTitle": "How we help",
+    "howText": "We combine branding, content, campaigns, websites and automation so your digital presence works for you. If you want to apply this to your case, schedule a call and we will review it together.",
+    "ctaWhatsapp": "Hi Cluster Media, I read an article and want more information."
+  },
+  "Contact": {
+    "metaTitle": "Contact | Book a call with Cluster Media",
+    "metaDescription": "Schedule a call with Cluster Media or write us on WhatsApp to improve digital presence, campaigns, branding or automation for your business.",
+    "title": "Let's talk about growing your business.",
+    "subtitle": "Schedule a call, write us on WhatsApp or complete the form. We will help you identify the best path for your business.",
+    "scheduleTitle": "Schedule a call",
+    "scheduleText": "Pick the day and time that works best for a diagnostic call.",
+    "whatsappTitle": "WhatsApp",
+    "whatsappText": "Prefer to write directly? Send us a message.",
+    "whatsappMessage": "Hi Cluster Media, I want to get in touch.",
+    "seoAuditEyebrow": "SEO improvement",
+    "seoAuditTitle": "Let’s turn your audit into an action plan.",
+    "seoAuditSubtitle": "Fill out the form and we’ll reach out to prioritize fixes, content, and SEO follow-up based on your score."
+  },
+  "Schedule": {
+    "metaTitle": "Book a call | Cluster Media",
+    "metaDescription": "Schedule a diagnostic call with Cluster Media. Pick the day and time that work best for you.",
+    "title": "Pick a day and time",
+    "subtitle": "Book your diagnostic call. No commitment: we review your business and propose the best path."
+  },
+  "Privacy": {
+    "metaTitle": "Privacy Policy",
+    "metaDescription": "Cluster Media privacy policy.",
+    "title": "Privacy Policy",
+    "updated": "June 2026",
+    "intro": "At {siteName} we value your privacy. This policy describes how we collect, use and protect information you provide when using our website or hiring our services.",
+    "sections": {
+      "collectTitle": "Information we collect",
+      "collectText": "We may collect data you voluntarily provide through forms or contact channels, such as name, company, country, city, email and phone, as well as browsing data through analytics tools.",
+      "useTitle": "How we use your information",
+      "useItems": [
+        "To respond to your requests and inquiries.",
+        "To send you information about our services.",
+        "To improve site experience and performance.",
+        "To comply with applicable legal obligations."
+      ],
+      "cookiesTitle": "Cookies and analytics",
+      "cookiesText": "We use cookies and tools such as Google Analytics and Meta and Google pixels to understand site usage and optimize our campaigns. You can manage cookies in your browser settings.",
+      "rightsTitle": "Your rights",
+      "rightsText": "You may request access, correction or deletion of your personal data by writing to {email}.",
+      "contactTitle": "Contact",
+      "contactText": "If you have questions about this policy, contact us at {email}."
+    }
+  },
+  "Terms": {
+    "metaTitle": "Terms and Conditions",
+    "metaDescription": "Terms and conditions for Cluster Media services.",
+    "title": "Terms and Conditions",
+    "updated": "June 2026",
+    "intro": "These terms govern use of the {siteName} website and hiring of our services. By browsing or hiring, you accept these conditions.",
+    "sections": {
+      "servicesTitle": "Services",
+      "servicesText": "{siteName} offers digital marketing services including branding, social media, Google Ads, websites, SEO and AI automation. Specific scope is defined in the corresponding proposal or contract.",
+      "pricingTitle": "Pricing and ad spend",
+      "pricingItems": [
+        "Published prices may change without prior notice.",
+        "Ad spend (Google or Meta ads) is not included in management prices unless expressly stated.",
+        "The Digital Starter Package is a one-time payment; hosting and domain conditions are defined separately."
+      ],
+      "clientTitle": "Client responsibilities",
+      "clientText": "The client must provide information, materials and access needed for proper service delivery. Delivery times depend on timely delivery of such materials.",
+      "resultsTitle": "Results",
+      "resultsText": "We work with results-oriented strategies, but campaign performance depends on multiple market factors. We do not guarantee specific sales or lead results.",
+      "contactTitle": "Contact",
+      "contactText": "For questions about these terms, write to {email}."
+    }
+  },
+  "Diagnostico": {
+    "metaTitle": "Free digital diagnosis | Cluster Media",
+    "metaDescription": "Answer 3 questions and receive a personalized recommendation to grow your business: brand, content, campaigns, web and automation.",
+    "eyebrow": "Free diagnostic",
+    "titleBefore": "Your ideal plan in ",
+    "titleHighlight": "3 questions",
+    "titleAfter": ".",
+    "subtitle": "Tell us where you are and what you need. We will send a real recommendation, no commitment."
+  },
+  "NotFound": {
+    "code": "404",
+    "title": "This page does not exist.",
+    "text": "The link may be broken or the page may have moved. Let's go back to a known place.",
+    "backHome": "Back to home"
+  },
+  "Plans": {
+    "includesEyebrow": "What's included",
+    "idealEyebrow": "Who it's for",
+    "idealDescription": "If you recognize yourself in any of these profiles, this plan is a good starting point.",
+    "otherEyebrow": "Other plans",
+    "faqEyebrow": "FAQ"
+  },
+  "LeadQuiz": {
+    "challenges": [
+      {
+        "id": "redes",
+        "label": "I have no social media strategy"
+      },
+      {
+        "id": "web",
+        "label": "My website is outdated or I do not have one"
+      },
+      {
+        "id": "ads",
+        "label": "I invest in ads but do not see results"
+      },
+      {
+        "id": "ventas",
+        "label": "People contact me but I cannot close sales"
+      },
+      {
+        "id": "marca",
+        "label": "My brand does not look professional"
+      },
+      {
+        "id": "crecer",
+        "label": "I want to grow but do not know where to start"
+      }
+    ],
+    "stages": [
+      {
+        "id": "inicio",
+        "label": "I am starting out, less than 1 year in"
+      },
+      {
+        "id": "escalar",
+        "label": "I have been operating 1–3 years and want to scale"
+      },
+      {
+        "id": "consolidada",
+        "label": "I am an established company (3+ years)"
+      },
+      {
+        "id": "freelance",
+        "label": "I am a freelancer / independent professional"
+      }
+    ],
+    "questions": [
+      {
+        "step": "Step 1 of 3",
+        "title": "What is your biggest digital challenge today?",
+        "sub": "Select the option that best describes your situation."
+      },
+      {
+        "step": "Step 2 of 3",
+        "title": "What stage is your business in?",
+        "sub": "This helps us recommend the ideal plan."
+      },
+      {
+        "step": "Step 3 of 3",
+        "title": "Where should we send your recommendation?",
+        "sub": "We will contact you with a plan tailored to your situation."
+      }
+    ],
+    "whatsappTemplate": "I want my personalized Cluster Media recommendation:%0A• Challenge: {challenge}%0A• Stage: {stage}%0A• Name: {name}%0A• Business: {business}%0A• WhatsApp: {whatsapp}%0A• Website: {website}%0A• Social: {social}",
+    "businessField": "Your business name"
+  },
+  "ContactForm": {
+    "serviceOptions": [
+      "Next package",
+      "Advance package",
+      "Enterprise package",
+      "Cluster package",
+      "Branding",
+      "Social Media",
+      "Google Ads",
+      "AI / Automations",
+      "Websites / SEO",
+      "SEO Audit",
+      "Audiovisual editing / videos",
+      "Photography",
+      "Podcast",
+      "Funnels / Email marketing",
+      "Consulting / training",
+      "Not sure"
+    ],
+    "whatsappTemplate": "New contact from the website:%0AName: {name}%0ACompany: {company}%0ACountry/City: {country} / {city}%0AEmail: {email}%0APhone: {phone}%0AService: {service}%0AMessage: {message}",
+    "successText": "We received your message. The Cluster team will get back to you by email soon.",
+    "consentEmail": "By submitting, you agree that Cluster may contact you by email about your request.",
+    "seoAuditPrefill": "Hi, I just ran the SEO Audit.\nScore: {score}\nURL: {url}\nI want help improving my rankings and fixing the priorities from the report."
+  },
+  "SeoAuditTool": {
+    "formTitle": "Audit your site in minutes.",
+    "formDescription": "Review SEO structure, content, conversion and local signals with AI.",
+    "emptyTitle": "Your diagnostic will appear here.",
+    "emptyCategories": [
+      "Technical",
+      "Content",
+      "Conversion"
+    ],
+    "loadingTitle": "Reading page and generating audit.",
+    "loadingText": "This may take a few seconds if the site is slow to respond.",
+    "sections": {
+      "quickWins": "Quick wins",
+      "priorities": "Priorities",
+      "technical": "Technical SEO",
+      "content": "Content",
+      "localSeo": "Local SEO",
+      "conversion": "Conversion",
+      "nextSteps": "Next steps"
+    },
+    "ctaEyebrow": "Next step",
+    "ctaTitle": "Want a stronger SEO score?",
+    "ctaText": "We’ll build a clear plan to fix what’s holding you back, amplify what’s already working, and improve your rankings with month-to-month support.",
+    "ctaButton": "Help me improve my SEO",
+    "ctaNote": "We’ll take you to the contact form with your audit results ready."
+  },
+  "CTASection": {
+    "defaultTitle": "Ready to grow your business?",
+    "defaultText": "Schedule a call and tell us what your business needs. We will help you find the best path to improve your digital presence, generate clients or automate your sales support.",
+    "primaryCta": "Schedule a call"
+  },
+  "PricingTable": {
+    "eyebrow": "Monthly plans",
+    "title": "Choose your level",
+    "subtitle": "No long-term contracts. Advance is the most balanced tier for growing brands.",
+    "features": [
+      {
+        "label": "Social networks",
+        "values": [
+          "2",
+          "3",
+          "4",
+          "5"
+        ]
+      },
+      {
+        "label": "Content pieces",
+        "values": [
+          "12/mo",
+          "20/mo",
+          "20/mo",
+          "24/mo"
+        ]
+      },
+      {
+        "label": "Monthly stories",
+        "values": [
+          "—",
+          "8",
+          "12",
+          "16"
+        ]
+      },
+      {
+        "label": "Meta Ads",
+        "values": [
+          "1 campaign",
+          "3 campaigns",
+          "3 campaigns",
+          "5 campaigns"
+        ]
+      },
+      {
+        "label": "Google Ads",
+        "values": [
+          "1 campaign",
+          "1 campaign",
+          "3 campaigns",
+          "5 campaigns"
+        ]
+      },
+      {
+        "label": "Google Business Profile",
+        "values": [
+          "—",
+          "✓",
+          "✓",
+          "✓"
+        ]
+      },
+      {
+        "label": "Website updates",
+        "values": [
+          "—",
+          "—",
+          "✓",
+          "✓"
+        ]
+      },
+      {
+        "label": "Marketing advisory",
+        "note": "(with our director)",
+        "values": [
+          "—",
+          "—",
+          "—",
+          "✓"
+        ]
+      },
+      {
+        "label": "SEO",
+        "values": [
+          "—",
+          "—",
+          "—",
+          "✓"
+        ]
+      }
+    ]
+  },
+  "ServicesBento": {
+    "cards": [
+      {
+        "title": "Social & Ads",
+        "cta": "View Social & Ads",
+        "tags": "Meta Ads · Google Ads · TikTok Ads"
+      },
+      {
+        "title": "Branding",
+        "cta": "View Branding",
+        "tags": "Logo · Brand guidelines"
+      },
+      {
+        "title": "Websites / SEO",
+        "cta": "View",
+        "tags": "Landing pages · Basic SEO"
+      },
+      {
+        "title": "AI / Automations",
+        "cta": "Learn more",
+        "tags": "WhatsApp · CRM · Workflows"
+      },
+      {
+        "title": "Monthly packages",
+        "cta": "View packages",
+        "tags": "Next · Advance · Cluster"
+      },
+      {
+        "title": "SEO Audit",
+        "cta": "Audit",
+        "tags": "AI · SEO diagnostic"
+      }
+    ]
+  },
+  "Ecosystem": {
+    "coreBefore": "One",
+    "coreTitle": "System",
+    "coreBrand": "Cluster",
+    "pillars": [
+      {
+        "n": "01",
+        "title": "Brand & Branding",
+        "items": [
+          "Visual identity",
+          "Brand guidelines",
+          "Positioning"
+        ]
+      },
+      {
+        "n": "02",
+        "title": "Social & Ads",
+        "items": [
+          "Meta Ads",
+          "Google Ads",
+          "Real KPIs"
+        ]
+      },
+      {
+        "n": "03",
+        "title": "Automation & CRM",
+        "items": [
+          "Workflows",
+          "Lead scoring",
+          "Follow-up"
+        ]
+      },
+      {
+        "n": "04",
+        "title": "Content & Web",
+        "items": [
+          "Website",
+          "Landing pages",
+          "SEO"
+        ]
+      }
+    ]
+  },
+  "Team": {
+    "eyebrow": "Team",
+    "title": "Meet our team.",
+    "description": "A multidisciplinary team of 16+ people across LATAM, united to grow your brand.",
+    "members": [
+      {
+        "name": "Orlando García",
+        "role": "Agency director"
+      },
+      {
+        "name": "Isabel Pinto",
+        "role": "Account Manager"
+      },
+      {
+        "name": "Daniela Jiménez",
+        "role": "Account Manager"
+      },
+      {
+        "name": "María Galicia",
+        "role": "Account Manager"
+      },
+      {
+        "name": "Maycoll Jaramillo",
+        "role": "Senior web developer"
+      },
+      {
+        "name": "María Fernanda García",
+        "role": "Account Manager"
+      }
+    ]
+  },
+  "SocialReels": {
+    "reels": [
+      {
+        "label": "Reel 01"
+      },
+      {
+        "label": "Reel 02"
+      },
+      {
+        "label": "Reel 03"
+      },
+      {
+        "label": "Reel 04"
+      },
+      {
+        "label": "Reel 05"
+      },
+      {
+        "label": "Reel 06"
+      },
+      {
+        "label": "Reel 07"
+      },
+      {
+        "label": "Reel 08"
+      }
+    ]
+  },
+  "WebsiteCases": {
+    "cases": [
+      {
+        "name": "Luxo Boutique",
+        "category": "E-commerce"
+      },
+      {
+        "name": "Ink Express",
+        "category": "E-commerce"
+      },
+      {
+        "name": "Bee Cool & Heat",
+        "category": "Services"
+      },
+      {
+        "name": "Familia Towing",
+        "category": "Services"
+      },
+      {
+        "name": "Alpha Pro",
+        "category": "Renovations"
+      }
+    ]
+  },
+  "SiteContent": {
+    "tagline": "Digital communication that connects with your audience.",
+    "description": "We build brands, content, campaigns, websites and automations to connect with real audiences and drive growth.",
+    "blogCategories": [
+      "Marketing for Hispanic businesses",
+      "Google Ads",
+      "Social media",
+      "Branding",
+      "Automation & AI",
+      "Websites & SEO",
+      "Success stories"
+    ],
+    "clients": [
+      "Arnie's",
+      "Clínicas Médicas Ojíne",
+      "DermaPiel",
+      "Ink Express",
+      "Kielsa",
+      "Luxo Boutique",
+      "Mr. Lobo",
+      "Seguros Atlántida",
+      "Travel Diunsa",
+      "Vakamoo"
+    ],
+    "services": [
+      {
+        "slug": "branding",
+        "name": "Branding",
+        "short": "Build a professional brand from the ground up.",
+        "description": "Logo, brand guidelines and visual identity so your business looks professional and trustworthy.",
+        "features": [
+          "Logo and variants",
+          "Brand guidelines",
+          "Visual identity",
+          "Graphic line",
+          "Basic applications"
+        ],
+        "cta": "View Branding"
+      },
+      {
+        "slug": "paquetes-mensuales",
+        "name": "Monthly packages",
+        "short": "Content, campaigns and growth plans for your stage.",
+        "description": "Next, Advance, Enterprise and Cluster packages with social media, stories, Google, Meta Ads, advisory, website and SEO depending on the tier.",
+        "features": [
+          "Monthly content",
+          "Stories and reels",
+          "Meta campaigns",
+          "Google campaigns",
+          "Marketing advisory",
+          "Website and SEO per plan"
+        ],
+        "price": "From USD 480/mo",
+        "cta": "View plans"
+      },
+      {
+        "slug": "redes-sociales",
+        "name": "Social Media / Content",
+        "short": "Close, real and distinctive content to connect with your audience.",
+        "description": "Social media management, reels, graphics, stories, Meta campaigns and monthly strategy to build connection and generate opportunities.",
+        "features": [
+          "Content creation",
+          "Reels and graphics",
+          "Carousels",
+          "Meta campaigns",
+          "Monthly advisory"
+        ],
+        "cta": "View packages"
+      },
+      {
+        "slug": "google-ads",
+        "name": "Google Ads / Performance",
+        "short": "Show up when your customers are already searching for your services.",
+        "description": "Monthly campaign management to appear when your customers are already searching for your services.",
+        "features": [
+          "Campaign setup",
+          "Monthly management",
+          "Continuous optimization",
+          "Keyword research",
+          "Results tracking"
+        ],
+        "price": "From USD 150/mo",
+        "cta": "I want Google Ads"
+      },
+      {
+        "slug": "automatizaciones-ia",
+        "name": "AI / Automations",
+        "short": "Respond faster and lose fewer leads.",
+        "description": "Automate WhatsApp, Messenger, Instagram Inbox and lead follow-up with AI and CRM.",
+        "features": [
+          "Automated WhatsApp",
+          "AI agents",
+          "CRM",
+          "Workflows",
+          "Automated follow-up"
+        ],
+        "cta": "View automations"
+      },
+      {
+        "slug": "websites-seo",
+        "name": "Websites / SEO",
+        "short": "Websites designed to look good and generate contacts.",
+        "description": "Websites, domains, landing pages, SEO and conversion structure integrated with CRM, funnels and corporate email.",
+        "features": [
+          "Informational websites",
+          "Landing pages",
+          "Basic SEO",
+          "Forms",
+          "CRM integration"
+        ],
+        "cta": "View websites"
+      },
+      {
+        "slug": "seo-audit",
+        "name": "SEO Audit",
+        "short": "Quick diagnostic to see what is holding your website back.",
+        "description": "AI SEO audit to detect technical issues, weak content, local opportunities and conversion improvements.",
+        "features": [
+          "Technical analysis",
+          "Content review",
+          "Local SEO",
+          "Conversion",
+          "Actionable priorities"
+        ],
+        "cta": "Audit website"
+      }
+    ],
+    "plans": [
+      {
+        "slug": "next",
+        "name": "Next",
+        "kicker": "Monthly",
+        "price": "USD 480",
+        "period": "/mo",
+        "note": "Content and campaigns to start with structure",
+        "headline": "Start with structure: content and campaigns that work together.",
+        "subtitle": "The Next plan builds your business digital foundation: consistent social presence and initial Meta and Google campaigns to generate demand with order.",
+        "idealFor": [
+          "Businesses just starting in digital",
+          "Brands with little or no active content",
+          "Teams that need monthly rhythm without complexity",
+          "Those who want to test campaigns with controlled budget"
+        ],
+        "faqs": [
+          {
+            "q": "Which social networks does the Next plan include?",
+            "a": "We create content for 2 social networks. We define together which make the most sense for your audience and offer."
+          },
+          {
+            "q": "Are ad campaigns included in management?",
+            "a": "Yes. It includes 1 Meta Ads campaign and 1 Google Ads campaign. Ad budget (media spend) is set by the client separately."
+          },
+          {
+            "q": "Can I upgrade later?",
+            "a": "Yes. When you need more content volume, stories or more campaigns, you can move to Advance, Enterprise or Cluster without starting from scratch."
+          }
+        ],
+        "features": [
+          "Content for 2 social networks",
+          "3 content pieces weekly",
+          "12 monthly pieces",
+          "1 Meta Ads campaign",
+          "1 Google Ads campaign"
+        ],
+        "cta": "Choose plan",
+        "whatsapp": "Hi, I want the Next package (USD 480)."
+      },
+      {
+        "slug": "advance",
+        "name": "Advance",
+        "kicker": "Monthly",
+        "price": "USD 680",
+        "period": "/mo",
+        "note": "More content, stories and monthly advisory",
+        "badge": "Recommended",
+        "headline": "The ideal balance of content, campaigns and advisory.",
+        "subtitle": "Advance is the most balanced tier for growing brands: more pieces, stories, Google profile, expanded campaigns and monthly marketing support.",
+        "idealFor": [
+          "Businesses operating 1–3 years",
+          "Brands already posting but without a clear system",
+          "Teams that want more volume and stories",
+          "Those who need monthly advisory to prioritize"
+        ],
+        "faqs": [
+          {
+            "q": "Why is Advance the recommended plan?",
+            "a": "Because it balances content volume, stories, campaigns and advisory without the full scope of Enterprise or Cluster. It is the natural step when Next is not enough."
+          },
+          {
+            "q": "What does marketing advisory include?",
+            "a": "Monthly review of priorities, messaging and improvement opportunities in content and campaigns so execution stays aligned with commercial goals."
+          },
+          {
+            "q": "Does it include Google profile management?",
+            "a": "Yes. It includes management of your Google business profile to reinforce local presence and trust."
+          }
+        ],
+        "features": [
+          "Content for 3 social networks",
+          "5 weekly pieces / 20 monthly",
+          "3 weekly stories / 12 monthly",
+          "Google business profile management",
+          "1 Google campaign",
+          "3 Meta campaigns per month",
+          "Marketing advisory"
+        ],
+        "cta": "Choose plan",
+        "whatsapp": "Hi, I want the Advance package (USD 680)."
+      },
+      {
+        "slug": "enterprise",
+        "name": "Enterprise",
+        "kicker": "Monthly",
+        "price": "USD 780",
+        "period": "/mo",
+        "note": "More complete management for growing brands",
+        "headline": "More networks, more campaigns and an always up-to-date website.",
+        "subtitle": "Enterprise adds website updates, more stories and greater campaign capacity for brands that already have demand and need constant execution on multiple fronts.",
+        "idealFor": [
+          "Brands with active digital presence",
+          "Businesses that need to update their website frequently",
+          "Teams running several campaigns at once",
+          "Operations that want more network coverage"
+        ],
+        "faqs": [
+          {
+            "q": "What does website update mean?",
+            "a": "Targeted adjustments and improvements to your existing site (copy, sections, CTAs, key pages) to keep it aligned with your campaigns and offer."
+          },
+          {
+            "q": "How many campaigns can I have active?",
+            "a": "The plan includes 3 Google and 3 Meta campaigns per month, with ongoing management and optimization based on performance."
+          },
+          {
+            "q": "Does it include marketing advisory?",
+            "a": "Yes. Enterprise includes marketing advisory to prioritize between content, campaigns and website."
+          }
+        ],
+        "features": [
+          "Content for up to 4 social networks",
+          "5 weekly pieces / 20 monthly",
+          "4 weekly stories / 16 monthly",
+          "3 Google campaigns",
+          "Website updates",
+          "Google business profile management",
+          "3 Meta campaigns per month",
+          "Marketing advisory"
+        ],
+        "cta": "Choose plan",
+        "whatsapp": "Hi, I want the Enterprise package (USD 780)."
+      },
+      {
+        "slug": "cluster",
+        "name": "Cluster",
+        "kicker": "Monthly",
+        "price": "USD 900",
+        "period": "/mo",
+        "note": "The most complete content, campaigns and SEO system",
+        "headline": "The complete system: content, campaigns, SEO and advisory.",
+        "subtitle": "Cluster is the most complete plan: maximum content volume, more campaigns, website, SEO and advisory with our director for brands that want an integrated digital system.",
+        "idealFor": [
+          "Brands that want the complete system",
+          "Businesses ready to scale acquisition",
+          "Teams that need SEO in addition to ads",
+          "Operations that value director-level advisory"
+        ],
+        "faqs": [
+          {
+            "q": "What does SEO include in the Cluster plan?",
+            "a": "Ongoing on-page optimization and content structure work to improve organic visibility, complementing paid campaigns."
+          },
+          {
+            "q": "Is advisory with the director?",
+            "a": "Yes. On Cluster, marketing advisory is led by our director to align strategy, priorities and execution of the full system."
+          },
+          {
+            "q": "Is it a long contract?",
+            "a": "No. Plans are monthly with no long-term contracts. We recommend continuity to see results, but you can adjust or pause based on your stage."
+          }
+        ],
+        "features": [
+          "Content for up to 4 social networks",
+          "6 weekly pieces / 24 monthly",
+          "5 weekly stories / 20 monthly",
+          "Website updates",
+          "Google business profile",
+          "3 Google campaigns",
+          "5 Meta campaigns per month",
+          "Marketing advisory",
+          "SEO"
+        ],
+        "cta": "Choose plan",
+        "whatsapp": "Hi, I want the Cluster package (USD 900)."
+      }
+    ],
+    "socialPlans": [
+      {
+        "name": "Next",
+        "price": "USD 480",
+        "period": "/mo",
+        "features": [
+          "Content for 2 social networks",
+          "3 content pieces weekly",
+          "12 monthly pieces",
+          "1 Meta Ads campaign",
+          "1 Google Ads campaign"
+        ]
+      },
+      {
+        "name": "Advance",
+        "price": "USD 680",
+        "period": "/mo",
+        "features": [
+          "Content for 3 social networks",
+          "5 content pieces weekly",
+          "20 monthly pieces",
+          "3 weekly stories (12 per month)",
+          "Google profile management",
+          "1 Google + 3 Meta campaigns per month",
+          "Marketing advisory"
+        ]
+      },
+      {
+        "name": "Enterprise",
+        "price": "USD 780",
+        "period": "/mo",
+        "features": [
+          "Content for up to 4 social networks",
+          "5 content pieces weekly",
+          "20 monthly pieces",
+          "4 weekly stories (16 per month)",
+          "3 Google campaigns",
+          "Website updates",
+          "Google profile management",
+          "3 Meta campaigns per month",
+          "Marketing advisory"
+        ]
+      },
+      {
+        "name": "Cluster",
+        "price": "USD 900",
+        "period": "/mo",
+        "features": [
+          "Content for up to 4 social networks",
+          "6 content pieces weekly",
+          "24 monthly pieces",
+          "5 weekly stories (20 per month)",
+          "Website updates",
+          "Google profile management",
+          "3 Google + 5 Meta campaigns per month",
+          "Marketing advisory",
+          "SEO"
+        ]
+      }
+    ],
+    "caseStudies": [
+      {
+        "slug": "car-depot",
+        "client": "Car Depot",
+        "title": "Steady lead generation for vehicle sales",
+        "summary": "Campaigns and digital strategy for a U.S. vehicle business.",
+        "text": "After two months of work, we helped a U.S. vehicle business generate around 20 daily leads through campaigns and digital strategy.",
+        "metric": {
+          "value": "~20",
+          "label": "daily leads"
+        },
+        "services": [
+          "Campaigns",
+          "Social media",
+          "Lead generation",
+          "Sales follow-up"
+        ],
+        "industry": "Automotive"
+      },
+      {
+        "slug": "clinicas-medicas-ojine",
+        "client": "Clínicas Médicas Ojíne",
+        "title": "Digital communication for healthcare services",
+        "summary": "Digital presence and communication for a medical brand.",
+        "text": "We helped a medical brand strengthen its digital presence, communicate services better and connect with potential patients.",
+        "metric": {
+          "value": "+Presence",
+          "label": "digital & patients"
+        },
+        "services": [
+          "Social media",
+          "Content",
+          "Design",
+          "Strategy"
+        ],
+        "industry": "Healthcare"
+      },
+      {
+        "slug": "ink-express",
+        "client": "Ink Express",
+        "title": "Automation to serve customers better",
+        "summary": "Automation, CRM and follow-up for high message volume.",
+        "text": "A store with high message volume needed to improve service and organize sales opportunities. The solution focused on automation, CRM and follow-up.",
+        "metric": {
+          "value": "−Load",
+          "label": "operational with AI"
+        },
+        "services": [
+          "AI",
+          "Automated WhatsApp",
+          "CRM",
+          "Workflows"
+        ],
+        "industry": "Retail"
+      }
+    ],
+    "articles": [
+      {
+        "slug": "negocio-hispano-mas-clientes-online",
+        "title": "How a Hispanic business in the United States can get more clients online",
+        "category": "Marketing for Hispanic businesses",
+        "excerpt": "A practical guide to move from relying on referrals to building a digital system that generates clients consistently.",
+        "readingTime": "7 min"
+      },
+      {
+        "slug": "depender-solo-de-referidos",
+        "title": "Why relying only on referrals can slow your business growth",
+        "category": "Marketing for Hispanic businesses",
+        "excerpt": "Referrals are valuable but not scalable. We explain how to complement word of mouth with digital presence.",
+        "readingTime": "5 min"
+      },
+      {
+        "slug": "google-ads-vs-redes-sociales",
+        "title": "Google Ads vs social media: which is better for your business",
+        "category": "Google Ads",
+        "excerpt": "Search intent vs brand building. Learn when to invest in each channel based on your business type.",
+        "readingTime": "6 min"
+      },
+      {
+        "slug": "website-profesional-genera-clientes",
+        "title": "What a professional website needs to generate clients",
+        "category": "Websites & SEO",
+        "excerpt": "Structure, speed, clarity and conversion: what separates a site that sells from one that only informs.",
+        "readingTime": "8 min"
+      },
+      {
+        "slug": "automatizar-whatsapp-no-perder-leads",
+        "title": "How to automate WhatsApp so you do not lose leads",
+        "category": "Automation & AI",
+        "excerpt": "Replying late costs clients. We show how automation and AI help follow up without losing opportunities.",
+        "readingTime": "6 min"
+      },
+      {
+        "slug": "tu-marca-se-ve-profesional",
+        "title": "How to know if your brand looks professional",
+        "category": "Branding",
+        "excerpt": "An honest checklist to evaluate whether your logo, colors and communication build trust or cost you clients.",
+        "readingTime": "5 min"
+      },
+      {
+        "slug": "marketing-construccion-estados-unidos",
+        "title": "Digital marketing for construction companies in the United States",
+        "category": "Marketing for Hispanic businesses",
+        "excerpt": "Roofing, remodeling and construction: how to generate qualified leads with Google Ads and a solid digital presence.",
+        "readingTime": "7 min"
+      }
+    ]
+  },
+  "WebsitePlans": {
+    "benefits": [
+      {
+        "title": "Web development",
+        "text": "Clear, professional sites built to turn visits into real opportunities."
+      },
+      {
+        "title": "Ongoing maintenance",
+        "text": "Hosting, SSL, backups and monitoring so your site stays live, secure and up to date."
+      },
+      {
+        "title": "Support",
+        "text": "A team guiding you with an integrated service: from launch to monetizing your digital presence."
+      },
+      {
+        "title": "Growth",
+        "text": "SEO, campaigns and tracking to attract clients and sell more from the web."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "What is the integrated service?",
+        "a": "We provide web, maintenance and, on Advance, SEO and ads in one package. It costs less than hiring each service separately."
+      },
+      {
+        "q": "What is the difference between Starter and Advance?",
+        "a": "Starter is to have and maintain your site. Advance adds SEO and/or Google Ads to turn it into a sales channel."
+      },
+      {
+        "q": "Does SEO help sell?",
+        "a": "Yes. It helps people find you on Google when they search for what you offer, with keywords, content and your business profile."
+      },
+      {
+        "q": "Why not do it separately?",
+        "a": "Because paying for web, hosting, SEO and ads separately is usually more expensive and complicates operations. Here you get everything in one monthly plan."
+      },
+      {
+        "q": "Is it monthly payment or financing?",
+        "a": "It is monthly installment financing: you do not pay the full project upfront. You can start on Starter and move to Advance when ready."
+      },
+      {
+        "q": "Is the domain included?",
+        "a": "Not on Website. From Website Plus onward, along with hosting, SSL and maintenance."
+      },
+      {
+        "q": "Is Google Ads spend included?",
+        "a": "No. On Leads plans we build and manage the campaign; what you pay Google is separate."
+      },
+      {
+        "q": "Can I change plans later?",
+        "a": "Yes. If you start with Website or Website Plus and later want SEO or leads, we upgrade your plan without starting from scratch."
+      }
+    ],
+    "websitePlans": [
+      {
+        "slug": "website",
+        "name": "Website",
+        "headline": "Professional web presence with monthly financing.",
+        "tagline": "Professional web presence with monthly financing.",
+        "features": [
+          "Up to 7 pages",
+          "Hosting + SSL",
+          "Responsive design",
+          "Contact form + WhatsApp",
+          "1 round of changes per month"
+        ],
+        "idealFor": [
+          "Businesses that need their first professional website",
+          "Entrepreneurs who want clear, trustworthy presence",
+          "Brands that do not yet need a managed domain"
+        ],
+        "faqs": [
+          {
+            "q": "Is the domain included in Website?",
+            "a": "No. On this plan the domain is not included. If you need it, Website Plus includes it with more maintenance."
+          },
+          {
+            "q": "How many pages are included?",
+            "a": "Up to 7 pages. Ideal to present your business, services and contact clearly."
+          },
+          {
+            "q": "Can I upgrade later?",
+            "a": "Yes. When you want a managed domain, SEO or leads, we can upgrade your plan without starting over."
+          }
+        ],
+        "note": "Domain not included",
+        "whatsapp": "Hi, I want to subscribe to the Website plan at USD 99/mo."
+      },
+      {
+        "slug": "website-plus",
+        "name": "Website",
+        "nameAccent": "Plus",
+        "headline": "Your complete web presence, managed and always active.",
+        "tagline": "Your complete web presence, managed and always active.",
+        "features": [
+          "Up to 7 pages",
+          "Responsive design",
+          "Contact form + WhatsApp",
+          "1 round of changes per month",
+          "Domain included",
+          "Hosting + SSL",
+          "Periodic backups",
+          "Web health monitoring"
+        ],
+        "idealFor": [
+          "Businesses that want to forget about hosting and domain",
+          "Brands that need backups and continuous monitoring",
+          "Teams seeking a managed website without worries"
+        ],
+        "faqs": [
+          {
+            "q": "What does Website Plus add over Website?",
+            "a": "It adds included domain, periodic backups and web health monitoring, plus everything in Website."
+          },
+          {
+            "q": "Is the domain in my name?",
+            "a": "Yes. We support domain management as part of the monthly financing."
+          },
+          {
+            "q": "Is monitoring included?",
+            "a": "Yes. We check site health to detect downtime or basic issues promptly."
+          }
+        ],
+        "footer": "Your digital presence without worries.",
+        "whatsapp": "Hi, I want to subscribe to the Website Plus plan at USD 129/mo."
+      },
+      {
+        "slug": "website-leads",
+        "name": "Website",
+        "nameAccent": "+ Leads",
+        "headline": "Your website and a strategy focused on generating opportunities.",
+        "tagline": "Your website and a strategy focused on generating business opportunities.",
+        "features": [
+          "Up to 7 pages",
+          "Responsive design",
+          "Contact form + WhatsApp",
+          "1 round of changes per month",
+          "Domain included",
+          "Hosting + SSL",
+          "Periodic backups",
+          "Web health monitoring",
+          "Google Ads campaign",
+          "Lead generation focus",
+          "Monthly optimization and tracking",
+          "Ideal for capturing clients"
+        ],
+        "idealFor": [
+          "Businesses ready to actively capture clients",
+          "Brands with a clear offer that want more sales",
+          "Teams that need monthly campaign tracking"
+        ],
+        "faqs": [
+          {
+            "q": "Is ad spend included?",
+            "a": "No. We include Google Ads campaign management and optimization. Budget paid to Google is separate."
+          },
+          {
+            "q": "What does the campaign include?",
+            "a": "Setup, optimization and monthly tracking to bring quality leads to your website."
+          },
+          {
+            "q": "Does it include web maintenance?",
+            "a": "Yes. Includes domain, hosting, SSL, backups, monitoring and the same Website Plus foundations."
+          }
+        ],
+        "note": "Ad spend not included",
+        "footer": "Your digital presence with a commercial focus.",
+        "badge": "Popular",
+        "whatsapp": "Hi, I want to subscribe to the Website + Leads plan at USD 279/mo."
+      },
+      {
+        "slug": "website-seo",
+        "name": "Website",
+        "nameAccent": "+ SEO",
+        "headline": "Your website with Google visibility to grow organically.",
+        "tagline": "Your website with Google visibility to grow organically.",
+        "features": [
+          "Up to 7 pages",
+          "Responsive design",
+          "Contact form + WhatsApp",
+          "1 round of changes per month",
+          "Domain included",
+          "Hosting + SSL",
+          "Periodic backups",
+          "Web health monitoring",
+          "Local and on-page SEO",
+          "Up to 15 priority keywords",
+          "Monthly optimization + 1 article",
+          "Optimized Google Business Profile"
+        ],
+        "idealFor": [
+          "Local businesses that want to appear in searches",
+          "Brands prioritizing sustainable organic traffic",
+          "Teams that need monthly SEO content"
+        ],
+        "faqs": [
+          {
+            "q": "How many keywords do you work on?",
+            "a": "Up to 15 priority keywords aligned with your offer and commercial-intent searches."
+          },
+          {
+            "q": "Does it include content?",
+            "a": "Yes. Each month we optimize and deliver 1 SEO article to strengthen ranking."
+          },
+          {
+            "q": "Do you work on the Google profile?",
+            "a": "Yes. We optimize your Google Business Profile to improve local visibility."
+          }
+        ],
+        "footer": "Your digital presence with a ranking focus.",
+        "whatsapp": "Hi, I want to subscribe to the Website + SEO plan at USD 350/mo."
+      },
+      {
+        "slug": "website-seo-leads",
+        "name": "Website",
+        "nameAccent": "+ SEO + Leads",
+        "headline": "Website, ranking and leads in one strategy.",
+        "tagline": "Your website, your ranking and your leads in one strategy.",
+        "features": [
+          "Up to 7 pages",
+          "Responsive design",
+          "Contact form + WhatsApp",
+          "1 round of changes per month",
+          "Domain included",
+          "Hosting + SSL",
+          "Periodic backups",
+          "Web health monitoring",
+          "Google Ads campaign",
+          "Monthly SEO",
+          "Local and on-page SEO",
+          "Up to 15 priority keywords",
+          "1 SEO article per month",
+          "Optimized Google Business Profile",
+          "Monthly optimization and tracking",
+          "Lead generation focus"
+        ],
+        "idealFor": [
+          "Brands wanting integrated growth (organic + paid)",
+          "Businesses ready to run web, SEO and Ads together",
+          "Teams seeking one partner for presence and sales"
+        ],
+        "faqs": [
+          {
+            "q": "How is it different from Website + Leads or + SEO?",
+            "a": "It includes web, SEO and Google Ads in one service. Simpler and more economical than hiring everything separately."
+          },
+          {
+            "q": "Is ad spend included?",
+            "a": "No. We manage and optimize the campaign; Google ad spend is paid separately."
+          },
+          {
+            "q": "Is it the most complete plan?",
+            "a": "Yes. The most comprehensive option for development, maintenance, ranking and lead generation."
+          }
+        ],
+        "note": "Ad spend not included",
+        "footer": "Your digital presence focused on integrated growth.",
+        "badge": "Most complete",
+        "whatsapp": "Hi, I want to subscribe to the Website + SEO + Leads plan at USD 499/mo."
+      }
+    ]
+  },
+  "RutaLocal": {
+    "metaTitle": "Ruta Local by Cluster | Territorial audiovisual promotion for municipalities",
+    "metaDescription": "We promote municipalities, tourism, culture and local development through podcast, reels, vlogs and live streams.",
+    "whatsappDefault": "Hi, I would like information about Ruta Local for my municipality.",
+    "whatsappLead": "Hi, I just requested a Ruta Local proposal.",
+    "totalReach": "20.5M+",
+    "newFollowers": "+8,000",
+    "heroEyebrow": "Ruta Local by Cluster",
+    "heroTitle": "We bring the national conversation to your municipality.",
+    "heroSubtitle": "Territorial audiovisual production for municipalities, tourism, culture and local development. We turn municipalities into stories people want to watch, visit and share.",
+    "whatEyebrow": "What Ruta Local is",
+    "whatTitle": "Your municipality, told as it deserves.",
+    "whatDescription": "Ruta Local is Cluster's vertical dedicated to territorial audiovisual production. We travel to your municipality and create podcast, reels, vlogs and live streams showcasing its people, culture, food and landscapes for audiences nationwide.",
+    "mapLegend": [
+      {
+        "name": "Santa Rosa",
+        "dept": "Copán"
+      },
+      {
+        "name": "San Juan",
+        "dept": "Intibucá"
+      },
+      {
+        "name": "San Marcos",
+        "dept": "Ocotepeque"
+      }
+    ],
+    "reachEyebrow": "Reach and metrics",
+    "reachTitle": "Over 20 million views.",
+    "reachDescription": "Ruta Local content reaches real audiences on every platform.",
+    "reachMetrics": [
+      {
+        "platform": "TikTok",
+        "value": "14.3M"
+      },
+      {
+        "platform": "Facebook",
+        "value": "5.3M"
+      },
+      {
+        "platform": "YouTube",
+        "value": "840K"
+      },
+      {
+        "platform": "Instagram",
+        "value": "3.2M"
+      }
+    ],
+    "casesEyebrow": "Real cases",
+    "casesTitle": "Municipalities already living Ruta Local.",
+    "casesDescription": "Full productions with podcast, reels, vlogs and aerial shots showcasing the best of each territory.",
+    "municipios": [
+      {
+        "name": "Santa Rosa de Copán",
+        "region": "Copán · Honduras",
+        "blurb": "We explored its historic center, coffee culture and cuisine with podcast, reels and aerial shots.",
+        "tags": [
+          "Podcast",
+          "Drone",
+          "Culture",
+          "Gastronomy"
+        ]
+      },
+      {
+        "name": "San Juan, Intibucá",
+        "region": "Intibucá · Honduras",
+        "blurb": "We told the Lenca identity, landscapes and local leaders in a social content series.",
+        "tags": [
+          "Reels",
+          "Identity",
+          "Landscape",
+          "Leaders"
+        ]
+      },
+      {
+        "name": "San Marcos, Ocotepeque",
+        "region": "Ocotepeque · Honduras",
+        "blurb": "We showcased tourism, traditions and people with vlogs, live streams and video thumbnails.",
+        "tags": [
+          "Vlog",
+          "Live",
+          "Tourism",
+          "Tradition"
+        ]
+      }
+    ],
+    "packagesEyebrow": "Packages",
+    "packagesTitle": "Choose how to tell your municipality.",
+    "packagesDescription": "Three ways to start. Each package adapts to your territory size and goals.",
+    "packages": [
+      {
+        "name": "Basic",
+        "kicker": "Ruta Local",
+        "tagline": "A first story of your municipality to spark conversation.",
+        "features": [
+          "1 day on-location production",
+          "1 podcast or interview with a local leader",
+          "3 edited vertical reels",
+          "1 municipality summary video",
+          "Publishing on Ruta Local social channels"
+        ]
+      },
+      {
+        "name": "Plus",
+        "kicker": "Ruta Local",
+        "tagline": "More coverage and formats to show everything your territory offers.",
+        "features": [
+          "2 days on-location production",
+          "2 podcasts or interviews",
+          "6 edited vertical reels",
+          "Aerial drone shots",
+          "Food and culture coverage",
+          "1 municipality mini documentary",
+          "Social promotion + basic ad spend"
+        ]
+      },
+      {
+        "name": "Premium",
+        "kicker": "Ruta Local",
+        "tagline": "The full production that turns your municipality into a destination.",
+        "badge": "Most complete",
+        "features": [
+          "3+ days full production",
+          "On-location podcast with multiple guests",
+          "10+ edited vertical reels",
+          "Drone and cinematic shots",
+          "Full municipality documentary",
+          "Tourism, food, culture and events",
+          "Live streams",
+          "Promotion campaign with ad spend",
+          "Reach and results report"
+        ]
+      }
+    ],
+    "idealEyebrow": "Ideal for",
+    "idealTitle": "Built for those who build community.",
+    "idealDescription": "If you represent your community, Ruta Local is for you.",
+    "idealFor": [
+      "City halls",
+      "Tourism boards",
+      "Business associations",
+      "Entrepreneurs",
+      "Community boards",
+      "Festivals",
+      "Fairs",
+      "Local tourism"
+    ],
+    "benefitsEyebrow": "Benefits",
+    "benefitsTitle": "What your municipality gains.",
+    "benefits": [
+      {
+        "title": "Strengthens identity",
+        "text": "Tell who your municipality is and what makes it unique with its own narrative."
+      },
+      {
+        "title": "Promotes tourism",
+        "text": "Turn your places, routes and traditions into destinations people want to visit."
+      },
+      {
+        "title": "Increases visibility",
+        "text": "Bring your territory to millions of people inside and outside the country."
+      },
+      {
+        "title": "Spotlights leaders",
+        "text": "Give face and voice to mayors, entrepreneurs and community leaders."
+      },
+      {
+        "title": "Builds local pride",
+        "text": "Create content people share because they feel part of the story."
+      },
+      {
+        "title": "Boosts the economy",
+        "text": "More visitors and clients for local commerce, food and services."
+      },
+      {
+        "title": "Attracts investment",
+        "text": "A territory that presents itself well attracts new projects and opportunities."
+      }
+    ],
+    "formEyebrow": "Request your proposal",
+    "formTitle": "Request your proposal",
+    "formDescription": "Tell us about your municipality, event or initiative and let's discuss bringing Ruta Local to your city.",
+    "promoteOptions": [
+      "Tourism",
+      "Gastronomy",
+      "Culture",
+      "Event",
+      "Entrepreneurs",
+      "Full municipality",
+      "Other"
+    ],
+    "packageOptions": [
+      "Ruta Local Basic",
+      "Ruta Local Plus",
+      "Ruta Local Premium",
+      "Not sure"
+    ],
+    "leadWhatsappTemplate": "New Ruta Local lead:%0AName: {name}%0ARole: {role}%0AMunicipality / Organization: {municipality}%0APhone: {phone}%0AEmail: {email}%0ASocial / Website: {social}%0AWants to promote: {promote}%0APackage of interest: {package}%0AMessage: {message}",
+    "emailLabel": "Email",
+    "heroCtaPrimary": "Request a proposal",
+    "heroCtaSecondary": "See real cases",
+    "viewsLabel": "views",
+    "heroImageAlt1": "On-location audiovisual production and podcast",
+    "heroImageAlt2": "Culture and community coverage in the municipality",
+    "mapTitle": "Honduras · Municipalities covered",
+    "reachAverageNote": "*Monthly average",
+    "newFollowersLabel": "new followers",
+    "newFollowersText": "A growing community that follows every municipality’s stories.",
+    "packageCta": "I want this package",
+    "formWhatsappCta": "Schedule a call on WhatsApp",
+    "municipioImageAlt": "Ruta Local production in {name}",
+    "formName": "Full name",
+    "formNamePlaceholder": "Your name",
+    "formRole": "Role",
+    "formRolePlaceholder": "E.g. Mayor, tourism director",
+    "formMunicipality": "Municipality / Organization",
+    "formMunicipalityPlaceholder": "E.g. Santa Rosa City Hall",
+    "formPhone": "Phone",
+    "formPhonePlaceholder": "+504 ...",
+    "formEmail": "Email",
+    "formEmailPlaceholder": "you@email.com",
+    "formSocial": "Social profiles / website",
+    "formSocialPlaceholder": "@handle or yourdomain.com",
+    "formPromote": "What do you want to promote?",
+    "formPromotePlaceholder": "Select an option",
+    "formPackage": "Which package interests you?",
+    "formPackagePlaceholder": "Select a package",
+    "formMessage": "Additional message",
+    "formMessagePlaceholder": "Tell us about your municipality, event, or initiative...",
+    "formSubmit": "Request a proposal",
+    "formConsent": "By submitting, you agree that Cluster may contact you about your request.",
+    "breadcrumbName": "Ruta Local"
+  },
+  "PaqueteInicial": {
+    "metaTitle": "Starter Digital Package | Website + Google for USD 590",
+    "metaDescription": "Launch your business digital presence with professional website, landing page, Google profile, SSL, Google Ads campaign and client generation guide for USD 590.",
+    "heroEyebrow": "Starter Digital Package",
+    "heroTitle": "Your business ready to sell online for USD 590.",
+    "heroSubtitle": "We build the digital foundation your business needs to look professional, appear on Google and start receiving clients online.",
+    "heroPriceBefore": "USD 870",
+    "heroPriceNow": "USD 590",
+    "heroWhatsapp": "Hi, I want information about the Starter Digital Package for USD 590.",
+    "heroImageAlt": "Hispanic business ready to sell online",
+    "includesEyebrow": "What's included",
+    "includesTitle": "Everything basic to start with a professional digital presence.",
+    "includes": [
+      {
+        "title": "Professional website",
+        "text": "A clear, modern page focused on presenting your business."
+      },
+      {
+        "title": "Landing page",
+        "text": "A page focused on capturing prospects or driving a campaign."
+      },
+      {
+        "title": "Google Business Profile",
+        "text": "So your business has presence on Google and Maps."
+      },
+      {
+        "title": "SSL certificate",
+        "text": "Basic security so your site looks trustworthy."
+      },
+      {
+        "title": "1 Google Ads campaign",
+        "text": "Initial setup to start attracting prospects."
+      },
+      {
+        "title": "Client generation guide",
+        "text": "Practical recommendations to use your digital presence commercially."
+      }
+    ],
+    "forWhomEyebrow": "Who it's for",
+    "forWhomTitle": "Ideal for businesses that want to stop looking improvised.",
+    "forWhomDescription": "This package is perfect for Hispanic businesses that need to formalize digital presence, appear better online and have a professional base to start capturing clients.",
+    "forWhom": [
+      "Service companies",
+      "Construction",
+      "Restaurants",
+      "Stores",
+      "Clinics",
+      "Freelancers",
+      "Family businesses",
+      "Referral-dependent businesses"
+    ],
+    "problemEyebrow": "The problem",
+    "problemTitle": "If your business does not appear well online, many clients may not even consider you.",
+    "problemDescription": "Today people search on Google, check social media, compare options and decide quickly. Without professional presence, you may lose opportunities even if your service is good.",
+    "processEyebrow": "How we work",
+    "processTitle": "How we deliver your package",
+    "steps": [
+      {
+        "title": "Schedule a call",
+        "text": "We understand your business and confirm if the package fits."
+      },
+      {
+        "title": "We receive your information",
+        "text": "Logo, copy, photos, services, location and key details."
+      },
+      {
+        "title": "We build your presence",
+        "text": "Website, landing, Google profile and initial campaign."
+      },
+      {
+        "title": "We launch and guide you",
+        "text": "We leave the foundation ready and explain how to use it for opportunities."
+      }
+    ],
+    "importantTitle": "Important information",
+    "importantText": "The package includes an initial digital structure. The client must provide logo, copy, photos, business information and required access. Google Ads ad spend is not included in the package price.",
+    "importantItems": [
+      "One-time payment of USD 590.",
+      "Estimated delivery time depends on materials.",
+      "Limited changes per internal policy.",
+      "Hosting/domain per agreed conditions."
+    ],
+    "faqEyebrow": "FAQ",
+    "faqTitle": "We answer your package questions",
+    "faqs": [
+      {
+        "q": "Does the price include Google Ads ad spend?",
+        "a": "No. The package includes initial campaign setup. Ad spend (what you pay Google) is not included."
+      },
+      {
+        "q": "What do I need to provide?",
+        "a": "Logo, copy, photos, business information and required access. The more complete the materials, the faster we deliver."
+      },
+      {
+        "q": "Is it a one-time payment?",
+        "a": "Yes, the Digital Starter Package is a one-time USD 590 payment. Hosting, domain and recurring services are defined per agreed conditions."
+      },
+      {
+        "q": "How long does delivery take?",
+        "a": "Estimated delivery depends on how complete your materials are. Once we receive everything, we build your digital presence."
+      }
+    ],
+    "ctaTitle": "Start with a professional digital presence.",
+    "ctaText": "Schedule a call and we will help you launch your business digital foundation for USD 590.",
+    "ctaWhatsapp": "Hi, I want to purchase the Digital Starter Package."
+  },
+  "Remodelaciones": {
+    "metaTitle": "Budget conversion for remodeling companies | {country}",
+    "metaDescription": "A system for remodeling companies: organize, automate and follow up every quote from inquiry to signed project.",
+    "crumb": "Remodeling",
+    "heroEyebrow": "For remodeling companies",
+    "heroTitle": "Turn more sent quotes into closed projects.",
+    "heroSubtitle": "Every quote without follow-up is an opportunity that may hire another company. We implement a system that organizes, automates and follows every opportunity from the first request to project acceptance.",
+    "heroCta": "Analyze my pending opportunities",
+    "heroCtaSecondary": "I want to see how it works",
+    "heroMicro": "Initial diagnostic with no commitment.",
+    "pipelineAria": "Commercial quote pipeline",
+    "pipelineLabel": "Sales pipeline",
+    "pipelineNew": "New inquiry",
+    "pipelineQualified": "Qualified",
+    "pipelineVisit": "Visit",
+    "pipelineBudget": "Quote sent",
+    "pipelineFollow": "Follow-up",
+    "pipelineWon": "Project won",
+    "problemEyebrow": "The problem",
+    "problemTitle": "Not every project is lost on price.",
+    "problemIntro": "Many opportunities are lost because follow-up arrives late, happens once, or simply depends on someone remembering to contact the client again.",
+    "problems": [
+      {
+        "n": "01",
+        "text": "The client asks for information and gets a reply too late."
+      },
+      {
+        "n": "02",
+        "text": "The visit happens, then the process scatters across calls and WhatsApp."
+      },
+      {
+        "n": "03",
+        "text": "A quote is sent and nobody knows exactly when to follow up."
+      },
+      {
+        "n": "04",
+        "text": "Weeks later, nobody knows how much money is still pending a decision."
+      }
+    ],
+    "problemClose": "Getting more leads does not fix a sales process that is already losing the ones you have.",
+    "calcEyebrow": "Calculator",
+    "calcTitle": "How much do you currently have in open quotes?",
+    "calcQ1": "About how many quotes do you send per month?",
+    "calcQ2": "Average project value",
+    "calcTicketHint": "Example: $4,000,000",
+    "calcQ3": "About what percentage ends up hiring you?",
+    "calcResultEyebrow": "Your monthly scenario",
+    "calcBudgeted": "Quoted value",
+    "calcClosed": "Closed projects",
+    "calcNotConverted": "Value currently not converted",
+    "calcInsight": "You currently have about {amount} per month in quotes that are not converting into projects.",
+    "calcCaveat": "Not all of those opportunities are recoverable. The goal is to identify which still have intent and follow up systematically.",
+    "calcCta": "I want to analyze this process",
+    "howEyebrow": "How it works",
+    "howTitle": "From the first inquiry to the won project.",
+    "howSteps": [
+      {
+        "title": "New opportunity",
+        "text": "The client arrives from any of your active channels.",
+        "items": [
+          "Meta",
+          "Google",
+          "Website",
+          "Form",
+          "WhatsApp",
+          "Call"
+        ]
+      },
+      {
+        "title": "Reply and qualification",
+        "text": "The system can collect remodel type, area, approximate budget, estimated date, dimensions, photos and initial information.",
+        "items": []
+      },
+      {
+        "title": "Visit",
+        "text": "Commercial or technical evaluation is scheduled.",
+        "items": []
+      },
+      {
+        "title": "Quote",
+        "text": "The project enters the opportunity pipeline automatically.",
+        "items": []
+      },
+      {
+        "title": "Follow-up",
+        "text": "Follow-up sequences run according to opportunity status.",
+        "items": []
+      },
+      {
+        "title": "Close",
+        "text": "Won, pending or lost. Everything stays measurable.",
+        "items": [
+          "Won",
+          "Pending",
+          "Lost"
+        ]
+      }
+    ],
+    "modulesEyebrow": "What we automate",
+    "modulesTitle": "Your team keeps selling. The system makes sure no opportunity disappears.",
+    "modules": [
+      {
+        "title": "Immediate response",
+        "text": "New inquiries get initial attention without depending on someone watching the phone."
+      },
+      {
+        "title": "Qualification",
+        "text": "Information gathering before investing time in visits."
+      },
+      {
+        "title": "Scheduling",
+        "text": "Coordination of calls or visits."
+      },
+      {
+        "title": "Quote follow-up",
+        "text": "Reminders and communication after the proposal is sent."
+      },
+      {
+        "title": "Reactivation",
+        "text": "Older opportunities that could still convert."
+      },
+      {
+        "title": "Sales pipeline",
+        "text": "All potential projects organized by status."
+      },
+      {
+        "title": "Alerts",
+        "text": "The team knows when an opportunity needs human intervention."
+      },
+      {
+        "title": "Reporting",
+        "text": "Visibility into opportunities, quotes, closes, sources and conversion."
+      }
+    ],
+    "integrateEyebrow": "Integration",
+    "integrateTitle": "You do not have to change how you run your jobs.",
+    "integrateText": "Our system installs around your commercial process.",
+    "integrateTheirLabel": "Your current software",
+    "integrateTheir": "Quotes / ERP / admin / job site",
+    "integrateTheirItems": [
+      "Quotes",
+      "Invoicing",
+      "Planning",
+      "Job management",
+      "Accounting",
+      "Projects"
+    ],
+    "integrateOursLabel": "Cluster Conversion System",
+    "integrateOurs": "Leads / follow-up / WhatsApp / pipeline / automation",
+    "integrateOursItems": [
+      "Leads",
+      "Follow-up",
+      "WhatsApp",
+      "Pipeline",
+      "Automation"
+    ],
+    "integrateFocus": "We focus on what happens between a new opportunity and signed project.",
+    "dashSectionEyebrow": "Visibility",
+    "dashSectionTitle": "The full pipeline, measurable.",
+    "dashSectionDesc": "Conceptual dashboard example. Not a real client case.",
+    "dashEyebrow": "Sales dashboard",
+    "dashNote": "Demo view of the control you get.",
+    "dashDemoBadge": "Dashboard example",
+    "dashBudgeted": "Quoted this month",
+    "dashWon": "Projects won",
+    "dashPending": "Pending decision",
+    "dashLost": "Lost",
+    "dashConversion": "Current conversion",
+    "dashColOpp": "Opportunity",
+    "dashColValue": "Value",
+    "dashColStatus": "Status",
+    "dashColContact": "Last contact",
+    "dashRow1": "Kitchen remodel",
+    "dashRow2": "Full remodel",
+    "dashRow3": "Baths + kitchen",
+    "dashStatusFollow": "Follow-up",
+    "dashStatusSent": "Quote sent",
+    "dashStatusVisit": "Visit",
+    "dashWhenToday": "Today",
+    "dashWhenYesterday": "Yesterday",
+    "videoEyebrow": "Product",
+    "videoTitle": "See how it works in under 90 seconds.",
+    "videoSoon": "Video coming soon",
+    "videoSoonText": "Lead → qualification → pipeline → visit → quote → follow-up → close.",
+    "diffEyebrow": "Differentiation",
+    "diffTitle": "You do not need another CRM nobody uses.",
+    "diffs": [
+      {
+        "title": "Designed for your process",
+        "text": "We configure stages, automations and messages around how your company actually sells."
+      },
+      {
+        "title": "Implemented by us",
+        "text": "We do not hand you empty software to figure out alone."
+      },
+      {
+        "title": "Continuous optimization",
+        "text": "The system keeps evolving with your opportunities and commercial behavior."
+      }
+    ],
+    "implEyebrow": "Implementation",
+    "implTitle": "We handle the implementation.",
+    "implSteps": [
+      {
+        "n": "01",
+        "title": "Diagnostic",
+        "text": "We understand how opportunities arrive today and how they become projects."
+      },
+      {
+        "n": "02",
+        "title": "Design",
+        "text": "We create pipeline, stages, automations and rules."
+      },
+      {
+        "n": "03",
+        "title": "Implementation",
+        "text": "We configure systems, forms, communications and integrations."
+      },
+      {
+        "n": "04",
+        "title": "Optimization",
+        "text": "We analyze performance and adjust the process."
+      }
+    ],
+    "trustEyebrow": "Cluster Media",
+    "trustTitle": "Technology backed by people.",
+    "trustText": "We are a Latin American remote team with development capacity, human support and communication in Spanish.",
+    "trustImageAlt": "Cluster Media team",
+    "trustPoints": [
+      "In-house development and implementation",
+      "Human support in Spanish",
+      "End-to-end accompaniment"
+    ],
+    "trustPhrase": "You work with a real team. We design, implement and support the system from start to finish.",
+    "casesEyebrow": "Cases",
+    "casesTitle": "Let's build the next success story.",
+    "casesText": "We are selecting companies to implement our specialized commercial conversion solution.",
+    "casesCta": "Request diagnostic",
+    "priceEyebrow": "Investment",
+    "priceTitle": "An implementation adapted to your sales process.",
+    "priceText": "Scope depends on channels, users, automations and integrations required.",
+  "priceFrom": "Implementations from USD {amount}",
+  "priceMonthly": "Monthly from USD {amount}",
+    "priceMonthlySoon": "Monthly fee: defined by scope",
+    "formEyebrow": "Diagnostic",
+    "formTitle": "Quote conversion diagnostic",
+    "formDesc": "Tell us how your sales process works today. We will review your case before recommending a solution.",
+    "fieldName": "Name",
+    "fieldCompany": "Company",
+    "fieldWeb": "Company website / Instagram",
+    "fieldPhone": "Phone / WhatsApp",
+    "fieldEmail": "Email",
+    "fieldBudgets": "About how many quotes do you send per month?",
+    "fieldTicket": "Approximate average project value",
+    "fieldTicketPlaceholder": "e.g. CLP 4,000,000",
+    "fieldFollow": "How do you currently follow up after sending a quote?",
+    "fieldProblem": "Main problem",
+    "budgetOpt": {
+      "lt5": "Fewer than 5",
+      "5to10": "5–10",
+      "11to20": "11–20",
+      "21to50": "21–50",
+      "gt50": "More than 50"
+    },
+    "followOpt": {
+      "whatsapp": "Manually on WhatsApp",
+      "calls": "Calls",
+      "crm": "CRM",
+      "email": "Email",
+      "none": "No established process",
+      "other": "Other"
+    },
+    "problemOpt": {
+      "noReply": "Leads that do not reply",
+      "budgetNoReply": "Quotes with no response",
+      "inconsistent": "Inconsistent follow-up",
+      "disorganized": "Lack of organization",
+      "lowClose": "Low close rate",
+      "other": "Other"
+    },
+    "formCta": "Analyze my process",
+    "formMicro": "No commitment. We will review your current process before recommending a solution.",
+    "thanksEyebrow": "Done",
+    "thanksTitle": "We received your information.",
+    "thanksText": "We are reviewing how your quote and follow-up process currently works.",
+    "thanksNext": "Next step",
+    "thanksSchedule": "Schedule diagnostic",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Frequently asked questions",
+    "faqs": [
+      {
+        "q": "Do I have to change my current software?",
+        "a": "Not necessarily. The system is designed to work around your existing commercial process."
+      },
+      {
+        "q": "Does this replace our quoting software?",
+        "a": "No. The main goal is to manage and automate the commercial stage between inquiry and close."
+      },
+      {
+        "q": "Do I need to hire more staff?",
+        "a": "Not necessarily. Part of the purpose is reducing manual follow-up work."
+      },
+      {
+        "q": "Can a person intervene when needed?",
+        "a": "Yes. Automations should support human work, not block it."
+      },
+      {
+        "q": "Does it work if leads come from multiple channels?",
+        "a": "Yes. The system can centralize opportunities from different sources based on available integrations."
+      },
+      {
+        "q": "Is it a chatbot?",
+        "a": "No. It may include automated assistants, but the product is a full commercial management and follow-up system."
+      }
+    ],
+    "finalTitle": "Your quotes should not die in WhatsApp.",
+    "finalText": "We do not only bring more opportunities. We help you convert the ones your company already generates.",
+    "stickyCta": "Analyze my quotes"
+  }
+}

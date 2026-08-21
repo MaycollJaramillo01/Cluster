@@ -1,6 +1,7 @@
 'use client';
 
 import Script from 'next/script';
+import { useTranslations } from 'next-intl';
 import { site } from '@/lib/site';
 
 type BookingWidgetProps = {
@@ -8,11 +9,13 @@ type BookingWidgetProps = {
 };
 
 export function BookingWidget({ className = '' }: BookingWidgetProps) {
+  const tc = useTranslations('Common');
+
   return (
     <div className={className}>
       <iframe
         src={site.calendarEmbedUrl}
-        title="Agendar llamada con Cluster Media"
+        title={tc('scheduleCallCluster')}
         allow="payment"
         className="w-full border-0"
         style={{ minHeight: 720, overflow: 'hidden' }}

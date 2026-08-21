@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 
@@ -41,12 +42,6 @@ type AuditResponse = {
 const inputClass =
   'w-full bg-surface px-4 py-3.5 text-[16px] text-fg placeholder:text-faint transition-colors focus:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]';
 
-const statusCopy: Record<AuditStatus, string> = {
-  ok: 'Bien',
-  warning: 'Revisar',
-  critical: 'Critico',
-};
-
 const statusClass: Record<AuditStatus, string> = {
   ok: 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700',
   warning: 'border-amber-500/25 bg-amber-500/10 text-amber-700',
@@ -54,11 +49,19 @@ const statusClass: Record<AuditStatus, string> = {
 };
 
 export function SeoAuditTool() {
+  const t = useTranslations('SeoAuditTool');
+  const tc = useTranslations('Common');
   const [url, setUrl] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [audit, setAudit] = useState<AuditResponse | null>(null);
+
+  const statusCopy: Record<AuditStatus, string> = {
+    ok: tc('statusOk'),
+    warning: tc('statusWarning'),
+    critical: tc('statusCritical'),
+  };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -75,42 +78,38 @@ export function SeoAuditTool() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || 'No se pudo generar la auditoria.');
+        throw new Error(data?.error || tc('auditError'));
       }
 
       setAudit(data);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'No se pudo generar la auditoria.'
-      );
+      setError(err instanceof Error ? err.message : tc('auditError'));
     } finally {
       setLoading(false);
     }
   }
+
+  const sections = t.raw('sections') as Record<string, string>;
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10">
       <form
         onSubmit={handleSubmit}
         className="bg-surface p-6 sm:p-8"
-        aria-label="Formulario de auditoria SEO"
+        aria-label={tc('auditFormAria')}
       >
         <div className="flex h-12 w-12 items-center justify-center bg-surface-2 text-accent">
           <Icon name="search" size={24} />
         </div>
         <h2 className="mt-6 font-display text-3xl font-semibold text-fg sm:text-4xl">
-          Audita tu sitio en minutos.
+          {t('formTitle')}
         </h2>
-        <p className="mt-4 text-[15px] leading-relaxed text-muted">
-          Revisa estructura SEO, contenido, conversion y senales locales con IA.
-        </p>
+        <p className="mt-4 text-[15px] leading-relaxed text-muted">{t('formDescription')}</p>
 
         <div className="mt-7 space-y-5">
           <div>
             <label htmlFor="audit-url" className="mb-2 block text-sm font-medium text-muted">
-              URL del sitio
+              {tc('siteUrl')}
             </label>
             <input
               id="audit-url"
@@ -119,7 +118,7 @@ export function SeoAuditTool() {
               type="text"
               inputMode="url"
               autoComplete="url"
-              placeholder="https://tusitio.com"
+              placeholder={tc('urlPlaceholder')}
               required
               className={inputClass}
             />
@@ -130,14 +129,14 @@ export function SeoAuditTool() {
               htmlFor="business-type"
               className="mb-2 block text-sm font-medium text-muted"
             >
-              Tipo de negocio
+              {tc('businessType')}
             </label>
             <input
               id="business-type"
               value={businessType}
               onChange={(event) => setBusinessType(event.target.value)}
               type="text"
-              placeholder="Ej. roofing, clinica, restaurante"
+              placeholder={tc('businessTypePlaceholder')}
               className={inputClass}
             />
           </div>
@@ -150,7 +149,7 @@ export function SeoAuditTool() {
           disabled={loading}
           className="mt-7 w-full"
         >
-          {loading ? 'Analizando...' : 'Generar auditoria'}
+          {loading ? tc('analyzing') : tc('generateAudit')}
         </Button>
 
         {error && (
@@ -164,25 +163,47 @@ export function SeoAuditTool() {
       </form>
 
       <div className="min-h-[28rem] bg-surface p-6 sm:p-8" aria-live="polite">
-        {loading && <LoadingState />}
-        {!loading && !audit && !error && <EmptyState />}
-        {!loading && audit && <AuditResults audit={audit} />}
+        {loading && <LoadingState title={t('loadingTitle')} text={t('loadingText')} />}
+        {!loading && !audit && !error && (
+          <EmptyState
+            resultLabel={tc('result')}
+            title={t('emptyTitle')}
+            categories={t.raw('emptyCategories') as string[]}
+          />
+        )}
+        {!loading && audit && (
+          <AuditResults
+            audit={audit}
+            sections={sections}
+            statusCopy={statusCopy}
+            tc={tc}
+            t={t}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyState({
+  resultLabel,
+  title,
+  categories,
+}: {
+  resultLabel: string;
+  title: string;
+  categories: string[];
+}) {
   return (
     <div className="flex h-full min-h-[24rem] flex-col justify-between">
       <div>
-        <p className="mono-label text-accent">Resultado</p>
+        <p className="mono-label text-accent">{resultLabel}</p>
         <h3 className="mt-5 font-display text-3xl font-semibold text-fg sm:text-4xl">
-          Tu diagnostico aparecera aqui.
+          {title}
         </h3>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        {['Tecnico', 'Contenido', 'Conversion'].map((item) => (
+        {categories.map((item) => (
           <div key={item} className="border border-line p-4">
             <span className="mono-label text-faint">{item}</span>
           </div>
@@ -192,66 +213,96 @@ function EmptyState() {
   );
 }
 
-function LoadingState() {
+function LoadingState({ title, text }: { title: string; text: string }) {
   return (
     <div className="flex h-full min-h-[24rem] flex-col justify-center">
       <div className="h-2 w-full overflow-hidden bg-surface-2">
         <div className="h-full w-1/2 animate-shimmer bg-gradient-to-r from-transparent via-[color:var(--accent)] to-transparent" />
       </div>
-      <h3 className="mt-8 font-display text-3xl font-semibold text-fg">
-        Leyendo pagina y generando auditoria.
-      </h3>
-      <p className="mt-3 text-[15px] text-muted">
-        Esto puede tomar unos segundos si el sitio tarda en responder.
-      </p>
+      <h3 className="mt-8 font-display text-3xl font-semibold text-fg">{title}</h3>
+      <p className="mt-3 text-[15px] text-muted">{text}</p>
     </div>
   );
 }
 
-function AuditResults({ audit }: { audit: AuditResponse }) {
+function AuditResults({
+  audit,
+  sections,
+  statusCopy,
+  tc,
+  t,
+}: {
+  audit: AuditResponse;
+  sections: Record<string, string>;
+  statusCopy: Record<AuditStatus, string>;
+  tc: ReturnType<typeof useTranslations>;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  const scoreLabel =
+    audit.score >= 80 ? tc('scoreSolid') : audit.score >= 60 ? tc('scoreImprove') : tc('scoreUrgent');
+
+  const auditedUrl = audit.snapshot?.finalUrl || audit.snapshot?.url || '';
+  const params = new URLSearchParams({
+    servicio: 'SEO Audit',
+    origen: 'seo-audit',
+    score: String(audit.score),
+  });
+  if (auditedUrl) params.set('url', auditedUrl);
+  const contactHref = `/contacto?${params.toString()}`;
+
   return (
     <div>
       <div className="flex flex-col gap-6 border-b border-line pb-7 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="mono-label text-accent">SEO Score</p>
-          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-            {audit.summary}
-          </p>
+          <p className="mono-label text-accent">{tc('seoScore')}</p>
+          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">{audit.summary}</p>
         </div>
-        <ScoreBadge score={audit.score} />
+        <div className="flex h-28 w-28 flex-none flex-col items-center justify-center border border-line bg-theme text-center">
+          <span className="font-display text-5xl font-semibold leading-none text-fg">
+            {audit.score}
+          </span>
+          <span className="mono-label mt-2 text-[9px] text-faint">{scoreLabel}</span>
+        </div>
       </div>
 
       {audit.snapshot && (
         <dl className="grid gap-px border-b border-line bg-surface-2 py-px sm:grid-cols-3">
-          <Metric label="Status" value={String(audit.snapshot.status)} />
-          <Metric label="Palabras" value={String(audit.snapshot.wordCount)} />
+          <Metric label={tc('status')} value={String(audit.snapshot.status)} />
+          <Metric label={tc('words')} value={String(audit.snapshot.wordCount)} />
           <Metric
-            label="Imagenes sin alt"
+            label={tc('imagesMissingAlt')}
             value={`${audit.snapshot.imagesMissingAlt}/${audit.snapshot.images}`}
           />
         </dl>
       )}
 
-      <ResultSection title="Acciones rapidas" items={audit.quickWins} />
-      <ItemSection title="Prioridades" items={audit.priorities} showImpact />
-      <ItemSection title="SEO tecnico" items={audit.technical} />
-      <ItemSection title="Contenido" items={audit.content} />
-      <ItemSection title="SEO local" items={audit.localSeo} />
-      <ItemSection title="Conversion" items={audit.conversion} />
-      <ResultSection title="Siguientes pasos" items={audit.nextSteps} />
-    </div>
-  );
-}
+      <ResultSection title={sections.quickWins} items={audit.quickWins} />
+      <ItemSection
+        title={sections.priorities}
+        items={audit.priorities}
+        showImpact
+        statusCopy={statusCopy}
+        tc={tc}
+      />
+      <ItemSection title={sections.technical} items={audit.technical} statusCopy={statusCopy} tc={tc} />
+      <ItemSection title={sections.content} items={audit.content} statusCopy={statusCopy} tc={tc} />
+      <ItemSection title={sections.localSeo} items={audit.localSeo} statusCopy={statusCopy} tc={tc} />
+      <ItemSection title={sections.conversion} items={audit.conversion} statusCopy={statusCopy} tc={tc} />
+      <ResultSection title={sections.nextSteps} items={audit.nextSteps} />
 
-function ScoreBadge({ score }: { score: number }) {
-  const label = score >= 80 ? 'Solido' : score >= 60 ? 'Mejorable' : 'Urgente';
-
-  return (
-    <div className="flex h-28 w-28 flex-none flex-col items-center justify-center border border-line bg-theme text-center">
-      <span className="font-display text-5xl font-semibold leading-none text-fg">
-        {score}
-      </span>
-      <span className="mono-label mt-2 text-[9px] text-faint">{label}</span>
+      <div className="mt-8 border border-[color:rgba(2,195,154,0.35)] bg-theme p-6 sm:p-7">
+        <p className="mono-label text-accent">{t('ctaEyebrow')}</p>
+        <h3 className="mt-3 font-display text-2xl font-semibold text-fg sm:text-3xl">
+          {t('ctaTitle')}
+        </h3>
+        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
+          {t('ctaText')}
+        </p>
+        <Button href={contactHref} size="lg" iconRight="arrow-right" className="mt-6">
+          {t('ctaButton')}
+        </Button>
+        <p className="mt-3 text-xs text-faint">{t('ctaNote')}</p>
+      </div>
     </div>
   );
 }
@@ -292,10 +343,14 @@ function ItemSection({
   title,
   items,
   showImpact = false,
+  statusCopy,
+  tc,
 }: {
   title: string;
   items: AuditItem[];
   showImpact?: boolean;
+  statusCopy: Record<AuditStatus, string>;
+  tc: ReturnType<typeof useTranslations>;
 }) {
   if (!items.length) return null;
 
@@ -306,9 +361,7 @@ function ItemSection({
         {items.map((item) => (
           <article key={`${item.title}-${item.detail}`} className="p-4">
             <div className="flex flex-wrap items-center gap-2">
-              <h4 className="text-base font-semibold normal-case text-fg">
-                {item.title}
-              </h4>
+              <h4 className="text-base font-semibold normal-case text-fg">{item.title}</h4>
               {item.status && (
                 <span
                   className={`border px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.12em] ${statusClass[item.status]}`}
@@ -318,18 +371,16 @@ function ItemSection({
               )}
               {showImpact && item.impact && (
                 <span className="border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-faint">
-                  Impacto {item.impact}
+                  {tc('impact', { value: item.impact })}
                 </span>
               )}
               {showImpact && item.effort && (
                 <span className="border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-faint">
-                  Esfuerzo {item.effort}
+                  {tc('effort', { value: item.effort })}
                 </span>
               )}
             </div>
-            <p className="mt-2 text-[15px] leading-relaxed text-muted">
-              {item.detail}
-            </p>
+            <p className="mt-2 text-[15px] leading-relaxed text-muted">{item.detail}</p>
           </article>
         ))}
       </div>

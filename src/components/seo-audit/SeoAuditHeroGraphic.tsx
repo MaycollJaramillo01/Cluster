@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 const HERO_STYLES = `
   .seo-svg [class^="seo-"] { transform-box: fill-box; }
 
@@ -117,12 +121,14 @@ const CONTENT_BARS = [20, 38, 52, 72, 61, 88, 94, 70, 82, 100, 74, 108, 96];
 const CONTENT_X = [42, 78, 114, 150, 186, 222, 258, 294, 330, 366, 402, 438, 474];
 
 export function SeoAuditHeroGraphic() {
+  const t = useTranslations('Common');
+
   return (
     <div className="relative h-full w-full bg-ink-950 text-white">
       <svg
         viewBox="0 0 720 900"
         role="img"
-        aria-label="Dashboard vectorial animado de auditoria SEO con graficos, score y recomendaciones"
+        aria-label={t('seoAuditGraphicAria')}
         className="seo-svg h-full w-full"
       >
         <defs>

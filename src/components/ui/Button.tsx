@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, MouseEventHandler, ReactNode } from 'react';
+import { Link } from '@/i18n/navigation';
 import { Icon, type IconName } from './Icon';
 
 type Variant =
@@ -44,19 +44,18 @@ type CommonProps = {
   iconRight?: IconName;
   children: ReactNode;
   className?: string;
+  onClick?: MouseEventHandler<HTMLElement>;
 };
 
 type ButtonAsLink = CommonProps & {
   href: string;
   external?: boolean;
   type?: never;
-  onClick?: never;
 };
 
 type ButtonAsButton = CommonProps & {
   href?: undefined;
   type?: ButtonHTMLAttributes<HTMLButtonElement>['type'];
-  onClick?: ButtonHTMLAttributes<HTMLButtonElement>['onClick'];
   disabled?: boolean;
 };
 
@@ -94,13 +93,14 @@ export function Button(props: ButtonAsLink | ButtonAsButton) {
           target="_blank"
           rel="noopener noreferrer"
           className={classes}
+          onClick={props.onClick}
         >
           {inner}
         </a>
       );
     }
     return (
-      <Link href={props.href} className={classes}>
+      <Link href={props.href} className={classes} onClick={props.onClick}>
         {inner}
       </Link>
     );

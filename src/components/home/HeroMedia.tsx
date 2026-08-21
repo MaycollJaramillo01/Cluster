@@ -6,9 +6,19 @@ import { useEffect, useState } from 'react';
 /**
  * Poster paints first (LCP). Video waits for load + delay (or first
  * interaction) so lab audits aren't tanked by a 2–4 MB download.
+ * Mobile uses a dedicated vertical clip; desktop keeps the landscape hero.
  */
 export function HeroMedia() {
   const [playVideo, setPlayVideo] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const sync = () => setIsMobile(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -60,6 +70,7 @@ export function HeroMedia() {
       />
       {playVideo ? (
         <video
+          key={isMobile ? 'mobile' : 'desktop'}
           autoPlay
           muted
           loop
@@ -68,8 +79,14 @@ export function HeroMedia() {
           poster="/assets/hero-poster.jpg"
           className="absolute inset-0 h-full w-full object-cover opacity-55"
         >
-          <source src="/assets/hero.webm" type="video/webm" />
-          <source src="/assets/hero.mp4" type="video/mp4" />
+          {isMobile ? (
+            <source src="/assets/videos/heroes/home-mobile.mp4" type="video/mp4" />
+          ) : (
+            <>
+              <source src="/assets/hero.webm" type="video/webm" />
+              <source src="/assets/hero.mp4" type="video/mp4" />
+            </>
+          )}
         </video>
       ) : null}
     </>

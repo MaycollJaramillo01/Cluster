@@ -143,7 +143,7 @@ export const websitePlans: WebsitePlan[] = [
       },
       {
         q: '¿Qué incluye la campaña?',
-        a: 'Configuración, optimización y seguimiento mensual con enfoque en generar leads calificados hacia tu website.',
+        a: 'Configuración, optimización y seguimiento mensual para traer leads de calidad a tu website.',
       },
       {
         q: '¿Incluye mantenimiento web?',
@@ -237,7 +237,7 @@ export const websitePlans: WebsitePlan[] = [
     faqs: [
       {
         q: '¿Qué diferencia tiene frente a Website + Leads o + SEO?',
-        a: 'Junta web, SEO y Google Ads para conseguir más visitas y más ventas, sin contratar cada servicio por separado.',
+        a: 'Incluye web, SEO y Google Ads en un solo servicio. Es más simple y más económico que contratar todo por separado.',
       },
       {
         q: '¿La pauta de Ads está incluida?',
@@ -306,11 +306,11 @@ export const websitePlanBenefits: {
 export const websitePlanFaqs = [
   {
     q: '¿Qué es el servicio integral?',
-    a: 'Hacemos la web, el mantenimiento y, en Advance, el SEO y los anuncios en un solo paquete. Sale más económico que contratar cada cosa por separado.',
+    a: 'Te damos web, mantenimiento y, en Advance, SEO y anuncios en un solo paquete. Sale más económico que contratar cada servicio por separado.',
   },
   {
     q: '¿Cuál es la diferencia entre Starter y Advance?',
-    a: 'Starter es para tener y cuidar tu web. Advance suma SEO y/o Google Ads para que la web te ayude a vender.',
+    a: 'Starter es para tener y mantener tu web. Advance suma SEO y/o Google Ads para convertirla en un canal de ventas.',
   },
   {
     q: '¿El SEO ayuda a vender?',
@@ -318,7 +318,7 @@ export const websitePlanFaqs = [
   },
   {
     q: '¿Por qué no hacerlo por separado?',
-    a: 'Porque pagar web, hosting, SEO y anuncios cada uno por su lado sale más caro y se desordena. Aquí va todo junto, en una financiación mensual.',
+    a: 'Porque pagar web, hosting, SEO y anuncios por separado suele salir más caro y complica la operación. Aquí lo tienes todo junto en una financiación mensual.',
   },
   {
     q: '¿Es un pago mensual o una financiación?',

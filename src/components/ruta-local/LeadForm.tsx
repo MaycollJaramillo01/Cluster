@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { whatsappLink } from '@/lib/site';
-import { promoteOptions, packageOptions } from '@/lib/ruta-local';
 
 const inputClass =
   'w-full bg-surface px-4 py-3 text-[15px] text-fg placeholder:text-faint transition-colors focus:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]';
@@ -12,13 +12,13 @@ const inputClass =
 const labelClass = 'mb-1.5 block text-sm font-medium text-muted';
 
 export function LeadForm() {
+  const t = useTranslations('RutaLocal');
+  const tc = useTranslations('Common');
   const [sent, setSent] = useState(false);
 
-  // Estrategia de envío:
-  //  1. Intentamos POST a /api/ruta-local (reenvía el lead al webhook de GoHighLevel
-  //     si GHL_RUTA_LOCAL_WEBHOOK_URL está configurado).
-  //  2. Pase lo que pase, abrimos WhatsApp con el resumen como respaldo y mostramos
-  //     la pantalla de agradecimiento.
+  const promoteOptions = t.raw('promoteOptions') as string[];
+  const packageOptions = t.raw('packageOptions') as string[];
+
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
@@ -35,20 +35,20 @@ export function LeadForm() {
       // Silencioso: el respaldo por WhatsApp asegura que el lead no se pierda.
     }
 
-    const message =
-      `Nuevo lead de Ruta Local:%0A` +
-      `Nombre: ${data.get('nombre')}%0A` +
-      `Cargo: ${data.get('cargo')}%0A` +
-      `Municipio / Organización: ${data.get('municipio')}%0A` +
-      `Teléfono: ${data.get('telefono')}%0A` +
-      `Email: ${data.get('email')}%0A` +
-      `Redes / Website: ${data.get('redes')}%0A` +
-      `Desea promover: ${data.get('promover')}%0A` +
-      `Paquete de interés: ${data.get('paquete')}%0A` +
-      `Mensaje: ${data.get('mensaje')}`;
+    const message = t('leadWhatsappTemplate', {
+      name: String(data.get('nombre') ?? ''),
+      role: String(data.get('cargo') ?? ''),
+      municipality: String(data.get('municipio') ?? ''),
+      phone: String(data.get('telefono') ?? ''),
+      email: String(data.get('email') ?? ''),
+      social: String(data.get('redes') ?? ''),
+      promote: String(data.get('promover') ?? ''),
+      package: String(data.get('paquete') ?? ''),
+      message: String(data.get('mensaje') ?? ''),
+    });
 
     setSent(true);
-    window.open(whatsappLink(decodeURIComponent(message)), '_blank');
+    window.open(whatsappLink(message.replace(/%0A/g, '\n')), '_blank');
   }
 
   if (sent) {
@@ -58,21 +58,20 @@ export function LeadForm() {
           <Icon name="check" size={32} strokeWidth={2.5} />
         </span>
         <h3 className="mt-6 font-display text-2xl font-semibold uppercase text-fg sm:text-3xl">
-          ¡Gracias por su interés!
+          {tc('thankYouRutaLocal')}
         </h3>
         <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
-          Nuestro equipo revisará su solicitud y le contactará pronto para
-          conversar sobre cómo llevar Ruta Local a su municipio.
+          {tc('thankYouRutaLocalText')}
         </p>
         <Button
-          href={whatsappLink('Hola, acabo de solicitar una propuesta de Ruta Local.')}
+          href={whatsappLink(t('whatsappLead'))}
           external
           variant="whatsapp"
           icon="whatsapp"
           size="lg"
           className="mt-7"
         >
-          WhatsApp
+          {tc('whatsapp')}
         </Button>
       </div>
     );
@@ -81,63 +80,76 @@ export function LeadForm() {
   return (
     <form onSubmit={handleSubmit} className="bg-surface p-7 sm:p-9">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nombre completo" name="nombre" placeholder="Tu nombre" required />
-        <Field label="Cargo" name="cargo" placeholder="Ej. Alcalde, director de turismo" />
         <Field
-          label="Municipio / Organización"
-          name="municipio"
-          placeholder="Ej. Alcaldía de Santa Rosa"
+          label={t('formName')}
+          name="nombre"
+          placeholder={t('formNamePlaceholder')}
           required
         />
-        <Field label="Teléfono" name="telefono" type="tel" placeholder="+504 ..." required />
         <Field
-          label="Correo electrónico"
+          label={t('formRole')}
+          name="cargo"
+          placeholder={t('formRolePlaceholder')}
+        />
+        <Field
+          label={t('formMunicipality')}
+          name="municipio"
+          placeholder={t('formMunicipalityPlaceholder')}
+          required
+        />
+        <Field
+          label={t('formPhone')}
+          name="telefono"
+          type="tel"
+          placeholder={t('formPhonePlaceholder')}
+          required
+        />
+        <Field
+          label={t('formEmail')}
           name="email"
           type="email"
-          placeholder="tu@email.com"
+          placeholder={t('formEmailPlaceholder')}
           required
         />
         <Field
-          label="Redes sociales / website"
+          label={t('formSocial')}
           name="redes"
-          placeholder="@usuario o tudominio.com"
+          placeholder={t('formSocialPlaceholder')}
         />
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <SelectField
-          label="¿Qué desea promover?"
+          label={t('formPromote')}
           name="promover"
-          placeholder="Selecciona una opción"
+          placeholder={t('formPromotePlaceholder')}
           options={promoteOptions}
         />
         <SelectField
-          label="¿Qué paquete le interesa?"
+          label={t('formPackage')}
           name="paquete"
-          placeholder="Selecciona un paquete"
+          placeholder={t('formPackagePlaceholder')}
           options={packageOptions}
         />
       </div>
 
       <div className="mt-4">
         <label htmlFor="mensaje" className={labelClass}>
-          Mensaje adicional
+          {t('formMessage')}
         </label>
         <textarea
           id="mensaje"
           name="mensaje"
           rows={4}
-          placeholder="Cuéntanos sobre tu municipio, evento o iniciativa..."
+          placeholder={t('formMessagePlaceholder')}
           className={inputClass}
         />
       </div>
 
       <Button type="submit" size="lg" className="mt-6 w-full" iconRight="arrow-right">
-        Solicitar propuesta
+        {t('formSubmit')}
       </Button>
-      <p className="mt-3 text-center text-xs text-faint">
-        Al enviar aceptas que Cluster te contacte sobre tu solicitud.
-      </p>
+      <p className="mt-3 text-center text-xs text-faint">{t('formConsent')}</p>
     </form>
   );
 }

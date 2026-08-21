@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { Eyebrow } from '@/components/ui/Section';
 
 export function LegalLayout({
@@ -10,20 +13,23 @@ export function LegalLayout({
   updated: string;
   children: ReactNode;
 }) {
+  const tc = useTranslations('Common');
+
   return (
     <>
       <section className="relative overflow-hidden bg-ink-950 pt-36 pb-16 sm:pt-44">
+        <div className="hero-accent-fade absolute inset-0" aria-hidden="true" />
         <div
           className="absolute inset-0 bg-grid-fade [background-size:64px_64px] opacity-30 [mask-image:radial-gradient(60%_60%_at_30%_0%,black,transparent)]"
           aria-hidden="true"
         />
         <div className="container-x relative z-[1] max-w-3xl">
-          <Eyebrow>Legal</Eyebrow>
+          <Eyebrow>{tc('legal')}</Eyebrow>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-fg sm:text-5xl">
             {title}
           </h1>
           <p className="mt-4 font-mono text-sm text-faint">
-            Última actualización: {updated}
+            {tc('lastUpdated', { date: updated })}
           </p>
         </div>
       </section>

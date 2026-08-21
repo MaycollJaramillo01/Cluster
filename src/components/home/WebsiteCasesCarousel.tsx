@@ -1,114 +1,132 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { Icon } from '@/components/ui/Icon';
 
-const websiteCases = [
+const caseAssets = [
   {
-    name: 'Luxo Boutique',
-    category: 'E-commerce',
     url: 'https://www.luxoboutique.com/',
     image: '/assets/stock/desarrollo-web/luxo.png',
   },
   {
-    name: 'Ink Express',
-    category: 'E-commerce',
     url: 'http://inkexpresshn.com/',
     image: '/assets/stock/desarrollo-web/ink-express.png',
   },
   {
-    name: 'Bee Cool & Heat',
-    category: 'Servicios',
     url: 'https://beecoolandheat.com/',
     image: '/assets/stock/desarrollo-web/bee-cool.png',
   },
   {
-    name: 'Familia Towing',
-    category: 'Servicios',
     url: 'https://familiatowing.com/',
     image: '/assets/stock/desarrollo-web/familia-towing.png',
   },
   {
-    name: 'Alpha Pro',
-    category: 'Renovaciones',
     url: 'https://www.alphapro.llc/',
     image: '/assets/stock/desarrollo-web/alpha-pro.png',
   },
 ] as const;
 
+const MASONRY_ASPECTS = [
+  'aspect-[16/10]',
+  'aspect-[4/5]',
+  'aspect-[16/11]',
+  'aspect-[3/4]',
+  'aspect-[16/10]',
+] as const;
+
 function CaseCard({
   item,
   duplicate = false,
+  aspectClass = 'aspect-[16/10]',
+  className = '',
 }: {
-  item: (typeof websiteCases)[number];
+  item: { name: string; category: string; url: string; image: string };
   duplicate?: boolean;
+  aspectClass?: string;
+  className?: string;
 }) {
   return (
-    <li className="w-[20rem] shrink-0 sm:w-[26rem]">
-      <a
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        tabIndex={duplicate ? -1 : undefined}
-        className="group relative block overflow-hidden bg-surface transition-transform duration-300 hover:-translate-y-1"
-      >
-        <div className="web-card-bar absolute inset-x-0 top-0 z-[1]" aria-hidden="true" />
-        <div className="flex items-center gap-2 border-b border-line px-4 py-3">
-          <span className="h-2 w-2 rounded-full bg-[#ff5f57]" aria-hidden="true" />
-          <span className="h-2 w-2 rounded-full bg-[#febc2e]" aria-hidden="true" />
-          <span className="h-2 w-2 rounded-full bg-[#28c840]" aria-hidden="true" />
-          <span className="ml-2 truncate font-mono text-[10px] uppercase tracking-wider text-faint">
-            {item.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
-          </span>
+    <a
+      href={item.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`group block overflow-hidden border border-line bg-surface transition-colors hover:border-accent/40 ${className}`}
+      aria-hidden={duplicate || undefined}
+      tabIndex={duplicate ? -1 : undefined}
+    >
+      <div className={`relative overflow-hidden bg-ink-950 ${aspectClass}`}>
+        <Image
+          src={item.image}
+          alt={duplicate ? '' : item.name}
+          fill
+          sizes="(max-width: 768px) 50vw, 320px"
+          className="object-cover object-top transition duration-700 group-hover:scale-105"
+        />
+      </div>
+      <div className="flex items-center justify-between gap-3 p-3 sm:p-4">
+        <div className="min-w-0">
+          <p className="truncate font-display text-sm font-semibold uppercase text-fg sm:text-base">
+            {item.name}
+          </p>
+          <p className="mono-label mt-1 text-faint">{item.category}</p>
         </div>
-        <div className="relative aspect-[16/10] overflow-hidden bg-ink-950">
-          <Image
-            src={item.image}
-            alt={duplicate ? '' : `Website de ${item.name}`}
-            fill
-            sizes="416px"
-            className="object-cover object-top transition duration-700 group-hover:scale-[1.03]"
-          />
-        </div>
-        <div className="flex items-end justify-between gap-4 p-5">
-          <div>
-            <span className="mono-label text-accent">{item.category}</span>
-            <h3 className="mt-2 font-display text-xl font-semibold uppercase leading-tight text-fg">
-              {item.name}
-            </h3>
-          </div>
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-accent text-accent-fg transition-opacity group-hover:opacity-90">
-            <Icon name="arrow-right" size={16} />
-          </span>
-        </div>
-      </a>
-    </li>
+        <Icon
+          name="arrow-right"
+          size={16}
+          className="shrink-0 text-accent transition-transform group-hover:translate-x-1"
+        />
+      </div>
+    </a>
   );
 }
 
-function CasesStrip({ duplicate = false }: { duplicate?: boolean }) {
+function CaseStrip({
+  cases,
+  duplicate = false,
+}: {
+  cases: { name: string; category: string; url: string; image: string }[];
+  duplicate?: boolean;
+}) {
   return (
-    <ul className="flex shrink-0 gap-5 pr-5 sm:gap-6 sm:pr-6" aria-hidden={duplicate}>
-      {websiteCases.map((item) => (
-        <CaseCard
-          key={`${duplicate ? 'dup-' : ''}${item.url}`}
-          item={item}
-          duplicate={duplicate}
-        />
+    <ul className="flex shrink-0 gap-5 pr-5" aria-hidden={duplicate}>
+      {cases.map((item) => (
+        <li key={`${duplicate ? 'dup-' : ''}${item.name}`} className="w-[280px] shrink-0 sm:w-[320px]">
+          <CaseCard item={item} duplicate={duplicate} />
+        </li>
       ))}
     </ul>
   );
 }
 
 export function WebsiteCasesCarousel() {
+  const t = useTranslations('WebsiteCases');
+  const cases = (t.raw('cases') as { name: string; category: string }[]).map(
+    (item, index) => ({
+      ...item,
+      ...caseAssets[index],
+    }),
+  );
+
   return (
-    <div
-      aria-label="Carrusel de casos de éxito web"
-      className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)]"
-      role="region"
-    >
-      <div className="flex w-max animate-marquee py-1 [--marquee-duration:42s] hover:[animation-play-state:paused] motion-reduce:animate-none">
-        <CasesStrip />
-        <div className="motion-reduce:hidden">
-          <CasesStrip duplicate />
+    <div role="region">
+      <ul className="columns-2 gap-3 md:hidden">
+        {cases.map((item, index) => (
+          <li key={item.name} className="mb-3 break-inside-avoid">
+            <CaseCard
+              item={item}
+              aspectClass={MASONRY_ASPECTS[index % MASONRY_ASPECTS.length]}
+            />
+          </li>
+        ))}
+      </ul>
+
+      <div className="relative hidden overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_6%,black_94%,transparent)] md:block">
+        <div className="flex w-max animate-marquee [--marquee-duration:45s] hover:[animation-play-state:paused] motion-reduce:animate-none">
+          <CaseStrip cases={cases} />
+          <div className="motion-reduce:hidden">
+            <CaseStrip cases={cases} duplicate />
+          </div>
         </div>
       </div>
     </div>

@@ -1,115 +1,163 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { whatsappLink } from '@/lib/site';
-
-const serviceOptions = [
-  'Paquete Next',
-  'Paquete Advance',
-  'Paquete Enterprise',
-  'Paquete Cluster',
-  'Branding',
-  'Redes Sociales',
-  'Google Ads',
-  'IA / Automatizaciones',
-  'Websites / SEO',
-  'SEO Audit',
-  'Edición audiovisual / videos',
-  'Fotografía',
-  'Podcast',
-  'Funnels / Email marketing',
-  'Consultoría / capacitación',
-  'No estoy seguro',
-];
+import { site } from '@/lib/site';
 
 const inputClass =
   'w-full rounded-xl bg-surface px-4 py-3 text-[15px] text-fg placeholder:text-faint transition-colors focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]';
 
-export function ContactForm() {
-  const [sent, setSent] = useState(false);
+type ContactFormProps = {
+  defaultService?: string;
+  defaultMessage?: string;
+  source?: string;
+  auditUrl?: string;
+  auditScore?: string;
+};
 
-  // En producción, conectar a CRM/GoHighLevel o un endpoint /api/contact.
-  // Aquí enviamos un resumen por WhatsApp como fallback funcional.
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+export function ContactForm({
+  defaultService = '',
+  defaultMessage = '',
+  source = 'contacto',
+  auditUrl = '',
+  auditScore = '',
+}: ContactFormProps) {
+  const t = useTranslations('ContactForm');
+  const tc = useTranslations('Common');
+  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const serviceOptions = t.raw('serviceOptions') as string[];
+
+  const matchedDefaultService =
+    serviceOptions.find(
+      (option) => option.toLowerCase() === defaultService.toLowerCase(),
+    ) ||
+    serviceOptions.find((option) =>
+      option.toLowerCase().includes(defaultService.toLowerCase()),
+    ) ||
+    defaultService;
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setSending(true);
+    setError('');
+
     const form = e.currentTarget;
     const data = new FormData(form);
-    const message =
-      `Nuevo contacto desde el website:%0A` +
-      `Nombre: ${data.get('nombre')}%0A` +
-      `Empresa: ${data.get('empresa')}%0A` +
-      `País/Ciudad: ${data.get('pais')} / ${data.get('ciudad')}%0A` +
-      `Email: ${data.get('email')}%0A` +
-      `Teléfono: ${data.get('telefono')}%0A` +
-      `Servicio: ${data.get('servicio')}%0A` +
-      `Mensaje: ${data.get('mensaje')}`;
-    setSent(true);
-    window.open(whatsappLink(decodeURIComponent(message)), '_blank');
+    const payload = {
+      nombre: String(data.get('nombre') ?? ''),
+      empresa: String(data.get('empresa') ?? ''),
+      pais: String(data.get('pais') ?? ''),
+      ciudad: String(data.get('ciudad') ?? ''),
+      email: String(data.get('email') ?? ''),
+      telefono: String(data.get('telefono') ?? ''),
+      servicio: String(data.get('servicio') ?? ''),
+      mensaje: String(data.get('mensaje') ?? ''),
+      origen: source,
+      auditUrl,
+      auditScore,
+    };
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = (await response.json()) as {
+        ok?: boolean;
+        mailto?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !result.ok) {
+        if (result.mailto) {
+          window.location.href = result.mailto;
+          setSent(true);
+          return;
+        }
+        throw new Error(result.error || tc('formError'));
+      }
+
+      setSent(true);
+      form.reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : tc('formError'));
+    } finally {
+      setSending(false);
+    }
   }
 
   if (sent) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-3xl bg-surface p-10 text-center">
+      <div
+        id="contacto-form"
+        className="flex flex-col items-center justify-center rounded-3xl bg-surface p-10 text-center"
+      >
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white">
           <Icon name="check" size={28} strokeWidth={2.5} />
         </span>
         <h3 className="mt-5 font-display text-xl font-semibold text-fg">
-          ¡Gracias por escribirnos!
+          {tc('thankYou')}
         </h3>
-        <p className="mt-2 max-w-sm text-[15px] text-muted">
-          Hemos preparado tu mensaje. Si no se abrió WhatsApp automáticamente,
-          escríbenos directamente y te responderemos lo antes posible.
-        </p>
-        <Button
-          href={whatsappLink('Hola, acabo de llenar el formulario en su website.')}
-          external
-          variant="whatsapp"
-          icon="whatsapp"
-          className="mt-6"
+        <p className="mt-2 max-w-sm text-[15px] text-muted">{t('successText')}</p>
+        <a
+          href={`mailto:${site.email}`}
+          className="mt-6 inline-flex items-center gap-2 font-mono text-xs font-medium uppercase tracking-[0.16em] text-accent transition-colors hover:text-fg"
         >
-          Abrir WhatsApp
-        </Button>
+          <Icon name="mail" size={16} />
+          {site.email}
+        </a>
       </div>
     );
   }
 
   return (
     <form
+      id="contacto-form"
       onSubmit={handleSubmit}
       className="rounded-3xl bg-surface p-7 sm:p-8"
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nombre" name="nombre" placeholder="Tu nombre" required />
-        <Field label="Empresa" name="empresa" placeholder="Nombre del negocio" />
-        <Field label="País" name="pais" placeholder="Ej. Estados Unidos" required />
-        <Field label="Ciudad" name="ciudad" placeholder="Ej. Miami" />
+        <Field label={tc('name')} name="nombre" placeholder={tc('name')} required />
+        <Field label={tc('company')} name="empresa" placeholder={tc('businessName')} />
         <Field
-          label="Email"
-          name="email"
-          type="email"
-          placeholder="tu@email.com"
+          label={tc('country')}
+          name="pais"
+          placeholder={tc('countryExample')}
           required
         />
-        <Field label="Teléfono" name="telefono" type="tel" placeholder="+1 ..." />
+        <Field label={tc('city')} name="ciudad" placeholder={tc('cityExample')} />
+        <Field
+          label={tc('email')}
+          name="email"
+          type="email"
+          placeholder={tc('contactPlaceholder')}
+          required
+        />
+        <Field
+          label={tc('phone')}
+          name="telefono"
+          type="tel"
+          placeholder={tc('phoneExample')}
+        />
       </div>
 
       <div className="mt-4">
-        <label
-          htmlFor="servicio"
-          className="mb-1.5 block text-sm font-medium text-muted"
-        >
-          Servicio de interés
+        <label htmlFor="servicio" className="mb-1.5 block text-sm font-medium text-muted">
+          {tc('serviceInterest')}
         </label>
         <select
           id="servicio"
           name="servicio"
           className={`${inputClass} [&>option]:bg-ink-850`}
-          defaultValue=""
+          defaultValue={matchedDefaultService || ''}
         >
           <option value="" disabled>
-            Selecciona un servicio
+            {tc('selectService')}
           </option>
           {serviceOptions.map((s) => (
             <option key={s} value={s}>
@@ -120,27 +168,38 @@ export function ContactForm() {
       </div>
 
       <div className="mt-4">
-        <label
-          htmlFor="mensaje"
-          className="mb-1.5 block text-sm font-medium text-muted"
-        >
-          Mensaje
+        <label htmlFor="mensaje" className="mb-1.5 block text-sm font-medium text-muted">
+          {tc('message')}
         </label>
         <textarea
           id="mensaje"
           name="mensaje"
           rows={4}
-          placeholder="Cuéntanos sobre tu negocio y qué necesitas..."
+          defaultValue={defaultMessage}
+          placeholder={tc('messagePlaceholder')}
           className={inputClass}
         />
       </div>
 
-      <Button type="submit" size="lg" className="mt-6 w-full" iconRight="arrow-right">
-        Enviar mensaje
+      <Button
+        type="submit"
+        size="lg"
+        className="mt-6 w-full"
+        iconRight="arrow-right"
+        disabled={sending}
+      >
+        {sending ? tc('sending') : tc('sendMessage')}
       </Button>
-      <p className="mt-3 text-center text-xs text-faint">
-        Al enviar aceptas que Cluster Media te contacte sobre tu solicitud.
-      </p>
+      <p className="mt-3 text-center text-xs text-faint">{t('consentEmail')}</p>
+
+      {error && (
+        <p
+          className="mt-4 border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-700"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
     </form>
   );
 }

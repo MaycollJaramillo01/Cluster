@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 type BentoVariant = 'accent' | 'dark' | 'light';
 
@@ -19,14 +20,11 @@ type BentoCard = {
   poster?: string;
 };
 
-const cards: BentoCard[] = [
+const cardMeta = [
   {
     index: 1,
-    title: 'RRSS y ADS',
     href: '/redes-sociales',
-    cta: 'Ver RRSS y ADS',
-    tags: 'Meta Ads · Google Ads · TikTok Ads',
-    variant: 'accent',
+    variant: 'accent' as const,
     gridClass: 'md:col-span-2 md:row-span-2 min-h-72',
     titleClass: 'text-5xl lg:text-6xl xl:text-[5.5rem]',
     video: '/assets/videos/services/redes-sociales-bg.mp4',
@@ -34,11 +32,8 @@ const cards: BentoCard[] = [
   },
   {
     index: 2,
-    title: 'Branding',
     href: '/branding',
-    cta: 'Ver Branding',
-    tags: 'Logotipo · Manual de marca',
-    variant: 'dark',
+    variant: 'dark' as const,
     gridClass: 'md:col-span-2 min-h-56',
     titleClass: 'text-3xl lg:text-4xl xl:text-5xl',
     video: '/assets/videos/services/marca-profesional.mp4',
@@ -47,11 +42,8 @@ const cards: BentoCard[] = [
   },
   {
     index: 3,
-    title: 'Websites / SEO',
     href: '/websites-seo',
-    cta: 'Ver',
-    tags: 'Landing pages · SEO básico',
-    variant: 'light',
+    variant: 'light' as const,
     gridClass: 'md:col-span-2 min-h-56',
     titleClass: 'text-4xl lg:text-5xl xl:text-6xl',
     video: '/assets/videos/services/websites-seo-bg.mp4',
@@ -59,11 +51,8 @@ const cards: BentoCard[] = [
   },
   {
     index: 4,
-    title: 'IA / Automatizaciones',
     href: '/automatizaciones-ia',
-    cta: 'Ver más',
-    tags: 'WhatsApp · CRM · Workflows',
-    variant: 'dark',
+    variant: 'dark' as const,
     gridClass: 'md:col-span-2 min-h-44',
     titleClass: 'text-3xl lg:text-4xl',
     video: '/assets/videos/services/automatizacion.mp4',
@@ -71,11 +60,8 @@ const cards: BentoCard[] = [
   },
   {
     index: 5,
-    title: 'Paquetes mensuales',
     href: '/#planes',
-    cta: 'Ver paquetes',
-    tags: 'Next · Advance · Cluster',
-    variant: 'light',
+    variant: 'light' as const,
     gridClass: 'md:col-span-2 min-h-44',
     titleClass: 'text-3xl lg:text-4xl',
     video: '/assets/videos/services/paquete-digital-bg.mp4',
@@ -83,11 +69,8 @@ const cards: BentoCard[] = [
   },
   {
     index: 6,
-    title: 'SEO Audit',
     href: '/seo-audit',
-    cta: 'Auditar',
-    tags: 'IA · Diagnóstico SEO',
-    variant: 'accent',
+    variant: 'accent' as const,
     gridClass: 'md:col-span-4 min-h-44',
     titleClass: 'text-3xl lg:text-4xl xl:text-5xl',
     video: '/assets/videos/services/seo-audit-bg.mp4',
@@ -131,7 +114,6 @@ function Card({ card }: { card: BentoCard }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Video — always playing behind color layer */}
       {active && card.video && (
         <video
           autoPlay
@@ -148,13 +130,11 @@ function Card({ card }: { card: BentoCard }) {
         </video>
       )}
 
-      {/* Color layer — fades out on hover */}
       <div
         className={`absolute inset-0 z-10 ${variantBg[card.variant]} transition-opacity duration-700`}
         style={{ opacity: active ? 0 : 1 }}
       />
 
-      {/* Dark scrim for text legibility over video */}
       {active && card.video && (
         <div
           className="absolute inset-0 z-20 bg-black/55 transition-opacity duration-700"
@@ -162,13 +142,11 @@ function Card({ card }: { card: BentoCard }) {
         />
       )}
 
-      {/* Content */}
       <div
         className={`absolute inset-0 z-30 flex flex-col justify-between p-6 lg:p-8 transition-colors duration-500 ${
           active ? 'text-white' : variantText[card.variant]
         }`}
       >
-        {/* Index */}
         <span
           className={`mono-label transition-colors duration-500 ${
             active ? 'text-white/55' : variantMuted[card.variant]
@@ -177,12 +155,10 @@ function Card({ card }: { card: BentoCard }) {
           {String(card.index).padStart(2, '0')}
         </span>
 
-        {/* Title */}
         <h3 className={`mt-auto pb-5 font-display font-bold uppercase leading-none ${card.titleClass}`}>
           {card.title}
         </h3>
 
-        {/* Bottom bar */}
         <div
           className={`flex items-center justify-between gap-4 border-t pt-4 ${
             active ? 'border-white/15' : variantBorder[card.variant]
@@ -209,6 +185,14 @@ function Card({ card }: { card: BentoCard }) {
 }
 
 export function ServicesBento() {
+  const t = useTranslations('ServicesBento');
+  const localized = t.raw('cards') as { title: string; cta: string; tags: string }[];
+
+  const cards: BentoCard[] = cardMeta.map((meta, index) => ({
+    ...meta,
+    ...localized[index],
+  }));
+
   return (
     <div className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-4">
       {cards.map((card) => (

@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Brand manuals: keep originals local; commit only web-optimized PDFs under GitHub's 100MB limit.
+# Full-quality masters live in .originals-backup (never commit).
+/public/assets/brand-manuals/.originals-backup/
+/public/assets/brand-manuals/*.tmp.pdf
+/public/assets/brand-manuals/*.compressed.pdf
+
+# Raw source videos outside public/ (heavy; optimized copies live under public/assets/videos/)
+/assets/videos/
