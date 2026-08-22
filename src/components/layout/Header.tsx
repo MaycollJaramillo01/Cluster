@@ -31,6 +31,16 @@ const navItems: NavItem[] = [
       { labelKey: 'seoAudit', href: '/seo-audit' },
     ],
   },
+  {
+    labelKey: 'solutions',
+    href: '/clinicas-esteticas',
+    children: [
+      { labelKey: 'rutaLocal', href: '/ruta-local' },
+      { labelKey: 'clinicasEsteticas', href: '/clinicas-esteticas' },
+      { labelKey: 'inmobiliarias', href: '/inmobiliarias' },
+      { labelKey: 'remodelaciones', href: '/remodelaciones' },
+    ],
+  },
   { labelKey: 'plans', href: '/#planes' },
   { labelKey: 'cases', href: '/casos-de-exito' },
   { labelKey: 'about', href: '/sobre-cluster' },
@@ -44,7 +54,7 @@ export function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -55,7 +65,7 @@ export function Header() {
 
   useEffect(() => {
     setOpen(false);
-    setServicesOpen(false);
+    setOpenGroup(null);
   }, [pathname]);
 
   useEffect(() => {
@@ -164,21 +174,26 @@ export function Header() {
                   {hasChildren && (
                     <button
                       type="button"
-                      onClick={() => setServicesOpen((v) => !v)}
+                      onClick={() =>
+                        setOpenGroup((current) =>
+                          current === item.href ? null : item.href,
+                        )
+                      }
                       aria-label={tc('showServices')}
+                      aria-expanded={openGroup === item.href}
                       className="flex h-9 w-9 items-center justify-center border-0 text-faint"
                     >
                       <Icon
                         name="chevron-down"
                         size={18}
                         className={`transition-transform ${
-                          servicesOpen ? 'rotate-180' : ''
+                          openGroup === item.href ? 'rotate-180' : ''
                         }`}
                       />
                     </button>
                   )}
                 </div>
-                {hasChildren && servicesOpen && (
+                {hasChildren && openGroup === item.href && (
                   <div className="ml-3 flex flex-col border-l border-line pl-3">
                     {item.children!.map((child) => (
                       <Link

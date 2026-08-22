@@ -48,8 +48,16 @@ export const mainNav = [
       { label: 'SEO Audit', href: '/seo-audit' },
     ],
   },
-  // Ruta Local es tratada como landing page, por lo que no se incluye en la navegación principal.
-  //{ label: 'Ruta Local', href: '/ruta-local' },
+  {
+    label: 'Soluciones',
+    href: '/clinicas-esteticas',
+    children: [
+      { label: 'Ruta Local', href: '/ruta-local' },
+      { label: 'Clínicas estéticas', href: '/clinicas-esteticas' },
+      { label: 'Inmobiliarias', href: '/inmobiliarias' },
+      { label: 'Remodelaciones', href: '/remodelaciones' },
+    ],
+  },
   { label: 'Planes', href: '/#planes' },
   { label: 'Casos de Éxito', href: '/casos-de-exito' },
   { label: 'Sobre Cluster', href: '/sobre-cluster' },

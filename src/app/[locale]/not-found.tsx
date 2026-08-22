@@ -30,6 +30,9 @@ export default async function NotFound() {
           <Button href="/" size="lg" icon="arrow-right">
             {t('backHome')}
           </Button>
+          <Button href="/clinicas-esteticas" variant="accent" size="lg">
+            Clínicas estéticas
+          </Button>
           <Button href="/contacto" variant="outline-light" size="lg">
             {tc('contactUs')}
           </Button>
