@@ -2603,16 +2603,16 @@
     "priceEyebrow": "Investment",
     "priceTitle": "An implementation adapted to your sales process.",
     "priceText": "Scope depends on channels, users, automations and integrations required.",
-  "priceFrom": "Implementations from USD {amount}",
-  "priceMonthly": "Monthly from USD {amount}",
+    "priceFrom": "Implementations from USD {amount}",
+    "priceMonthly": "Monthly from USD {amount}",
     "priceMonthlySoon": "Monthly fee: defined by scope",
-    "formEyebrow": "Diagnostic",
-    "formTitle": "Quote conversion diagnostic",
-    "formDesc": "Tell us how your sales process works today. We will review your case before recommending a solution.",
+    "formEyebrow": "Contact",
+    "formTitle": "Prefer to leave your details",
+    "formDesc": "You can also message us on WhatsApp or book a call without filling this form.",
     "fieldName": "Name",
     "fieldCompany": "Company",
-    "fieldWeb": "Company website / Instagram",
-    "fieldPhone": "Phone / WhatsApp",
+    "fieldWeb": "Website or Instagram (optional)",
+    "fieldPhone": "WhatsApp / phone",
     "fieldEmail": "Email",
     "fieldBudgets": "About how many quotes do you send per month?",
     "fieldTicket": "Approximate average project value",
@@ -2642,11 +2642,11 @@
       "lowClose": "Low close rate",
       "other": "Other"
     },
-    "formCta": "Analyze my process",
-    "formMicro": "No commitment. We will review your current process before recommending a solution.",
+    "formCta": "Send",
+    "formMicro": "No questionnaire. Just what we need to reply.",
     "thanksEyebrow": "Done",
-    "thanksTitle": "We received your information.",
-    "thanksText": "We are reviewing how your quote and follow-up process currently works.",
+    "thanksTitle": "We received your message.",
+    "thanksText": "We will get back to you soon. You can also message us on WhatsApp or book a call now.",
     "thanksNext": "Next step",
     "thanksSchedule": "Schedule diagnostic",
     "faqEyebrow": "FAQ",
@@ -2679,6 +2679,115 @@
     ],
     "finalTitle": "Your quotes should not die in WhatsApp.",
     "finalText": "We do not only bring more opportunities. We help you convert the ones your company already generates.",
-    "stickyCta": "Analyze my quotes"
+    "stickyCta": "Chat on WhatsApp",
+    "ctaWhatsapp": "Chat on WhatsApp",
+    "ctaSchedule": "Book a call",
+    "heroCalcLink": "Optional: estimate pending opportunities",
+    "fieldWebPlaceholder": "instagram.com/… or website"
+  },
+  "ClinicasDentales": {
+    "metaTitle": "More started treatments for dental clinics | {country}",
+    "metaDescription": "We help dental clinics follow up on quotes and convert more high-value treatments.",
+    "crumb": "Dental clinics",
+    "heroEyebrow": "For dental clinics",
+    "heroTitle": "How many quotes went without follow-up this month?",
+    "heroSubtitle": "We help you organize follow-up after the evaluation, so more patients start treatment.",
+    "heroMicro": "No commitment. Let’s talk first.",
+    "heroCalcLink": "Optional: estimate pending treatments",
+    "ctaWhatsapp": "Chat on WhatsApp",
+    "ctaSchedule": "Book a call",
+    "stickyCta": "Chat on WhatsApp",
+    "problemEyebrow": "The problem",
+    "problemTitle": "Many patients say “I’ll think about it”… and nobody contacts them again.",
+    "problemIntro": "The clinic attracts, evaluates and quotes. Then follow-up depends on whoever remembers.",
+    "problems": [
+      {
+        "n": "01",
+        "text": "An implant quote goes out and there is no clear next contact."
+      },
+      {
+        "n": "02",
+        "text": "Messages get lost between WhatsApp, calls and busy reception days."
+      },
+      {
+        "n": "03",
+        "text": "Nobody knows how much money is still waiting for a decision."
+      }
+    ],
+    "problemClose": "Sometimes the issue is not getting more patients. It is following up better on the ones you already have.",
+    "calcEyebrow": "Calculator",
+    "calcTitle": "Estimate the value of your pending treatments.",
+    "calcQ1": "How many evaluations per month?",
+    "calcQ2": "What percentage gets a quote?",
+    "calcQ3": "Average treatment value",
+    "calcQ4": "What percentage accepts today?",
+    "calcResultEyebrow": "Your scenario",
+    "calcCount": "Quoted treatments",
+    "calcBudgeted": "Quoted value",
+    "calcConverted": "Converted value",
+    "calcNotConverted": "Not converted",
+    "calcInsight": "In this scenario there is about {amount} in quoted treatments not converting.",
+    "calcCaveat": "Not everything is recoverable. It helps size the opportunity.",
+    "calcCta": "Chat on WhatsApp",
+    "benefitsEyebrow": "What we do",
+    "benefitsTitle": "A clear process after the quote.",
+    "benefits": [
+      {
+        "title": "Order",
+        "text": "Every quoted patient sits in a simple, visible pipeline."
+      },
+      {
+        "title": "Follow-up",
+        "text": "Useful reminders and messages—without chasing people."
+      },
+      {
+        "title": "Alerts",
+        "text": "When someone shows interest, your team steps in on time."
+      },
+      {
+        "title": "Measurement",
+        "text": "See what gets quoted, accepted and left pending."
+      }
+    ],
+    "integrateNote": "We don’t replace your operations software. We work on the commercial stage: follow-up and conversion.",
+    "trustEyebrow": "Cluster Media",
+    "trustTitle": "Real support from a real team.",
+    "trustText": "We design and implement the process with your team. No long forms—we talk first.",
+    "formEyebrow": "Contact",
+    "formTitle": "Prefer to leave your details",
+    "formDesc": "You can also message on WhatsApp or book a call without filling the form.",
+    "formMicro": "Just the basics so we can reply.",
+    "fieldName": "Name",
+    "fieldCompany": "Clinic",
+    "fieldPhone": "WhatsApp / phone",
+    "fieldEmail": "Email",
+    "fieldWeb": "Website or Instagram (optional)",
+    "fieldWebPlaceholder": "instagram.com/… or website",
+    "formCta": "Send",
+    "thanksEyebrow": "Done",
+    "thanksTitle": "We received your message.",
+    "thanksText": "We’ll get back soon. You can also message us on WhatsApp or book a call now.",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "FAQ",
+    "faqs": [
+      {
+        "q": "Do you replace operations software?",
+        "a": "No. We focus on commercial follow-up after the evaluation."
+      },
+      {
+        "q": "Do I need a long questionnaire?",
+        "a": "No. You can chat on WhatsApp or book a call directly."
+      },
+      {
+        "q": "Does it work for implants, ortho and aesthetics?",
+        "a": "Yes. Follow-up adapts to the treatment type."
+      },
+      {
+        "q": "Is it a chatbot?",
+        "a": "No. It’s a follow-up process with human support when needed."
+      }
+    ],
+    "finalTitle": "Let’s review your pending treatments together.",
+    "finalText": "No pressure and no long form. A conversation to understand your process."
   }
 }

@@ -9,19 +9,18 @@ import { HeroBackgroundVideo } from '@/components/blocks/PageHero';
 import { Section, SectionHeading, Eyebrow } from '@/components/ui/Section';
 import { Reveal } from '@/components/ui/Reveal';
 import { BudgetCalculator } from '@/components/remodelaciones/BudgetCalculator';
-import { DiagnosticForm } from '@/components/remodelaciones/DiagnosticForm';
-import { StickyCta } from '@/components/remodelaciones/StickyCta';
+import { MinimalLeadForm } from '@/components/verticals/MinimalLeadForm';
+import { StickyWhatsAppCta } from '@/components/verticals/StickyWhatsAppCta';
 import { trackEvent } from '@/lib/analytics';
 import { site, whatsappLink } from '@/lib/site';
-import type { RemodelacionesMarket } from '@/lib/remodelaciones/markets';
+import {
+  CALCULATOR_STORAGE_KEY,
+  type RemodelacionesMarket,
+} from '@/lib/remodelaciones/markets';
 
 type Props = {
   market: RemodelacionesMarket;
 };
-
-function scrollToId(id: string) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
 
 export function RemodelacionesLanding({ market }: Props) {
   const t = useTranslations('Remodelaciones');
@@ -33,6 +32,7 @@ export function RemodelacionesLanding({ market }: Props) {
   const faqs = t.raw('faqs') as { q: string; a: string }[];
 
   useEffect(() => {
+    trackEvent('PageView', { market: market.id, page: 'remodelaciones' });
     trackEvent('landing_view', { market: market.id, page: 'remodelaciones' });
   }, [market.id]);
 
@@ -71,24 +71,32 @@ export function RemodelacionesLanding({ market }: Props) {
             <Reveal delay={180}>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Button
-                  href="#diagnostico"
+                  href={whatsappLink(market.whatsappMessage)}
+                  external
+                  variant="whatsapp"
+                  size="lg"
+                  icon="whatsapp"
+                  onClick={() =>
+                    trackEvent('WhatsAppClick', {
+                      source: 'hero',
+                      page: 'remodelaciones',
+                    })
+                  }
+                >
+                  {t('ctaWhatsapp')}
+                </Button>
+                <Button
+                  href={site.calendarUrl}
                   size="lg"
                   iconRight="arrow-right"
                   onClick={() =>
-                    trackEvent('click_cta_primary', { source: 'hero' })
+                    trackEvent('AppointmentStart', {
+                      source: 'hero',
+                      page: 'remodelaciones',
+                    })
                   }
                 >
-                  {t('heroCta')}
-                </Button>
-                <Button
-                  href="#como-funciona"
-                  variant="ghost"
-                  size="lg"
-                  onClick={() =>
-                    trackEvent('click_cta_secondary', { source: 'hero' })
-                  }
-                >
-                  {t('heroCtaSecondary')}
+                  {t('ctaSchedule')}
                 </Button>
               </div>
               <p className="mt-4 font-mono text-xs text-faint">{t('heroMicro')}</p>
@@ -126,10 +134,7 @@ export function RemodelacionesLanding({ market }: Props) {
           title={t('calcTitle')}
           className="mb-10 max-w-3xl"
         />
-        <BudgetCalculator
-          market={market}
-          onAnalyze={() => scrollToId('diagnostico')}
-        />
+        <BudgetCalculator market={market} />
       </Section>
 
       {/* CÓMO FUNCIONA */}
@@ -302,9 +307,18 @@ export function RemodelacionesLanding({ market }: Props) {
             description={t('casesText')}
             className="mx-auto"
           />
-          <div className="mt-8">
-            <Button href="#diagnostico" size="lg" iconRight="arrow-right">
-              {t('casesCta')}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button
+              href={whatsappLink(market.whatsappMessage)}
+              external
+              variant="whatsapp"
+              size="lg"
+              icon="whatsapp"
+            >
+              {t('ctaWhatsapp')}
+            </Button>
+            <Button href={site.calendarUrl} size="lg" iconRight="arrow-right">
+              {t('ctaSchedule')}
             </Button>
           </div>
         </div>
@@ -339,8 +353,8 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
-      {/* FORMULARIO */}
-      <Section tone="dark" id="diagnostico">
+      {/* CONTACTO MÍNIMO */}
+      <Section tone="dark" id="contacto">
         <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-16">
           <div>
             <SectionHeading
@@ -354,30 +368,39 @@ export function RemodelacionesLanding({ market }: Props) {
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button
-                href={site.calendarUrl}
-                size="lg"
-                iconRight="arrow-right"
-                onClick={() =>
-                  trackEvent('click_agenda', { source: 'form_aside' })
-                }
-              >
-                {t('thanksSchedule')}
-              </Button>
-              <Button
                 href={whatsappLink(market.whatsappMessage)}
                 external
                 variant="whatsapp"
                 size="lg"
                 icon="whatsapp"
                 onClick={() =>
-                  trackEvent('click_whatsapp', { source: 'form_aside' })
+                  trackEvent('WhatsAppClick', { source: 'form_aside' })
                 }
               >
-                WhatsApp
+                {t('ctaWhatsapp')}
+              </Button>
+              <Button
+                href={site.calendarUrl}
+                size="lg"
+                iconRight="arrow-right"
+                onClick={() =>
+                  trackEvent('AppointmentStart', { source: 'form_aside' })
+                }
+              >
+                {t('ctaSchedule')}
               </Button>
             </div>
           </div>
-          <DiagnosticForm market={market} />
+          <MinimalLeadForm
+            i18nNamespace="Remodelaciones"
+            vertical="remodelaciones"
+            country={market.country}
+            landingPath={`/remodelaciones/${market.id}`}
+            origen={`remodelaciones-${market.id}`}
+            servicio="Conversión presupuestos remodelaciones"
+            whatsappMessage={market.whatsappMessage}
+            calculatorStorageKey={CALCULATOR_STORAGE_KEY}
+          />
         </div>
       </Section>
 
@@ -400,32 +423,34 @@ export function RemodelacionesLanding({ market }: Props) {
           </h2>
           <p className="mt-5 text-muted">{t('finalText')}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button href="#diagnostico" size="lg" variant="accent" iconRight="arrow-right">
-              {t('heroCta')}
-            </Button>
             <Button
               href={whatsappLink(market.whatsappMessage)}
               external
               variant="whatsapp"
               size="lg"
               icon="whatsapp"
-              onClick={() => trackEvent('click_whatsapp', { source: 'final' })}
+              onClick={() => trackEvent('WhatsAppClick', { source: 'final' })}
             >
-              WhatsApp
+              {t('ctaWhatsapp')}
             </Button>
             <Button
               href={site.calendarUrl}
-              variant="ghost"
               size="lg"
-              onClick={() => trackEvent('click_agenda', { source: 'final' })}
+              variant="accent"
+              iconRight="arrow-right"
+              onClick={() => trackEvent('AppointmentStart', { source: 'final' })}
             >
-              {t('thanksSchedule')}
+              {t('ctaSchedule')}
             </Button>
           </div>
         </div>
       </Section>
 
-      <StickyCta href="#diagnostico" />
+      <StickyWhatsAppCta
+        label={t('stickyCta')}
+        whatsappMessage={market.whatsappMessage}
+        vertical="remodelaciones"
+      />
     </div>
   );
 }

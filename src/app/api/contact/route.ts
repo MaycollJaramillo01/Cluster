@@ -10,11 +10,14 @@ type ContactPayload = {
   ciudad?: string;
   email?: string;
   telefono?: string;
+  website?: string;
   servicio?: string;
   mensaje?: string;
   origen?: string;
   auditUrl?: string;
   auditScore?: string | number;
+  attribution?: Record<string, string>;
+  calculator?: unknown;
 };
 
 function asText(value: unknown) {
@@ -31,9 +34,30 @@ function buildEmailBody(lead: ContactPayload) {
     `Ciudad: ${asText(lead.ciudad)}`,
     `Email: ${asText(lead.email)}`,
     `Teléfono: ${asText(lead.telefono)}`,
+    `Website/IG: ${asText(lead.website)}`,
     `Servicio de interés: ${asText(lead.servicio)}`,
     `Origen: ${asText(lead.origen) || 'contacto'}`,
   ];
+
+  if (lead.attribution) {
+    lines.push(
+      '',
+      'Atribución',
+      ...Object.entries(lead.attribution).map(
+        ([key, value]) => `${key}: ${asText(value) || '—'}`,
+      ),
+    );
+  }
+
+  if (lead.calculator != null) {
+    lines.push(
+      '',
+      'Calculadora (voluntaria):',
+      typeof lead.calculator === 'string'
+        ? lead.calculator
+        : JSON.stringify(lead.calculator, null, 2),
+    );
+  }
 
   if (lead.auditUrl || lead.auditScore) {
     lines.push(

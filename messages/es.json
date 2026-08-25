@@ -2608,16 +2608,16 @@
     "priceEyebrow": "Inversión",
     "priceTitle": "Una implementación adaptada a tu proceso comercial.",
     "priceText": "El alcance depende del número de canales, usuarios, automatizaciones e integraciones necesarias.",
-  "priceFrom": "Implementaciones desde USD {amount}",
-  "priceMonthly": "Mensualidad desde USD {amount}",
+    "priceFrom": "Implementaciones desde USD {amount}",
+    "priceMonthly": "Mensualidad desde USD {amount}",
     "priceMonthlySoon": "Mensualidad: se define según alcance",
-    "formEyebrow": "Diagnóstico",
-    "formTitle": "Diagnóstico de conversión de presupuestos",
-    "formDesc": "Cuéntanos cómo opera hoy tu proceso comercial. Revisaremos tu caso antes de recomendar una solución.",
+    "formEyebrow": "Contacto",
+    "formTitle": "Prefieres dejar tus datos",
+    "formDesc": "También puedes escribirnos por WhatsApp o agendar una llamada sin completar este formulario.",
     "fieldName": "Nombre",
     "fieldCompany": "Empresa",
-    "fieldWeb": "Website / Instagram de la empresa",
-    "fieldPhone": "Teléfono / WhatsApp",
+    "fieldWeb": "Website o Instagram (opcional)",
+    "fieldPhone": "WhatsApp / teléfono",
     "fieldEmail": "Email",
     "fieldBudgets": "¿Cuántos presupuestos aproximadamente envían al mes?",
     "fieldTicket": "Valor promedio aproximado de sus proyectos",
@@ -2647,11 +2647,11 @@
       "lowClose": "Baja tasa de cierre",
       "other": "Otro"
     },
-    "formCta": "Analizar mi proceso",
-    "formMicro": "Sin compromiso. Revisaremos tu proceso actual antes de recomendar una solución.",
+    "formCta": "Enviar",
+    "formMicro": "Sin cuestionario. Solo lo necesario para responderte.",
     "thanksEyebrow": "Listo",
-    "thanksTitle": "Recibimos tu información.",
-    "thanksText": "Estamos revisando cómo funciona actualmente tu proceso de presupuestos y seguimiento.",
+    "thanksTitle": "Recibimos tu mensaje.",
+    "thanksText": "Te contactaremos pronto. Si preferís, también podés escribirnos por WhatsApp o agendar una llamada ahora.",
     "thanksNext": "Siguiente paso",
     "thanksSchedule": "Agendar diagnóstico",
     "faqEyebrow": "FAQ",
@@ -2684,6 +2684,116 @@
     ],
     "finalTitle": "Tus presupuestos no deberían morir en WhatsApp.",
     "finalText": "No conseguimos solamente más oportunidades. Ayudamos a convertir mejor las que tu empresa ya genera.",
-    "stickyCta": "Analizar mis presupuestos"
+    "stickyCta": "Hablar por WhatsApp",
+    "ctaWhatsapp": "Hablar por WhatsApp",
+    "ctaSchedule": "Agendar una llamada",
+    "heroCalcLink": "Opcional: calcular oportunidades pendientes",
+    "fieldWebPlaceholder": "instagram.com/… o website"
+  },
+  "ClinicasDentales": {
+    "metaTitle": "Más tratamientos iniciados para clínicas dentales | {country}",
+    "metaDescription": "Ayudamos a clínicas dentales a dar seguimiento a presupuestos y convertir más tratamientos de alto valor.",
+    "crumb": "Clínicas dentales",
+    "heroEyebrow": "Para clínicas dentales",
+    "heroTitle": "¿Cuántos presupuestos dejaste sin seguimiento este mes?",
+    "heroSubtitle": "Te ayudamos a organizar el seguimiento después de la valoración, para que más pacientes inicien el tratamiento.",
+    "heroMicro": "Sin compromiso. Conversemos primero.",
+    "heroCalcLink": "Opcional: estimar tratamientos pendientes",
+    "ctaWhatsapp": "Hablar por WhatsApp",
+    "ctaSchedule": "Agendar una llamada",
+    "stickyCta": "Hablar por WhatsApp",
+    "problemEyebrow": "El problema",
+    "problemTitle": "Muchos pacientes dicen “me lo pienso”… y nadie vuelve a contactarlos.",
+    "problemIntro": "La clínica capta, valora y presupuesta. Después el seguimiento depende de la memoria de cada persona.",
+    "problems": [
+      {
+        "n": "01",
+        "text": "Se envía un presupuesto de implantes y no hay un siguiente contacto claro."
+      },
+      {
+        "n": "02",
+        "text": "Los mensajes se pierden entre WhatsApp, llamadas y el día a día de recepción."
+      },
+      {
+        "n": "03",
+        "text": "Nadie sabe cuánto dinero sigue pendiente de decisión."
+      }
+    ],
+    "problemClose": "A veces el problema no es conseguir más pacientes. Es seguir mejor a los que ya tienes.",
+    "calcEyebrow": "Calculadora",
+    "calcTitle": "Estima el valor de tus tratamientos pendientes.",
+    "calcQ1": "¿Cuántas valoraciones hacen al mes?",
+    "calcQ2": "¿Qué porcentaje recibe presupuesto?",
+    "calcQ3": "Valor promedio del tratamiento",
+    "calcQ4": "¿Qué porcentaje acepta hoy?",
+    "calcResultEyebrow": "Tu escenario",
+    "calcCount": "Tratamientos presupuestados",
+    "calcBudgeted": "Valor presupuestado",
+    "calcConverted": "Valor convertido",
+    "calcNotConverted": "Valor sin convertir",
+    "calcInsight": "En este escenario hay aproximadamente {amount} en tratamientos presupuestados sin convertir.",
+    "calcCaveat": "No todo se recupera. Sirve para ver el tamaño de la oportunidad.",
+    "calcCta": "Hablar por WhatsApp",
+    "benefitsEyebrow": "Qué hacemos",
+    "benefitsTitle": "Un proceso claro después del presupuesto.",
+    "benefits": [
+      {
+        "title": "Orden",
+        "text": "Cada paciente con presupuesto queda en un pipeline simple y visible."
+      },
+      {
+        "title": "Seguimiento",
+        "text": "Recordatorios y mensajes útiles, sin perseguir ni saturar."
+      },
+      {
+        "title": "Alertas",
+        "text": "Cuando alguien muestra interés, tu equipo interviene a tiempo."
+      },
+      {
+        "title": "Medición",
+        "text": "Ves qué se presupuesta, qué se acepta y qué queda pendiente."
+      }
+    ],
+    "integrateNote": "No reemplazamos tu software operativo. Trabajamos en la etapa comercial: seguimiento y conversión.",
+    "trustEyebrow": "Cluster Media",
+    "trustTitle": "Te acompañamos de verdad.",
+    "trustText": "Diseñamos e implementamos el proceso con tu equipo. Sin cuestionarios largos: primero conversamos.",
+    "formEyebrow": "Contacto",
+    "formTitle": "Si preferís dejar datos",
+    "formDesc": "También podés escribir por WhatsApp o agendar una llamada sin llenar el formulario.",
+    "formMicro": "Solo lo básico para responderte.",
+    "fieldName": "Nombre",
+    "fieldCompany": "Clínica",
+    "fieldPhone": "WhatsApp / teléfono",
+    "fieldEmail": "Email",
+    "fieldWeb": "Website o Instagram (opcional)",
+    "fieldWebPlaceholder": "instagram.com/… o website",
+    "formCta": "Enviar",
+    "thanksEyebrow": "Listo",
+    "thanksTitle": "Recibimos tu mensaje.",
+    "thanksText": "Te contactamos pronto. Si querés, también podés escribirnos por WhatsApp o agendar ahora.",
+    "ctaScheduleAlias": "Agendar una llamada",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Preguntas frecuentes",
+    "faqs": [
+      {
+        "q": "¿Reemplazan el software operativo?",
+        "a": "No. Nos enfocamos en el seguimiento comercial después de la valoración."
+      },
+      {
+        "q": "¿Tengo que llenar un cuestionario largo?",
+        "a": "No. Podés hablar por WhatsApp o agendar una llamada directamente."
+      },
+      {
+        "q": "¿Sirve para implantes, ortodoncia y estética?",
+        "a": "Sí. El seguimiento se adapta al tipo de tratamiento."
+      },
+      {
+        "q": "¿Es un chatbot?",
+        "a": "No. Es un proceso de seguimiento con soporte humano cuando hace falta."
+      }
+    ],
+    "finalTitle": "Revisemos juntos tus tratamientos pendientes.",
+    "finalText": "Sin presión y sin formulario largo. Una conversación para entender tu proceso."
   }
 }
