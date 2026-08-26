@@ -10,9 +10,12 @@ import type { CaseStudy } from '@/lib/site';
 export function CaseCard({
   study,
   index = 0,
+  showCaseLink = true,
 }: {
   study: CaseStudy;
   index?: number;
+  /** Oculta el CTA "Ver caso" (p. ej. landings temporales) */
+  showCaseLink?: boolean;
 }) {
   const tc = useTranslations('Common');
 
@@ -63,13 +66,15 @@ export function CaseCard({
             </span>
           ))}
         </div>
-        <Link
-          href="/casos-de-exito"
-          className="mt-6 inline-flex items-center gap-2 self-start border-b border-ink-950 pb-1 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-950 transition-all group-hover:gap-3"
-        >
-          {tc('seeCase')}
-          <Icon name="arrow-right" size={16} />
-        </Link>
+        {showCaseLink ? (
+          <Link
+            href="/casos-de-exito"
+            className="mt-6 inline-flex items-center gap-2 self-start border-b border-ink-950 pb-1 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-950 transition-all group-hover:gap-3"
+          >
+            {tc('seeCase')}
+            <Icon name="arrow-right" size={16} />
+          </Link>
+        ) : null}
       </div>
     </Reveal>
   );
