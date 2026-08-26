@@ -122,6 +122,17 @@
     "privacyPolicy": "Privacy Policy",
     "termsConditions": "Terms and Conditions",
     "home": "Inicio",
+    "market": "Mercado",
+    "contact": "Contacto",
+    "privacy": "Privacidad",
+    "talkWhatsApp": "Hablar por WhatsApp",
+    "bookCall": "Agendar una llamada",
+    "backToTop": "Volver arriba",
+    "cookieBanner": "Usamos cookies y etiquetas de medición (GTM/GA4/Meta) para entender el recorrido comercial de esta página.",
+    "cookieAccept": "Entendido",
+    "talkToTeam": "Habla con el equipo",
+    "provisionalPrice": "Precio provisional",
+    "monthlyDefinedByScope": "Mensualidad: se define según alcance",
     "breadcrumbPlans": "Planes",
     "breadcrumbBlog": "Blog",
     "seeAllServices": "Ver todos los servicios",
@@ -244,6 +255,7 @@
     "clinicasEsteticas": "Clínicas estéticas",
     "inmobiliarias": "Inmobiliarias",
     "remodelaciones": "Remodelaciones",
+    "clinicasDentales": "Clínicas dentales",
     "plans": "Planes",
     "cases": "Casos de Éxito",
     "about": "Sobre Cluster",
@@ -2619,6 +2631,7 @@
     "formEyebrow": "Contacto",
     "formTitle": "Prefieres dejar tus datos",
     "formDesc": "También puedes escribirnos por WhatsApp o agendar una llamada sin completar este formulario.",
+    "contactSectionTitle": "Hablemos de tu proceso comercial",
     "fieldName": "Nombre",
     "fieldCompany": "Empresa",
     "fieldWeb": "Website o Instagram (opcional)",
@@ -2693,14 +2706,195 @@
     "ctaWhatsapp": "Hablar por WhatsApp",
     "ctaSchedule": "Agendar una llamada",
     "heroCalcLink": "Opcional: calcular oportunidades pendientes",
-    "fieldWebPlaceholder": "instagram.com/… o website"
+    "fieldWebPlaceholder": "instagram.com/… o website",
+    "visEyebrow": "Visibilidad",
+    "visTitle": "Deja de medir solo cuántos leads entran.",
+    "visDesc": "Así se ve un funnel comercial completo: de la consulta al proyecto ganado.",
+    "visRef": "Vista de referencia",
+    "visStats": {
+      "inquiries": "Consultas",
+      "qualified": "Calificadas",
+      "visits": "Visitas",
+      "quotes": "Presupuestos enviados",
+      "won": "Proyectos ganados",
+      "pipelineValue": "Valor en pipeline"
+    },
+    "funnelConsulta": "Consulta",
+    "funnelCalificada": "Calificada",
+    "funnelVisita": "Visita",
+    "funnelPresupuesto": "Presupuesto",
+    "funnelCierre": "Cierre",
+    "followEyebrow": "Diferenciador",
+    "followTitle": "El seguimiento continúa después de enviar el presupuesto.",
+    "followDesc": "Otras herramientas se detienen cuando envías la cotización. Aquí el pipeline sigue hasta el cierre o la reactivación.",
+    "followPipeline": [
+      "Nueva consulta",
+      "Calificada",
+      "Visita agendada",
+      "Presupuesto enviado",
+      "En decisión",
+      "Proyecto ganado",
+      "Reactivación"
+    ],
+    "followUpExamples": [
+      "Seguimiento 24–48 horas después del presupuesto",
+      "Recordatorio de propuesta",
+      "Información adicional del alcance",
+      "Resolver dudas de materiales o plazos",
+      "Intervención humana cuando hay intención alta"
+    ],
+    "followClose": "El seguimiento comercial corre alrededor de tu operación de obra, sin reemplazar tu ERP ni tu administración.",
+    "privacyTitle": "Tu software de obra y administración se queda donde está.",
+    "privacyDesc": "Cluster opera como capa de captación y seguimiento comercial. Presupuestos técnicos, control de obra y administración permanecen en tus herramientas actuales.",
+    "opsSoftLabel": "Software operativo",
+    "opsSoftItems": [
+      "Presupuestos técnicos",
+      "ERP / administración",
+      "Control de obra",
+      "Facturación"
+    ],
+    "clusterSystemLabel": "Cluster Conversion System",
+    "clusterSystemItems": [
+      "Prospectos",
+      "Campañas",
+      "Conversaciones",
+      "Visitas",
+      "Pipeline comercial",
+      "Seguimiento"
+    ],
+    "toolsEyebrow": "Herramientas",
+    "toolsTitle": "Trabajamos con lo que tu empresa ya usa.",
+    "toolsDesc": "La solución se diseña alrededor de tus canales y herramientas actuales.",
+    "toolsClose": "Conectamos el proceso comercial alrededor de tu stack: formularios, Meta, Google, WhatsApp, calendario y CRM cuando exista integración.",
+    "integrations": [
+      "Formularios web",
+      "Meta",
+      "Google",
+      "WhatsApp",
+      "Calendario",
+      "CRM",
+      "Software existente (cuando haya API)"
+    ],
+    "demoEyebrow": "Recorrido",
+    "demoTitle": "Así se organiza una oportunidad desde el primer mensaje.",
+    "demoDesc": "Cada paso deja rastro en el pipeline para comercial y seguimiento.",
+    "demoSteps": [
+      {
+        "t": "Consulta",
+        "d": "Llega un pedido de remodelación por WhatsApp, web o campaña."
+      },
+      {
+        "t": "Calificación",
+        "d": "Se captura alcance, zona, timing y presupuesto aproximado."
+      },
+      {
+        "t": "Visita",
+        "d": "Se agenda, confirma y prepara al comercial."
+      },
+      {
+        "t": "Cierre",
+        "d": "Presupuesto, seguimiento y alerta cuando hay intención de firmar."
+      }
+    ],
+    "demoClose": "Todo queda ordenado: menos conversaciones sueltas, más control comercial.",
+    "handoffEyebrow": "Intervención humana",
+    "handoffTitle": "Cuando hace falta una persona, el equipo entra.",
+    "handoffDesc": "El sistema ordena el trabajo previo; comercial toma las conversaciones que lo requieren.",
+    "handoffAutoLabel": "Automatización",
+    "handoffAutoTitle": "Capa comercial",
+    "handoffAutoItems": [
+      "Respuesta inicial",
+      "Calificación y agenda",
+      "Recordatorios y recuperación",
+      "Seguimiento rutinario"
+    ],
+    "handoffTeamLabel": "Tu equipo",
+    "handoffTeamTitle": "Intervención humana",
+    "handoffExamples": [
+      "Pregunta compleja de alcance",
+      "Cliente con intención alta",
+      "Negociación de presupuesto",
+      "Visita técnica",
+      "Objeción de plazos o materiales"
+    ],
+    "handoffClose": "Tu equipo decide el cierre; el sistema mantiene el pipeline visible.",
+    "dashTitle": "Visibilidad comercial en un solo lugar.",
+    "dashDesc": "Consultas, visitas, presupuestos y cierres por fuente, con la próxima acción de cada oportunidad.",
+    "dashRef": "Vista de referencia",
+    "sources": [
+      "Meta",
+      "Google",
+      "Instagram",
+      "Web",
+      "WhatsApp",
+      "Referidos"
+    ],
+    "tableOpp": "Oportunidad",
+    "tableSource": "Fuente",
+    "tableStatus": "Estado",
+    "tableNext": "Próxima acción",
+    "demoLeads": [
+      {
+        "id": "Opp 001",
+        "source": "Web",
+        "status": "Presupuesto enviado",
+        "next": "Seguimiento"
+      },
+      {
+        "id": "Opp 002",
+        "source": "WhatsApp",
+        "status": "Visita agendada",
+        "next": "Confirmar"
+      },
+      {
+        "id": "Opp 003",
+        "source": "Meta",
+        "status": "En decisión",
+        "next": "Llamar"
+      },
+      {
+        "id": "Opp 004",
+        "source": "Referido",
+        "status": "Calificada",
+        "next": "Agendar visita"
+      }
+    ],
+    "responseTimePromise": "Respondemos el diagnóstico en menos de 1 día hábil.",
+    "lastUpdated": "2026-08-25",
+    "implSteps5": [
+      {
+        "n": "01",
+        "title": "Diagnóstico",
+        "text": "Mapeamos el recorrido comercial actual."
+      },
+      {
+        "n": "02",
+        "title": "Diseño",
+        "text": "Definimos pipeline, mensajes, automatizaciones y reglas."
+      },
+      {
+        "n": "03",
+        "title": "Implementación",
+        "text": "Conectamos canales y dejamos el sistema operativo."
+      },
+      {
+        "n": "04",
+        "title": "Capacitación",
+        "text": "Entrenamos a tu equipo en el uso diario."
+      },
+      {
+        "n": "05",
+        "title": "Optimización",
+        "text": "Ajustamos con datos reales post-lanzamiento."
+      }
+    ]
   },
   "ClinicasDentales": {
     "metaTitle": "Más tratamientos iniciados para clínicas dentales | {country}",
     "metaDescription": "Ayudamos a clínicas dentales a dar seguimiento a presupuestos y convertir más tratamientos de alto valor.",
     "crumb": "Clínicas dentales",
     "heroEyebrow": "Para clínicas dentales",
-    "heroTitle": "¿Cuántos presupuestos dejaste sin seguimiento este mes?",
+    "heroTitle": "Automatiza y sistematiza el marketing de tu clínica dental.",
     "heroSubtitle": "Te ayudamos a organizar el seguimiento después de la valoración, para que más pacientes inicien el tratamiento.",
     "heroMicro": "Sin compromiso. Conversemos primero.",
     "heroCalcLink": "Opcional: estimar tratamientos pendientes",
@@ -2759,7 +2953,25 @@
         "text": "Ves qué se presupuesta, qué se acepta y qué queda pendiente."
       }
     ],
-    "integrateNote": "No reemplazamos tu software operativo. Trabajamos en la etapa comercial: seguimiento y conversión.",
+    "integrateNote": "Nos integramos con tu software operativo. Trabajamos la etapa comercial: seguimiento y conversión.",
+    "handoffAutomation": "Automatización",
+    "handoffClinic": "Tu clínica",
+    "handoffAutomationItems": [
+      "Ordena el pipeline",
+      "Recuerda el seguimiento",
+      "Alerta al equipo"
+    ],
+    "handoffClinicItems": [
+      "Asesora al paciente",
+      "Cierra el tratamiento",
+      "Mide resultados"
+    ],
+    "priceEyebrow": "Inversión",
+    "priceTitle": "La implementación se adapta a tu clínica.",
+    "priceText": "Alcance según volumen de valoraciones, canales e integraciones.",
+    "priceFrom": "Desde USD {amount}",
+    "priceMonthly": "Mensualidad desde USD {amount}",
+    "contactSectionTitle": "Hablemos de tu pipeline de tratamientos",
     "trustEyebrow": "Cluster Media",
     "trustTitle": "Te acompañamos de verdad.",
     "trustText": "Diseñamos e implementamos el proceso con tu equipo. Sin cuestionarios largos: primero conversamos.",
@@ -2783,7 +2995,7 @@
     "faqs": [
       {
         "q": "¿Reemplazan el software operativo?",
-        "a": "No. Nos enfocamos en el seguimiento comercial después de la valoración."
+        "a": "No. Nos integramos con tu software operativo y nos enfocamos en el seguimiento comercial después de la valoración."
       },
       {
         "q": "¿Tengo que llenar un cuestionario largo?",
@@ -2799,6 +3011,986 @@
       }
     ],
     "finalTitle": "Revisemos juntos tus tratamientos pendientes.",
-    "finalText": "Sin presión y sin formulario largo. Una conversación para entender tu proceso."
+    "finalText": "Sin presión y sin formulario largo. Una conversación para entender tu proceso.",
+    "visEyebrow": "Visibilidad",
+    "visTitle": "Deja de medir solo cuántas consultas entran.",
+    "visDesc": "Así se ve un funnel comercial completo: de la valoración al tratamiento iniciado.",
+    "visRef": "Vista de referencia",
+    "visStats": {
+      "evaluations": "Valoraciones",
+      "quotes": "Presupuestos",
+      "followUps": "Seguimientos",
+      "accepted": "Aceptados",
+      "started": "Tratamientos iniciados",
+      "pipelineValue": "Valor pendiente"
+    },
+    "funnelValoracion": "Valoración",
+    "funnelPresupuesto": "Presupuesto",
+    "funnelSeguimiento": "Seguimiento",
+    "funnelAceptacion": "Aceptación",
+    "funnelInicio": "Inicio",
+    "modulesEyebrow": "Sistema",
+    "modulesTitle": "Un sistema alrededor del recorrido comercial del paciente.",
+    "systemModules": [
+      {
+        "title": "Respuesta inicial",
+        "text": "Atención inmediata a nuevas consultas."
+      },
+      {
+        "title": "Calificación",
+        "text": "Recopila interés, tratamiento y timing antes de intervenir."
+      },
+      {
+        "title": "Agenda",
+        "text": "Reserva y confirma valoraciones."
+      },
+      {
+        "title": "Seguimiento",
+        "text": "Continúa después del presupuesto hasta la decisión."
+      },
+      {
+        "title": "Dashboard",
+        "text": "Visibilidad de pipeline y próxima acción."
+      }
+    ],
+    "followEyebrow": "Diferenciador",
+    "followTitle": "El seguimiento continúa después de la valoración.",
+    "followDesc": "Otras soluciones se detienen cuando el paciente agenda. Aquí el pipeline sigue hasta tratamiento y recurrencia.",
+    "followPipeline": [
+      "Consulta",
+      "Valoración reservada",
+      "Asistió",
+      "Presupuesto enviado",
+      "En decisión",
+      "Tratamiento iniciado",
+      "Recurrencia"
+    ],
+    "followUpExamples": [
+      "Seguimiento 24–48 horas después de la valoración",
+      "Recordatorio de propuesta",
+      "Información adicional del plan",
+      "Resolver dudas de plazos o financiación",
+      "Intervención humana cuando hay intención alta"
+    ],
+    "followClose": "El seguimiento comercial corre alrededor del proceso clínico, sin sustituir el criterio del odontólogo.",
+    "privacyTitle": "La historia clínica queda en tu software odontológico.",
+    "privacyDesc": "Cluster opera como capa de captación y seguimiento comercial. Historias, radiografías y documentación clínica permanecen fuera de este sistema.",
+    "clinicalSoftLabel": "Software odontológico",
+    "clinicalSoftItems": [
+      "Historia clínica",
+      "Radiografías / imágenes",
+      "Planes clínicos",
+      "Documentación sanitaria"
+    ],
+    "clusterSystemLabel": "Cluster Conversion System",
+    "clusterSystemItems": [
+      "Prospectos",
+      "Campañas",
+      "Conversaciones",
+      "Citas",
+      "Pipeline comercial",
+      "Seguimiento"
+    ],
+    "toolsEyebrow": "Herramientas",
+    "toolsTitle": "Nos integramos con lo que la clínica ya usa.",
+    "toolsDesc": "La solución se diseña alrededor de tus canales y software operativo.",
+    "toolsClose": "Nos integramos con tu software operativo. Trabajamos la etapa comercial: seguimiento y conversión.",
+    "integrations": [
+      "Formularios web",
+      "Meta",
+      "Google",
+      "WhatsApp",
+      "Calendario",
+      "CRM",
+      "Software odontológico (cuando haya API)"
+    ],
+    "demoEyebrow": "Recorrido",
+    "demoTitle": "Así se organiza una consulta desde el primer mensaje.",
+    "demoDesc": "Cada paso deja rastro en el pipeline para recepción y seguimiento.",
+    "demoSteps": [
+      {
+        "t": "22:47",
+        "d": "“Hola, quería información sobre implantes.”"
+      },
+      {
+        "t": "Respuesta",
+        "d": "Atención inmediata y preguntas iniciales."
+      },
+      {
+        "t": "Valoración",
+        "d": "Reserva, confirmación y alerta a recepción."
+      },
+      {
+        "t": "Seguimiento",
+        "d": "Presupuesto, recordatorios y handoff humano."
+      }
+    ],
+    "demoClose": "Todo queda ordenado: menos conversaciones sueltas, más control comercial.",
+    "handoffEyebrow": "Intervención humana",
+    "handoffTitle": "Cuando hace falta una persona, el equipo entra.",
+    "handoffDesc": "El sistema ordena el trabajo previo; recepción y comerciales toman las conversaciones que lo requieren.",
+    "handoffAutoLabel": "Automatización",
+    "handoffAutoTitle": "Capa comercial",
+    "handoffTeamLabel": "Equipo de la clínica",
+    "handoffTeamTitle": "Intervención humana",
+    "handoffClose": "El personal decide el cierre; el sistema mantiene el pipeline visible.",
+    "dashEyebrow": "Dashboard",
+    "dashTitle": "Visibilidad comercial en un solo lugar.",
+    "dashDesc": "Valoraciones, presupuestos, aceptaciones y tratamientos por fuente, con la próxima acción.",
+    "dashRef": "Vista de referencia",
+    "dashStatEvaluations": "Valoraciones",
+    "dashStatQuotes": "Presupuestos",
+    "dashStatAccepted": "Aceptados",
+    "dashStatStarted": "Iniciados",
+    "dashStatValue": "Valor atribuido",
+    "sources": [
+      "Meta",
+      "Google",
+      "Instagram",
+      "Web",
+      "WhatsApp"
+    ],
+    "tablePatient": "Paciente",
+    "tableSource": "Fuente",
+    "tableStatus": "Estado",
+    "tableNext": "Próxima acción",
+    "demoLeads": [
+      {
+        "id": "Lead 001",
+        "source": "Meta",
+        "status": "Valoración reservada",
+        "next": "Confirmar"
+      },
+      {
+        "id": "Lead 002",
+        "source": "Instagram",
+        "status": "Presupuesto enviado",
+        "next": "Follow-up"
+      },
+      {
+        "id": "Lead 003",
+        "source": "Web",
+        "status": "En decisión",
+        "next": "Llamar"
+      },
+      {
+        "id": "Lead 004",
+        "source": "WhatsApp",
+        "status": "Tratamiento iniciado",
+        "next": "Recurrencia"
+      }
+    ],
+    "implEyebrow": "Implementación",
+    "implTitle": "Nosotros hacemos la implementación.",
+    "implementationSteps": [
+      {
+        "n": "01",
+        "title": "Diagnóstico",
+        "text": "Mapeamos el recorrido comercial actual."
+      },
+      {
+        "n": "02",
+        "title": "Diseño",
+        "text": "Definimos pipeline, mensajes, automatizaciones y reglas."
+      },
+      {
+        "n": "03",
+        "title": "Implementación",
+        "text": "Conectamos canales y dejamos el sistema operativo."
+      },
+      {
+        "n": "04",
+        "title": "Capacitación",
+        "text": "Entrenamos a recepción y comerciales."
+      },
+      {
+        "n": "05",
+        "title": "Optimización",
+        "text": "Ajustamos con datos reales post-lanzamiento."
+      }
+    ],
+    "trustItems": [
+      "Desarrollo e integración",
+      "Soporte humano",
+      "Comunicación en español",
+      "Acompañamiento de implementación",
+      "Optimización post-lanzamiento"
+    ],
+    "casesEyebrow": "Casos",
+    "casesTitle": "Construyamos el próximo caso de éxito.",
+    "casesDesc": "Cuando haya resultados documentados de valoraciones y tratamientos, aparecerán aquí con el contexto de cada clínica.",
+    "responseTimePromise": "Respondemos el diagnóstico en menos de 1 día hábil.",
+    "lastUpdated": "2026-08-25",
+    "priceProvisional": "Precio provisional",
+    "priceNote": "El alcance final se confirma en el diagnóstico.",
+    "handoffAutoItems": [
+      "Ordena el pipeline",
+      "Recuerda el seguimiento",
+      "Alerta al equipo"
+    ],
+    "handoffExamples": [
+      "Asesora al paciente",
+      "Cierra el tratamiento",
+      "Mide resultados"
+    ]
+  },
+  "Inmobiliarias": {
+    "metaTitle": "Sistema de conversión de leads para inmobiliarias",
+    "metaDescription": "Convierte más leads inmobiliarios en conversaciones, visitas y oportunidades de venta. Diagnóstico de pipeline comercial para agencias y desarrolladores.",
+    "lastUpdated": "2026-08-21",
+    "crumb": "Inmobiliarias",
+    "waLanding": "Hola Cluster Media, vi la landing de inmobiliarias ({country}) y quiero hablar sobre el sistema de conversión de leads.",
+    "waShort": "Hola Cluster Media, vi la landing de inmobiliarias ({country}) y quiero hablar.",
+    "waCalc": "Hola Cluster Media, usé la calculadora de inmobiliarias ({country}) y quiero hablar.",
+    "waDiagnostico": "Hola, quiero el Diagnóstico de pipeline inmobiliario ({country}).",
+    "heroEyebrow": "Para agencias y desarrolladores inmobiliarios",
+    "heroTitle": "Tus prospectos deben recibir seguimiento antes que terminen en otra inmobiliaria.",
+    "heroSubtitle": "Centralizamos, calificamos y automatizamos el seguimiento de oportunidades provenientes de portales, campañas, WhatsApp y tu website para que tu equipo comercial se concentre en los compradores con mayor intención.",
+    "heroMicro": "Diagnóstico inicial sin compromiso.",
+    "heroCalcLink": "Explorar calculadora (opcional)",
+    "responseTimePromise": "Respondemos el diagnóstico en menos de 1 día hábil.",
+    "pipelineLabel": "Pipeline inmobiliario",
+    "pipelineLive": "LIVE UI",
+    "pipelineStages": [
+      "Nuevo lead",
+      "Contactado",
+      "Calificado",
+      "Visita",
+      "Negociación",
+      "Reserva",
+      "Venta"
+    ],
+    "problemEyebrow": "El problema",
+    "problemTitle": "El lead no espera a que tu agente tenga tiempo.",
+    "problemIntro": "Muchas inmobiliarias ya reciben contactos. El cuello de botella está en respuesta, asignación, visitas y seguimiento.",
+    "problems": [
+      {
+        "n": "01",
+        "text": "El prospecto solicita información de una propiedad. El agente responde tres horas después. Para entonces ya habló con otras agencias."
+      },
+      {
+        "n": "02",
+        "text": "El mismo lead llega desde distintos portales y termina duplicado."
+      },
+      {
+        "n": "03",
+        "text": "El prospecto dice: “Estoy buscando para dentro de seis meses.” Y desaparece completamente del radar."
+      },
+      {
+        "n": "04",
+        "text": "El cliente visita una propiedad y nadie realiza un seguimiento estructurado después."
+      },
+      {
+        "n": "05",
+        "text": "La dirección recibe cientos de leads, pero no sabe cuáles terminaron en visita, reserva o venta."
+      }
+    ],
+    "problemClose": "En inmobiliario, la velocidad importa. La persistencia y la organización importan todavía más.",
+    "calcEyebrow": "Calculadora",
+    "calcTitle": "¿Cuánto valor comercial pasa por tu pipeline cada mes?",
+    "calcDesc": "Estima visitas y operaciones a partir de tus números. El valor del inmueble ilustra volumen; la comisión es opcional.",
+    "calcQ1": "¿Cuántos leads reciben aproximadamente al mes?",
+    "calcQ2": "Valor promedio de las propiedades ({currency})",
+    "calcQ3": "¿Qué porcentaje aproximadamente logra agendar una visita?",
+    "calcQ4": "¿Qué porcentaje de las visitas termina en reserva/venta?",
+    "calcCommissionToggle": "Incluir comisión promedio aproximada por operación",
+    "calcCommissionLabel": "Comisión promedio ({currency})",
+    "calcResultEyebrow": "Pipeline estimado",
+    "calcLeads": "Leads mensuales",
+    "calcVisits": "Visitas estimadas",
+    "calcOps": "Operaciones estimadas",
+    "calcTicket": "Ticket promedio inmueble",
+    "calcNote": "El valor del inmueble ilustra el volumen que atraviesa el pipeline. La comisión se usa solo si la activas.",
+    "calcImpactEyebrow": "Impacto de una mejora puntual",
+    "calcImpactText": "Si una mejora en respuesta, calificación y seguimiento generara una visita o una operación adicional, el valor para tu empresa se mide en oportunidades reales — no en el precio completo del inmueble.",
+    "calcExtraOp": "Una operación adicional a tu comisión media equivaldría a {amount}.",
+    "calcOptionalNote": "La calculadora es opcional. Puedes contactarnos sin usarla.",
+    "multiEyebrow": "Multicanal",
+    "multiTitle": "Tus oportunidades llegan por muchos lugares. Tu equipo debería verlas en uno.",
+    "multiDesc": "Según las integraciones disponibles, centralizamos o conectamos los puntos de entrada para un proceso comercial más consistente.",
+    "multiSystemLabel": "Cluster Conversion System",
+    "multiSystemText": "Captación · calificación · asignación · visitas · seguimiento",
+    "multiAgents": "Agentes y dirección comercial",
+    "multiApiNote": "La conexión directa con cada portal se confirma según API disponible en el mercado.",
+    "responseEyebrow": "Respuesta inicial",
+    "responseTitle": "El primer agente que responde suele tener ventaja.",
+    "responseDesc": "Cuando entra una consulta: respuesta inicial, confirmación de interés, recopilación de datos, intención y asignación al comercial adecuado.",
+    "qualificationFields": [
+      "Compra / alquiler",
+      "Zona",
+      "Presupuesto",
+      "Tipo de propiedad",
+      "Habitaciones",
+      "Fecha estimada",
+      "Financiación",
+      "Residencia / inversión",
+      "Idioma",
+      "Disponibilidad para visita"
+    ],
+    "scoringEyebrow": "Lead scoring",
+    "scoringTitle": "No todos los leads tienen la misma intención.",
+    "scoringDesc": "El equipo prioriza las oportunidades HOT y mantiene seguimiento sobre WARM y LONG TERM.",
+    "leadScores": [
+      {
+        "level": "HOT",
+        "text": "Quiere comprar pronto. Presupuesto definido. Solicita visita."
+      },
+      {
+        "level": "WARM",
+        "text": "Interesado. Compra futura. Necesita financiación o definir opciones."
+      },
+      {
+        "level": "LONG TERM",
+        "text": "Busca información. Plazo mayor."
+      }
+    ],
+    "assignEyebrow": "Asignación",
+    "assignTitle": "El lead correcto, al agente correcto.",
+    "assignmentVars": [
+      "Zona",
+      "Proyecto",
+      "Idioma",
+      "Tipo de inmueble",
+      "Presupuesto",
+      "Disponibilidad",
+      "Round robin",
+      "Especialidad"
+    ],
+    "assignLeadLabel": "Lead",
+    "assignAgentLabel": "Asignación",
+    "visitsEyebrow": "Visitas",
+    "visitsTitle": "Convertir conversaciones en visitas.",
+    "visitsDesc": "Agenda, confirmaciones, recordatorios y, tras la visita, movimiento automático a Follow-Up Post Visit.",
+    "visitFeatures": [
+      "Agenda",
+      "Selección de horarios",
+      "Confirmaciones",
+      "Recordatorios",
+      "Ubicación e instrucciones",
+      "Reprogramación"
+    ],
+    "postVisitEyebrow": "Después de la visita",
+    "postVisitTitle": "El seguimiento post-visita define si hay segunda oportunidad.",
+    "postVisitDesc": "Si la propiedad no encaja, el comprador sigue en el pipeline con property matching y alternativas.",
+    "postVisitFlow": [
+      {
+        "day": "Día 0",
+        "text": "Agradecimiento"
+      },
+      {
+        "day": "Día siguiente",
+        "text": "Feedback de la visita"
+      },
+      {
+        "day": "Seguimiento",
+        "text": "¿Le gustó? ¿Precio? ¿Ubicación? ¿Financiación? ¿Quiere alternativas?"
+      }
+    ],
+    "matchingBlurbLabel": "Property matching",
+    "matchingBlurb": "Propiedades similares, nuevo inventario, cambios de precio y alternativas — el lead permanece activo aunque descarte la unidad inicial.",
+    "nurtureEyebrow": "Nurturing",
+    "nurtureTitle": "Quien busca en seis meses también necesita un proceso.",
+    "nurtureDesc": "Mantener presencia con nuevas propiedades, cambios, financiación y contacto periódico — sin depender de la memoria del agente.",
+    "nurturingBuckets": [
+      {
+        "range": "0–30 días",
+        "label": "Alta intención"
+      },
+      {
+        "range": "1–3 meses",
+        "label": "Seguimiento periódico"
+      },
+      {
+        "range": "3–6 meses",
+        "label": "Nurturing"
+      },
+      {
+        "range": "6–12 meses",
+        "label": "Oportunidad de largo plazo"
+      }
+    ],
+    "buyerEyebrow": "Buyer matching",
+    "buyerTitle": "Una propiedad descartada. Un comprador que sigue activo.",
+    "buyerDesc": "Capturamos el motivo del descarte, segmentamos y alertamos al agente con nuevas alternativas.",
+    "discardReasons": [
+      "Precio",
+      "Tamaño",
+      "Ubicación",
+      "Mantenimiento",
+      "Financiación",
+      "Fecha"
+    ],
+    "projectsEyebrow": "Proyectos",
+    "projectsTitle": "Especialmente potente para proyectos con alto volumen de leads.",
+    "projectsDesc": "De la campaña al lead calificado, a la distribución comercial, visita/demo y reserva.",
+    "projectSteps": [
+      "Campañas Meta / Google",
+      "Volumen de leads",
+      "Calificación automática",
+      "Distribución comercial",
+      "Visita → reserva"
+    ],
+    "intlEyebrow": "Comprador internacional",
+    "intlTitle": "Vender propiedades a distancia exige un proceso distinto.",
+    "intlDesc": "País de residencia, inversión o vivienda, presupuesto, financiación, fecha de viaje, Zoom, preferencias y documentación inicial.",
+    "intlSteps": [
+      "Lead internacional",
+      "WhatsApp",
+      "Calificación",
+      "Videollamada",
+      "Propiedades",
+      "Visita futura",
+      "Seguimiento"
+    ],
+    "dashEyebrow": "Dashboard",
+    "dashTitle": "Mira el pipeline comercial, no solamente el número de leads.",
+    "dashDesc": "Leads, contactados, calificados, visitas, negociaciones, reservas y ventas — por fuente y por agente.",
+    "dashRef": "Vista de referencia",
+    "dashStats": {
+      "leads": "Leads nuevos",
+      "contacted": "Contactados",
+      "qualified": "Calificados",
+      "visits": "Visitas",
+      "negotiations": "Negociaciones",
+      "reservations": "Reservas",
+      "sales": "Ventas"
+    },
+    "dashBySource": "Por fuente",
+    "dashByAgent": "Por agente",
+    "dashSources": [
+      "Meta",
+      "Google",
+      "Portal A",
+      "Portal B",
+      "Website"
+    ],
+    "dashAgents": [
+      "Agente 1",
+      "Agente 2",
+      "Agente 3"
+    ],
+    "dashMetrics": "Métricas: tiempo de respuesta · lead → visita · visita → reserva · reserva → venta",
+    "speedEyebrow": "Speed-to-lead",
+    "speedTitle": "Saber cuánto tardas en responder puede cambiar tu operación.",
+    "speedDesc": "Cuando la infraestructura lo permite, el sistema mide tiempos de respuesta por lead.",
+    "responseTimes": [
+      {
+        "id": "Lead 001",
+        "time": "2 minutos"
+      },
+      {
+        "id": "Lead 002",
+        "time": "14 minutos"
+      },
+      {
+        "id": "Lead 003",
+        "time": "3 horas"
+      }
+    ],
+    "avgResponseLabel": "Average response time",
+    "avgResponseValue": "Medible por operación",
+    "crmEyebrow": "Herramientas",
+    "crmTitle": "Tu CRM actual puede quedarse. Nosotros trabajamos la capa comercial.",
+    "crmDesc": "Software inmobiliario, MLS, portal, CRM o ERP: conectamos captación, automatización, conversión y seguimiento cuando sea técnicamente viable.",
+    "implEyebrow": "Implementación",
+    "implTitle": "Diseñamos e implementamos el proceso contigo.",
+    "implDesc": "Lo importante es lo que ocurre dentro del pipeline: etapas, reglas y seguimiento.",
+    "implementationSteps": [
+      {
+        "n": "01",
+        "title": "Diagnóstico",
+        "text": "Mapeamos el proceso comercial actual."
+      },
+      {
+        "n": "02",
+        "title": "Configuración",
+        "text": "Diseñamos etapas y reglas."
+      },
+      {
+        "n": "03",
+        "title": "Automatización",
+        "text": "Construimos workflows."
+      },
+      {
+        "n": "04",
+        "title": "Integración",
+        "text": "Conectamos canales."
+      },
+      {
+        "n": "05",
+        "title": "Optimización",
+        "text": "Analizamos comportamiento y ajustamos."
+      }
+    ],
+    "demoEyebrow": "Recorrido",
+    "demoTitle": "Así se organiza un nuevo comprador desde el primer mensaje.",
+    "demoSteps": [
+      {
+        "t": "22:34",
+        "d": "“Interesado en apartamentos en Punta Cana para inversión.”"
+      },
+      {
+        "t": "Calificación",
+        "d": "Presupuesto, plazo e intención."
+      },
+      {
+        "t": "HOT",
+        "d": "Asignación al agente y agenda Zoom."
+      },
+      {
+        "t": "Pipeline",
+        "d": "Oportunidad lista para el equipo comercial."
+      }
+    ],
+    "handoffEyebrow": "Human handoff",
+    "handoffTitle": "El sistema ordena. El agente asesora y cierra.",
+    "handoffAutoLabel": "Automatización",
+    "handoffAutoItems": [
+      "Responde",
+      "Califica",
+      "Organiza",
+      "Recuerda"
+    ],
+    "handoffAgentLabel": "Agente",
+    "handoffAgentItems": [
+      "Asesora",
+      "Negocia",
+      "Genera confianza",
+      "Vende"
+    ],
+    "reactEyebrow": "Reactivación",
+    "reactTitle": "¿Cuántos leads tienes guardados que nadie volvió a contactar?",
+    "reactDesc": "Segmentación por antigüedad y tipo (compradores, vendedores, inversionistas, alquiler, proyectos), según consentimiento aplicable.",
+    "sellersEyebrow": "Módulo opcional",
+    "sellersTitle": "También puede trabajar del lado de captación de propiedades.",
+    "sellersDesc": "Valoración → llamada → reunión → captación. El foco inicial del sistema sigue siendo la conversión de buyer leads.",
+    "priceEyebrow": "Inversión",
+    "priceTitle": "La implementación depende de tu estructura comercial.",
+    "priceDesc": "Agentes, canales, volumen, proyectos, integraciones, países, WhatsApp, telefonía, AI y workflows.",
+    "priceProvisional": "Precio provisional",
+    "priceFrom": "Desde {amount}",
+    "priceNote": "Desarrolladores y equipos grandes: precio personalizado. Mensualidad configurable.",
+    "casesEyebrow": "Casos",
+    "casesTitle": "Métricas publicadas con evidencia de pipeline.",
+    "casesDesc": "Cuando haya resultados documentados de respuesta, visitas, reservas y ventas, aparecerán aquí con contexto.",
+    "contactEyebrow": "Contacto",
+    "contactTitle": "Hablemos de tu pipeline comercial",
+    "contactDesc": "WhatsApp o llamada directa. Si prefieres, déjanos tus datos y te escribimos.",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Preguntas frecuentes",
+    "faqs": [
+      {
+        "q": "¿Tenemos que cambiar nuestro CRM?",
+        "a": "No necesariamente. El sistema puede operar como capa de captación, automatización y seguimiento, y conectarse con herramientas existentes cuando sea viable."
+      },
+      {
+        "q": "¿Se integra con portales inmobiliarios?",
+        "a": "Depende de las APIs e integraciones disponibles en cada mercado y plataforma. Se evalúa caso por caso."
+      },
+      {
+        "q": "¿Puede distribuir leads entre agentes?",
+        "a": "Sí. Se pueden definir reglas por zona, proyecto, idioma, presupuesto, especialidad o round robin."
+      },
+      {
+        "q": "¿Puede atender compradores fuera de horario?",
+        "a": "Se puede configurar atención inicial automatizada y pasar al equipo cuando haga falta."
+      },
+      {
+        "q": "¿Puede agendar visitas?",
+        "a": "Sí, según el calendario y el proceso del equipo comercial."
+      },
+      {
+        "q": "¿Puede trabajar compradores internacionales?",
+        "a": "Sí. Especialmente útil en mercados con inversión extranjera y ventas a distancia."
+      },
+      {
+        "q": "¿Puede reactivar leads antiguos?",
+        "a": "Sí, con base legal y consentimiento adecuados para esas comunicaciones."
+      },
+      {
+        "q": "¿Es un chatbot?",
+        "a": "El asistente conversacional es una pieza. El núcleo es el proceso comercial completo: calificación, visitas, seguimiento y reporting."
+      }
+    ],
+    "graciasTitle": "Recibimos tus datos.",
+    "graciasText": "Si prefieres, agenda una llamada o escríbenos por WhatsApp ahora mismo.",
+    "graciasMarket": "Mercado: {country} · Respondemos en menos de 1 día hábil.",
+    "graciasBack": "Volver a la landing",
+    "graciasEyebrow": "Mensaje recibido"
+  },
+  "ClinicasEsteticas": {
+    "metaTitle": "Sistema de conversión para clínicas de medicina estética",
+    "metaDescription": "Convierte más consultas en citas y más citas en tratamientos. Diagnóstico de conversión de pacientes para clínicas de medicina estética.",
+    "lastUpdated": "2026-08-21",
+    "crumb": "Clínicas estéticas",
+    "waLanding": "Hola Cluster Media, vi la landing de clínicas estéticas ({country}) y quiero hablar sobre el sistema de conversión.",
+    "waShort": "Hola Cluster Media, vi la landing de clínicas estéticas ({country}) y quiero hablar.",
+    "waCalc": "Hola Cluster Media, usé la calculadora de clínicas estéticas ({country}) y quiero hablar.",
+    "heroEyebrow": "Para clínicas de medicina estética",
+    "heroTitle": "Convierte más consultas en citas y más citas en tratamientos.",
+    "heroSubtitle": "Centralizamos y automatizamos el seguimiento de tus prospectos desde que llegan por Meta, Google, Instagram, WhatsApp o tu web hasta que reservan, asisten y avanzan hacia un tratamiento.",
+    "heroMicro": "Diagnóstico inicial sin compromiso.",
+    "heroCalcLink": "Explorar calculadora (opcional)",
+    "responseTimePromise": "Respondemos el diagnóstico en menos de 1 día hábil.",
+    "pipelineLabel": "Pipeline de conversión",
+    "pipelineLive": "LIVE UI",
+    "pipelineStages": [
+      "Nueva consulta",
+      "Conversación",
+      "Cita",
+      "Asistencia",
+      "Tratamiento",
+      "Recurrencia"
+    ],
+    "problemEyebrow": "El problema",
+    "problemTitle": "Después de la consulta, el valor se decide en el seguimiento.",
+    "problemIntro": "Las clínicas invierten en Meta, Google e Instagram para conseguir consultas, y luego pierden visibilidad sobre citas, asistencias y tratamientos.",
+    "problems": [
+      {
+        "n": "01",
+        "text": "Una consulta entra fuera de horario y nadie responde hasta el día siguiente."
+      },
+      {
+        "n": "02",
+        "text": "El prospecto pregunta precio, recibe información y desaparece."
+      },
+      {
+        "n": "03",
+        "text": "Reserva una cita, pero nadie confirma correctamente su asistencia."
+      },
+      {
+        "n": "04",
+        "text": "No se presenta y no existe un proceso sistemático para recuperarlo."
+      },
+      {
+        "n": "05",
+        "text": "Recibe una valoración o presupuesto y nadie vuelve a darle seguimiento."
+      },
+      {
+        "n": "06",
+        "text": "Un paciente termina su tratamiento y nunca recibe una campaña de reactivación."
+      }
+    ],
+    "problemClose": "Cada uno de estos puntos representa ingresos potenciales que ya costó dinero generar.",
+    "calcEyebrow": "Calculadora",
+    "calcTitle": "¿Cuánto valor generan realmente tus consultas?",
+    "calcDesc": "Introduce tus números para ver el recorrido actual y el impacto de mejorar unas cuantas etapas del proceso.",
+    "calcQ1": "Consultas nuevas al mes",
+    "calcQ2": "Ticket promedio por tratamiento ({currency})",
+    "calcQ3": "¿Qué porcentaje aproximadamente agenda una cita?",
+    "calcQ4": "¿Qué porcentaje de las citas termina asistiendo?",
+    "calcQ5": "¿Qué porcentaje de quienes asisten compra un tratamiento?",
+    "calcCurrentEyebrow": "Escenario actual",
+    "calcConsultations": "Consultas mensuales",
+    "calcAppointments": "Citas estimadas",
+    "calcAttended": "Asistencias",
+    "calcTreatments": "Tratamientos",
+    "calcRevenue": "Ingresos aproximados",
+    "calcLiftEyebrow": "Si mejoras 5 puntos en varias etapas",
+    "calcLiftText": "Con estos mismos números, el impacto estimado sería de {treatments} tratamientos adicionales y cerca de {revenue}.",
+    "calcOptionalNote": "La calculadora es opcional. Puedes contactarnos sin usarla.",
+    "visEyebrow": "Visibilidad",
+    "visTitle": "Deja de medir solo cuántos leads entran.",
+    "visDesc": "Así se ve un funnel comercial completo: de la inversión publicitaria hasta el tratamiento.",
+    "visRef": "Vista de referencia",
+    "visStats": {
+      "adSpend": "Inversión publicitaria",
+      "consultations": "Consultas",
+      "appointments": "Citas",
+      "attended": "Asistencias",
+      "treatments": "Tratamientos vendidos",
+      "revenue": "Revenue atribuido"
+    },
+    "modulesEyebrow": "El sistema",
+    "modulesTitle": "Un sistema alrededor de todo el recorrido comercial del paciente.",
+    "systemModules": [
+      {
+        "title": "Respuesta inicial",
+        "text": "Atención inmediata a nuevas consultas."
+      },
+      {
+        "title": "Calificación",
+        "text": "Recopila información comercial necesaria antes de intervenir manualmente."
+      },
+      {
+        "title": "Agenda",
+        "text": "Facilita reserva de citas."
+      },
+      {
+        "title": "Recordatorios",
+        "text": "Reduce olvidos y facilita confirmación o reprogramación."
+      },
+      {
+        "title": "Recuperación de no-shows",
+        "text": "Secuencia específica para pacientes que no asistieron."
+      },
+      {
+        "title": "Seguimiento post-valoración",
+        "text": "Mantiene conversación con pacientes que todavía no decidieron iniciar tratamiento."
+      },
+      {
+        "title": "Reactivación",
+        "text": "Vuelve a contactar pacientes anteriores cuando corresponde comercialmente."
+      },
+      {
+        "title": "Reseñas",
+        "text": "Solicitud automatizada a pacientes satisfechos según el flujo definido."
+      },
+      {
+        "title": "Pipeline",
+        "text": "Cada oportunidad tiene una etapa visible."
+      },
+      {
+        "title": "Reporting",
+        "text": "Permite conocer qué canales producen citas y tratamientos."
+      }
+    ],
+    "followEyebrow": "Diferenciador",
+    "followTitle": "El seguimiento continúa después de la valoración.",
+    "followPipeline": [
+      "Consulta",
+      "Cita reservada",
+      "Asistió",
+      "Tratamiento recomendado",
+      "En decisión",
+      "Tratamiento iniciado",
+      "Recurrencia"
+    ],
+    "followUpExamples": [
+      "Seguimiento 24–48 horas después de la valoración",
+      "Recordatorio de propuesta",
+      "Información adicional",
+      "Posibilidad de resolver dudas",
+      "Opciones de financiación si la clínica dispone de ellas",
+      "Intervención humana cuando existe intención"
+    ],
+    "handoffEyebrow": "Intervención humana",
+    "handoffTitle": "Cuando hace falta una persona, el equipo entra.",
+    "handoffExamples": [
+      "Pregunta compleja",
+      "Paciente con intención alta",
+      "Consulta sensible",
+      "Negociación",
+      "Solicitud clínica",
+      "Reclamación"
+    ],
+    "implEyebrow": "Implementación",
+    "implTitle": "Nosotros construimos el sistema contigo.",
+    "implementationSteps": [
+      {
+        "n": "01",
+        "title": "Diagnóstico",
+        "text": "Mapeamos el recorrido comercial actual."
+      },
+      {
+        "n": "02",
+        "title": "Diseño",
+        "text": "Definimos pipeline, mensajes, automatizaciones y reglas."
+      },
+      {
+        "n": "03",
+        "title": "Integración",
+        "text": "Conectamos canales y herramientas necesarias."
+      },
+      {
+        "n": "04",
+        "title": "Lanzamiento",
+        "text": "Probamos todos los escenarios."
+      },
+      {
+        "n": "05",
+        "title": "Optimización",
+        "text": "Analizamos conversiones y ajustamos."
+      }
+    ],
+    "integrationsEyebrow": "Integraciones",
+    "integrationsTitle": "Nos conectamos con tus canales actuales.",
+    "integrations": [
+      "Formularios web",
+      "Meta",
+      "Google",
+      "WhatsApp",
+      "Calendario",
+      "CRM",
+      "Software existente (cuando haya API)"
+    ],
+    "demoEyebrow": "Recorrido",
+    "demoTitle": "Así se organiza una consulta desde el primer mensaje.",
+    "demoLeads": [
+      {
+        "id": "Lead 001",
+        "source": "Meta",
+        "status": "Cita reservada",
+        "next": "Confirmar"
+      },
+      {
+        "id": "Lead 002",
+        "source": "Instagram",
+        "status": "Valoración realizada",
+        "next": "Follow-up"
+      },
+      {
+        "id": "Lead 003",
+        "source": "Google",
+        "status": "No-show",
+        "next": "Recuperación"
+      }
+    ],
+    "demoNextLabel": "Siguiente",
+    "sources": [
+      "Meta",
+      "Google",
+      "Instagram",
+      "Web",
+      "WhatsApp"
+    ],
+    "priceEyebrow": "Inversión",
+    "priceTitle": "Implementación adaptada a tu clínica.",
+    "priceDesc": "El precio depende de volumen, canales, usuarios, automatizaciones, integraciones, AI y telefonía.",
+    "priceProvisional": "Precio provisional",
+    "priceFrom": "Desde {amount}",
+    "priceNote": "Clínicas con varios centros o alto volumen: precio personalizado.",
+    "contactEyebrow": "Contacto",
+    "contactTitle": "Hablemos de tu proceso de conversión",
+    "contactDesc": "WhatsApp o llamada directa. Si prefieres, déjanos tus datos y te escribimos.",
+    "faqEyebrow": "FAQ",
+    "faqTitle": "Preguntas frecuentes",
+    "faqs": [
+      {
+        "q": "¿Esto reemplaza nuestro software clínico?",
+        "a": "Opera como capa de captación y seguimiento comercial. La historia clínica permanece en tu software clínico."
+      },
+      {
+        "q": "¿Tenemos que cambiar nuestro WhatsApp?",
+        "a": "Depende de la infraestructura actual y de la solución diseñada para tu clínica."
+      },
+      {
+        "q": "¿Puede responder una persona?",
+        "a": "Sí. Recepción y comerciales pueden tomar cualquier conversación en el momento que haga falta."
+      },
+      {
+        "q": "¿La IA responde preguntas médicas?",
+        "a": "Las preguntas clínicas se derivan al personal correspondiente. El sistema se configura para respetar el criterio médico."
+      },
+      {
+        "q": "¿Sirve si hacemos publicidad en Meta y Google?",
+        "a": "Sí. Está pensado para clínicas que ya invierten en captación y necesitan control sobre citas y tratamientos."
+      },
+      {
+        "q": "¿Puede identificar qué campaña generó una cita?",
+        "a": "Con las integraciones adecuadas se puede rastrear de anuncio a lead, cita y cliente."
+      },
+      {
+        "q": "¿Puede ayudar con pacientes antiguos?",
+        "a": "Sí, con base legal y consentimiento adecuados para esas comunicaciones."
+      },
+      {
+        "q": "¿Es simplemente un chatbot?",
+        "a": "El chatbot puede ser un componente. El núcleo es el proceso comercial completo: seguimiento, citas, recuperación y reporting."
+      }
+    ],
+    "graciasTitle": "Recibimos tus datos.",
+    "graciasText": "Si prefieres, agenda una llamada o escríbenos por WhatsApp ahora mismo.",
+    "graciasMarket": "Mercado: {country} · Respondemos en menos de 1 día hábil.",
+    "graciasBack": "Volver a la landing",
+    "graciasEyebrow": "Mensaje recibido",
+    "followDesc": "Otras soluciones se detienen cuando el paciente agenda. Aquí el pipeline sigue hasta tratamiento y recurrencia.",
+    "followClose": "El seguimiento comercial corre alrededor del proceso clínico, sin sustituir el criterio médico del equipo.",
+    "financeEyebrow": "Financiación",
+    "financeTitle": "Cuando el paciente necesita tiempo, el seguimiento sigue.",
+    "financeDesc": "Si la clínica trabaja con financiación, el sistema acompaña ese flujo con tu proveedor o proceso interno.",
+    "financeItems": [
+      "Enviar información de financiación",
+      "Mostrar cuotas orientativas",
+      "Enlace al proceso financiero externo",
+      "Seguimiento posterior",
+      "Notificar al equipo cuando hay interés",
+      "Integración con proveedor o flujo interno"
+    ],
+    "privacyTitle": "La historia clínica queda en tu software clínico.",
+    "privacyDesc": "Cluster opera como capa de captación y seguimiento comercial. Diagnósticos, historiales, fotografías clínicas y documentación sanitaria permanecen fuera de este sistema.",
+    "clinicalSoftLabel": "Software clínico",
+    "clinicalSoftItems": [
+      "Historia médica",
+      "Diagnóstico",
+      "Documentación sanitaria",
+      "Tratamientos clínicos"
+    ],
+    "clusterSystemLabel": "Cluster Conversion System",
+    "clusterSystemItems": [
+      "Prospectos",
+      "Campañas",
+      "Conversaciones",
+      "Citas",
+      "Pipeline comercial",
+      "Seguimiento"
+    ],
+    "toolsEyebrow": "Herramientas",
+    "toolsTitle": "Trabajamos con lo que la clínica ya usa.",
+    "toolsDesc": "La solución se diseña alrededor de los canales y herramientas actuales.",
+    "toolsClose": "Conectamos el proceso comercial alrededor de tu stack: formularios, Meta, Google, WhatsApp, calendario y CRM cuando exista integración.",
+    "demoDesc": "Cada paso deja rastro en el pipeline para recepción y seguimiento.",
+    "demoSteps": [
+      {
+        "t": "22:47",
+        "d": "“Hola, quería información sobre tratamiento facial.”"
+      },
+      {
+        "t": "Respuesta",
+        "d": "Atención inmediata y preguntas iniciales."
+      },
+      {
+        "t": "Cita",
+        "d": "Reserva, confirmación y alerta a recepción."
+      },
+      {
+        "t": "Seguimiento",
+        "d": "Pipeline actualizado y follow-up post-valoración."
+      }
+    ],
+    "demoClose": "Todo queda ordenado: menos conversaciones sueltas, más control comercial.",
+    "handoffDesc": "El sistema ordena el trabajo previo; recepción y comerciales toman las conversaciones que lo requieren.",
+    "handoffAutoLabel": "Automatización",
+    "handoffAutoTitle": "Capa comercial",
+    "handoffAutoItems": [
+      "Respuesta inicial",
+      "Calificación y agenda",
+      "Recordatorios y recuperación",
+      "Seguimiento rutinario"
+    ],
+    "handoffTeamLabel": "Equipo de la clínica",
+    "handoffTeamTitle": "Intervención humana",
+    "handoffClose": "El personal decide el cierre; el sistema mantiene el pipeline visible.",
+    "dashEyebrow": "Dashboard",
+    "dashTitle": "Visibilidad comercial en un solo lugar.",
+    "dashDesc": "Consultas, citas, asistencias y tratamientos por fuente, con la próxima acción de cada oportunidad.",
+    "dashRef": "Vista de referencia",
+    "dashStatConsultations": "Consultas",
+    "dashStatAppointments": "Citas",
+    "dashStatAttendance": "Asistencia",
+    "dashStatTreatments": "Tratamientos iniciados",
+    "dashStatValue": "Valor atribuido",
+    "tablePatient": "Paciente",
+    "tableSource": "Fuente",
+    "tableStatus": "Estado",
+    "tableNext": "Próxima acción",
+    "trustEyebrow": "Confianza",
+    "trustTitle": "Un equipo real detrás de la implementación.",
+    "trustDesc": "Diseñamos e implementamos el sistema alrededor del proceso comercial de tu clínica, con soporte en español.",
+    "trustItems": [
+      "Desarrollo e integración",
+      "Soporte humano",
+      "Comunicación en español",
+      "Acompañamiento de implementación",
+      "Optimización post-lanzamiento"
+    ],
+    "casesEyebrow": "Casos",
+    "casesTitle": "Métricas de clínicas publicadas con evidencia.",
+    "casesDesc": "Cuando haya resultados documentados de consultas, citas y tratamientos, aparecerán aquí con el contexto de cada clínica.",
+    "funnelMeta": "Meta Ads",
+    "funnelConsulta": "Consulta",
+    "funnelCita": "Cita",
+    "funnelAsistencia": "Asistencia",
+    "funnelTratamiento": "Tratamiento"
   }
 }

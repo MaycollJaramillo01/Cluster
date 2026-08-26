@@ -8,7 +8,7 @@ export const landingMeta = {
 export const heroCopy = {
   eyebrow: 'Para agencias y desarrolladores inmobiliarios',
   headline:
-    'Tus leads inmobiliarios deberían recibir seguimiento antes de que terminen hablando con otra agencia.',
+    'Tus prospectos deben recibir seguimiento antes que terminen en otra inmobiliaria.',
   subheadline:
     'Centralizamos, calificamos y automatizamos el seguimiento de oportunidades provenientes de portales, campañas, WhatsApp y tu website para que tu equipo comercial se concentre en los compradores con mayor intención.',
   cta: 'Analizar mi proceso comercial',

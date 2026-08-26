@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { MinimalContactForm } from '@/components/landings/MinimalContactForm';
 import type { CountryConfig } from '@/lib/clinicas-esteticas/types';
 import { getClinicasCalculatorSnapshot } from '@/lib/clinicas-esteticas/calculatorStore';
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export function ContactBlock({ country }: Props) {
+  const t = useTranslations('ClinicasEsteticas');
+
   return (
     <MinimalContactForm
       meta={{
@@ -21,7 +24,7 @@ export function ContactBlock({ country }: Props) {
         country: country.code,
         landingPath: country.path,
       }}
-      whatsappMessage={`Hola Cluster Media, vi la landing de clínicas estéticas (${country.name}) y quiero hablar sobre el sistema de conversión.`}
+      whatsappMessage={t('waLanding', { country: country.name })}
       graciasPath="/clinicas-esteticas/gracias"
       tracking={{
         captureUtms,

@@ -1,32 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Section, SectionHeading, Eyebrow } from '@/components/ui/Section';
 import { Reveal } from '@/components/ui/Reveal';
 import { FAQ } from '@/components/blocks/FAQ';
 import { PipelineCalculator } from './PipelineCalculator';
 import { ContactBlock } from './ContactBlock';
-import { LandingChrome } from './LandingChrome';
+import { LandingChrome } from '@/components/landings/LandingChrome';
 import { DualCtas } from '@/components/landings/DualCtas';
 import type { CountryConfig } from '@/lib/inmobiliarias/types';
 import { formatMoney, countryCodes, countries } from '@/lib/inmobiliarias/countries';
-import {
-  assignmentVars,
-  discardReasons,
-  faqs,
-  heroCopy,
-  implementationSteps,
-  landingMeta,
-  leadScores,
-  nurturingBuckets,
-  pipelineStages,
-  postVisitFlow,
-  problemBlocks,
-  qualificationFields,
-  responseTimePromise,
-  responseTimes,
-  visitFeatures,
-} from '@/lib/inmobiliarias/content';
 import { site, whatsappLink } from '@/lib/site';
 import { trackEvent } from '@/lib/inmobiliarias/tracking';
 
@@ -35,7 +19,46 @@ type Props = {
 };
 
 export function InmobiliariasLanding({ country }: Props) {
-  const waMsg = `Hola Cluster Media, vi la landing de inmobiliarias (${country.name}) y quiero hablar sobre el sistema de conversión de leads.`;
+  const t = useTranslations('Inmobiliarias');
+  const tc = useTranslations('Common');
+  const tn = useTranslations('Nav');
+
+  const problems = t.raw('problems') as { n: string; text: string }[];
+  const qualificationFields = t.raw('qualificationFields') as string[];
+  const leadScores = t.raw('leadScores') as { level: string; text: string }[];
+  const assignmentVars = t.raw('assignmentVars') as string[];
+  const visitFeatures = t.raw('visitFeatures') as string[];
+  const postVisitFlow = t.raw('postVisitFlow') as { day: string; text: string }[];
+  const nurturingBuckets = t.raw('nurturingBuckets') as {
+    range: string;
+    label: string;
+  }[];
+  const discardReasons = t.raw('discardReasons') as string[];
+  const projectSteps = t.raw('projectSteps') as string[];
+  const intlSteps = t.raw('intlSteps') as string[];
+  const dashStats = t.raw('dashStats') as {
+    leads: string;
+    contacted: string;
+    qualified: string;
+    visits: string;
+    negotiations: string;
+    reservations: string;
+    sales: string;
+  };
+  const dashSources = t.raw('dashSources') as string[];
+  const dashAgents = t.raw('dashAgents') as string[];
+  const responseTimes = t.raw('responseTimes') as { id: string; time: string }[];
+  const implementationSteps = t.raw('implementationSteps') as {
+    n: string;
+    title: string;
+    text: string;
+  }[];
+  const demoSteps = t.raw('demoSteps') as { t: string; d: string }[];
+  const handoffAutoItems = t.raw('handoffAutoItems') as string[];
+  const handoffAgentItems = t.raw('handoffAgentItems') as string[];
+  const faqs = t.raw('faqs') as { q: string; a: string }[];
+
+  const waMsg = t('waLanding', { country: country.name });
 
   const trackWa = (source: string) =>
     trackEvent('WhatsAppClick', { country: country.code, source });
@@ -44,7 +67,11 @@ export function InmobiliariasLanding({ country }: Props) {
 
   return (
     <div className="inmobiliarias-landing pt-[76px]">
-      <LandingChrome country={country} />
+      <LandingChrome
+        vertical="inmobiliarias"
+        marketId={country.code}
+        whatsappMessage={waMsg}
+      />
 
       <nav
         aria-label="Breadcrumb"
@@ -52,11 +79,11 @@ export function InmobiliariasLanding({ country }: Props) {
       >
         <div className="container-x flex flex-wrap items-center gap-2 py-3 font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
           <Link href="/" className="hover:text-accent">
-            Inicio
+            {tc('home')}
           </Link>
           <span>/</span>
           <Link href="/inmobiliarias" className="hover:text-accent">
-            Inmobiliarias
+            {t('crumb')}
           </Link>
           <span>/</span>
           <span className="text-fg">{country.name}</span>
@@ -65,7 +92,7 @@ export function InmobiliariasLanding({ country }: Props) {
 
       <div className="theme-dark border-b border-line bg-ink-900">
         <div className="container-x flex flex-wrap items-center gap-2 py-3">
-          <span className="mono-label text-faint">Mercado</span>
+          <span className="mono-label text-faint">{tc('market')}</span>
           {countryCodes.map((code) => {
             const c = countries[code];
             const active = code === country.code;
@@ -91,12 +118,12 @@ export function InmobiliariasLanding({ country }: Props) {
         <Atmosphere />
         <div className="container-x relative z-[1] grid gap-12 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-28">
           <Reveal>
-            <Eyebrow>{heroCopy.eyebrow}</Eyebrow>
+            <Eyebrow>{t('heroEyebrow')}</Eyebrow>
             <h1 className="mt-5 max-w-3xl text-4xl sm:text-5xl lg:text-6xl xl:text-[4.25rem]">
-              {heroCopy.headline}
+              {t('heroTitle')}
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
-              {heroCopy.subheadline}
+              {t('heroSubtitle')}
             </p>
             <div className="mt-8">
               <DualCtas
@@ -105,11 +132,14 @@ export function InmobiliariasLanding({ country }: Props) {
                 onSchedule={() => trackCal('hero')}
               />
             </div>
-            <p className="mt-4 text-sm text-faint">{heroCopy.micro}</p>
-            <p className="mt-2 text-sm text-accent">{responseTimePromise}</p>
+            <p className="mt-4 text-sm text-faint">{t('heroMicro')}</p>
+            <p className="mt-2 text-sm text-accent">{t('responseTimePromise')}</p>
             <p className="mt-4">
-              <a href="#calculadora" className="text-sm text-muted link-underline hover:text-accent">
-                Explorar calculadora (opcional)
+              <a
+                href="#calculadora"
+                className="text-sm text-muted link-underline hover:text-accent"
+              >
+                {t('heroCalcLink')}
               </a>
             </p>
           </Reveal>
@@ -122,34 +152,33 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* PROBLEM */}
       <Section tone="light" id="problema">
         <SectionHeading
-          eyebrow="El problema"
-          title="El lead no espera a que tu agente tenga tiempo."
-          description="Muchas inmobiliarias ya reciben contactos. El cuello de botella está en respuesta, asignación, visitas y seguimiento."
+          eyebrow={t('problemEyebrow')}
+          title={t('problemTitle')}
+          description={t('problemIntro')}
         />
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {problemBlocks.map((block, i) => (
+          {problems.map((block, i) => (
             <Reveal
               key={block.n}
               delay={i * 50}
               className="border border-line bg-paper p-6 lg:last:col-span-2"
             >
               <span className="font-mono text-xs text-accent">{block.n}</span>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink/80">{block.text}</p>
+              <p className="mt-3 text-[15px] leading-relaxed text-ink/80">
+                {block.text}
+              </p>
             </Reveal>
           ))}
         </div>
-        <p className="mt-10 max-w-2xl text-lg text-muted">
-          En inmobiliario, la velocidad importa. La persistencia y la organización
-          importan todavía más.
-        </p>
+        <p className="mt-10 max-w-2xl text-lg text-muted">{t('problemClose')}</p>
       </Section>
 
       {/* CALCULATOR */}
       <Section tone="dark" id="calculadora">
         <SectionHeading
-          eyebrow="Calculadora"
-          title="¿Cuánto valor comercial pasa por tu pipeline cada mes?"
-          description="Estima visitas y operaciones a partir de tus números. El valor del inmueble ilustra volumen; la comisión es opcional."
+          eyebrow={t('calcEyebrow')}
+          title={t('calcTitle')}
+          description={t('calcDesc')}
         />
         <div className="mt-12">
           <PipelineCalculator country={country} />
@@ -159,9 +188,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* MULTICHANNEL */}
       <Section tone="soft" id="multicanal">
         <SectionHeading
-          eyebrow="Multicanal"
-          title="Tus oportunidades llegan por muchos lugares. Tu equipo debería verlas en uno."
-          description="Según las integraciones disponibles, centralizamos o conectamos los puntos de entrada para un proceso comercial más consistente."
+          eyebrow={t('multiEyebrow')}
+          title={t('multiTitle')}
+          description={t('multiDesc')}
         />
         <Reveal className="mt-12">
           <div className="flex flex-wrap gap-2">
@@ -176,26 +205,21 @@ export function InmobiliariasLanding({ country }: Props) {
           </div>
           <div className="my-6 font-mono text-sm text-accent">↓</div>
           <div className="border border-accent/40 bg-ink-900 px-5 py-4 text-fg">
-            <p className="mono-label text-accent">Cluster Conversion System</p>
-            <p className="mt-2 text-sm text-muted">
-              Captación · calificación · asignación · visitas · seguimiento
-            </p>
+            <p className="mono-label text-accent">{t('multiSystemLabel')}</p>
+            <p className="mt-2 text-sm text-muted">{t('multiSystemText')}</p>
           </div>
           <div className="my-6 font-mono text-sm text-accent">↓</div>
-          <p className="text-sm text-muted">Agentes y dirección comercial</p>
-          <p className="mt-4 max-w-2xl text-sm text-faint">
-            La conexión directa con cada portal se confirma según API disponible
-            en el mercado.
-          </p>
+          <p className="text-sm text-muted">{t('multiAgents')}</p>
+          <p className="mt-4 max-w-2xl text-sm text-faint">{t('multiApiNote')}</p>
         </Reveal>
       </Section>
 
       {/* SPEED RESPONSE */}
       <Section tone="dark" id="respuesta">
         <SectionHeading
-          eyebrow="Respuesta inicial"
-          title="El primer agente que responde suele tener ventaja."
-          description="Cuando entra una consulta: respuesta inicial, confirmación de interés, recopilación de datos, intención y asignación al comercial adecuado."
+          eyebrow={t('responseEyebrow')}
+          title={t('responseTitle')}
+          description={t('responseDesc')}
         />
         <div className="mt-10 flex flex-wrap gap-2">
           {qualificationFields.map((f) => (
@@ -212,9 +236,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* SCORING */}
       <Section tone="light" id="scoring">
         <SectionHeading
-          eyebrow="Lead scoring"
-          title="No todos los leads tienen la misma intención."
-          description="El equipo prioriza las oportunidades HOT y mantiene seguimiento sobre WARM y LONG TERM."
+          eyebrow={t('scoringEyebrow')}
+          title={t('scoringTitle')}
+          description={t('scoringDesc')}
         />
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           {leadScores.map((s, i) => (
@@ -224,7 +248,9 @@ export function InmobiliariasLanding({ country }: Props) {
               className="border border-line bg-paper p-6"
             >
               <p className="mono-label text-accent">{s.level}</p>
-              <p className="mt-4 text-[15px] leading-relaxed text-ink/80">{s.text}</p>
+              <p className="mt-4 text-[15px] leading-relaxed text-ink/80">
+                {s.text}
+              </p>
             </Reveal>
           ))}
         </div>
@@ -233,8 +259,8 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* ASSIGNMENT */}
       <Section tone="soft" id="asignacion">
         <SectionHeading
-          eyebrow="Asignación"
-          title="El lead correcto, al agente correcto."
+          eyebrow={t('assignEyebrow')}
+          title={t('assignTitle')}
         />
         <div className="mt-10 flex flex-wrap gap-2">
           {assignmentVars.map((v) => (
@@ -248,13 +274,17 @@ export function InmobiliariasLanding({ country }: Props) {
         </div>
         <Reveal className="mt-10 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
           <div className="border border-line bg-paper p-5">
-            <p className="mono-label text-faint">Lead</p>
+            <p className="mono-label text-faint">{t('assignLeadLabel')}</p>
             <p className="mt-3 text-sm text-ink">{country.assignmentExample.lead}</p>
           </div>
-          <span className="hidden text-center font-mono text-accent md:block">→</span>
+          <span className="hidden text-center font-mono text-accent md:block">
+            →
+          </span>
           <div className="border border-accent/40 bg-paper p-5">
-            <p className="mono-label text-accent">Asignación</p>
-            <p className="mt-3 text-sm text-ink">{country.assignmentExample.agent}</p>
+            <p className="mono-label text-accent">{t('assignAgentLabel')}</p>
+            <p className="mt-3 text-sm text-ink">
+              {country.assignmentExample.agent}
+            </p>
           </div>
         </Reveal>
       </Section>
@@ -262,13 +292,16 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* VISITS */}
       <Section tone="dark" id="visitas">
         <SectionHeading
-          eyebrow="Visitas"
-          title="Convertir conversaciones en visitas."
-          description="Agenda, confirmaciones, recordatorios y, tras la visita, movimiento automático a Follow-Up Post Visit."
+          eyebrow={t('visitsEyebrow')}
+          title={t('visitsTitle')}
+          description={t('visitsDesc')}
         />
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {visitFeatures.map((f) => (
-            <div key={f} className="border border-line bg-surface px-4 py-4 text-sm text-muted">
+            <div
+              key={f}
+              className="border border-line bg-surface px-4 py-4 text-sm text-muted"
+            >
               {f}
             </div>
           ))}
@@ -278,9 +311,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* POST VISIT */}
       <Section tone="light" id="post-visita">
         <SectionHeading
-          eyebrow="Después de la visita"
-          title="El seguimiento post-visita define si hay segunda oportunidad."
-          description="Si la propiedad no encaja, el comprador sigue en el pipeline con property matching y alternativas."
+          eyebrow={t('postVisitEyebrow')}
+          title={t('postVisitTitle')}
+          description={t('postVisitDesc')}
         />
         <div className="mt-12 grid gap-8 lg:grid-cols-2">
           <Reveal className="space-y-3">
@@ -295,11 +328,9 @@ export function InmobiliariasLanding({ country }: Props) {
             ))}
           </Reveal>
           <Reveal delay={80} className="border border-line bg-paper p-6">
-            <p className="mono-label text-muted">Property matching</p>
+            <p className="mono-label text-muted">{t('matchingBlurbLabel')}</p>
             <p className="mt-4 text-[15px] leading-relaxed text-ink/80">
-              Propiedades similares, nuevo inventario, cambios de precio y
-              alternativas — el lead permanece activo aunque descarte la unidad
-              inicial.
+              {t('matchingBlurb')}
             </p>
           </Reveal>
         </div>
@@ -308,13 +339,17 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* NURTURING */}
       <Section tone="dark" id="nurturing">
         <SectionHeading
-          eyebrow="Nurturing"
-          title="Quien busca en seis meses también necesita un proceso."
-          description="Mantener presencia con nuevas propiedades, cambios, financiación y contacto periódico — sin depender de la memoria del agente."
+          eyebrow={t('nurtureEyebrow')}
+          title={t('nurtureTitle')}
+          description={t('nurtureDesc')}
         />
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {nurturingBuckets.map((b, i) => (
-            <Reveal key={b.range} delay={i * 40} className="border border-line bg-surface p-5">
+            <Reveal
+              key={b.range}
+              delay={i * 40}
+              className="border border-line bg-surface p-5"
+            >
               <p className="mono-label text-accent">{b.range}</p>
               <p className="mt-3 text-sm text-muted">{b.label}</p>
             </Reveal>
@@ -325,9 +360,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* BUYER MATCHING */}
       <Section tone="soft" id="matching">
         <SectionHeading
-          eyebrow="Buyer matching"
-          title="Una propiedad descartada. Un comprador que sigue activo."
-          description="Capturamos el motivo del descarte, segmentamos y alertamos al agente con nuevas alternativas."
+          eyebrow={t('buyerEyebrow')}
+          title={t('buyerTitle')}
+          description={t('buyerDesc')}
         />
         <div className="mt-10 flex flex-wrap gap-2">
           {discardReasons.map((r) => (
@@ -344,19 +379,13 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* DEVELOPERS */}
       <Section tone="light" id="desarrolladores">
         <SectionHeading
-          eyebrow="Proyectos"
-          title="Especialmente potente para proyectos con alto volumen de leads."
-          description="De la campaña al lead calificado, a la distribución comercial, visita/demo y reserva."
+          eyebrow={t('projectsEyebrow')}
+          title={t('projectsTitle')}
+          description={t('projectsDesc')}
         />
         <Reveal className="mt-12 border border-line bg-paper p-6 sm:p-8">
           <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {[
-              'Campañas Meta / Google',
-              'Volumen de leads',
-              'Calificación automática',
-              'Distribución comercial',
-              'Visita → reserva',
-            ].map((step, i) => (
+            {projectSteps.map((step, i) => (
               <li key={step}>
                 <p className="font-mono text-[10px] text-accent">
                   {String(i + 1).padStart(2, '0')}
@@ -372,22 +401,16 @@ export function InmobiliariasLanding({ country }: Props) {
       {country.showInternationalBuyer && (
         <Section tone="dark" id="internacional">
           <SectionHeading
-            eyebrow="Comprador internacional"
-            title="Vender propiedades a distancia exige un proceso distinto."
-            description="País de residencia, inversión o vivienda, presupuesto, financiación, fecha de viaje, Zoom, preferencias y documentación inicial."
+            eyebrow={t('intlEyebrow')}
+            title={t('intlTitle')}
+            description={t('intlDesc')}
           />
           <Reveal className="mt-12 flex flex-wrap items-center gap-2 text-sm text-muted">
-            {[
-              'Lead internacional',
-              'WhatsApp',
-              'Calificación',
-              'Videollamada',
-              'Propiedades',
-              'Visita futura',
-              'Seguimiento',
-            ].map((step, i, arr) => (
+            {intlSteps.map((step, i, arr) => (
               <span key={step} className="inline-flex items-center gap-2">
-                <span className="border border-line bg-surface px-3 py-2">{step}</span>
+                <span className="border border-line bg-surface px-3 py-2">
+                  {step}
+                </span>
                 {i < arr.length - 1 && <span className="text-accent">→</span>}
               </span>
             ))}
@@ -398,28 +421,44 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* DASHBOARD */}
       <Section tone="soft" id="dashboard">
         <SectionHeading
-          eyebrow="Dashboard"
-          title="Mira el pipeline comercial, no solamente el número de leads."
-          description="Leads, contactados, calificados, visitas, negociaciones, reservas y ventas — por fuente y por agente."
+          eyebrow={t('dashEyebrow')}
+          title={t('dashTitle')}
+          description={t('dashDesc')}
         />
         <Reveal className="mt-12 border border-line bg-paper p-6 sm:p-8">
           <div className="mb-6 inline-flex border border-line bg-paper-soft px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-            Vista de referencia
+            {t('dashRef')}
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat label="Leads nuevos" value={String(country.demo.leads)} />
-            <Stat label="Contactados" value={String(country.demo.contacted)} />
-            <Stat label="Calificados" value={String(country.demo.qualified)} />
-            <Stat label="Visitas" value={String(country.demo.visits)} />
-            <Stat label="Negociaciones" value={String(country.demo.negotiations)} />
-            <Stat label="Reservas" value={String(country.demo.reservations)} />
-            <Stat label="Ventas" value={String(country.demo.sales)} accent />
+            <Stat label={dashStats.leads} value={String(country.demo.leads)} />
+            <Stat
+              label={dashStats.contacted}
+              value={String(country.demo.contacted)}
+            />
+            <Stat
+              label={dashStats.qualified}
+              value={String(country.demo.qualified)}
+            />
+            <Stat label={dashStats.visits} value={String(country.demo.visits)} />
+            <Stat
+              label={dashStats.negotiations}
+              value={String(country.demo.negotiations)}
+            />
+            <Stat
+              label={dashStats.reservations}
+              value={String(country.demo.reservations)}
+            />
+            <Stat
+              label={dashStats.sales}
+              value={String(country.demo.sales)}
+              accent
+            />
           </div>
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <div>
-              <p className="mono-label text-faint">Por fuente</p>
+              <p className="mono-label text-faint">{t('dashBySource')}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {['Meta', 'Google', 'Portal A', 'Portal B', 'Website'].map((s) => (
+                {dashSources.map((s) => (
                   <span
                     key={s}
                     className="border border-line px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted"
@@ -430,9 +469,9 @@ export function InmobiliariasLanding({ country }: Props) {
               </div>
             </div>
             <div>
-              <p className="mono-label text-faint">Por agente</p>
+              <p className="mono-label text-faint">{t('dashByAgent')}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                {['Agente 1', 'Agente 2', 'Agente 3'].map((s) => (
+                {dashAgents.map((s) => (
                   <span
                     key={s}
                     className="border border-line px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted"
@@ -443,19 +482,16 @@ export function InmobiliariasLanding({ country }: Props) {
               </div>
             </div>
           </div>
-          <p className="mt-6 text-sm text-faint">
-            Métricas: tiempo de respuesta · lead → visita · visita → reserva ·
-            reserva → venta
-          </p>
+          <p className="mt-6 text-sm text-faint">{t('dashMetrics')}</p>
         </Reveal>
       </Section>
 
       {/* SPEED TO LEAD */}
       <Section tone="dark" id="speed">
         <SectionHeading
-          eyebrow="Speed-to-lead"
-          title="Saber cuánto tardas en responder puede cambiar tu operación."
-          description="Cuando la infraestructura lo permite, el sistema mide tiempos de respuesta por lead."
+          eyebrow={t('speedEyebrow')}
+          title={t('speedTitle')}
+          description={t('speedDesc')}
         />
         <Reveal className="mt-10 max-w-xl border border-line bg-surface">
           <ul>
@@ -470,8 +506,10 @@ export function InmobiliariasLanding({ country }: Props) {
             ))}
           </ul>
           <div className="border-t border-line px-5 py-4">
-            <p className="mono-label text-faint">Average response time</p>
-            <p className="mt-2 font-mono text-lg text-fg">Medible por operación</p>
+            <p className="mono-label text-faint">{t('avgResponseLabel')}</p>
+            <p className="mt-2 font-mono text-lg text-fg">
+              {t('avgResponseValue')}
+            </p>
           </div>
         </Reveal>
       </Section>
@@ -479,22 +517,26 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* CRM */}
       <Section tone="light" id="crm">
         <SectionHeading
-          eyebrow="Herramientas"
-          title="Tu CRM actual puede quedarse. Nosotros trabajamos la capa comercial."
-          description="Software inmobiliario, MLS, portal, CRM o ERP: conectamos captación, automatización, conversión y seguimiento cuando sea técnicamente viable."
+          eyebrow={t('crmEyebrow')}
+          title={t('crmTitle')}
+          description={t('crmDesc')}
         />
       </Section>
 
       {/* IMPLEMENTATION */}
       <Section tone="soft" id="implementacion">
         <SectionHeading
-          eyebrow="Implementación"
-          title="Diseñamos e implementamos el proceso contigo."
-          description="Lo importante es lo que ocurre dentro del pipeline: etapas, reglas y seguimiento."
+          eyebrow={t('implEyebrow')}
+          title={t('implTitle')}
+          description={t('implDesc')}
         />
         <div className="mt-12 grid gap-4 md:grid-cols-5">
           {implementationSteps.map((step, i) => (
-            <Reveal key={step.n} delay={i * 40} className="border border-line bg-paper p-5">
+            <Reveal
+              key={step.n}
+              delay={i * 40}
+              className="border border-line bg-paper p-5"
+            >
               <span className="font-mono text-xs text-accent">{step.n}</span>
               <h3 className="mt-3 font-display text-2xl normal-case tracking-normal">
                 {step.title}
@@ -505,23 +547,12 @@ export function InmobiliariasLanding({ country }: Props) {
         </div>
       </Section>
 
-      {/* FLOW DEMO (no video placeholder) */}
+      {/* FLOW DEMO */}
       <Section tone="dark" id="demo">
-        <SectionHeading
-          eyebrow="Recorrido"
-          title="Así se organiza un nuevo comprador desde el primer mensaje."
-        />
+        <SectionHeading eyebrow={t('demoEyebrow')} title={t('demoTitle')} />
         <Reveal className="mt-12">
           <ol className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                t: '22:34',
-                d: '“Interesado en apartamentos en Punta Cana para inversión.”',
-              },
-              { t: 'Calificación', d: 'Presupuesto, plazo e intención.' },
-              { t: 'HOT', d: 'Asignación al agente y agenda Zoom.' },
-              { t: 'Pipeline', d: 'Oportunidad lista para el equipo comercial.' },
-            ].map((step) => (
+            {demoSteps.map((step) => (
               <li
                 key={step.t}
                 className="border border-line bg-surface p-5 transition-colors hover:border-accent/40"
@@ -537,26 +568,26 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* HANDOFF */}
       <Section tone="light" id="handoff">
         <SectionHeading
-          eyebrow="Human handoff"
-          title="El sistema ordena. El agente asesora y cierra."
+          eyebrow={t('handoffEyebrow')}
+          title={t('handoffTitle')}
         />
         <div className="mt-12 grid gap-4 lg:grid-cols-2">
           <Reveal className="border border-line bg-paper p-7">
-            <p className="mono-label text-muted">Automatización</p>
+            <p className="mono-label text-muted">{t('handoffAutoLabel')}</p>
             <ul className="mt-5 space-y-2 text-sm text-ink/75">
-              {['Responde', 'Califica', 'Organiza', 'Recuerda'].map((i) => (
-                <li key={i} className="border-b border-line py-2">
-                  {i}
+              {handoffAutoItems.map((item) => (
+                <li key={item} className="border-b border-line py-2">
+                  {item}
                 </li>
               ))}
             </ul>
           </Reveal>
           <Reveal delay={60} className="border border-line bg-paper p-7">
-            <p className="mono-label text-accent">Agente</p>
+            <p className="mono-label text-accent">{t('handoffAgentLabel')}</p>
             <ul className="mt-5 space-y-2 text-sm text-ink/75">
-              {['Asesora', 'Negocia', 'Genera confianza', 'Vende'].map((i) => (
-                <li key={i} className="border-b border-line py-2">
-                  {i}
+              {handoffAgentItems.map((item) => (
+                <li key={item} className="border-b border-line py-2">
+                  {item}
                 </li>
               ))}
             </ul>
@@ -567,9 +598,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* REACTIVATION */}
       <Section tone="dark" id="reactivacion">
         <SectionHeading
-          eyebrow="Reactivación"
-          title="¿Cuántos leads tienes guardados que nadie volvió a contactar?"
-          description="Segmentación por antigüedad y tipo (compradores, vendedores, inversionistas, alquiler, proyectos), según consentimiento aplicable."
+          eyebrow={t('reactEyebrow')}
+          title={t('reactTitle')}
+          description={t('reactDesc')}
         />
         <div className="mt-8">
           <DualCtas
@@ -583,28 +614,25 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* SELLERS optional */}
       <Section tone="soft" id="captacion">
         <SectionHeading
-          eyebrow="Módulo opcional"
-          title="También puede trabajar del lado de captación de propiedades."
-          description="Valoración → llamada → reunión → captación. El foco inicial del sistema sigue siendo la conversión de buyer leads."
+          eyebrow={t('sellersEyebrow')}
+          title={t('sellersTitle')}
+          description={t('sellersDesc')}
         />
       </Section>
 
       {/* PRICING */}
       <Section tone="light" id="precio">
         <SectionHeading
-          eyebrow="Inversión"
-          title="La implementación depende de tu estructura comercial."
-          description="Agentes, canales, volumen, proyectos, integraciones, países, WhatsApp, telefonía, AI y workflows."
+          eyebrow={t('priceEyebrow')}
+          title={t('priceTitle')}
+          description={t('priceDesc')}
         />
         <Reveal className="mt-10 max-w-xl border border-line bg-paper p-8">
-          <p className="mono-label text-accent">Precio provisional</p>
+          <p className="mono-label text-accent">{t('priceProvisional')}</p>
           <p className="mt-4 font-display text-4xl text-ink sm:text-5xl">
-            Desde {formatMoney(country.setupFrom, country)}
+            {t('priceFrom', { amount: formatMoney(country.setupFrom, country) })}
           </p>
-          <p className="mt-2 text-sm text-muted">
-            Desarrolladores y equipos grandes: precio personalizado. Mensualidad
-            configurable.
-          </p>
+          <p className="mt-2 text-sm text-muted">{t('priceNote')}</p>
           <DualCtas
             className="mt-6"
             size="md"
@@ -618,9 +646,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* SOCIAL */}
       <Section tone="dark" id="casos">
         <SectionHeading
-          eyebrow="Casos"
-          title="Métricas publicadas con evidencia de pipeline."
-          description="Cuando haya resultados documentados de respuesta, visitas, reservas y ventas, aparecerán aquí con contexto."
+          eyebrow={t('casesEyebrow')}
+          title={t('casesTitle')}
+          description={t('casesDesc')}
         />
         <div className="mt-8">
           <DualCtas
@@ -634,9 +662,9 @@ export function InmobiliariasLanding({ country }: Props) {
       {/* CONTACTO */}
       <Section tone="soft" id="contacto">
         <SectionHeading
-          eyebrow="Contacto"
-          title="Hablemos de tu pipeline comercial"
-          description="WhatsApp o llamada directa. Si prefieres, déjanos tus datos y te escribimos."
+          eyebrow={t('contactEyebrow')}
+          title={t('contactTitle')}
+          description={t('contactDesc')}
         />
         <div className="mt-10 max-w-3xl">
           <ContactBlock country={country} />
@@ -645,9 +673,13 @@ export function InmobiliariasLanding({ country }: Props) {
 
       {/* FAQ */}
       <Section tone="light" id="faq">
-        <SectionHeading eyebrow="FAQ" title="Preguntas frecuentes" align="center" />
+        <SectionHeading
+          eyebrow={t('faqEyebrow')}
+          title={t('faqTitle')}
+          align="center"
+        />
         <div className="mt-12">
-          <FAQ items={[...faqs]} />
+          <FAQ items={faqs} />
         </div>
       </Section>
 
@@ -655,28 +687,30 @@ export function InmobiliariasLanding({ country }: Props) {
         <div className="container-x flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-4 text-sm text-muted">
             <Link href="/clinicas-esteticas" className="hover:text-accent">
-              Clínicas estéticas
+              {tn('clinicasEsteticas')}
             </Link>
             <Link href="/contacto" className="hover:text-accent">
-              Contacto
+              {tc('contact')}
             </Link>
             <Link href="/privacidad" className="hover:text-accent">
-              Privacidad
+              {tc('privacy')}
             </Link>
             <a
               href={whatsappLink(
-                `Hola, quiero el Diagnóstico de pipeline inmobiliario (${country.name}).`
+                t('waDiagnostico', { country: country.name })
               )}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => trackEvent('WhatsAppClick', { country: country.code })}
+              onClick={() =>
+                trackEvent('WhatsAppClick', { country: country.code })
+              }
               className="hover:text-accent"
             >
-              WhatsApp
+              {tc('whatsapp')}
             </a>
           </div>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
-            Actualizado {landingMeta.lastUpdated} · {site.name}
+            {t('lastUpdated')} · {site.name}
           </p>
         </div>
       </section>
@@ -698,7 +732,9 @@ function Stat({
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">
         {label}
       </p>
-      <p className={`mt-2 font-mono text-xl ${accent ? 'text-accent' : 'text-ink'}`}>
+      <p
+        className={`mt-2 font-mono text-xl ${accent ? 'text-accent' : 'text-ink'}`}
+      >
         {value}
       </p>
     </div>
@@ -706,11 +742,16 @@ function Stat({
 }
 
 function PipelineInterface() {
+  const t = useTranslations('Inmobiliarias');
+  const pipelineStages = t.raw('pipelineStages') as string[];
+
   return (
     <div className="border border-line bg-ink-900/80 p-5 shadow-panel backdrop-blur-sm sm:p-6">
       <div className="mb-5 flex items-center justify-between">
-        <p className="mono-label text-accent">Pipeline inmobiliario</p>
-        <span className="font-mono text-[10px] text-faint">LIVE UI</span>
+        <p className="mono-label text-accent">{t('pipelineLabel')}</p>
+        <span className="font-mono text-[10px] text-faint">
+          {t('pipelineLive')}
+        </span>
       </div>
       <div className="space-y-2">
         {pipelineStages.map((stage, i) => (
