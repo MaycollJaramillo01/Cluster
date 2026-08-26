@@ -2,51 +2,34 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { FAQ } from '@/components/blocks/FAQ';
-import { HeroBackgroundVideo } from '@/components/blocks/PageHero';
-import { DualCtas } from '@/components/landings/DualCtas';
-import { LandingChrome } from '@/components/landings/LandingChrome';
-import { BudgetCalculator } from '@/components/remodelaciones/BudgetCalculator';
 import { Section, SectionHeading, Eyebrow } from '@/components/ui/Section';
 import { Reveal } from '@/components/ui/Reveal';
-import { MinimalLeadForm } from '@/components/verticals/MinimalLeadForm';
-import { trackEvent } from '@/lib/analytics';
-import { site } from '@/lib/site';
-import {
-  CALCULATOR_STORAGE_KEY,
-  formatMoney,
-  REMODELACIONES_MARKETS,
-  type RemodelacionesMarket,
-  type RemodelacionesMarketId,
-} from '@/lib/remodelaciones/markets';
+import { FAQ } from '@/components/blocks/FAQ';
+import { ConversionCalculator } from './ConversionCalculator';
+import { ContactBlock } from './ContactBlock';
+import { DualCtas } from '@/components/landings/DualCtas';
+import { LandingChrome } from '@/components/landings/LandingChrome';
+import type { CountryConfig } from '@/lib/clinicas-esteticas/types';
+import { formatMoney, countryCodes, countries } from '@/lib/clinicas-esteticas/countries';
+import { site, whatsappLink } from '@/lib/site';
+import { trackEvent } from '@/lib/clinicas-esteticas/tracking';
 
 type Props = {
-  market: RemodelacionesMarket;
+  country: CountryConfig;
 };
 
-const MARKET_IDS = Object.keys(
-  REMODELACIONES_MARKETS,
-) as RemodelacionesMarketId[];
-
-/** Demo numbers for the visibility section (illustrative, not a real case). */
-const DEMO = {
-  inquiries: 120,
-  qualified: 84,
-  visits: 52,
-  quotes: 40,
-  won: 12,
-};
-
-export function RemodelacionesLanding({ market }: Props) {
-  const t = useTranslations('Remodelaciones');
+export function ClinicasEsteticasLanding({ country }: Props) {
+  const t = useTranslations('ClinicasEsteticas');
   const tc = useTranslations('Common');
   const tn = useTranslations('Nav');
 
   const problems = t.raw('problems') as { n: string; text: string }[];
-  const modules = t.raw('modules') as { title: string; text: string }[];
+  const pipelineStages = t.raw('pipelineStages') as string[];
+  const systemModules = t.raw('systemModules') as { title: string; text: string }[];
   const followPipeline = t.raw('followPipeline') as string[];
   const followUpExamples = t.raw('followUpExamples') as string[];
-  const opsSoftItems = t.raw('opsSoftItems') as string[];
+  const financeItems = t.raw('financeItems') as string[];
+  const clinicalSoftItems = t.raw('clinicalSoftItems') as string[];
   const clusterSystemItems = t.raw('clusterSystemItems') as string[];
   const integrations = t.raw('integrations') as string[];
   const demoSteps = t.raw('demoSteps') as { t: string; d: string }[];
@@ -59,57 +42,41 @@ export function RemodelacionesLanding({ market }: Props) {
     status: string;
     next: string;
   }[];
-  const implementationSteps = t.raw('implSteps5') as {
+  const implementationSteps = t.raw('implementationSteps') as {
     n: string;
     title: string;
     text: string;
   }[];
-  const trustPoints = t.raw('trustPoints') as string[];
+  const trustItems = t.raw('trustItems') as string[];
   const faqs = t.raw('faqs') as { q: string; a: string }[];
   const visStats = t.raw('visStats') as {
-    inquiries: string;
-    qualified: string;
-    visits: string;
-    quotes: string;
-    won: string;
-    pipelineValue: string;
+    adSpend: string;
+    consultations: string;
+    appointments: string;
+    attended: string;
+    treatments: string;
+    revenue: string;
   };
 
   const pct = (a: number, b: number) =>
     b === 0 ? '0%' : `${Math.round((a / b) * 100)}%`;
 
-  const pipelineValue = formatMoney(
-    market.id === 'cl'
-      ? 48_000_000
-      : market.id === 'mx'
-        ? 1_200_000
-        : market.id === 'es'
-          ? 96_000
-          : 48_000,
-    market,
-  );
+  const waMsg = t('waLanding', { country: country.name });
 
   const trackWa = (source: string) =>
-    trackEvent('WhatsAppClick', {
-      market: market.id,
-      source,
-      page: 'remodelaciones',
-    });
+    trackEvent('WhatsAppClick', { country: country.code, source });
   const trackCal = (source: string) =>
-    trackEvent('ScheduleStart', {
-      market: market.id,
-      source,
-      page: 'remodelaciones',
-    });
+    trackEvent('ScheduleStart', { country: country.code, source });
 
   return (
-    <div className="remodelaciones-landing pt-[76px] pb-20 md:pb-0">
+    <div className="clinicas-landing pt-[76px]">
       <LandingChrome
-        vertical="remodelaciones"
-        marketId={market.id}
-        whatsappMessage={market.whatsappMessage}
+        vertical="clinicas-esteticas"
+        marketId={country.code}
+        whatsappMessage={waMsg}
       />
 
+      {/* Breadcrumbs */}
       <nav
         aria-label="Breadcrumb"
         className="theme-dark border-b border-line bg-ink-950"
@@ -119,101 +86,96 @@ export function RemodelacionesLanding({ market }: Props) {
             {tc('home')}
           </Link>
           <span>/</span>
-          <Link href="/remodelaciones" className="hover:text-accent">
+          <Link href="/clinicas-esteticas" className="hover:text-accent">
             {t('crumb')}
           </Link>
           <span>/</span>
-          <span className="text-fg">{market.country}</span>
+          <span className="text-fg">{country.name}</span>
         </div>
       </nav>
 
+      {/* Country switcher */}
       <div className="theme-dark border-b border-line bg-ink-900">
         <div className="container-x flex flex-wrap items-center gap-2 py-3">
           <span className="mono-label text-faint">{tc('market')}</span>
-          {MARKET_IDS.map((id) => {
-            const m = REMODELACIONES_MARKETS[id];
-            const active = id === market.id;
+          {countryCodes.map((code) => {
+            const c = countries[code];
+            const active = code === country.code;
             return (
               <Link
-                key={id}
-                href={`/remodelaciones/${id}`}
+                key={code}
+                href={c.path}
                 className={`px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
                   active
                     ? 'bg-accent text-accent-fg'
                     : 'border border-line text-muted hover:border-accent hover:text-fg'
                 }`}
               >
-                {m.country}
+                {c.name}
               </Link>
             );
           })}
         </div>
       </div>
 
-      {/* HERO — video actual conservado */}
-      <section className="relative overflow-hidden bg-ink-950 pt-20 pb-20 sm:pt-24 sm:pb-28">
-        {market.videoSrc ? (
-          <HeroBackgroundVideo src={market.videoSrc} />
-        ) : (
-          <>
-            <div className="hero-accent-fade absolute inset-0" aria-hidden="true" />
-            <div
-              className="absolute inset-0 bg-grid-fade [background-size:64px_64px] opacity-30 [mask-image:radial-gradient(70%_55%_at_20%_0%,black,transparent)]"
-              aria-hidden="true"
-            />
-          </>
-        )}
-        <div className="grain absolute inset-0" aria-hidden="true" />
+      {/* HERO */}
+      <section className="theme-dark relative overflow-hidden bg-ink-950 text-fg">
+        <HaikeiAtmosphere />
+        <div className="container-x relative z-[1] grid gap-12 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-28">
+          <Reveal>
+            <Eyebrow>{t('heroEyebrow')}</Eyebrow>
+            <h1 className="mt-5 max-w-3xl text-4xl sm:text-5xl lg:text-6xl xl:text-7xl">
+              {t('heroTitle')}
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+              {t('heroSubtitle')}
+            </p>
+            <div className="mt-8">
+              <DualCtas
+                whatsappMessage={waMsg}
+                onWhatsApp={() => trackWa('hero')}
+                onSchedule={() => trackCal('hero')}
+              />
+            </div>
+            <p className="mt-4 text-sm text-faint">{t('heroMicro')}</p>
+            <p className="mt-2 text-sm text-accent">{t('responseTimePromise')}</p>
+            <p className="mt-4">
+              <a
+                href="#calculadora"
+                className="text-sm text-muted link-underline hover:text-accent"
+              >
+                {t('heroCalcLink')}
+              </a>
+            </p>
+          </Reveal>
 
-        <div className="container-x relative z-[1]">
-          <div className="max-w-xl">
-            <Reveal>
-              <Eyebrow>{t('heroEyebrow')}</Eyebrow>
-              <h1 className="mt-5 text-[2.35rem] font-semibold leading-[0.98] tracking-tight text-fg sm:text-5xl lg:text-6xl">
-                {t('heroTitle')}
-              </h1>
-              <p className="mt-6 text-base leading-relaxed text-muted sm:text-lg">
-                {t('heroSubtitle')}
-              </p>
-              <div className="mt-8">
-                <DualCtas
-                  whatsappMessage={market.whatsappMessage}
-                  onWhatsApp={() => trackWa('hero')}
-                  onSchedule={() => trackCal('hero')}
-                />
-              </div>
-              <p className="mt-4 text-sm text-faint">{t('heroMicro')}</p>
-              <p className="mt-2 text-sm text-accent">{t('responseTimePromise')}</p>
-              <p className="mt-4">
-                <a
-                  href="#calculadora"
-                  className="text-sm text-muted link-underline hover:text-accent"
-                >
-                  {t('heroCalcLink')}
-                </a>
-              </p>
-            </Reveal>
-          </div>
+          <Reveal delay={120}>
+            <PipelineInterface
+              label={t('pipelineLabel')}
+              live={t('pipelineLive')}
+              stages={pipelineStages}
+            />
+          </Reveal>
         </div>
       </section>
 
-      {/* PROBLEMA */}
+      {/* PROBLEM */}
       <Section tone="light" id="problema">
         <SectionHeading
           eyebrow={t('problemEyebrow')}
           title={t('problemTitle')}
           description={t('problemIntro')}
         />
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {problems.map((item, i) => (
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {problems.map((block, i) => (
             <Reveal
-              key={item.n}
-              delay={i * 50}
+              key={block.n}
+              delay={i * 60}
               className="border border-line bg-paper p-6"
             >
-              <span className="font-mono text-xs text-accent">{item.n}</span>
+              <span className="font-mono text-xs text-accent">{block.n}</span>
               <p className="mt-3 text-[15px] leading-relaxed text-ink/80">
-                {item.text}
+                {block.text}
               </p>
             </Reveal>
           ))}
@@ -221,15 +183,19 @@ export function RemodelacionesLanding({ market }: Props) {
         <p className="mt-10 max-w-2xl text-lg text-muted">{t('problemClose')}</p>
       </Section>
 
-      {/* CALCULADORA */}
+      {/* CALCULATOR */}
       <Section tone="dark" id="calculadora">
-        <SectionHeading eyebrow={t('calcEyebrow')} title={t('calcTitle')} />
+        <SectionHeading
+          eyebrow={t('calcEyebrow')}
+          title={t('calcTitle')}
+          description={t('calcDesc')}
+        />
         <div className="mt-12">
-          <BudgetCalculator market={market} />
+          <ConversionCalculator country={country} />
         </div>
       </Section>
 
-      {/* VISIBILIDAD */}
+      {/* FUNNEL VISIBILITY */}
       <Section tone="soft" id="visibilidad">
         <SectionHeading
           eyebrow={t('visEyebrow')}
@@ -241,21 +207,52 @@ export function RemodelacionesLanding({ market }: Props) {
             {t('visRef')}
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Stat label={visStats.inquiries} value={String(DEMO.inquiries)} />
-            <Stat label={visStats.qualified} value={String(DEMO.qualified)} />
-            <Stat label={visStats.visits} value={String(DEMO.visits)} />
-            <Stat label={visStats.quotes} value={String(DEMO.quotes)} />
-            <Stat label={visStats.won} value={String(DEMO.won)} />
-            <Stat label={visStats.pipelineValue} value={pipelineValue} accent />
+            <Stat
+              label={visStats.adSpend}
+              value={formatMoney(country.demo.adSpend, country)}
+            />
+            <Stat
+              label={visStats.consultations}
+              value={String(country.demo.consultations)}
+            />
+            <Stat
+              label={visStats.appointments}
+              value={String(country.demo.appointments)}
+            />
+            <Stat
+              label={visStats.attended}
+              value={String(country.demo.attended)}
+            />
+            <Stat
+              label={visStats.treatments}
+              value={String(country.demo.treatments)}
+            />
+            <Stat
+              label={visStats.revenue}
+              value={formatMoney(country.demo.revenue, country)}
+              accent
+            />
           </div>
           <div className="mt-10 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             {(
               [
-                [t('funnelConsulta'), pct(DEMO.inquiries, DEMO.inquiries)],
-                [t('funnelCalificada'), pct(DEMO.qualified, DEMO.inquiries)],
-                [t('funnelVisita'), pct(DEMO.visits, DEMO.qualified)],
-                [t('funnelPresupuesto'), pct(DEMO.quotes, DEMO.visits)],
-                [t('funnelCierre'), pct(DEMO.won, DEMO.quotes)],
+                [t('funnelMeta'), '—'],
+                [
+                  t('funnelConsulta'),
+                  pct(country.demo.consultations, country.demo.consultations),
+                ],
+                [
+                  t('funnelCita'),
+                  pct(country.demo.appointments, country.demo.consultations),
+                ],
+                [
+                  t('funnelAsistencia'),
+                  pct(country.demo.attended, country.demo.appointments),
+                ],
+                [
+                  t('funnelTratamiento'),
+                  pct(country.demo.treatments, country.demo.attended),
+                ],
               ] as [string, string][]
             ).map(([label, rate], idx, arr) => (
               <div key={label} className="flex items-center gap-3">
@@ -274,14 +271,14 @@ export function RemodelacionesLanding({ market }: Props) {
         </Reveal>
       </Section>
 
-      {/* SISTEMA */}
+      {/* SYSTEM MODULES */}
       <Section tone="dark" id="sistema">
         <SectionHeading
           eyebrow={t('modulesEyebrow')}
           title={t('modulesTitle')}
         />
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {modules.map((m, i) => (
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {systemModules.map((m, i) => (
             <Reveal
               key={m.title}
               delay={i * 40}
@@ -296,7 +293,7 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
-      {/* SEGUIMIENTO */}
+      {/* FOLLOW-UP */}
       <Section tone="light" id="seguimiento">
         <SectionHeading
           eyebrow={t('followEyebrow')}
@@ -335,18 +332,39 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
-      {/* PRIVACIDAD / SOFTWARE */}
+      {/* FINANCING — optional module */}
+      {country.financingEnabled && (
+        <Section tone="soft" id="financiacion">
+          <SectionHeading
+            eyebrow={t('financeEyebrow')}
+            title={t('financeTitle')}
+            description={t('financeDesc')}
+          />
+          <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {financeItems.map((item) => (
+              <div
+                key={item}
+                className="border border-line bg-paper px-4 py-4 text-sm text-ink/80"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* PRIVACY */}
       <Section tone="dark" id="privacidad-datos">
         <SectionHeading
-          eyebrow={t('integrateEyebrow')}
+          eyebrow={country.privacyLabel}
           title={t('privacyTitle')}
           description={t('privacyDesc')}
         />
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
           <Reveal className="border border-line bg-surface p-6">
-            <p className="mono-label text-faint">{t('opsSoftLabel')}</p>
+            <p className="mono-label text-faint">{t('clinicalSoftLabel')}</p>
             <ul className="mt-5 space-y-2 text-[15px] text-muted">
-              {opsSoftItems.map((i) => (
+              {clinicalSoftItems.map((i) => (
                 <li key={i} className="border-b border-line py-2">
                   {i}
                 </li>
@@ -364,10 +382,10 @@ export function RemodelacionesLanding({ market }: Props) {
             </ul>
           </Reveal>
         </div>
-        <p className="mt-6 text-sm text-faint">{t('integrateFocus')}</p>
+        <p className="mt-6 text-sm text-faint">{country.legalNote}</p>
       </Section>
 
-      {/* INTEGRACIONES */}
+      {/* INTEGRATIONS */}
       <Section tone="light" id="integraciones">
         <SectionHeading
           eyebrow={t('toolsEyebrow')}
@@ -387,7 +405,7 @@ export function RemodelacionesLanding({ market }: Props) {
         <p className="mt-8 max-w-2xl text-lg text-muted">{t('toolsClose')}</p>
       </Section>
 
-      {/* DEMO / RECORRIDO */}
+      {/* FLUJO DE CONSULTA — sin video placeholder */}
       <Section tone="dark" id="demo">
         <SectionHeading
           eyebrow={t('demoEyebrow')}
@@ -410,7 +428,7 @@ export function RemodelacionesLanding({ market }: Props) {
         </Reveal>
       </Section>
 
-      {/* HANDOFF */}
+      {/* HUMAN HANDOFF */}
       <Section tone="soft" id="handoff">
         <SectionHeading
           eyebrow={t('handoffEyebrow')}
@@ -448,7 +466,7 @@ export function RemodelacionesLanding({ market }: Props) {
         <p className="mt-6 text-muted">{t('handoffClose')}</p>
       </Section>
 
-      {/* DASHBOARD */}
+      {/* DASHBOARD DEMO */}
       <Section tone="dark" id="dashboard">
         <SectionHeading
           eyebrow={t('dashEyebrow')}
@@ -460,14 +478,14 @@ export function RemodelacionesLanding({ market }: Props) {
             {t('dashRef')}
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <Stat dark label={t('dashBudgeted')} value={pipelineValue} />
-            <Stat dark label={t('dashWon')} value={String(DEMO.won)} />
-            <Stat dark label={t('dashPending')} value="18" />
-            <Stat dark label={t('dashLost')} value="7" />
+            <Stat dark label={t('dashStatConsultations')} value="182" />
+            <Stat dark label={t('dashStatAppointments')} value="91" />
+            <Stat dark label={t('dashStatAttendance')} value="76" />
+            <Stat dark label={t('dashStatTreatments')} value="38" />
             <Stat
               dark
-              label={t('dashConversion')}
-              value={pct(DEMO.won, DEMO.quotes)}
+              label={t('dashStatValue')}
+              value={formatMoney(country.demo.revenue, country)}
               accent
             />
           </div>
@@ -485,7 +503,7 @@ export function RemodelacionesLanding({ market }: Props) {
             <table className="w-full min-w-[520px] text-left text-sm">
               <thead>
                 <tr className="border-b border-line font-mono text-[10px] uppercase tracking-[0.16em] text-faint">
-                  <th className="py-3 pr-4 font-medium">{t('tableOpp')}</th>
+                  <th className="py-3 pr-4 font-medium">{t('tablePatient')}</th>
                   <th className="py-3 pr-4 font-medium">{t('tableSource')}</th>
                   <th className="py-3 pr-4 font-medium">{t('tableStatus')}</th>
                   <th className="py-3 font-medium">{t('tableNext')}</th>
@@ -506,7 +524,7 @@ export function RemodelacionesLanding({ market }: Props) {
         </Reveal>
       </Section>
 
-      {/* IMPLEMENTACIÓN */}
+      {/* IMPLEMENTATION */}
       <Section tone="light" id="implementacion">
         <SectionHeading eyebrow={t('implEyebrow')} title={t('implTitle')} />
         <div className="mt-12 grid gap-4 md:grid-cols-5">
@@ -526,74 +544,63 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
-      {/* EQUIPO / CONFIANZA */}
+      {/* TRUST */}
       <Section tone="dark" id="equipo">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <SectionHeading
             eyebrow={t('trustEyebrow')}
             title={t('trustTitle')}
-            description={t('trustText')}
+            description={t('trustDesc')}
           />
           <Reveal className="border border-line bg-surface p-6">
             <p className="mono-label text-accent">{site.name}</p>
             <ul className="mt-5 grid gap-2 text-sm text-muted sm:grid-cols-2">
-              {trustPoints.map((item) => (
+              {trustItems.map((item) => (
                 <li key={item} className="border-b border-line py-2">
                   {item}
                 </li>
               ))}
             </ul>
-            <p className="mt-6 text-sm text-fg">{t('trustPhrase')}</p>
           </Reveal>
         </div>
       </Section>
 
-      {/* PRUEBA SOCIAL */}
+      {/* SOCIAL PROOF */}
       <Section tone="soft" id="prueba-social">
         <SectionHeading
           eyebrow={t('casesEyebrow')}
           title={t('casesTitle')}
-          description={t('casesText')}
+          description={t('casesDesc')}
         />
         <div className="mt-8">
           <DualCtas
-            whatsappMessage={market.whatsappMessage}
+            whatsappMessage={waMsg}
             onWhatsApp={() => trackWa('casos')}
             onSchedule={() => trackCal('casos')}
           />
         </div>
       </Section>
 
-      {/* PRECIO */}
+      {/* PRICING */}
       <Section tone="light" id="precio">
         <SectionHeading
           eyebrow={t('priceEyebrow')}
           title={t('priceTitle')}
-          description={t('priceText')}
+          description={t('priceDesc')}
         />
         <Reveal className="mt-10 max-w-xl border border-line bg-paper p-8">
-          <p className="mono-label text-accent">{tc('provisionalPrice')}</p>
-          {market.implementationFromUsd != null && (
-            <p className="mt-4 font-display text-4xl text-ink sm:text-5xl">
-              {t('priceFrom', { amount: market.implementationFromUsd })}
-            </p>
-          )}
-          {market.implementationFromLocal && (
-            <p className="mt-2 text-sm text-muted">
-              {market.implementationFromLocal}
-            </p>
-          )}
-          {market.showMonthly && market.monthlyFromUsd != null ? (
-            <p className="mt-4 font-mono text-sm text-accent">
-              {t('priceMonthly', { amount: market.monthlyFromUsd })}
-            </p>
-          ) : (
-            <p className="mt-4 text-sm text-muted">{t('priceMonthlySoon')}</p>
-          )}
+          <p className="mono-label text-accent">{t('priceProvisional')}</p>
+          <p className="mt-4 font-display text-4xl text-ink sm:text-5xl">
+            {t('priceFrom', { amount: formatMoney(country.setupFrom, country) })}
+          </p>
+          <p className="mt-2 text-sm text-muted">{t('priceNote')}</p>
+          <div className="mt-6 border-t border-line pt-6">
+            <p className="text-sm text-muted">{tc('monthlyDefinedByScope')}</p>
+          </div>
           <DualCtas
             className="mt-6"
             size="md"
-            whatsappMessage={market.whatsappMessage}
+            whatsappMessage={waMsg}
             onWhatsApp={() => trackWa('precio')}
             onSchedule={() => trackCal('precio')}
           />
@@ -603,36 +610,12 @@ export function RemodelacionesLanding({ market }: Props) {
       {/* CONTACTO */}
       <Section tone="dark" id="contacto">
         <SectionHeading
-          eyebrow={t('formEyebrow')}
-          title={t('contactSectionTitle')}
-          description={t('formDesc')}
+          eyebrow={t('contactEyebrow')}
+          title={t('contactTitle')}
+          description={t('contactDesc')}
         />
-        <div className="mt-10 max-w-3xl space-y-8">
-          <div>
-            <p className="mono-label text-accent">{tc('talkToTeam')}</p>
-            <p className="mt-3 max-w-xl text-[15px] text-muted">
-              {t('formMicro')}
-            </p>
-            <DualCtas
-              className="mt-6"
-              whatsappMessage={market.whatsappMessage}
-              onWhatsApp={() => trackWa('contact_section')}
-              onSchedule={() => trackCal('contact_section')}
-            />
-          </div>
-          <div className="border-t border-line pt-8">
-            <p className="mb-5 text-sm text-muted">{t('formTitle')}</p>
-            <MinimalLeadForm
-              i18nNamespace="Remodelaciones"
-              vertical="remodelaciones"
-              country={market.country}
-              landingPath={`/remodelaciones/${market.id}`}
-              origen={`remodelaciones-${market.id}`}
-              servicio="Conversión presupuestos remodelaciones"
-              whatsappMessage={market.whatsappMessage}
-              calculatorStorageKey={CALCULATOR_STORAGE_KEY}
-            />
-          </div>
+        <div className="mt-10 max-w-3xl">
+          <ContactBlock country={country} />
         </div>
       </Section>
 
@@ -648,14 +631,12 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
+      {/* Internal links + last updated */}
       <section className="theme-dark border-t border-line bg-ink-950 py-10 text-fg">
         <div className="container-x flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-4 text-sm text-muted">
-            <Link href="/inmobiliarias" className="hover:text-accent">
-              {tn('inmobiliarias')}
-            </Link>
-            <Link href="/clinicas-dentales" className="hover:text-accent">
-              {tn('clinicasDentales')}
+            <Link href="/automatizaciones-ia" className="hover:text-accent">
+              {tn('automation')}
             </Link>
             <Link href="/contacto" className="hover:text-accent">
               {tc('contact')}
@@ -663,6 +644,20 @@ export function RemodelacionesLanding({ market }: Props) {
             <Link href="/privacidad" className="hover:text-accent">
               {tc('privacy')}
             </Link>
+            <Link href="/casos-de-exito" className="hover:text-accent">
+              {tn('cases')}
+            </Link>
+            <a
+              href={whatsappLink(t('waShort', { country: country.name }))}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                trackEvent('WhatsAppClick', { country: country.code })
+              }
+              className="hover:text-accent"
+            >
+              {tc('whatsapp')}
+            </a>
           </div>
           <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-faint">
             {tc('lastUpdated', { date: t('lastUpdated') })}
@@ -696,6 +691,74 @@ function Stat({
       >
         {value}
       </p>
+    </div>
+  );
+}
+
+function PipelineInterface({
+  label,
+  live,
+  stages,
+}: {
+  label: string;
+  live: string;
+  stages: string[];
+}) {
+  return (
+    <div className="border border-line bg-ink-900/80 p-5 shadow-panel backdrop-blur-sm sm:p-6">
+      <div className="mb-5 flex items-center justify-between">
+        <p className="mono-label text-accent">{label}</p>
+        <span className="font-mono text-[10px] text-faint">{live}</span>
+      </div>
+      <div className="space-y-2">
+        {stages.map((stage, i) => (
+          <div
+            key={stage}
+            className="flex items-center gap-3 border border-line bg-surface px-3 py-3 transition-colors hover:border-accent/40"
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            <span className="flex h-7 w-7 items-center justify-center bg-accent/15 font-mono text-[10px] text-accent">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <span className="text-sm text-fg">{stage}</span>
+            {i < stages.length - 1 && (
+              <span className="ml-auto font-mono text-[10px] text-faint">→</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Atmósfera tipo Haikei: ondas SVG con paleta de marca. */
+function HaikeiAtmosphere() {
+  return (
+    <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <svg
+        className="absolute inset-0 h-full w-full opacity-40"
+        viewBox="0 0 1440 800"
+        preserveAspectRatio="xMidYMid slice"
+      >
+        <defs>
+          <linearGradient id="cmWave" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#02C39A" stopOpacity="0.35" />
+            <stop offset="55%" stopColor="#111111" stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#02C39A" stopOpacity="0.08" />
+          </linearGradient>
+        </defs>
+        <path
+          fill="url(#cmWave)"
+          d="M0,480 C180,420 320,560 520,500 C720,440 820,300 1020,340 C1220,380 1340,280 1440,320 L1440,800 L0,800 Z"
+        />
+        <path
+          fill="#02C39A"
+          fillOpacity="0.06"
+          d="M0,560 C220,500 380,620 560,580 C780,530 900,420 1100,460 C1280,490 1360,400 1440,430 L1440,800 L0,800 Z"
+        />
+      </svg>
+      <div className="absolute inset-0 bg-grid-fade opacity-20 [mask-image:radial-gradient(70%_60%_at_50%_30%,black,transparent)]" />
+      <div className="grain absolute inset-0" />
     </div>
   );
 }
