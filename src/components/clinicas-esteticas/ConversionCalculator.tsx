@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CountryConfig } from '@/lib/clinicas-esteticas/types';
 import { formatMoney } from '@/lib/clinicas-esteticas/countries';
 import { trackEvent } from '@/lib/clinicas-esteticas/tracking';
@@ -19,6 +20,7 @@ const defaultTicket: Record<CountryConfig['currency'], number> = {
 };
 
 export function ConversionCalculator({ country }: Props) {
+  const t = useTranslations('ClinicasEsteticas');
   const [consultations, setConsultations] = useState(120);
   const [ticket, setTicket] = useState(defaultTicket[country.currency]);
   const [bookRate, setBookRate] = useState(45);
@@ -52,7 +54,15 @@ export function ConversionCalculator({ country }: Props) {
       extraTreatments: Math.max(0, treatments - funnel.treatments),
       extraRevenue: Math.max(0, revenue - funnel.revenue),
     };
-  }, [consultations, ticket, bookRate, showRate, buyRate, funnel.treatments, funnel.revenue]);
+  }, [
+    consultations,
+    ticket,
+    bookRate,
+    showRate,
+    buyRate,
+    funnel.treatments,
+    funnel.revenue,
+  ]);
 
   function markStart() {
     if (started.current) return;
@@ -62,7 +72,7 @@ export function ConversionCalculator({ country }: Props) {
 
   useEffect(() => {
     if (!started.current) return;
-    const t = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       const snapshot = {
         consultations,
         ticket,
@@ -78,14 +88,23 @@ export function ConversionCalculator({ country }: Props) {
         ...snapshot,
       });
     }, 800);
-    return () => window.clearTimeout(t);
-  }, [consultations, ticket, bookRate, showRate, buyRate, funnel.revenue, funnel.treatments, country.code]);
+    return () => window.clearTimeout(timer);
+  }, [
+    consultations,
+    ticket,
+    bookRate,
+    showRate,
+    buyRate,
+    funnel.revenue,
+    funnel.treatments,
+    country.code,
+  ]);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
       <div className="border border-line bg-surface p-6 sm:p-8">
         <Field
-          label="Consultas nuevas al mes"
+          label={t('calcQ1')}
           value={consultations}
           onChange={(v) => {
             markStart();
@@ -96,7 +115,7 @@ export function ConversionCalculator({ country }: Props) {
           step={5}
         />
         <Field
-          label={`Ticket promedio por tratamiento (${country.currencySymbol})`}
+          label={t('calcQ2', { currency: country.currencySymbol })}
           value={ticket}
           onChange={(v) => {
             markStart();
@@ -107,7 +126,7 @@ export function ConversionCalculator({ country }: Props) {
           step={country.currency === 'CLP' ? 10000 : 50}
         />
         <Field
-          label="¿Qué porcentaje aproximadamente agenda una cita?"
+          label={t('calcQ3')}
           value={bookRate}
           onChange={(v) => {
             markStart();
@@ -118,7 +137,7 @@ export function ConversionCalculator({ country }: Props) {
           suffix="%"
         />
         <Field
-          label="¿Qué porcentaje de las citas termina asistiendo?"
+          label={t('calcQ4')}
           value={showRate}
           onChange={(v) => {
             markStart();
@@ -129,7 +148,7 @@ export function ConversionCalculator({ country }: Props) {
           suffix="%"
         />
         <Field
-          label="¿Qué porcentaje de quienes asisten compra un tratamiento?"
+          label={t('calcQ5')}
           value={buyRate}
           onChange={(v) => {
             markStart();
@@ -143,14 +162,17 @@ export function ConversionCalculator({ country }: Props) {
 
       <div className="flex flex-col gap-5">
         <div className="border border-line bg-ink-950 p-6 text-fg sm:p-8">
-          <p className="mono-label text-accent">Escenario actual</p>
+          <p className="mono-label text-accent">{t('calcCurrentEyebrow')}</p>
           <ul className="mt-6 space-y-3 text-[15px]">
-            <Row label="Consultas mensuales" value={String(consultations)} />
-            <Row label="Citas estimadas" value={String(funnel.appointments)} />
-            <Row label="Asistencias" value={String(funnel.attended)} />
-            <Row label="Tratamientos" value={String(funnel.treatments)} />
+            <Row label={t('calcConsultations')} value={String(consultations)} />
             <Row
-              label="Ingresos aproximados"
+              label={t('calcAppointments')}
+              value={String(funnel.appointments)}
+            />
+            <Row label={t('calcAttended')} value={String(funnel.attended)} />
+            <Row label={t('calcTreatments')} value={String(funnel.treatments)} />
+            <Row
+              label={t('calcRevenue')}
               value={formatMoney(funnel.revenue, country)}
               accent
             />
@@ -158,21 +180,17 @@ export function ConversionCalculator({ country }: Props) {
         </div>
 
         <div className="border border-accent/30 bg-surface p-6 sm:p-8">
-          <p className="mono-label text-accent">Si mejoras 5 puntos en varias etapas</p>
+          <p className="mono-label text-accent">{t('calcLiftEyebrow')}</p>
           <p className="mt-4 text-[15px] leading-relaxed text-muted">
-            Con estos mismos números, el impacto estimado sería de{' '}
-            <span className="text-fg">{improved.extraTreatments} tratamientos
-            adicionales</span>{' '}
-            y cerca de{' '}
-            <span className="text-fg">
-              {formatMoney(improved.extraRevenue, country)}
-            </span>
-            .
+            {t('calcLiftText', {
+              treatments: improved.extraTreatments,
+              revenue: formatMoney(improved.extraRevenue, country),
+            })}
           </p>
           <DualCtas
             className="mt-6"
             size="md"
-            whatsappMessage={`Hola Cluster Media, usé la calculadora de clínicas estéticas (${country.name}) y quiero hablar.`}
+            whatsappMessage={t('waCalc', { country: country.name })}
             onWhatsApp={() =>
               trackEvent('WhatsAppClick', {
                 country: country.code,
@@ -186,9 +204,7 @@ export function ConversionCalculator({ country }: Props) {
               })
             }
           />
-          <p className="mt-3 text-xs text-faint">
-            La calculadora es opcional. Puedes contactarnos sin usarla.
-          </p>
+          <p className="mt-3 text-xs text-faint">{t('calcOptionalNote')}</p>
         </div>
       </div>
     </div>
