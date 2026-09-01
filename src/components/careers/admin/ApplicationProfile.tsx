@@ -177,7 +177,7 @@ export function ApplicationProfile({ id }: { id: string }) {
               ) : (
                 <ul className="mt-6 grid gap-4">
                   {portfolioFiles.map((file) => {
-                    const src = file.url || publicAssetUrl(application.id, file.id);
+                    const src = publicAssetUrl(application.id, file.id);
                     return (
                       <li key={file.id} className="overflow-hidden bg-ink-950">
                         {isVideo(file.mimeType) ? (
@@ -214,7 +214,7 @@ export function ApplicationProfile({ id }: { id: string }) {
               <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
                 <p className="mono-label text-accent">{t('cvLabel')}</p>
                 <a
-                  href={cv.url || publicAssetUrl(application.id, cv.id)}
+                  href={publicAssetUrl(application.id, cv.id)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-4 inline-flex items-center gap-2 text-[15px] text-ink-950 hover:text-accent"

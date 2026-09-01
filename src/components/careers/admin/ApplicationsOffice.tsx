@@ -31,14 +31,19 @@ export function ApplicationsOffice() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<ApplicationStatus | 'all'>('all');
   const [loading, setLoading] = useState(true);
+  const [storage, setStorage] = useState<{ ok?: boolean } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const response = await fetch('/api/careers/applications', { cache: 'no-store' });
-      const data = (await response.json()) as { applications?: Application[] };
+      const data = (await response.json()) as {
+        applications?: Application[];
+        blob?: { ok?: boolean };
+      };
       if (!cancelled) {
         setApplications(data.applications ?? []);
+        setStorage(data.blob ?? null);
         setLoading(false);
       }
     })();
@@ -67,6 +72,15 @@ export function ApplicationsOffice() {
             <p className="mt-3 text-[15px] text-muted">
               {t('count', { count: applications.length })}
             </p>
+            {storage ? (
+              <p
+                className={`mt-3 text-sm ${
+                  storage.ok ? 'text-accent' : 'text-ink-700'
+                }`}
+              >
+                {storage.ok ? t('blobOk') : t('blobOff')}
+              </p>
+            ) : null}
           </div>
         </div>
 

@@ -4093,6 +4093,8 @@
     "statusAll": "Todos los estados",
     "loading": "Cargando",
     "empty": "Todavía no hay postulaciones.",
+    "blobOk": "Almacenamiento compartido activo. El tablero se ve igual desde cualquier país.",
+    "blobOff": "Blob no está conectado. En local las postulaciones se guardan en este equipo; en live pueden no verse.",
     "logout": "Salir",
     "loginTitle": "Entrar al tablero",
     "loginText": "Usá la contraseña del backoffice para ver los perfiles.",
