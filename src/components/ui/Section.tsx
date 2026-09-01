@@ -17,7 +17,14 @@ type SectionProps = {
   className?: string;
   id?: string;
   containerClassName?: string;
+  /** compact = menos padding vertical (landings de conversión) */
+  density?: 'default' | 'compact';
 };
+
+const densityPad = {
+  default: 'py-24 sm:py-28 lg:py-32',
+  compact: 'py-14 sm:py-16 lg:py-20',
+} as const;
 
 export function Section({
   children,
@@ -25,11 +32,12 @@ export function Section({
   className = '',
   id,
   containerClassName = '',
+  density = 'default',
 }: SectionProps) {
   return (
     <section
       id={id}
-      className={`relative overflow-hidden py-24 text-fg sm:py-28 lg:py-32 ${tones[tone]} ${className}`}
+      className={`relative overflow-hidden text-fg ${densityPad[density]} ${tones[tone]} ${className}`}
     >
       <div className={`container-x relative z-[1] ${containerClassName}`}>
         {children}
@@ -73,14 +81,14 @@ export function SectionHeading({
   const isCenter = align === 'center';
   return (
     <Reveal
-      className={`flex flex-col gap-5 ${
+      className={`flex flex-col gap-3 ${
         isCenter ? 'mx-auto max-w-3xl items-center text-center' : 'max-w-2xl'
       } ${className}`}
     >
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
       <h2 className={`text-fg ${titleClass}`}>{title}</h2>
       {description && (
-        <p className="text-lg leading-relaxed text-muted sm:text-xl">
+        <p className="text-base leading-relaxed text-muted sm:text-lg">
           {description}
         </p>
       )}
