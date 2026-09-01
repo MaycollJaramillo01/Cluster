@@ -1,0 +1,26 @@
+@media print {
+  header,
+  footer,
+  .fixed,
+  [aria-label='Breadcrumb'] + div,
+  #contacto form button,
+  a[href*='wa.me'] {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .clinicas-landing section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: ' (' attr(href) ')';
+    font-size: 10px;
+    color: #666;
+  }
+}

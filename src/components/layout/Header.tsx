@@ -33,11 +33,14 @@ const navItems: NavItem[] = [
   },
   {
     labelKey: 'solutions',
-    href: '/clinicas-dentales',
+    href: '/clinicas-esteticas',
     children: [
-      { labelKey: 'clinicasDentales', href: '/clinicas-dentales' },
-      { labelKey: 'remodelaciones', href: '/remodelaciones' },
       { labelKey: 'rutaLocal', href: '/ruta-local' },
+      { labelKey: 'clinicasDentales', href: '/clinicas-dentales' },
+      { labelKey: 'clinicasEsteticas', href: '/clinicas-esteticas' },
+      { labelKey: 'inmobiliarias', href: '/inmobiliarias' },
+      { labelKey: 'remodelaciones', href: '/remodelaciones' },
+    ],
     ],
   },
   { labelKey: 'plans', href: '/#planes' },

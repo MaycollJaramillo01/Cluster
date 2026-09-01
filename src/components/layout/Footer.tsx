@@ -34,9 +34,11 @@ export function Footer() {
     {
       title: tn('solutions'),
       links: [
-        { label: tn('clinicasDentales'), href: '/clinicas-dentales' },
-        { label: tn('remodelaciones'), href: '/remodelaciones' },
         { label: tn('rutaLocal'), href: '/ruta-local' },
+        { label: tn('clinicasDentales'), href: '/clinicas-dentales' },
+        { label: tn('clinicasEsteticas'), href: '/clinicas-esteticas' },
+        { label: tn('inmobiliarias'), href: '/inmobiliarias' },
+        { label: tn('remodelaciones'), href: '/remodelaciones' },
       ],
     },
     {
