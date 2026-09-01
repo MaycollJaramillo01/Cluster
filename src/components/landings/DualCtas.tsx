@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icon';
 import { site, whatsappLink } from '@/lib/site';
 
@@ -19,6 +20,7 @@ export function DualCtas({
   className = '',
   size = 'lg',
 }: Props) {
+  const t = useTranslations('Common');
   const pad =
     size === 'lg' ? 'px-8 py-4 text-[13px]' : 'px-6 py-3.5 text-xs';
 
@@ -32,7 +34,7 @@ export function DualCtas({
         className={`inline-flex w-full items-center justify-center gap-2.5 bg-[#25D366] font-mono font-medium uppercase tracking-[0.16em] text-white transition hover:-translate-y-0.5 hover:bg-[#1ebe5a] ${pad}`}
       >
         <Icon name="whatsapp" size={18} />
-        Hablar por WhatsApp
+        {t('talkWhatsApp')}
       </a>
       <a
         href={site.calendarUrl}
@@ -41,7 +43,7 @@ export function DualCtas({
         onClick={onSchedule}
         className={`inline-flex w-full items-center justify-center gap-2.5 bg-accent font-mono font-medium uppercase tracking-[0.16em] text-accent-fg transition hover:-translate-y-0.5 hover:opacity-90 ${pad}`}
       >
-        Agendar una llamada
+        {t('bookCall')}
       </a>
     </div>
   );

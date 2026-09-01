@@ -6,14 +6,12 @@ export type RemodelacionesMarket = {
   country: string;
   currency: string;
   currencyLocale: string;
-  term: string; // remodelación | reformas
+  term: string;
   industryLabel: string;
   citiesHint: string;
   whatsappMessage: string;
-  /** null = oculto hasta definir oferta */
   implementationFromUsd: number | null;
   implementationFromLocal: string | null;
-  /** false hasta definir mensualidad */
   showMonthly: boolean;
   monthlyFromUsd: number | null;
   videoSrc: string | null;
@@ -32,7 +30,7 @@ export const REMODELACIONES_MARKETS: Record<RemodelacionesMarketId, Remodelacion
     whatsappMessage:
       'Hola Cluster Media, quiero un diagnóstico de conversión de presupuestos para mi empresa de remodelaciones en Chile.',
     implementationFromUsd: 1000,
-    implementationFromLocal: null, // se define comercialmente
+    implementationFromLocal: null, 
     showMonthly: false,
     monthlyFromUsd: null,
     videoSrc: '/assets/videos/heroes/remodelaciones.mp4',

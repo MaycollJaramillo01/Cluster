@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CountryConfig } from '@/lib/inmobiliarias/types';
 import { formatMoney } from '@/lib/inmobiliarias/countries';
 import { trackEvent } from '@/lib/inmobiliarias/tracking';
@@ -28,6 +29,7 @@ const defaultCommission: Record<CountryConfig['currency'], number> = {
 };
 
 export function PipelineCalculator({ country }: Props) {
+  const t = useTranslations('Inmobiliarias');
   const [leads, setLeads] = useState(250);
   const [propertyValue, setPropertyValue] = useState(
     defaultProperty[country.currency]
@@ -61,7 +63,7 @@ export function PipelineCalculator({ country }: Props) {
 
   useEffect(() => {
     if (!started.current) return;
-    const t = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       const snapshot = {
         leads,
         propertyValue,
@@ -77,7 +79,7 @@ export function PipelineCalculator({ country }: Props) {
         ...snapshot,
       });
     }, 800);
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(timer);
   }, [
     leads,
     propertyValue,
@@ -94,7 +96,7 @@ export function PipelineCalculator({ country }: Props) {
     <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
       <div className="border border-line bg-surface p-6 sm:p-8">
         <Field
-          label="¿Cuántos leads reciben aproximadamente al mes?"
+          label={t('calcQ1')}
           value={leads}
           onChange={(v) => {
             markStart();
@@ -105,7 +107,7 @@ export function PipelineCalculator({ country }: Props) {
           step={10}
         />
         <Field
-          label={`Valor promedio de las propiedades (${country.currencySymbol})`}
+          label={t('calcQ2', { currency: country.currencySymbol })}
           value={propertyValue}
           onChange={(v) => {
             markStart();
@@ -116,7 +118,7 @@ export function PipelineCalculator({ country }: Props) {
           step={country.currency === 'CLP' ? 1000000 : 10000}
         />
         <Field
-          label="¿Qué porcentaje aproximadamente logra agendar una visita?"
+          label={t('calcQ3')}
           value={visitRate}
           onChange={(v) => {
             markStart();
@@ -127,7 +129,7 @@ export function PipelineCalculator({ country }: Props) {
           suffix="%"
         />
         <Field
-          label="¿Qué porcentaje de las visitas termina en reserva/venta?"
+          label={t('calcQ4')}
           value={closeRate}
           onChange={(v) => {
             markStart();
@@ -148,12 +150,14 @@ export function PipelineCalculator({ country }: Props) {
             }}
             className="mt-1 accent-[var(--accent)]"
           />
-          <span>Incluir comisión promedio aproximada por operación</span>
+          <span>{t('calcCommissionToggle')}</span>
         </label>
         {useCommission && (
           <div className="mt-4">
             <Field
-              label={`Comisión promedio (${country.currencySymbol})`}
+              label={t('calcCommissionLabel', {
+                currency: country.currencySymbol,
+              })}
               value={commission}
               onChange={(v) => {
                 markStart();
@@ -169,46 +173,39 @@ export function PipelineCalculator({ country }: Props) {
 
       <div className="flex flex-col gap-5">
         <div className="border border-line bg-ink-950 p-6 text-fg sm:p-8">
-          <p className="mono-label text-accent">Pipeline estimado</p>
+          <p className="mono-label text-accent">{t('calcResultEyebrow')}</p>
           <ul className="mt-6 space-y-3 text-[15px]">
-            <Row label="Leads mensuales" value={String(leads)} />
-            <Row label="Visitas estimadas" value={String(funnel.visits)} />
+            <Row label={t('calcLeads')} value={String(leads)} />
+            <Row label={t('calcVisits')} value={String(funnel.visits)} />
             <Row
-              label="Operaciones estimadas"
+              label={t('calcOps')}
               value={String(funnel.operations)}
               accent
             />
             <Row
-              label="Ticket promedio inmueble"
+              label={t('calcTicket')}
               value={formatMoney(propertyValue, country)}
             />
           </ul>
-          <p className="mt-4 text-xs text-faint">
-            El valor del inmueble ilustra el volumen que atraviesa el pipeline. La
-            comisión se usa solo si la activas.
-          </p>
+          <p className="mt-4 text-xs text-faint">{t('calcNote')}</p>
         </div>
 
         <div className="border border-accent/30 bg-surface p-6 sm:p-8">
-          <p className="mono-label text-accent">Impacto de una mejora puntual</p>
+          <p className="mono-label text-accent">{t('calcImpactEyebrow')}</p>
           <p className="mt-4 text-[15px] leading-relaxed text-muted">
-            Si una mejora en respuesta, calificación y seguimiento generara una
-            visita o una operación adicional, el valor para tu empresa se mide
-            en oportunidades reales — no en el precio completo del inmueble.
+            {t('calcImpactText')}
           </p>
           {extraValue !== null && (
             <p className="mt-4 text-[15px] text-fg">
-              Una operación adicional a tu comisión media equivaldría a{' '}
-              <span className="text-accent">
-                {formatMoney(extraValue, country)}
-              </span>
-              .
+              {t('calcExtraOp', {
+                amount: formatMoney(extraValue, country),
+              })}
             </p>
           )}
           <DualCtas
             className="mt-6"
             size="md"
-            whatsappMessage={`Hola Cluster Media, usé la calculadora de inmobiliarias (${country.name}) y quiero hablar.`}
+            whatsappMessage={t('waCalc', { country: country.name })}
             onWhatsApp={() =>
               trackEvent('WhatsAppClick', {
                 country: country.code,
@@ -222,9 +219,7 @@ export function PipelineCalculator({ country }: Props) {
               })
             }
           />
-          <p className="mt-3 text-xs text-faint">
-            La calculadora es opcional. Puedes contactarnos sin usarla.
-          </p>
+          <p className="mt-3 text-xs text-faint">{t('calcOptionalNote')}</p>
         </div>
       </div>
     </div>

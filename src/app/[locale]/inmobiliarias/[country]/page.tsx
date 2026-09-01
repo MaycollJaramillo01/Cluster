@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { InmobiliariasLanding } from '@/components/inmobiliarias/InmobiliariasLanding';
 import {
   JsonLd,
@@ -7,7 +8,6 @@ import {
   faqSchema,
   serviceSchema,
 } from '@/components/seo/JsonLd';
-import { faqs, landingMeta } from '@/lib/inmobiliarias/content';
 import {
   countryCodes,
   getCountry,
@@ -16,7 +16,7 @@ import {
 import { site } from '@/lib/site';
 
 type Props = {
-  params: Promise<{ country: string }>;
+  params: Promise<{ locale: string; country: string }>;
 };
 
 export function generateStaticParams() {
@@ -24,11 +24,12 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { country: code } = await params;
+  const { locale, country: code } = await params;
   if (!isCountryCode(code)) return {};
   const country = getCountry(code);
-  const title = `${landingMeta.title} · ${country.name}`;
-  const description = `${landingMeta.description} Mercado: ${country.name}.`;
+  const t = await getTranslations({ locale, namespace: 'Inmobiliarias' });
+  const title = `${t('metaTitle')} · ${country.name}`;
+  const description = `${t('metaDescription')} ${country.name}.`;
 
   return {
     title,
@@ -45,25 +46,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function InmobiliariasCountryPage({ params }: Props) {
-  const { country: code } = await params;
+  const { locale, country: code } = await params;
+  setRequestLocale(locale);
   if (!isCountryCode(code)) notFound();
   const country = getCountry(code);
+  const t = await getTranslations('Inmobiliarias');
+  const tc = await getTranslations('Common');
+  const faqs = t.raw('faqs') as { q: string; a: string }[];
 
   return (
     <>
       <JsonLd
         data={serviceSchema({
-          name: `Conversión de leads inmobiliarios — ${country.name}`,
-          description: landingMeta.description,
+          name: `${t('metaTitle')} — ${country.name}`,
+          description: t('metaDescription'),
           url: `${site.url}${country.path}`,
           price: String(country.setupFrom),
         })}
       />
-      <JsonLd data={faqSchema([...faqs])} />
+      <JsonLd data={faqSchema(faqs)} />
       <JsonLd
         data={breadcrumbSchema([
-          { name: 'Inicio', url: site.url },
-          { name: 'Inmobiliarias', url: `${site.url}/inmobiliarias` },
+          { name: tc('home'), url: site.url },
+          { name: t('crumb'), url: `${site.url}/inmobiliarias` },
           { name: country.name, url: `${site.url}${country.path}` },
         ])}
       />

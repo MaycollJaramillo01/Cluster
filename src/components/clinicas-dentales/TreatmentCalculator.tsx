@@ -8,34 +8,46 @@ import {
   CALCULATOR_STORAGE_KEY,
   formatMoney,
   type CalculatorSnapshot,
-  type RemodelacionesMarket,
-} from '@/lib/remodelaciones/markets';
+  type ClinicasDentalesMarket,
+} from '@/lib/clinicas-dentales/markets';
 import { site, whatsappLink } from '@/lib/site';
 
-type BudgetCalculatorProps = {
-  market: RemodelacionesMarket;
+type TreatmentCalculatorProps = {
+  market: ClinicasDentalesMarket;
 };
 
-export function BudgetCalculator({ market }: BudgetCalculatorProps) {
-  const t = useTranslations('Remodelaciones');
-  const [budgets, setBudgets] = useState(20);
-  const [ticket, setTicket] = useState(4_000_000);
-  const [rate, setRate] = useState(25);
+export function TreatmentCalculator({ market }: TreatmentCalculatorProps) {
+  const t = useTranslations('ClinicasDentales');
+  const [valoraciones, setValoraciones] = useState(market.defaultValoraciones);
+  const [pctPresupuesto, setPctPresupuesto] = useState(
+    market.defaultPctPresupuesto,
+  );
+  const [ticket, setTicket] = useState(market.defaultTicket);
+  const [pctAceptacion, setPctAceptacion] = useState(
+    market.defaultPctAceptacion,
+  );
   const [started, setStarted] = useState(false);
 
   const snapshot = useMemo<CalculatorSnapshot>(() => {
-    const budgeted = budgets * ticket;
-    const closed = Math.round(budgeted * (rate / 100));
-    const notConverted = budgeted - closed;
+    const tratamientosPresupuestados = Math.round(
+      valoraciones * (pctPresupuesto / 100),
+    );
+    const valorPresupuestado = tratamientosPresupuestados * ticket;
+    const valorConvertido = Math.round(
+      valorPresupuestado * (pctAceptacion / 100),
+    );
+    const valorNoConvertido = valorPresupuestado - valorConvertido;
     return {
-      budgetsPerMonth: budgets,
+      valoraciones,
+      pctPresupuesto,
       avgTicket: ticket,
-      closeRate: rate,
-      budgeted,
-      closed,
-      notConverted,
+      pctAceptacion,
+      tratamientosPresupuestados,
+      valorPresupuestado,
+      valorConvertido,
+      valorNoConvertido,
     };
-  }, [budgets, ticket, rate]);
+  }, [valoraciones, pctPresupuesto, ticket, pctAceptacion]);
 
   useEffect(() => {
     try {
@@ -50,19 +62,18 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
     setStarted(true);
     trackEvent('CalculatorStart', {
       market: market.id,
-      page: 'remodelaciones',
+      page: 'clinicas-dentales',
     });
   }
 
   function trackComplete(source: string) {
     trackEvent('CalculatorComplete', {
       market: market.id,
-      page: 'remodelaciones',
+      page: 'clinicas-dentales',
       source,
-      budgets: snapshot.budgetsPerMonth,
+      valoraciones: snapshot.valoraciones,
       ticket: snapshot.avgTicket,
-      rate: snapshot.closeRate,
-      notConverted: snapshot.notConverted,
+      noConvertido: snapshot.valorNoConvertido,
     });
   }
 
@@ -75,28 +86,45 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
             <input
               type="number"
               min={1}
-              max={500}
-              value={budgets}
+              max={2000}
+              value={valoraciones}
               onChange={(e) => {
                 markStarted();
-                setBudgets(Math.max(1, Number(e.target.value) || 1));
+                setValoraciones(Math.max(1, Number(e.target.value) || 1));
               }}
               className="mt-2 w-full border border-line bg-ink-950 px-4 py-3 text-lg text-fg outline-none transition-colors focus:border-accent"
             />
           </label>
 
           <label className="block">
-            <span className="mono-label text-faint">{t('calcQ2')}</span>
+            <span className="mono-label flex items-center justify-between text-faint">
+              <span>{t('calcQ2')}</span>
+              <span className="text-accent">{pctPresupuesto}%</span>
+            </span>
+            <input
+              type="range"
+              min={10}
+              max={100}
+              value={pctPresupuesto}
+              onChange={(e) => {
+                markStarted();
+                setPctPresupuesto(Number(e.target.value));
+              }}
+              className="mt-4 w-full accent-[color:var(--accent)]"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mono-label text-faint">{t('calcQ3')}</span>
             <div className="relative mt-2">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-faint">
                 {market.currency}
               </span>
               <input
                 type="number"
-                min={100000}
-                step={100000}
+                min={0}
+                step={market.currency === 'CLP' ? 100000 : 100}
                 value={ticket}
-                placeholder="4000000"
                 onChange={(e) => {
                   markStarted();
                   setTicket(Math.max(0, Number(e.target.value) || 0));
@@ -104,24 +132,21 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
                 className="w-full border border-line bg-ink-950 py-3 pl-16 pr-4 text-lg text-fg outline-none transition-colors focus:border-accent"
               />
             </div>
-            <span className="mt-1.5 block font-mono text-[11px] text-faint">
-              {t('calcTicketHint')}
-            </span>
           </label>
 
           <label className="block">
             <span className="mono-label flex items-center justify-between text-faint">
-              <span>{t('calcQ3')}</span>
-              <span className="text-accent">{rate}%</span>
+              <span>{t('calcQ4')}</span>
+              <span className="text-accent">{pctAceptacion}%</span>
             </span>
             <input
               type="range"
               min={1}
               max={80}
-              value={rate}
+              value={pctAceptacion}
               onChange={(e) => {
                 markStarted();
-                setRate(Number(e.target.value));
+                setPctAceptacion(Number(e.target.value));
               }}
               className="mt-4 w-full accent-[color:var(--accent)]"
             />
@@ -133,21 +158,27 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
             <p className="mono-label text-accent">{t('calcResultEyebrow')}</p>
             <dl className="mt-5 space-y-4">
               <div className="flex items-baseline justify-between gap-4 border-b border-line pb-3">
-                <dt className="text-sm text-muted">{t('calcBudgeted')}</dt>
+                <dt className="text-sm text-muted">{t('calcCount')}</dt>
                 <dd className="font-display text-xl font-semibold text-fg sm:text-2xl">
-                  {formatMoney(snapshot.budgeted, market)}
+                  {snapshot.tratamientosPresupuestados}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4 border-b border-line pb-3">
-                <dt className="text-sm text-muted">{t('calcClosed')}</dt>
+                <dt className="text-sm text-muted">{t('calcBudgeted')}</dt>
                 <dd className="font-display text-xl font-semibold text-fg sm:text-2xl">
-                  {formatMoney(snapshot.closed, market)}
+                  {formatMoney(snapshot.valorPresupuestado, market)}
+                </dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4 border-b border-line pb-3">
+                <dt className="text-sm text-muted">{t('calcConverted')}</dt>
+                <dd className="font-display text-xl font-semibold text-fg sm:text-2xl">
+                  {formatMoney(snapshot.valorConvertido, market)}
                 </dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">
                 <dt className="text-sm text-muted">{t('calcNotConverted')}</dt>
                 <dd className="font-display text-xl font-semibold text-accent sm:text-2xl">
-                  {formatMoney(snapshot.notConverted, market)}
+                  {formatMoney(snapshot.valorNoConvertido, market)}
                 </dd>
               </div>
             </dl>
@@ -156,7 +187,7 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
           <div className="mt-8 space-y-4">
             <p className="text-[15px] leading-relaxed text-muted">
               {t('calcInsight', {
-                amount: formatMoney(snapshot.notConverted, market),
+                amount: formatMoney(snapshot.valorNoConvertido, market),
               })}
             </p>
             <p className="text-sm leading-relaxed text-faint">{t('calcCaveat')}</p>

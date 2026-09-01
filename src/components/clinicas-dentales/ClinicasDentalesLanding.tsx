@@ -6,7 +6,7 @@ import { FAQ } from '@/components/blocks/FAQ';
 import { HeroBackgroundVideo } from '@/components/blocks/PageHero';
 import { DualCtas } from '@/components/landings/DualCtas';
 import { LandingChrome } from '@/components/landings/LandingChrome';
-import { BudgetCalculator } from '@/components/remodelaciones/BudgetCalculator';
+import { TreatmentCalculator } from '@/components/clinicas-dentales/TreatmentCalculator';
 import { Section, SectionHeading, Eyebrow } from '@/components/ui/Section';
 import { Reveal } from '@/components/ui/Reveal';
 import { MinimalLeadForm } from '@/components/verticals/MinimalLeadForm';
@@ -14,39 +14,42 @@ import { trackEvent } from '@/lib/analytics';
 import { site } from '@/lib/site';
 import {
   CALCULATOR_STORAGE_KEY,
+  CLINICAS_DENTALES_MARKETS,
   formatMoney,
-  REMODELACIONES_MARKETS,
-  type RemodelacionesMarket,
-  type RemodelacionesMarketId,
-} from '@/lib/remodelaciones/markets';
+  type ClinicasDentalesMarket,
+  type ClinicasDentalesMarketId,
+} from '@/lib/clinicas-dentales/markets';
 
 type Props = {
-  market: RemodelacionesMarket;
+  market: ClinicasDentalesMarket;
 };
 
 const MARKET_IDS = Object.keys(
-  REMODELACIONES_MARKETS,
-) as RemodelacionesMarketId[];
+  CLINICAS_DENTALES_MARKETS,
+) as ClinicasDentalesMarketId[];
 
-/** Demo numbers for the visibility section (illustrative, not a real case). */
+/** Demo numbers for visibility (illustrative). */
 const DEMO = {
-  inquiries: 120,
-  qualified: 84,
-  visits: 52,
-  quotes: 40,
-  won: 12,
+  evaluations: 80,
+  quotes: 48,
+  followUps: 36,
+  accepted: 17,
+  started: 14,
 };
 
-export function RemodelacionesLanding({ market }: Props) {
-  const t = useTranslations('Remodelaciones');
+export function ClinicasDentalesLanding({ market }: Props) {
+  const t = useTranslations('ClinicasDentales');
   const tc = useTranslations('Common');
   const tn = useTranslations('Nav');
 
   const problems = t.raw('problems') as { n: string; text: string }[];
-  const modules = t.raw('modules') as { title: string; text: string }[];
+  const systemModules = t.raw('systemModules') as {
+    title: string;
+    text: string;
+  }[];
   const followPipeline = t.raw('followPipeline') as string[];
   const followUpExamples = t.raw('followUpExamples') as string[];
-  const opsSoftItems = t.raw('opsSoftItems') as string[];
+  const clinicalSoftItems = t.raw('clinicalSoftItems') as string[];
   const clusterSystemItems = t.raw('clusterSystemItems') as string[];
   const integrations = t.raw('integrations') as string[];
   const demoSteps = t.raw('demoSteps') as { t: string; d: string }[];
@@ -59,19 +62,19 @@ export function RemodelacionesLanding({ market }: Props) {
     status: string;
     next: string;
   }[];
-  const implementationSteps = t.raw('implSteps5') as {
+  const implementationSteps = t.raw('implementationSteps') as {
     n: string;
     title: string;
     text: string;
   }[];
-  const trustPoints = t.raw('trustPoints') as string[];
+  const trustItems = t.raw('trustItems') as string[];
   const faqs = t.raw('faqs') as { q: string; a: string }[];
   const visStats = t.raw('visStats') as {
-    inquiries: string;
-    qualified: string;
-    visits: string;
+    evaluations: string;
     quotes: string;
-    won: string;
+    followUps: string;
+    accepted: string;
+    started: string;
     pipelineValue: string;
   };
 
@@ -79,13 +82,11 @@ export function RemodelacionesLanding({ market }: Props) {
     b === 0 ? '0%' : `${Math.round((a / b) * 100)}%`;
 
   const pipelineValue = formatMoney(
-    market.id === 'cl'
-      ? 48_000_000
-      : market.id === 'mx'
-        ? 1_200_000
-        : market.id === 'es'
-          ? 96_000
-          : 48_000,
+    market.defaultTicket * (DEMO.quotes - DEMO.accepted),
+    market,
+  );
+  const attributedValue = formatMoney(
+    market.defaultTicket * DEMO.started,
     market,
   );
 
@@ -93,19 +94,19 @@ export function RemodelacionesLanding({ market }: Props) {
     trackEvent('WhatsAppClick', {
       market: market.id,
       source,
-      page: 'remodelaciones',
+      page: 'clinicas-dentales',
     });
   const trackCal = (source: string) =>
     trackEvent('ScheduleStart', {
       market: market.id,
       source,
-      page: 'remodelaciones',
+      page: 'clinicas-dentales',
     });
 
   return (
-    <div className="remodelaciones-landing pt-[76px] pb-20 md:pb-0">
+    <div className="clinicas-dentales-landing pt-[76px] pb-20 md:pb-0">
       <LandingChrome
-        vertical="remodelaciones"
+        vertical="clinicas-dentales"
         marketId={market.id}
         whatsappMessage={market.whatsappMessage}
       />
@@ -119,7 +120,7 @@ export function RemodelacionesLanding({ market }: Props) {
             {tc('home')}
           </Link>
           <span>/</span>
-          <Link href="/remodelaciones" className="hover:text-accent">
+          <Link href="/clinicas-dentales" className="hover:text-accent">
             {t('crumb')}
           </Link>
           <span>/</span>
@@ -131,12 +132,12 @@ export function RemodelacionesLanding({ market }: Props) {
         <div className="container-x flex flex-wrap items-center gap-2 py-3">
           <span className="mono-label text-faint">{tc('market')}</span>
           {MARKET_IDS.map((id) => {
-            const m = REMODELACIONES_MARKETS[id];
+            const m = CLINICAS_DENTALES_MARKETS[id];
             const active = id === market.id;
             return (
               <Link
                 key={id}
-                href={`/remodelaciones/${id}`}
+                href={`/clinicas-dentales/${id}`}
                 className={`px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
                   active
                     ? 'bg-accent text-accent-fg'
@@ -155,13 +156,7 @@ export function RemodelacionesLanding({ market }: Props) {
         {market.videoSrc ? (
           <HeroBackgroundVideo src={market.videoSrc} />
         ) : (
-          <>
-            <div className="hero-accent-fade absolute inset-0" aria-hidden="true" />
-            <div
-              className="absolute inset-0 bg-grid-fade [background-size:64px_64px] opacity-30 [mask-image:radial-gradient(70%_55%_at_20%_0%,black,transparent)]"
-              aria-hidden="true"
-            />
-          </>
+          <div className="hero-accent-fade absolute inset-0" aria-hidden="true" />
         )}
         <div className="grain absolute inset-0" aria-hidden="true" />
 
@@ -169,7 +164,7 @@ export function RemodelacionesLanding({ market }: Props) {
           <div className="max-w-xl">
             <Reveal>
               <Eyebrow>{t('heroEyebrow')}</Eyebrow>
-              <h1 className="mt-5 text-[2.35rem] font-semibold leading-[0.98] tracking-tight text-fg sm:text-5xl lg:text-6xl">
+              <h1 className="mt-5 text-[2.15rem] font-semibold leading-[0.98] tracking-tight text-fg sm:text-5xl lg:text-[3.25rem]">
                 {t('heroTitle')}
               </h1>
               <p className="mt-6 text-base leading-relaxed text-muted sm:text-lg">
@@ -204,7 +199,7 @@ export function RemodelacionesLanding({ market }: Props) {
           title={t('problemTitle')}
           description={t('problemIntro')}
         />
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-4 sm:grid-cols-3">
           {problems.map((item, i) => (
             <Reveal
               key={item.n}
@@ -225,7 +220,7 @@ export function RemodelacionesLanding({ market }: Props) {
       <Section tone="dark" id="calculadora">
         <SectionHeading eyebrow={t('calcEyebrow')} title={t('calcTitle')} />
         <div className="mt-12">
-          <BudgetCalculator market={market} />
+          <TreatmentCalculator market={market} />
         </div>
       </Section>
 
@@ -241,21 +236,24 @@ export function RemodelacionesLanding({ market }: Props) {
             {t('visRef')}
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Stat label={visStats.inquiries} value={String(DEMO.inquiries)} />
-            <Stat label={visStats.qualified} value={String(DEMO.qualified)} />
-            <Stat label={visStats.visits} value={String(DEMO.visits)} />
+            <Stat
+              label={visStats.evaluations}
+              value={String(DEMO.evaluations)}
+            />
             <Stat label={visStats.quotes} value={String(DEMO.quotes)} />
-            <Stat label={visStats.won} value={String(DEMO.won)} />
+            <Stat label={visStats.followUps} value={String(DEMO.followUps)} />
+            <Stat label={visStats.accepted} value={String(DEMO.accepted)} />
+            <Stat label={visStats.started} value={String(DEMO.started)} />
             <Stat label={visStats.pipelineValue} value={pipelineValue} accent />
           </div>
           <div className="mt-10 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             {(
               [
-                [t('funnelConsulta'), pct(DEMO.inquiries, DEMO.inquiries)],
-                [t('funnelCalificada'), pct(DEMO.qualified, DEMO.inquiries)],
-                [t('funnelVisita'), pct(DEMO.visits, DEMO.qualified)],
-                [t('funnelPresupuesto'), pct(DEMO.quotes, DEMO.visits)],
-                [t('funnelCierre'), pct(DEMO.won, DEMO.quotes)],
+                [t('funnelValoracion'), pct(DEMO.evaluations, DEMO.evaluations)],
+                [t('funnelPresupuesto'), pct(DEMO.quotes, DEMO.evaluations)],
+                [t('funnelSeguimiento'), pct(DEMO.followUps, DEMO.quotes)],
+                [t('funnelAceptacion'), pct(DEMO.accepted, DEMO.quotes)],
+                [t('funnelInicio'), pct(DEMO.started, DEMO.accepted)],
               ] as [string, string][]
             ).map(([label, rate], idx, arr) => (
               <div key={label} className="flex items-center gap-3">
@@ -280,8 +278,8 @@ export function RemodelacionesLanding({ market }: Props) {
           eyebrow={t('modulesEyebrow')}
           title={t('modulesTitle')}
         />
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {modules.map((m, i) => (
+        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {systemModules.map((m, i) => (
             <Reveal
               key={m.title}
               delay={i * 40}
@@ -335,18 +333,18 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
-      {/* PRIVACIDAD / SOFTWARE */}
+      {/* PRIVACIDAD */}
       <Section tone="dark" id="privacidad-datos">
         <SectionHeading
-          eyebrow={t('integrateEyebrow')}
+          eyebrow={t('clinicalSoftLabel')}
           title={t('privacyTitle')}
           description={t('privacyDesc')}
         />
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
           <Reveal className="border border-line bg-surface p-6">
-            <p className="mono-label text-faint">{t('opsSoftLabel')}</p>
+            <p className="mono-label text-faint">{t('clinicalSoftLabel')}</p>
             <ul className="mt-5 space-y-2 text-[15px] text-muted">
-              {opsSoftItems.map((i) => (
+              {clinicalSoftItems.map((i) => (
                 <li key={i} className="border-b border-line py-2">
                   {i}
                 </li>
@@ -364,7 +362,7 @@ export function RemodelacionesLanding({ market }: Props) {
             </ul>
           </Reveal>
         </div>
-        <p className="mt-6 text-sm text-faint">{t('integrateFocus')}</p>
+        <p className="mt-6 text-sm text-faint">{t('integrateNote')}</p>
       </Section>
 
       {/* INTEGRACIONES */}
@@ -387,7 +385,7 @@ export function RemodelacionesLanding({ market }: Props) {
         <p className="mt-8 max-w-2xl text-lg text-muted">{t('toolsClose')}</p>
       </Section>
 
-      {/* DEMO / RECORRIDO */}
+      {/* DEMO */}
       <Section tone="dark" id="demo">
         <SectionHeading
           eyebrow={t('demoEyebrow')}
@@ -460,16 +458,27 @@ export function RemodelacionesLanding({ market }: Props) {
             {t('dashRef')}
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            <Stat dark label={t('dashBudgeted')} value={pipelineValue} />
-            <Stat dark label={t('dashWon')} value={String(DEMO.won)} />
-            <Stat dark label={t('dashPending')} value="18" />
-            <Stat dark label={t('dashLost')} value="7" />
             <Stat
               dark
-              label={t('dashConversion')}
-              value={pct(DEMO.won, DEMO.quotes)}
-              accent
+              label={t('dashStatEvaluations')}
+              value={String(DEMO.evaluations)}
             />
+            <Stat
+              dark
+              label={t('dashStatQuotes')}
+              value={String(DEMO.quotes)}
+            />
+            <Stat
+              dark
+              label={t('dashStatAccepted')}
+              value={String(DEMO.accepted)}
+            />
+            <Stat
+              dark
+              label={t('dashStatStarted')}
+              value={String(DEMO.started)}
+            />
+            <Stat dark label={t('dashStatValue')} value={attributedValue} accent />
           </div>
           <div className="mt-8 flex flex-wrap gap-2">
             {sources.map((s) => (
@@ -485,7 +494,7 @@ export function RemodelacionesLanding({ market }: Props) {
             <table className="w-full min-w-[520px] text-left text-sm">
               <thead>
                 <tr className="border-b border-line font-mono text-[10px] uppercase tracking-[0.16em] text-faint">
-                  <th className="py-3 pr-4 font-medium">{t('tableOpp')}</th>
+                  <th className="py-3 pr-4 font-medium">{t('tablePatient')}</th>
                   <th className="py-3 pr-4 font-medium">{t('tableSource')}</th>
                   <th className="py-3 pr-4 font-medium">{t('tableStatus')}</th>
                   <th className="py-3 font-medium">{t('tableNext')}</th>
@@ -526,7 +535,7 @@ export function RemodelacionesLanding({ market }: Props) {
         </div>
       </Section>
 
-      {/* EQUIPO / CONFIANZA */}
+      {/* EQUIPO */}
       <Section tone="dark" id="equipo">
         <div className="grid items-center gap-10 lg:grid-cols-2">
           <SectionHeading
@@ -537,13 +546,12 @@ export function RemodelacionesLanding({ market }: Props) {
           <Reveal className="border border-line bg-surface p-6">
             <p className="mono-label text-accent">{site.name}</p>
             <ul className="mt-5 grid gap-2 text-sm text-muted sm:grid-cols-2">
-              {trustPoints.map((item) => (
+              {trustItems.map((item) => (
                 <li key={item} className="border-b border-line py-2">
                   {item}
                 </li>
               ))}
             </ul>
-            <p className="mt-6 text-sm text-fg">{t('trustPhrase')}</p>
           </Reveal>
         </div>
       </Section>
@@ -553,7 +561,7 @@ export function RemodelacionesLanding({ market }: Props) {
         <SectionHeading
           eyebrow={t('casesEyebrow')}
           title={t('casesTitle')}
-          description={t('casesText')}
+          description={t('casesDesc')}
         />
         <div className="mt-8">
           <DualCtas
@@ -565,40 +573,46 @@ export function RemodelacionesLanding({ market }: Props) {
       </Section>
 
       {/* PRECIO */}
-      <Section tone="light" id="precio">
-        <SectionHeading
-          eyebrow={t('priceEyebrow')}
-          title={t('priceTitle')}
-          description={t('priceText')}
-        />
-        <Reveal className="mt-10 max-w-xl border border-line bg-paper p-8">
-          <p className="mono-label text-accent">{tc('provisionalPrice')}</p>
-          {market.implementationFromUsd != null && (
-            <p className="mt-4 font-display text-4xl text-ink sm:text-5xl">
-              {t('priceFrom', { amount: market.implementationFromUsd })}
-            </p>
-          )}
-          {market.implementationFromLocal && (
-            <p className="mt-2 text-sm text-muted">
-              {market.implementationFromLocal}
-            </p>
-          )}
-          {market.showMonthly && market.monthlyFromUsd != null ? (
-            <p className="mt-4 font-mono text-sm text-accent">
-              {t('priceMonthly', { amount: market.monthlyFromUsd })}
-            </p>
-          ) : (
-            <p className="mt-4 text-sm text-muted">{t('priceMonthlySoon')}</p>
-          )}
-          <DualCtas
-            className="mt-6"
-            size="md"
-            whatsappMessage={market.whatsappMessage}
-            onWhatsApp={() => trackWa('precio')}
-            onSchedule={() => trackCal('precio')}
+      {(market.implementationFromUsd != null ||
+        market.implementationFromLocal) && (
+        <Section tone="light" id="precio">
+          <SectionHeading
+            eyebrow={t('priceEyebrow')}
+            title={t('priceTitle')}
+            description={t('priceText')}
           />
-        </Reveal>
-      </Section>
+          <Reveal className="mt-10 max-w-xl border border-line bg-paper p-8">
+            <p className="mono-label text-accent">{t('priceProvisional')}</p>
+            {market.implementationFromUsd != null && (
+              <p className="mt-4 font-display text-4xl text-ink sm:text-5xl">
+                {t('priceFrom', { amount: market.implementationFromUsd })}
+              </p>
+            )}
+            {market.implementationFromLocal && (
+              <p className="mt-2 text-sm text-muted">
+                {market.implementationFromLocal}
+              </p>
+            )}
+            {market.showMonthly && market.monthlyFromUsd != null ? (
+              <p className="mt-4 font-mono text-sm text-accent">
+                {t('priceMonthly', { amount: market.monthlyFromUsd })}
+              </p>
+            ) : (
+              <p className="mt-4 text-sm text-muted">
+                {tc('monthlyDefinedByScope')}
+              </p>
+            )}
+            <p className="mt-2 text-sm text-faint">{t('priceNote')}</p>
+            <DualCtas
+              className="mt-6"
+              size="md"
+              whatsappMessage={market.whatsappMessage}
+              onWhatsApp={() => trackWa('precio')}
+              onSchedule={() => trackCal('precio')}
+            />
+          </Reveal>
+        </Section>
+      )}
 
       {/* CONTACTO */}
       <Section tone="dark" id="contacto">
@@ -623,12 +637,12 @@ export function RemodelacionesLanding({ market }: Props) {
           <div className="border-t border-line pt-8">
             <p className="mb-5 text-sm text-muted">{t('formTitle')}</p>
             <MinimalLeadForm
-              i18nNamespace="Remodelaciones"
-              vertical="remodelaciones"
+              i18nNamespace="ClinicasDentales"
+              vertical="clinicas-dentales"
               country={market.country}
-              landingPath={`/remodelaciones/${market.id}`}
-              origen={`remodelaciones-${market.id}`}
-              servicio="Conversión presupuestos remodelaciones"
+              landingPath={`/clinicas-dentales/${market.id}`}
+              origen={`clinicas-dentales-${market.id}`}
+              servicio="Conversión tratamientos clínicas dentales"
               whatsappMessage={market.whatsappMessage}
               calculatorStorageKey={CALCULATOR_STORAGE_KEY}
             />
@@ -654,8 +668,8 @@ export function RemodelacionesLanding({ market }: Props) {
             <Link href="/inmobiliarias" className="hover:text-accent">
               {tn('inmobiliarias')}
             </Link>
-            <Link href="/clinicas-dentales" className="hover:text-accent">
-              {tn('clinicasDentales')}
+            <Link href="/remodelaciones" className="hover:text-accent">
+              {tn('remodelaciones')}
             </Link>
             <Link href="/contacto" className="hover:text-accent">
               {tc('contact')}

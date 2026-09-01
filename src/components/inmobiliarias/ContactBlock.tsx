@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { MinimalContactForm } from '@/components/landings/MinimalContactForm';
 import type { CountryConfig } from '@/lib/inmobiliarias/types';
 import { getInmobiliariasCalculatorSnapshot } from '@/lib/inmobiliarias/calculatorStore';
@@ -14,6 +15,8 @@ type Props = {
 };
 
 export function ContactBlock({ country }: Props) {
+  const t = useTranslations('Inmobiliarias');
+
   return (
     <MinimalContactForm
       meta={{
@@ -21,7 +24,7 @@ export function ContactBlock({ country }: Props) {
         country: country.code,
         landingPath: country.path,
       }}
-      whatsappMessage={`Hola Cluster Media, vi la landing de inmobiliarias (${country.name}) y quiero hablar sobre el sistema de conversión de leads.`}
+      whatsappMessage={t('waLanding', { country: country.name })}
       graciasPath="/inmobiliarias/gracias"
       tracking={{
         captureUtms,
