@@ -21,6 +21,38 @@ function asText(value: FormDataEntryValue | null) {
   return String(value ?? '').trim();
 }
 
+function mimeFromName(name: string) {
+  const ext = name.split('.').pop()?.toLowerCase() ?? '';
+  const map: Record<string, string> = {
+    mp4: 'video/mp4',
+    mov: 'video/quicktime',
+    webm: 'video/webm',
+    m4v: 'video/x-m4v',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    gif: 'image/gif',
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  };
+  return map[ext] || '';
+}
+
+function resolvedType(file: File, allowed: readonly string[]) {
+  if (isAllowed(file.type, allowed)) return file.type;
+  const inferred = mimeFromName(file.name);
+  return isAllowed(inferred, allowed) ? inferred : '';
+}
+
+function normalizeUrl(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 function isAllowed(type: string, allowed: readonly string[]) {
   return allowed.includes(type);
 }
@@ -39,7 +71,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'invalid_form' }, { status: 400 });
   }
 
-  if (asText(form.get('company'))) {
+  if (asText(form.get('_gotcha'))) {
     return NextResponse.json({ ok: true });
   }
 
@@ -54,8 +86,8 @@ export async function POST(request: Request) {
   const whatsapp = asText(form.get('whatsapp'));
   const country = asText(form.get('country'));
   const salaryUsd = asText(form.get('salaryUsd'));
-  const portfolioUrl = asText(form.get('portfolioUrl'));
-  const linkedin = asText(form.get('linkedin'));
+  const portfolioUrl = normalizeUrl(asText(form.get('portfolioUrl')));
+  const linkedin = normalizeUrl(asText(form.get('linkedin')));
 
   if (!name || !email || !whatsapp || !country || !salaryUsd) {
     return NextResponse.json(
@@ -84,21 +116,26 @@ export async function POST(request: Request) {
   }
 
   let total = cv?.size ?? 0;
+  const portfolioMeta: { file: File; mimeType: string }[] = [];
   for (const file of portfolioFiles) {
     if (file.size > MAX_FILE_BYTES) {
       return NextResponse.json({ ok: false, error: 'file_too_large' }, { status: 400 });
     }
-    if (!isAllowed(file.type, ALLOWED_PORTFOLIO_TYPES)) {
+    const mimeType = resolvedType(file, ALLOWED_PORTFOLIO_TYPES);
+    if (!mimeType) {
       return NextResponse.json({ ok: false, error: 'invalid_file_type' }, { status: 400 });
     }
     total += file.size;
+    portfolioMeta.push({ file, mimeType });
   }
 
+  let cvMime = '';
   if (cv) {
     if (cv.size > MAX_FILE_BYTES) {
       return NextResponse.json({ ok: false, error: 'file_too_large' }, { status: 400 });
     }
-    if (!isAllowed(cv.type, ALLOWED_CV_TYPES)) {
+    cvMime = resolvedType(cv, ALLOWED_CV_TYPES);
+    if (!cvMime) {
       return NextResponse.json({ ok: false, error: 'invalid_file_type' }, { status: 400 });
     }
   }
@@ -111,22 +148,22 @@ export async function POST(request: Request) {
   const files: ApplicationAsset[] = [];
 
   try {
-    for (const file of portfolioFiles) {
+    for (const item of portfolioMeta) {
       const fileId = randomUUID();
-      const buffer = Buffer.from(await file.arrayBuffer());
+      const buffer = Buffer.from(await item.file.arrayBuffer());
       const stored = await saveApplicationAsset({
         applicationId: id,
         fileId,
-        originalName: file.name,
-        mimeType: file.type,
+        originalName: item.file.name,
+        mimeType: item.mimeType,
         buffer,
       });
       files.push({
         id: fileId,
         field: 'portfolio',
-        originalName: file.name,
-        mimeType: file.type,
-        size: file.size,
+        originalName: item.file.name,
+        mimeType: item.mimeType,
+        size: item.file.size,
         pathname: stored.pathname,
         url: stored.url,
       });
@@ -139,14 +176,14 @@ export async function POST(request: Request) {
         applicationId: id,
         fileId,
         originalName: cv.name,
-        mimeType: cv.type,
+        mimeType: cvMime,
         buffer,
       });
       files.push({
         id: fileId,
         field: 'cv',
         originalName: cv.name,
-        mimeType: cv.type,
+        mimeType: cvMime,
         size: cv.size,
         pathname: stored.pathname,
         url: stored.url,

@@ -70,6 +70,10 @@ export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: Apply
     if (cv) data.append('cv', cv);
 
     const portfolioUrl = String(data.get('portfolioUrl') ?? '').trim();
+    const linkedin = String(data.get('linkedin') ?? '').trim();
+    if (portfolioUrl) data.set('portfolioUrl', withHttps(portfolioUrl));
+    if (linkedin) data.set('linkedin', withHttps(linkedin));
+
     if (!portfolio.length && !portfolioUrl) {
       setError(t('portfolioRequired'));
       setSending(false);
@@ -166,9 +170,20 @@ export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: Apply
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
               <p className="text-[15px] leading-relaxed text-muted">{t('intro')}</p>
-              <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" />
+              <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                <label htmlFor="careers-gotcha">
+                  {t('name')}
+                  <input
+                    id="careers-gotcha"
+                    type="text"
+                    name="_gotcha"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </label>
+              </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={t('name')} name="name" required autoComplete="name" />
@@ -254,7 +269,9 @@ export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: Apply
                 )}
                 <input
                   name="portfolioUrl"
-                  type="url"
+                  type="text"
+                  inputMode="url"
+                  autoComplete="off"
                   placeholder={t('portfolioUrlPlaceholder')}
                   className={`${inputClass} mt-3`}
                 />
@@ -264,7 +281,9 @@ export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: Apply
                 <Field
                   label={t('linkedin')}
                   name="linkedin"
-                  type="url"
+                  type="text"
+                  inputMode="url"
+                  autoComplete="url"
                   placeholder={t('linkedinPlaceholder')}
                 />
                 <div>
@@ -317,6 +336,11 @@ export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: Apply
   );
 }
 
+function withHttps(value: string) {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value;
+  return `https://${value}`;
+}
+
 function Field({
   label,
   name,
@@ -326,6 +350,7 @@ function Field({
   autoComplete,
   min,
   step,
+  inputMode,
 }: {
   label: string;
   name: string;
@@ -335,6 +360,7 @@ function Field({
   autoComplete?: string;
   min?: string;
   step?: string;
+  inputMode?: 'text' | 'email' | 'tel' | 'url' | 'numeric';
 }) {
   return (
     <div>
@@ -349,6 +375,7 @@ function Field({
         placeholder={placeholder}
         required={required}
         autoComplete={autoComplete}
+        inputMode={inputMode}
         min={min}
         step={step}
         className={inputClass}
