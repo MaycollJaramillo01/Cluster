@@ -4087,6 +4087,8 @@
     "statusAll": "All statuses",
     "loading": "Loading",
     "empty": "There are no applications yet.",
+    "blobOk": "Shared storage is on. The board looks the same from any country.",
+    "blobOff": "Blob is not connected. Locally, applications stay on this machine; live they may not appear.",
     "logout": "Log out",
     "loginTitle": "Enter the board",
     "loginText": "Use the backoffice password to view applicant profiles.",

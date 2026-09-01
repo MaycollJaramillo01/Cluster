@@ -6,10 +6,49 @@ import type { Application } from './types';
 const FS_DIR = path.join(process.cwd(), 'data', 'careers');
 const TMP_DIR = path.join('/tmp', 'cluster-careers');
 
+function blobToken() {
+  return (
+    process.env.BLOB_READ_WRITE_TOKEN ||
+    process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN ||
+    ''
+  ).trim();
+}
+
 function blobEnabled() {
   return Boolean(
-    process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID,
+    blobToken() ||
+      ((process.env.BLOB_STORE_ID || process.env.BLOB_READ_WRITE_TOKEN_STORE_ID) &&
+        process.env.VERCEL_OIDC_TOKEN),
   );
+}
+
+function blobAuth() {
+  const token = blobToken();
+  return token ? { token } : {};
+}
+
+const blobPutBase = {
+  access: 'private' as const,
+  addRandomSuffix: false,
+  allowOverwrite: true,
+};
+
+async function readBlobJson<T>(url: string): Promise<T | null> {
+  const headers: HeadersInit = {};
+  const token = blobToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(url, { cache: 'no-store', headers });
+  if (!res.ok) return null;
+  return (await res.json()) as T;
+}
+
+async function readBlobBuffer(url: string) {
+  const headers: HeadersInit = {};
+  const token = blobToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) return null;
+  return Buffer.from(await res.arrayBuffer());
 }
 
 function dataDir() {
@@ -60,9 +99,8 @@ export async function saveApplicationJson(application: Application) {
 
   if (blobEnabled()) {
     await put(profileBlobPath(application.id), json, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
+      ...blobAuth(),
+      ...blobPutBase,
       contentType: 'application/json',
     });
   }
@@ -82,9 +120,8 @@ export async function saveApplicationAsset(opts: {
   let url: string | undefined;
   if (blobEnabled()) {
     const blob = await put(fileBlobPath(opts.applicationId, opts.fileId, safe), opts.buffer, {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
+      ...blobAuth(),
+      ...blobPutBase,
       contentType: opts.mimeType || 'application/octet-stream',
     });
     url = blob.url;
@@ -95,11 +132,15 @@ export async function saveApplicationAsset(opts: {
 
 export async function getApplication(id: string): Promise<Application | null> {
   if (blobEnabled()) {
-    const { blobs } = await list({ prefix: profileBlobPath(id), limit: 10 });
+    const { blobs } = await list({
+      ...blobAuth(),
+      prefix: profileBlobPath(id),
+      limit: 10,
+    });
     const match = blobs.find((item) => item.pathname === profileBlobPath(id));
     if (match) {
-      const res = await fetch(match.url, { cache: 'no-store' });
-      if (res.ok) return (await res.json()) as Application;
+      const res = await readBlobJson<Application>(match.url);
+      if (res) return res;
     }
   }
   return readFsJson<Application>(`applications/${id}.json`);
@@ -107,14 +148,16 @@ export async function getApplication(id: string): Promise<Application | null> {
 
 export async function listApplications(): Promise<Application[]> {
   if (blobEnabled()) {
-    const { blobs } = await list({ prefix: 'careers/applications/', limit: 1000 });
+    const { blobs } = await list({
+      ...blobAuth(),
+      prefix: 'careers/applications/',
+      limit: 1000,
+    });
     const apps = await Promise.all(
       blobs
         .filter((item) => item.pathname.endsWith('.json'))
         .map(async (item) => {
-          const res = await fetch(item.url, { cache: 'no-store' });
-          if (!res.ok) return null;
-          return (await res.json()) as Application;
+          return readBlobJson<Application>(item.url);
         }),
     );
     return apps
@@ -138,6 +181,56 @@ export async function listApplications(): Promise<Application[]> {
   }
 }
 
+export type BlobHealth = {
+  configured: boolean;
+  ok: boolean;
+  error?: string;
+};
+
+export async function pingBlob(): Promise<BlobHealth> {
+  if (!blobEnabled()) {
+    return { configured: false, ok: false, error: 'not_configured' };
+  }
+
+  try {
+    await list({ ...blobAuth(), prefix: 'careers/', limit: 1 });
+    return { configured: true, ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'blob_failed';
+    console.error('[careers] blob ping failed:', message);
+    return { configured: true, ok: false, error: message };
+  }
+}
+
+export async function probeBlobWrite(): Promise<BlobHealth> {
+  if (!blobEnabled()) {
+    return { configured: false, ok: false, error: 'not_configured' };
+  }
+
+  try {
+    const pathname = 'careers/_health.json';
+    await put(
+      pathname,
+      JSON.stringify({ ok: true, at: new Date().toISOString() }),
+      {
+        ...blobAuth(),
+        ...blobPutBase,
+        contentType: 'application/json',
+      },
+    );
+    const { blobs } = await list({ ...blobAuth(), prefix: pathname, limit: 5 });
+    const found = blobs.some((item) => item.pathname === pathname);
+    if (!found) {
+      return { configured: true, ok: false, error: 'list_miss' };
+    }
+    return { configured: true, ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'blob_failed';
+    console.error('[careers] blob write probe failed:', message);
+    return { configured: true, ok: false, error: message };
+  }
+}
+
 export async function updateApplication(
   id: string,
   patch: Partial<Pick<Application, 'status'>>,
@@ -158,10 +251,8 @@ export async function readAssetBuffer(application: Application, fileId: string) 
     return { buffer, asset };
   } catch {
     if (asset.url) {
-      const res = await fetch(asset.url);
-      if (!res.ok) return null;
-      const buffer = Buffer.from(await res.arrayBuffer());
-      return { buffer, asset };
+      const buffer = await readBlobBuffer(asset.url);
+      if (buffer) return { buffer, asset };
     }
     return null;
   }
