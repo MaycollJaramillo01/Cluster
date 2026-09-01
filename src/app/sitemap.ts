@@ -50,6 +50,7 @@ const routes = [
   { path: '/clinicas-dentales/es', priority: 0.85, freq: 'weekly' as const },
   { path: '/clinicas-dentales/mx', priority: 0.85, freq: 'weekly' as const },
   { path: '/diagnostico', priority: 0.5, freq: 'yearly' as const },
+  { path: '/carreras/editor-de-video', priority: 0.7, freq: 'weekly' as const },
   { path: '/privacidad', priority: 0.3, freq: 'yearly' as const },
   { path: '/terminos', priority: 0.3, freq: 'yearly' as const },
 ];

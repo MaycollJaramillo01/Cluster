@@ -32,12 +32,23 @@ export function Footer() {
       ],
     },
     {
+      title: tn('solutions'),
+      links: [
+        { label: tn('rutaLocal'), href: '/ruta-local' },
+        { label: tn('clinicasDentales'), href: '/clinicas-dentales' },
+        { label: tn('clinicasEsteticas'), href: '/clinicas-esteticas' },
+        { label: tn('inmobiliarias'), href: '/inmobiliarias' },
+        { label: tn('remodelaciones'), href: '/remodelaciones' },
+      ],
+    },
+    {
       title: t('companyTitle'),
       links: [
         { label: tn('about'), href: '/sobre-cluster' },
         { label: tn('cases'), href: '/casos-de-exito' },
         { label: tn('blog'), href: '/blog' },
         { label: tn('contact'), href: '/contacto' },
+        { label: tn('careers'), href: '/carreras/editor-de-video' },
       ],
     },
   ];
@@ -50,7 +61,7 @@ export function Footer() {
       />
       <div className="container-x relative">
         <div className="grid gap-12 py-16 lg:grid-cols-12 lg:py-20">
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             <Logo variant="light" />
             <p className="mt-5 max-w-sm text-[15px] leading-relaxed text-white/55">
               {t('tagline')}
@@ -91,7 +102,7 @@ export function Footer() {
             </div>
           ))}
 
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-3">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-white/40">
               {t('contactTitle')}
             </h3>

@@ -53,9 +53,10 @@ export const mainNav = [
     href: '/clinicas-esteticas',
     children: [
       { label: 'Ruta Local', href: '/ruta-local' },
+      { label: 'Clínicas dentales', href: '/clinicas-dentales' },
       { label: 'Clínicas estéticas', href: '/clinicas-esteticas' },
       { label: 'Inmobiliarias', href: '/inmobiliarias' },
-      { label: 'Remodelaciones', href: '/remodelaciones' },
+      { label: 'Construcción', href: '/remodelaciones' },
     ],
   },
   { label: 'Planes', href: '/#planes' },

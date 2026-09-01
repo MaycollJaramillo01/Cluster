@@ -26,7 +26,12 @@ export type IconName =
   | 'pen'
   | 'users'
   | 'chart'
-  | 'bolt';
+  | 'bolt'
+  | 'upload'
+  | 'play'
+  | 'link'
+  | 'clock'
+  | 'video';
 
 const paths: Record<IconName, React.ReactNode> = {
   sparkles: (
@@ -124,6 +129,31 @@ const paths: Record<IconName, React.ReactNode> = {
   ),
   chart: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
   bolt: <path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" />,
+  upload: (
+    <>
+      <path d="M12 16V4M8 8l4-4 4 4" />
+      <path d="M4 20h16" />
+    </>
+  ),
+  play: <path d="M8 6l12 6-12 6V6z" />,
+  link: (
+    <>
+      <path d="M10 13a5 5 0 007.07 0l1.41-1.41a5 5 0 00-7.07-7.07L10 5.93" />
+      <path d="M14 11a5 5 0 00-7.07 0L5.52 12.41a5 5 0 007.07 7.07L14 18.07" />
+    </>
+  ),
+  clock: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>
+  ),
+  video: (
+    <>
+      <rect x="3" y="6" width="13" height="12" rx="2" />
+      <path d="M16 10l5-3v10l-5-3" />
+    </>
+  ),
 };
 
 type IconProps = SVGProps<SVGSVGElement> & {

@@ -67,9 +67,9 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
   }
 
   return (
-    <div className="border border-line bg-surface p-6 sm:p-8">
-      <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <div className="space-y-6">
+    <div className="theme-dark overflow-hidden border border-line bg-ink-950 text-fg">
+      <div className="grid lg:grid-cols-2">
+        <div className="space-y-7 border-line p-6 sm:p-8 lg:border-r">
           <label className="block">
             <span className="mono-label text-faint">{t('calcQ1')}</span>
             <input
@@ -81,13 +81,13 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
                 markStarted();
                 setBudgets(Math.max(1, Number(e.target.value) || 1));
               }}
-              className="mt-2 w-full border border-line bg-ink-950 px-4 py-3 text-lg text-fg outline-none transition-colors focus:border-accent"
+              className="mt-3 w-full border border-line bg-ink-900 px-4 py-3.5 text-lg text-fg outline-none transition-colors focus:border-accent"
             />
           </label>
 
           <label className="block">
             <span className="mono-label text-faint">{t('calcQ2')}</span>
-            <div className="relative mt-2">
+            <div className="relative mt-3">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-mono text-sm text-faint">
                 {market.currency}
               </span>
@@ -101,7 +101,7 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
                   markStarted();
                   setTicket(Math.max(0, Number(e.target.value) || 0));
                 }}
-                className="w-full border border-line bg-ink-950 py-3 pl-16 pr-4 text-lg text-fg outline-none transition-colors focus:border-accent"
+                className="w-full border border-line bg-ink-900 py-3.5 pl-16 pr-4 text-lg text-fg outline-none transition-colors focus:border-accent"
               />
             </div>
             <span className="mt-1.5 block font-mono text-[11px] text-faint">
@@ -123,15 +123,19 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
                 markStarted();
                 setRate(Number(e.target.value));
               }}
-              className="mt-4 w-full accent-[color:var(--accent)]"
+              className="mt-5 w-full accent-[color:var(--accent)]"
             />
           </label>
         </div>
 
-        <div className="flex flex-col justify-between border border-line bg-ink-950 p-5 sm:p-6">
-          <div>
+        <div className="relative flex flex-col justify-between bg-surface/30 p-6 sm:p-8">
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent"
+            aria-hidden="true"
+          />
+          <div className="relative">
             <p className="mono-label text-accent">{t('calcResultEyebrow')}</p>
-            <dl className="mt-5 space-y-4">
+            <dl className="mt-6 space-y-4">
               <div className="flex items-baseline justify-between gap-4 border-b border-line pb-3">
                 <dt className="text-sm text-muted">{t('calcBudgeted')}</dt>
                 <dd className="font-display text-xl font-semibold text-fg sm:text-2xl">
@@ -144,7 +148,7 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
                   {formatMoney(snapshot.closed, market)}
                 </dd>
               </div>
-              <div className="flex items-baseline justify-between gap-4">
+              <div className="flex items-baseline justify-between gap-4 rounded-sm bg-accent/10 px-3 py-3">
                 <dt className="text-sm text-muted">{t('calcNotConverted')}</dt>
                 <dd className="font-display text-xl font-semibold text-accent sm:text-2xl">
                   {formatMoney(snapshot.notConverted, market)}
@@ -153,7 +157,7 @@ export function BudgetCalculator({ market }: BudgetCalculatorProps) {
             </dl>
           </div>
 
-          <div className="mt-8 space-y-4">
+          <div className="relative mt-8 space-y-4">
             <p className="text-[15px] leading-relaxed text-muted">
               {t('calcInsight', {
                 amount: formatMoney(snapshot.notConverted, market),

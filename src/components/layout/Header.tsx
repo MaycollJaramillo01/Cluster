@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
     href: '/clinicas-esteticas',
     children: [
       { labelKey: 'rutaLocal', href: '/ruta-local' },
+      { labelKey: 'clinicasDentales', href: '/clinicas-dentales' },
       { labelKey: 'clinicasEsteticas', href: '/clinicas-esteticas' },
       { labelKey: 'inmobiliarias', href: '/inmobiliarias' },
       { labelKey: 'remodelaciones', href: '/remodelaciones' },
@@ -97,7 +98,8 @@ export function Header() {
                 <Link
                   href={item.href}
                   className={`inline-flex items-center gap-1 px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] transition-colors ${
-                    isActive(item.href)
+                    isActive(item.href) ||
+                    item.children?.some((child) => isActive(child.href))
                       ? 'text-accent'
                       : 'text-muted hover:text-fg'
                   }`}
@@ -166,7 +168,10 @@ export function Header() {
                   <Link
                     href={item.href}
                     className={`flex-1 px-3 py-3 text-lg font-medium ${
-                      isActive(item.href) ? 'text-accent' : 'text-fg'
+                      isActive(item.href) ||
+                      item.children?.some((child) => isActive(child.href))
+                        ? 'text-accent'
+                        : 'text-fg'
                     }`}
                   >
                     {t(item.labelKey)}
