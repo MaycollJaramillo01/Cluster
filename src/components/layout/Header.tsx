@@ -41,7 +41,6 @@ const navItems: NavItem[] = [
       { labelKey: 'inmobiliarias', href: '/inmobiliarias' },
       { labelKey: 'remodelaciones', href: '/remodelaciones' },
     ],
-    ],
   },
   { labelKey: 'plans', href: '/#planes' },
   { labelKey: 'cases', href: '/casos-de-exito' },
