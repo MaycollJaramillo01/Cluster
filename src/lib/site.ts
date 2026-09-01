@@ -48,6 +48,15 @@ export const mainNav = [
       { label: 'SEO Audit', href: '/seo-audit' },
     ],
   },
+  {
+    label: 'Soluciones',
+    href: '/clinicas-dentales',
+    children: [
+      { label: 'Clínicas dentales', href: '/clinicas-dentales' },
+      { label: 'Construcción', href: '/remodelaciones' },
+      { label: 'Ruta Local', href: '/ruta-local' },
+    ],
+  },
   // Ruta Local es tratada como landing page, por lo que no se incluye en la navegación principal.
   //{ label: 'Ruta Local', href: '/ruta-local' },
   { label: 'Planes', href: '/#planes' },

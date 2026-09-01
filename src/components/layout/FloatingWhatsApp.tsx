@@ -1,11 +1,20 @@
 'use client';
 
+import { usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { Icon } from '@/components/ui/Icon';
 import { whatsappLink } from '@/lib/site';
 
 export function FloatingWhatsApp() {
   const t = useTranslations('Common');
+  const pathname = usePathname();
+
+  if (
+    pathname.startsWith('/postulaciones') ||
+    pathname.startsWith('/carreras')
+  ) {
+    return null;
+  }
 
   return (
     <a

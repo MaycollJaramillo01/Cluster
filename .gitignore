@@ -48,3 +48,6 @@ next-env.d.ts
 
 # Raw source videos outside public/ (heavy; optimized copies live under public/assets/videos/)
 /assets/videos/
+
+# Postulaciones (perfiles, archivos y hash de acceso local)
+/data/careers/

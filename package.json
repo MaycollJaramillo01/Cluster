@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-map/honduras": "^1.0.9",
+    "@vercel/blob": "^2.8.0",
     "next": "15.3.9",
     "next-intl": "^4.13.7",
     "react": "19.0.0",
