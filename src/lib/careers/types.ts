@@ -1,13 +1,30 @@
 export const CAREERS_JOB_SLUGS = ['editor-de-video'] as const;
 export type CareersJobSlug = (typeof CAREERS_JOB_SLUGS)[number];
 
-export const APPLICATION_STATUSES = [
+export const PIPELINE_STATUSES = [
   'new',
-  'reviewing',
-  'contacted',
-  'archived',
+  'screening',
+  'interview',
+  'test',
+  'offer',
+  'hired',
 ] as const;
+
+export const PARKED_STATUSES = ['hold', 'rejected', 'archived'] as const;
+
+export const APPLICATION_STATUSES = [
+  ...PIPELINE_STATUSES,
+  ...PARKED_STATUSES,
+] as const;
+
+export type PipelineStatus = (typeof PIPELINE_STATUSES)[number];
+export type ParkedStatus = (typeof PARKED_STATUSES)[number];
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
+
+export const LEGACY_STATUS_MAP: Record<string, ApplicationStatus> = {
+  reviewing: 'screening',
+  contacted: 'interview',
+};
 
 export type ApplicationAssetField = 'portfolio' | 'cv';
 
@@ -21,10 +38,30 @@ export type ApplicationAsset = {
   url?: string;
 };
 
+export type ApplicationNote = {
+  id: string;
+  createdAt: string;
+  author: string;
+  text: string;
+};
+
+export type ApplicationEventType = 'status' | 'note' | 'rating' | 'followup' | 'tag';
+
+export type ApplicationEvent = {
+  id: string;
+  createdAt: string;
+  type: ApplicationEventType;
+  actor: string;
+  text: string;
+  from?: string;
+  to?: string;
+};
+
 export type Application = {
   id: string;
   jobSlug: CareersJobSlug;
   createdAt: string;
+  updatedAt: string;
   name: string;
   email: string;
   whatsapp: string;
@@ -34,11 +71,31 @@ export type Application = {
   linkedin: string;
   files: ApplicationAsset[];
   status: ApplicationStatus;
+  rating: number;
+  tags: string[];
+  notes: ApplicationNote[];
+  events: ApplicationEvent[];
+  nextAction: string;
+  nextActionAt: string;
+  rejectionReason: string;
+};
+
+export type ApplicationPatchInput = {
+  status?: string;
+  rating?: number;
+  tags?: string[];
+  nextAction?: string;
+  nextActionAt?: string;
+  rejectionReason?: string;
+  note?: { author?: string; text: string };
+  actor?: string;
 };
 
 export const MAX_PORTFOLIO_FILES = 8;
 export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 export const MAX_TOTAL_BYTES = 60 * 1024 * 1024;
+export const MAX_TAGS = 12;
+export const MAX_NOTE_CHARS = 4000;
 
 export const ALLOWED_PORTFOLIO_TYPES = [
   'video/mp4',
@@ -66,6 +123,11 @@ export function isCareersJobSlug(value: string): value is CareersJobSlug {
 
 export function isApplicationStatus(value: string): value is ApplicationStatus {
   return (APPLICATION_STATUSES as readonly string[]).includes(value);
+}
+
+export function coerceStatus(value: string): ApplicationStatus | null {
+  const mapped = LEGACY_STATUS_MAP[value] ?? value;
+  return isApplicationStatus(mapped) ? mapped : null;
 }
 
 export function publicAssetUrl(applicationId: string, fileId: string) {

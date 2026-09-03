@@ -13,6 +13,7 @@ import {
 } from '@/lib/careers/types';
 import { saveApplicationAsset, saveApplicationJson } from '@/lib/careers/store';
 import { notifyApplication } from '@/lib/careers/email';
+import { emptyCrmFields } from '@/lib/careers/crm';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -190,10 +191,11 @@ export async function POST(request: Request) {
       });
     }
 
+    const now = new Date().toISOString();
     const application: Application = {
       id,
       jobSlug,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
       name,
       email,
       whatsapp,
@@ -203,6 +205,7 @@ export async function POST(request: Request) {
       linkedin,
       files,
       status: 'new',
+      ...emptyCrmFields(now),
     };
 
     await saveApplicationJson(application);

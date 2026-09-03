@@ -1,7 +1,8 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { put, list } from '@vercel/blob';
-import type { Application } from './types';
+import type { Application, ApplicationPatchInput } from './types';
+import { applyApplicationPatch, normalizeApplication } from './crm';
 
 const FS_DIR = path.join(process.cwd(), 'data', 'careers');
 const TMP_DIR = path.join('/tmp', 'cluster-careers');
@@ -140,10 +141,11 @@ export async function getApplication(id: string): Promise<Application | null> {
     const match = blobs.find((item) => item.pathname === profileBlobPath(id));
     if (match) {
       const res = await readBlobJson<Application>(match.url);
-      if (res) return res;
+      const normalized = normalizeApplication(res);
+      if (normalized) return normalized;
     }
   }
-  return readFsJson<Application>(`applications/${id}.json`);
+  return normalizeApplication(await readFsJson<Application>(`applications/${id}.json`));
 }
 
 export async function listApplications(): Promise<Application[]> {
@@ -160,9 +162,11 @@ export async function listApplications(): Promise<Application[]> {
           return readBlobJson<Application>(item.url);
         }),
     );
-    return apps
-      .filter((item): item is Application => Boolean(item?.id))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return sortApplications(
+      apps
+        .map((item) => normalizeApplication(item))
+        .filter((item): item is Application => Boolean(item)),
+    );
   }
 
   try {
@@ -173,12 +177,18 @@ export async function listApplications(): Promise<Application[]> {
         .filter((name) => name.endsWith('.json'))
         .map(async (name) => readFsJson<Application>(`applications/${name}`)),
     );
-    return apps
-      .filter((item): item is Application => Boolean(item?.id))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return sortApplications(
+      apps
+        .map((item) => normalizeApplication(item))
+        .filter((item): item is Application => Boolean(item)),
+    );
   } catch {
     return [];
   }
+}
+
+function sortApplications(apps: Application[]) {
+  return apps.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export type BlobHealth = {
@@ -231,13 +241,10 @@ export async function probeBlobWrite(): Promise<BlobHealth> {
   }
 }
 
-export async function updateApplication(
-  id: string,
-  patch: Partial<Pick<Application, 'status'>>,
-) {
+export async function updateApplication(id: string, patch: ApplicationPatchInput) {
   const current = await getApplication(id);
   if (!current) return null;
-  const next: Application = { ...current, ...patch };
+  const next = applyApplicationPatch(current, patch);
   await saveApplicationJson(next);
   return next;
 }

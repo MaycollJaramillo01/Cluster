@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getApplication, readAssetBuffer } from '@/lib/careers/store';
+import { unauthorizedIfGuest } from '@/lib/careers/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -7,6 +8,9 @@ export const dynamic = 'force-dynamic';
 type RouteContext = { params: Promise<{ applicationId: string; fileId: string }> };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const denied = await unauthorizedIfGuest();
+  if (denied) return denied;
+
   const { applicationId, fileId } = await context.params;
   const application = await getApplication(applicationId);
   if (!application) {
