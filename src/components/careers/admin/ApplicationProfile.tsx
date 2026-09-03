@@ -6,7 +6,6 @@ import { Link } from '@/i18n/navigation';
 import type { Application, ApplicationEvent, ApplicationStatus } from '@/lib/careers/types';
 import { APPLICATION_STATUSES, publicAssetUrl } from '@/lib/careers/types';
 import { Icon } from '@/components/ui/Icon';
-import { Button } from '@/components/ui/Button';
 import {
   RatingStars,
   StatusBadge,
@@ -83,10 +82,10 @@ export function ApplicationProfile({ id }: { id: string }) {
 
   if (missing) {
     return (
-      <section className="theme-light bg-paper px-5 pt-36 pb-20 text-fg">
+      <section className="crm-shell min-h-screen px-5 pt-28 pb-16">
         <div className="container-x">
-          <p className="text-muted">{t('notFound')}</p>
-          <Link href="/postulaciones" className="mt-4 inline-block text-accent">
+          <p className="text-[#5b6b66]">{t('notFound')}</p>
+          <Link href="/postulaciones" className="mt-4 inline-block text-[#08604c]">
             {t('back')}
           </Link>
         </div>
@@ -96,8 +95,8 @@ export function ApplicationProfile({ id }: { id: string }) {
 
   if (!application) {
     return (
-      <section className="theme-light flex min-h-[60vh] items-center justify-center bg-paper">
-        <p className="mono-label text-faint">{t('loading')}</p>
+      <section className="crm-shell flex min-h-[60vh] items-center justify-center">
+        <p className="text-sm text-[#5b6b66]">{t('loading')}</p>
       </section>
     );
   }
@@ -106,63 +105,58 @@ export function ApplicationProfile({ id }: { id: string }) {
   const cv = application.files.find((file) => file.field === 'cv');
 
   return (
-    <section className="theme-light bg-paper pt-32 pb-20 text-fg">
+    <section className="crm-shell min-h-screen pt-28 pb-16">
       <div className="container-x">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href="/postulaciones"
-            className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-fg"
-          >
-            {t('back')}
+          <Link href="/postulaciones" className="text-sm text-[#5b6b66] hover:text-[#17201d]">
+            ← {t('back')}
           </Link>
           <div className="flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-muted">
-            {t('actor')}
-            <input
-              value={actor}
-              onChange={(event) => onActor(event.target.value)}
-              placeholder={t('actorPlaceholder')}
-              className="bg-surface px-3 py-2 text-[13px] text-fg focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]"
-            />
+            <label className="flex items-center gap-2 text-sm text-[#5b6b66]">
+              {t('actor')}
+              <input
+                value={actor}
+                onChange={(event) => onActor(event.target.value)}
+                placeholder={t('actorPlaceholder')}
+                className="crm-input w-40 py-2"
+              />
             </label>
             <LogoutButton />
           </div>
         </div>
 
-        <div className="mt-8 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="mono-label text-accent">{t('profileLabel')}</p>
-            <h1 className="mt-2 text-4xl text-fg">{application.name}</h1>
-            <p className="mt-3 text-[15px] text-muted">
-              {t('jobEditor')} · {formatDateTime(application.createdAt, locale)}
-            </p>
+        <div className="crm-card mt-6 p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-[#02C39A]">{t('jobEditor')}</p>
+              <h1 className="mt-1 text-3xl text-[#17201d]">{application.name}</h1>
+              <p className="mt-2 text-sm text-[#5b6b66]">
+                {formatDateTime(application.createdAt, locale)}
+              </p>
+            </div>
+            <StatusBadge status={application.status} label={t(`status.${application.status}`)} />
           </div>
-          <StatusBadge status={application.status} label={t(`status.${application.status}`)} />
-        </div>
 
-        <div className="mt-8 -mx-5 overflow-x-auto px-5">
-          <div className="flex min-w-max gap-1">
-            {APPLICATION_STATUSES.map((value) => (
-              <button
-                key={value}
-                type="button"
-                disabled={saving || application.status === value}
-                onClick={() => save({ status: value })}
-                className={`px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] ${
-                  application.status === value
-                    ? 'bg-ink-950 text-paper'
-                    : 'bg-surface text-muted hover:bg-surface-2 hover:text-fg'
-                }`}
-              >
-                {t(`status.${value}`)}
-              </button>
-            ))}
-          </div>
+          <label className="mt-6 block text-sm text-[#5b6b66]">
+            {t('statusLabel')}
+            <select
+              value={application.status}
+              disabled={saving}
+              onChange={(event) => save({ status: event.target.value as ApplicationStatus })}
+              className={`${inputClass} mt-2 max-w-sm bg-[#eef3f1]`}
+            >
+              {APPLICATION_STATUSES.map((value) => (
+                <option key={value} value={value}>
+                  {t(`status.${value}`)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <aside className="space-y-6">
-            <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
+          <aside className="space-y-5">
+            <div className="crm-card p-6 sm:p-7">
               <dl className="space-y-4 text-[15px]">
                 <Row label={t('email')} value={application.email} href={`mailto:${application.email}`} />
                 <Row label={t('whatsapp')} value={application.whatsapp} href={wa || undefined} />
@@ -180,24 +174,35 @@ export function ApplicationProfile({ id }: { id: string }) {
                 ) : null}
               </dl>
               <div className="mt-6 flex flex-wrap gap-2">
-                <Button href={`mailto:${application.email}`} external size="sm" icon="mail">
+                <a href={`mailto:${application.email}`} className="crm-btn crm-btn-quiet text-sm">
                   {t('emailCta')}
-                </Button>
+                </a>
                 {wa ? (
-                  <Button href={wa} external size="sm" variant="whatsapp" icon="whatsapp">
+                  <a
+                    href={wa}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="crm-btn text-sm"
+                    style={{ background: '#25D366', color: '#fff' }}
+                  >
                     {t('whatsappCta')}
-                  </Button>
+                  </a>
                 ) : null}
                 {waInterview ? (
-                  <Button href={waInterview} external size="sm" variant="secondary">
+                  <a
+                    href={waInterview}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="crm-btn crm-btn-quiet text-sm"
+                  >
                     {t('whatsappInterview')}
-                  </Button>
+                  </a>
                 ) : null}
               </div>
             </div>
 
-            <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
-              <p className="mono-label text-accent">{t('evaluation')}</p>
+            <div className="crm-card p-6 sm:p-7">
+              <p className="text-sm font-semibold text-[#17201d]">{t('evaluation')}</p>
               <div className="mt-4">
                 <p className="mb-2 text-sm text-muted">{t('ratingLabel')}</p>
                 <RatingStars value={application.rating} onChange={(rating) => save({ rating })} size={22} />
@@ -213,7 +218,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                       onClick={() =>
                         save({ tags: application.tags.filter((item) => item !== tag) })
                       }
-                      className="bg-ink-950 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper"
+                      className="rounded-[999px] bg-[#17201d] px-3 py-1 text-xs text-white"
                     >
                       {tag} ×
                     </button>
@@ -237,7 +242,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                   />
                   <button
                     type="submit"
-                    className="bg-ink-950 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.14em] text-paper"
+                    className="crm-btn px-4 py-2 text-sm"
                   >
                     {t('addTag')}
                   </button>
@@ -250,7 +255,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                         key={tag}
                         type="button"
                         onClick={() => save({ tags: [...application.tags, tag] })}
-                        className="bg-surface px-2 py-1 text-xs text-muted hover:text-fg"
+                        className="rounded-[999px] bg-[#eef3f1] px-3 py-1 text-xs text-[#5b6b66] hover:text-[#17201d]"
                       >
                         + {tag}
                       </button>
@@ -259,8 +264,8 @@ export function ApplicationProfile({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
-              <p className="mono-label text-accent">{t('followupTitle')}</p>
+            <div className="crm-card p-6 sm:p-7">
+              <p className="text-sm font-semibold text-[#17201d]">{t('followupTitle')}</p>
               <form
                 className="mt-4 space-y-3"
                 onSubmit={(event: FormEvent) => {
@@ -283,7 +288,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="bg-ink-950 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-paper disabled:opacity-50"
+                  className="crm-btn px-4 py-2 text-sm disabled:opacity-50"
                 >
                   {t('saveFollowup')}
                 </button>
@@ -309,11 +314,8 @@ export function ApplicationProfile({ id }: { id: string }) {
           </aside>
 
           <div className="space-y-6">
-            <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
-              <p className="mono-label text-accent">{t('portfolioLabel')}</p>
-              <h2 className="mt-2 font-display text-2xl font-semibold uppercase text-ink-950">
-                {t('portfolioTitle')}
-              </h2>
+            <div className="crm-card p-6 sm:p-7">
+              <p className="text-sm font-semibold text-[#17201d]">{t('portfolioTitle')}</p>
               {portfolioFiles.length === 0 && !application.portfolioUrl ? (
                 <p className="mt-5 text-muted">{t('noMedia')}</p>
               ) : (
@@ -321,7 +323,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                   {portfolioFiles.map((file) => {
                     const src = publicAssetUrl(application.id, file.id);
                     return (
-                      <li key={file.id} className="overflow-hidden bg-ink-950">
+                      <li key={file.id} className="overflow-hidden rounded-[1rem] bg-[#17201d]">
                         {file.mimeType.startsWith('video/') ? (
                           <video src={src} controls className="aspect-video w-full bg-black" />
                         ) : file.mimeType.startsWith('image/') ? (
@@ -351,8 +353,8 @@ export function ApplicationProfile({ id }: { id: string }) {
             </div>
 
             {cv ? (
-              <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
-                <p className="mono-label text-accent">{t('cvLabel')}</p>
+              <div className="crm-card p-6 sm:p-7">
+                <p className="text-sm font-semibold text-[#17201d]">{t('cvLabel')}</p>
                 <a
                   href={publicAssetUrl(application.id, cv.id)}
                   target="_blank"
@@ -424,9 +426,9 @@ function NotesPanel({
   }, [application.events, application.notes]);
 
   return (
-    <div className="border border-ink-950/10 bg-paper p-6 sm:p-8">
-      <p className="mono-label text-accent">{t('notesTitle')}</p>
-      <p className="mt-2 text-sm text-muted">{t('notesIntro')}</p>
+    <div className="crm-card p-6 sm:p-7">
+      <p className="text-sm font-semibold text-[#17201d]">{t('notesTitle')}</p>
+      <p className="mt-1 text-sm text-[#5b6b66]">{t('notesIntro')}</p>
       <form
         className="mt-4 space-y-3"
         onSubmit={(event) => {
@@ -444,7 +446,7 @@ function NotesPanel({
         <button
           type="submit"
           disabled={saving || !note.trim()}
-          className="bg-ink-950 px-4 py-3 font-mono text-[11px] uppercase tracking-[0.16em] text-paper disabled:opacity-50"
+          className="crm-btn px-4 py-2 text-sm disabled:opacity-50"
         >
           {t('addNote')}
         </button>
@@ -455,8 +457,8 @@ function NotesPanel({
       ) : (
         <ol className="mt-8 space-y-5">
           {timeline.map((item) => (
-            <li key={item.id} className="border-t border-ink-950/10 pt-5">
-              <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
+            <li key={item.id} className="border-t border-black/5 pt-4">
+              <p className="text-xs text-[#8a9b95]">
                 {formatDateTime(item.createdAt, locale)} · {item.actor || t('actorFallback')}
               </p>
               {item.kind === 'note' ? (
@@ -515,7 +517,7 @@ function Row({
 
   return (
     <div>
-      <dt className="mono-label text-faint">{label}</dt>
+      <dt className="text-xs text-[#8a9b95]">{label}</dt>
       <dd className="mt-1">{content}</dd>
     </div>
   );
