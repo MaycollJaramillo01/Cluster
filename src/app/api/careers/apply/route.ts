@@ -8,12 +8,13 @@ import {
   MAX_TOTAL_BYTES,
   type Application,
   type ApplicationAsset,
-  type CareersJobSlug,
-  isCareersJobSlug,
+  DEFAULT_JOB_SLUG,
+  isJobSlug,
 } from '@/lib/careers/types';
 import { saveApplicationAsset, saveApplicationJson } from '@/lib/careers/store';
 import { notifyApplication } from '@/lib/careers/email';
 import { emptyCrmFields } from '@/lib/careers/crm';
+import { getJob } from '@/lib/careers/jobs';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -76,11 +77,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const jobSlugRaw = asText(form.get('jobSlug')) || 'editor-de-video';
-  if (!isCareersJobSlug(jobSlugRaw)) {
+  const jobSlugRaw = asText(form.get('jobSlug')) || DEFAULT_JOB_SLUG;
+  if (!isJobSlug(jobSlugRaw)) {
     return NextResponse.json({ ok: false, error: 'invalid_job' }, { status: 400 });
   }
-  const jobSlug: CareersJobSlug = jobSlugRaw;
+  const job = await getJob(jobSlugRaw);
+  if (!job || !job.open) {
+    return NextResponse.json({ ok: false, error: 'invalid_job' }, { status: 400 });
+  }
+  const jobSlug = job.slug;
 
   const name = asText(form.get('name'));
   const email = asText(form.get('email'));

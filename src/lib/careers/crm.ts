@@ -2,7 +2,8 @@ import {
   MAX_NOTE_CHARS,
   MAX_TAGS,
   coerceStatus,
-  isCareersJobSlug,
+  DEFAULT_JOB_SLUG,
+  isJobSlug,
   type Application,
   type ApplicationEvent,
   type ApplicationNote,
@@ -32,7 +33,7 @@ export function normalizeApplication(raw: Partial<Application> | null | undefine
   if (!id || !name) return null;
 
   const jobSlugRaw = String(raw.jobSlug ?? '');
-  const jobSlug = isCareersJobSlug(jobSlugRaw) ? jobSlugRaw : 'editor-de-video';
+  const jobSlug = isJobSlug(jobSlugRaw) ? jobSlugRaw : DEFAULT_JOB_SLUG;
   const status = coerceStatus(String(raw.status ?? 'new')) ?? 'new';
   const rating = clampRating(raw.rating);
   const createdAt = String(raw.createdAt ?? new Date().toISOString());

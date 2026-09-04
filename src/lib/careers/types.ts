@@ -1,5 +1,20 @@
-export const CAREERS_JOB_SLUGS = ['editor-de-video'] as const;
-export type CareersJobSlug = (typeof CAREERS_JOB_SLUGS)[number];
+export type JobOpening = {
+  slug: string;
+  title: string;
+  summary: string;
+  description: string;
+  location: string;
+  employment: string;
+  open: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const DEFAULT_JOB_SLUG = 'editor-de-video';
+
+export function isJobSlug(value: string) {
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) && value.length >= 2 && value.length <= 80;
+}
 
 export const PIPELINE_STATUSES = [
   'new',
@@ -59,7 +74,7 @@ export type ApplicationEvent = {
 
 export type Application = {
   id: string;
-  jobSlug: CareersJobSlug;
+  jobSlug: string;
   createdAt: string;
   updatedAt: string;
   name: string;
@@ -116,10 +131,6 @@ export const ALLOWED_CV_TYPES = [
   'image/jpeg',
   'image/png',
 ] as const;
-
-export function isCareersJobSlug(value: string): value is CareersJobSlug {
-  return (CAREERS_JOB_SLUGS as readonly string[]).includes(value);
-}
 
 export function isApplicationStatus(value: string): value is ApplicationStatus {
   return (APPLICATION_STATUSES as readonly string[]).includes(value);

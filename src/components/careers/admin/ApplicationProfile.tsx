@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import type { Application, ApplicationEvent, ApplicationStatus } from '@/lib/careers/types';
+import type { Application, ApplicationEvent, ApplicationStatus, JobOpening } from '@/lib/careers/types';
 import { APPLICATION_STATUSES, publicAssetUrl } from '@/lib/careers/types';
 import { Icon } from '@/components/ui/Icon';
 import {
@@ -35,6 +35,7 @@ export function ApplicationProfile({ id }: { id: string }) {
   const [nextAction, setNextAction] = useState('');
   const [nextActionAt, setNextActionAt] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
 
   const rawTags = t.raw('tagSuggestions');
   const suggestions = Array.isArray(rawTags) ? (rawTags as string[]) : [];
@@ -42,9 +43,10 @@ export function ApplicationProfile({ id }: { id: string }) {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [response, meRes] = await Promise.all([
+      const [response, meRes, jobsRes] = await Promise.all([
         fetch(`/api/careers/applications/${id}`, { cache: 'no-store' }),
         fetch('/api/careers/auth', { cache: 'no-store' }),
+        fetch('/api/careers/jobs', { cache: 'no-store' }),
       ]);
       if (cancelled) return;
       if (!response.ok) {
@@ -53,8 +55,12 @@ export function ApplicationProfile({ id }: { id: string }) {
       }
       const data = (await response.json()) as { application?: Application };
       const me = (await meRes.json()) as { name?: string; email?: string };
+      const jobsData = (await jobsRes.json()) as { jobs?: JobOpening[] };
       const profile = data.application ?? null;
       setApplication(profile);
+      const title =
+        jobsData.jobs?.find((job) => job.slug === profile?.jobSlug)?.title || t('jobEditor');
+      setJobTitle(title);
       const display = me.name || readActor() || me.email || '';
       if (display) {
         writeActor(display);
@@ -131,7 +137,7 @@ export function ApplicationProfile({ id }: { id: string }) {
     <>
       <AdminHero
         title={application.name}
-        subtitle={`${t('jobEditor')} · ${formatDateTime(application.createdAt, locale)}`}
+        subtitle={`${jobTitle || t('jobEditor')} · ${formatDateTime(application.createdAt, locale)}`}
       />
 
       <section className="theme-light bg-paper py-16 text-fg sm:py-20">

@@ -283,6 +283,16 @@ export async function updateApplication(id: string, patch: ApplicationPatchInput
   return next;
 }
 
+export async function updateApplications(ids: string[], patch: ApplicationPatchInput) {
+  const unique = [...new Set(ids.map((id) => String(id).trim()).filter(Boolean))].slice(0, 80);
+  const saved: Application[] = [];
+  for (const id of unique) {
+    const next = await updateApplication(id, patch);
+    if (next) saved.push(next);
+  }
+  return saved;
+}
+
 export async function readAssetBuffer(application: Application, fileId: string) {
   const asset = application.files.find((file) => file.id === fileId);
   if (!asset) return null;

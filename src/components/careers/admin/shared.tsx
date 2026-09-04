@@ -61,6 +61,19 @@ export async function patchApplication(id: string, patch: ApplicationPatchInput)
   return data.application;
 }
 
+export async function patchApplications(ids: string[], patch: ApplicationPatchInput) {
+  const response = await fetch('/api/careers/applications', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids, patch: { ...patch, actor: patch.actor || readActor() } }),
+  });
+  const data = (await response.json()) as { applications?: Application[]; error?: string };
+  if (!response.ok || !data.applications) {
+    throw new Error(data.error || 'save_failed');
+  }
+  return data.applications;
+}
+
 export function exportCsv(applications: Application[]) {
   const header = [
     'nombre',
