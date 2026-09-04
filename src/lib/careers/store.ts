@@ -34,22 +34,56 @@ const blobPutBase = {
   allowOverwrite: true,
 };
 
+function blobError(error: unknown) {
+  const cause = error && typeof error === 'object' ? (error as { cause?: { code?: string } }).cause : undefined;
+  const code = cause?.code || (error instanceof Error ? error.message : 'blob_failed');
+  console.warn('[careers] blob unavailable, using local files:', code);
+}
+
 async function readBlobJson<T>(url: string): Promise<T | null> {
-  const headers: HeadersInit = {};
-  const token = blobToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url, { cache: 'no-store', headers });
-  if (!res.ok) return null;
-  return (await res.json()) as T;
+  try {
+    const headers: HeadersInit = {};
+    const token = blobToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(url, { cache: 'no-store', headers });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch (error) {
+    blobError(error);
+    return null;
+  }
 }
 
 async function readBlobBuffer(url: string) {
-  const headers: HeadersInit = {};
-  const token = blobToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(url, { headers });
-  if (!res.ok) return null;
-  return Buffer.from(await res.arrayBuffer());
+  try {
+    const headers: HeadersInit = {};
+    const token = blobToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch (error) {
+    blobError(error);
+    return null;
+  }
+}
+
+async function tryBlobPut(...args: Parameters<typeof put>) {
+  try {
+    return await put(...args);
+  } catch (error) {
+    blobError(error);
+    return null;
+  }
+}
+
+async function tryBlobList(prefix: string, limit = 1000) {
+  try {
+    return await list({ ...blobAuth(), prefix, limit });
+  } catch (error) {
+    blobError(error);
+    return null;
+  }
 }
 
 function dataDir() {
@@ -99,7 +133,7 @@ export async function saveApplicationJson(application: Application) {
   await writeFsFile(`applications/${application.id}.json`, json);
 
   if (blobEnabled()) {
-    await put(profileBlobPath(application.id), json, {
+    await tryBlobPut(profileBlobPath(application.id), json, {
       ...blobAuth(),
       ...blobPutBase,
       contentType: 'application/json',
@@ -120,12 +154,12 @@ export async function saveApplicationAsset(opts: {
 
   let url: string | undefined;
   if (blobEnabled()) {
-    const blob = await put(fileBlobPath(opts.applicationId, opts.fileId, safe), opts.buffer, {
+    const blob = await tryBlobPut(fileBlobPath(opts.applicationId, opts.fileId, safe), opts.buffer, {
       ...blobAuth(),
       ...blobPutBase,
       contentType: opts.mimeType || 'application/octet-stream',
     });
-    url = blob.url;
+    url = blob?.url;
   }
 
   return { pathname: rel, url };
@@ -133,12 +167,8 @@ export async function saveApplicationAsset(opts: {
 
 export async function getApplication(id: string): Promise<Application | null> {
   if (blobEnabled()) {
-    const { blobs } = await list({
-      ...blobAuth(),
-      prefix: profileBlobPath(id),
-      limit: 10,
-    });
-    const match = blobs.find((item) => item.pathname === profileBlobPath(id));
+    const listed = await tryBlobList(profileBlobPath(id), 10);
+    const match = listed?.blobs.find((item) => item.pathname === profileBlobPath(id));
     if (match) {
       const res = await readBlobJson<Application>(match.url);
       const normalized = normalizeApplication(res);
@@ -148,27 +178,7 @@ export async function getApplication(id: string): Promise<Application | null> {
   return normalizeApplication(await readFsJson<Application>(`applications/${id}.json`));
 }
 
-export async function listApplications(): Promise<Application[]> {
-  if (blobEnabled()) {
-    const { blobs } = await list({
-      ...blobAuth(),
-      prefix: 'careers/applications/',
-      limit: 1000,
-    });
-    const apps = await Promise.all(
-      blobs
-        .filter((item) => item.pathname.endsWith('.json'))
-        .map(async (item) => {
-          return readBlobJson<Application>(item.url);
-        }),
-    );
-    return sortApplications(
-      apps
-        .map((item) => normalizeApplication(item))
-        .filter((item): item is Application => Boolean(item)),
-    );
-  }
-
+async function listApplicationsFromFs(): Promise<Application[]> {
   try {
     const dir = path.join(dataDir(), 'applications');
     const names = await fs.readdir(dir);
@@ -187,6 +197,27 @@ export async function listApplications(): Promise<Application[]> {
   }
 }
 
+export async function listApplications(): Promise<Application[]> {
+  if (blobEnabled()) {
+    const listed = await tryBlobList('careers/applications/', 1000);
+    if (listed) {
+      const apps = await Promise.all(
+        listed.blobs
+          .filter((item) => item.pathname.endsWith('.json'))
+          .map(async (item) => readBlobJson<Application>(item.url)),
+      );
+      const fromBlob = sortApplications(
+        apps
+          .map((item) => normalizeApplication(item))
+          .filter((item): item is Application => Boolean(item)),
+      );
+      if (fromBlob.length > 0) return fromBlob;
+    }
+  }
+
+  return listApplicationsFromFs();
+}
+
 function sortApplications(apps: Application[]) {
   return apps.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
@@ -203,7 +234,10 @@ export async function pingBlob(): Promise<BlobHealth> {
   }
 
   try {
-    await list({ ...blobAuth(), prefix: 'careers/', limit: 1 });
+    const listed = await tryBlobList('careers/', 1);
+    if (!listed) {
+      return { configured: true, ok: false, error: 'unreachable' };
+    }
     return { configured: true, ok: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'blob_failed';

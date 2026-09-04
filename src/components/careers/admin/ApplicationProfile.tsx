@@ -9,14 +9,19 @@ import { Icon } from '@/components/ui/Icon';
 import {
   RatingStars,
   StatusBadge,
+  btnQuiet,
+  btnSolid,
   formatDateTime,
   inputClass,
+  paperCard,
   patchApplication,
   readActor,
   whatsappHref,
   writeActor,
 } from './shared';
 import { LogoutButton } from './CareersAuthGate';
+import { AdminHero } from './AdminHero';
+import { Button } from '@/components/ui/Button';
 
 export function ApplicationProfile({ id }: { id: string }) {
   const t = useTranslations('CareersAdmin');
@@ -35,18 +40,26 @@ export function ApplicationProfile({ id }: { id: string }) {
   const suggestions = Array.isArray(rawTags) ? (rawTags as string[]) : [];
 
   useEffect(() => {
-    setActor(readActor());
     let cancelled = false;
     (async () => {
-      const response = await fetch(`/api/careers/applications/${id}`, { cache: 'no-store' });
+      const [response, meRes] = await Promise.all([
+        fetch(`/api/careers/applications/${id}`, { cache: 'no-store' }),
+        fetch('/api/careers/auth', { cache: 'no-store' }),
+      ]);
       if (cancelled) return;
       if (!response.ok) {
         setMissing(true);
         return;
       }
       const data = (await response.json()) as { application?: Application };
+      const me = (await meRes.json()) as { name?: string; email?: string };
       const profile = data.application ?? null;
       setApplication(profile);
+      const display = me.name || readActor() || me.email || '';
+      if (display) {
+        writeActor(display);
+        setActor(display);
+      }
       setNextAction(profile?.nextAction ?? '');
       setNextActionAt(profile?.nextActionAt ?? '');
       setRejectionReason(profile?.rejectionReason ?? '');
@@ -82,22 +95,32 @@ export function ApplicationProfile({ id }: { id: string }) {
 
   if (missing) {
     return (
-      <section className="crm-shell min-h-screen px-5 pt-28 pb-16">
-        <div className="container-x">
-          <p className="text-[#5b6b66]">{t('notFound')}</p>
-          <Link href="/postulaciones" className="mt-4 inline-block text-[#08604c]">
-            {t('back')}
-          </Link>
-        </div>
-      </section>
+      <>
+        <AdminHero title={t('heroTitle')} subtitle={t('notFound')} />
+        <section className="theme-light bg-paper py-16 text-fg sm:py-20">
+          <div className="container-x">
+            <Link
+              href="/postulaciones"
+              className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-fg"
+            >
+              ← {t('back')}
+            </Link>
+          </div>
+        </section>
+      </>
     );
   }
 
   if (!application) {
     return (
-      <section className="crm-shell flex min-h-[60vh] items-center justify-center">
-        <p className="text-sm text-[#5b6b66]">{t('loading')}</p>
-      </section>
+      <>
+        <AdminHero title={t('heroTitle')} subtitle={t('loading')} />
+        <section className="theme-light bg-paper py-24 text-fg">
+          <div className="container-x">
+            <p className="mono-label text-faint">{t('loading')}</p>
+          </div>
+        </section>
+      </>
     );
   }
 
@@ -105,45 +128,55 @@ export function ApplicationProfile({ id }: { id: string }) {
   const cv = application.files.find((file) => file.field === 'cv');
 
   return (
-    <section className="crm-shell min-h-screen pt-28 pb-16">
-      <div className="container-x">
+    <>
+      <AdminHero
+        title={application.name}
+        subtitle={`${t('jobEditor')} · ${formatDateTime(application.createdAt, locale)}`}
+      />
+
+      <section className="theme-light bg-paper py-16 text-fg sm:py-20">
+        <div className="container-x">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link href="/postulaciones" className="text-sm text-[#5b6b66] hover:text-[#17201d]">
+          <Link
+            href="/postulaciones"
+            className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-fg"
+          >
             ← {t('back')}
           </Link>
           <div className="flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-[#5b6b66]">
+            <label className="text-sm text-muted">
               {t('actor')}
               <input
                 value={actor}
                 onChange={(event) => onActor(event.target.value)}
+                onBlur={() => {
+                  const name = actor.trim();
+                  if (name.length < 2) return;
+                  void fetch('/api/careers/users', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name }),
+                  });
+                }}
                 placeholder={t('actorPlaceholder')}
-                className="crm-input w-40 py-2"
+                className={`${inputClass} mt-1 w-40 py-2`}
               />
             </label>
             <LogoutButton />
           </div>
         </div>
 
-        <div className="crm-card mt-6 p-6 sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium text-[#02C39A]">{t('jobEditor')}</p>
-              <h1 className="mt-1 text-3xl text-[#17201d]">{application.name}</h1>
-              <p className="mt-2 text-sm text-[#5b6b66]">
-                {formatDateTime(application.createdAt, locale)}
-              </p>
-            </div>
+        <div className={`${paperCard} mt-8`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="mono-label text-accent">{t('statusLabel')}</p>
             <StatusBadge status={application.status} label={t(`status.${application.status}`)} />
           </div>
-
-          <label className="mt-6 block text-sm text-[#5b6b66]">
-            {t('statusLabel')}
+          <label className="mt-4 block text-sm text-muted">
             <select
               value={application.status}
               disabled={saving}
               onChange={(event) => save({ status: event.target.value as ApplicationStatus })}
-              className={`${inputClass} mt-2 max-w-sm bg-[#eef3f1]`}
+              className={`${inputClass} mt-2 max-w-sm`}
             >
               {APPLICATION_STATUSES.map((value) => (
                 <option key={value} value={value}>
@@ -156,7 +189,7 @@ export function ApplicationProfile({ id }: { id: string }) {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <aside className="space-y-5">
-            <div className="crm-card p-6 sm:p-7">
+            <div className={paperCard}>
               <dl className="space-y-4 text-[15px]">
                 <Row label={t('email')} value={application.email} href={`mailto:${application.email}`} />
                 <Row label={t('whatsapp')} value={application.whatsapp} href={wa || undefined} />
@@ -174,35 +207,24 @@ export function ApplicationProfile({ id }: { id: string }) {
                 ) : null}
               </dl>
               <div className="mt-6 flex flex-wrap gap-2">
-                <a href={`mailto:${application.email}`} className="crm-btn crm-btn-quiet text-sm">
+                <a href={`mailto:${application.email}`} className={btnQuiet}>
                   {t('emailCta')}
                 </a>
                 {wa ? (
-                  <a
-                    href={wa}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="crm-btn text-sm"
-                    style={{ background: '#25D366', color: '#fff' }}
-                  >
+                  <Button href={wa} external size="sm" variant="whatsapp">
                     {t('whatsappCta')}
-                  </a>
+                  </Button>
                 ) : null}
                 {waInterview ? (
-                  <a
-                    href={waInterview}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="crm-btn crm-btn-quiet text-sm"
-                  >
+                  <a href={waInterview} target="_blank" rel="noopener noreferrer" className={btnQuiet}>
                     {t('whatsappInterview')}
                   </a>
                 ) : null}
               </div>
             </div>
 
-            <div className="crm-card p-6 sm:p-7">
-              <p className="text-sm font-semibold text-[#17201d]">{t('evaluation')}</p>
+            <div className={paperCard}>
+              <p className="mono-label text-accent">{t('evaluation')}</p>
               <div className="mt-4">
                 <p className="mb-2 text-sm text-muted">{t('ratingLabel')}</p>
                 <RatingStars value={application.rating} onChange={(rating) => save({ rating })} size={22} />
@@ -218,7 +240,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                       onClick={() =>
                         save({ tags: application.tags.filter((item) => item !== tag) })
                       }
-                      className="rounded-[999px] bg-[#17201d] px-3 py-1 text-xs text-white"
+                      className="bg-ink-950 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-paper"
                     >
                       {tag} ×
                     </button>
@@ -240,10 +262,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                     placeholder={t('tagPlaceholder')}
                     className={inputClass}
                   />
-                  <button
-                    type="submit"
-                    className="crm-btn px-4 py-2 text-sm"
-                  >
+                  <button type="submit" className={btnSolid}>
                     {t('addTag')}
                   </button>
                 </form>
@@ -255,7 +274,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                         key={tag}
                         type="button"
                         onClick={() => save({ tags: [...application.tags, tag] })}
-                        className="rounded-[999px] bg-[#eef3f1] px-3 py-1 text-xs text-[#5b6b66] hover:text-[#17201d]"
+                        className="bg-surface px-3 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted hover:text-fg"
                       >
                         + {tag}
                       </button>
@@ -264,8 +283,8 @@ export function ApplicationProfile({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="crm-card p-6 sm:p-7">
-              <p className="text-sm font-semibold text-[#17201d]">{t('followupTitle')}</p>
+            <div className={paperCard}>
+              <p className="mono-label text-accent">{t('followupTitle')}</p>
               <form
                 className="mt-4 space-y-3"
                 onSubmit={(event: FormEvent) => {
@@ -288,7 +307,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="crm-btn px-4 py-2 text-sm disabled:opacity-50"
+                  className={`${btnSolid} disabled:opacity-50`}
                 >
                   {t('saveFollowup')}
                 </button>
@@ -314,8 +333,8 @@ export function ApplicationProfile({ id }: { id: string }) {
           </aside>
 
           <div className="space-y-6">
-            <div className="crm-card p-6 sm:p-7">
-              <p className="text-sm font-semibold text-[#17201d]">{t('portfolioTitle')}</p>
+            <div className={paperCard}>
+              <p className="mono-label text-accent">{t('portfolioTitle')}</p>
               {portfolioFiles.length === 0 && !application.portfolioUrl ? (
                 <p className="mt-5 text-muted">{t('noMedia')}</p>
               ) : (
@@ -323,7 +342,7 @@ export function ApplicationProfile({ id }: { id: string }) {
                   {portfolioFiles.map((file) => {
                     const src = publicAssetUrl(application.id, file.id);
                     return (
-                      <li key={file.id} className="overflow-hidden rounded-[1rem] bg-[#17201d]">
+                      <li key={file.id} className="overflow-hidden border border-ink-950/10 bg-ink-950">
                         {file.mimeType.startsWith('video/') ? (
                           <video src={src} controls className="aspect-video w-full bg-black" />
                         ) : file.mimeType.startsWith('image/') ? (
@@ -353,8 +372,8 @@ export function ApplicationProfile({ id }: { id: string }) {
             </div>
 
             {cv ? (
-              <div className="crm-card p-6 sm:p-7">
-                <p className="text-sm font-semibold text-[#17201d]">{t('cvLabel')}</p>
+              <div className={paperCard}>
+                <p className="mono-label text-accent">{t('cvLabel')}</p>
                 <a
                   href={publicAssetUrl(application.id, cv.id)}
                   target="_blank"
@@ -383,8 +402,9 @@ export function ApplicationProfile({ id }: { id: string }) {
             />
           </div>
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }
 
@@ -426,9 +446,9 @@ function NotesPanel({
   }, [application.events, application.notes]);
 
   return (
-    <div className="crm-card p-6 sm:p-7">
-      <p className="text-sm font-semibold text-[#17201d]">{t('notesTitle')}</p>
-      <p className="mt-1 text-sm text-[#5b6b66]">{t('notesIntro')}</p>
+    <div className={paperCard}>
+      <p className="mono-label text-accent">{t('notesTitle')}</p>
+      <p className="mt-2 text-sm text-muted">{t('notesIntro')}</p>
       <form
         className="mt-4 space-y-3"
         onSubmit={(event) => {
@@ -446,7 +466,7 @@ function NotesPanel({
         <button
           type="submit"
           disabled={saving || !note.trim()}
-          className="crm-btn px-4 py-2 text-sm disabled:opacity-50"
+          className={btnSolid}
         >
           {t('addNote')}
         </button>
@@ -457,8 +477,8 @@ function NotesPanel({
       ) : (
         <ol className="mt-8 space-y-5">
           {timeline.map((item) => (
-            <li key={item.id} className="border-t border-black/5 pt-4">
-              <p className="text-xs text-[#8a9b95]">
+            <li key={item.id} className="border-t border-ink-950/10 pt-4">
+              <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-faint">
                 {formatDateTime(item.createdAt, locale)} · {item.actor || t('actorFallback')}
               </p>
               {item.kind === 'note' ? (
@@ -517,7 +537,7 @@ function Row({
 
   return (
     <div>
-      <dt className="text-xs text-[#8a9b95]">{label}</dt>
+      <dt className="font-mono text-[11px] uppercase tracking-[0.12em] text-faint">{label}</dt>
       <dd className="mt-1">{content}</dd>
     </div>
   );

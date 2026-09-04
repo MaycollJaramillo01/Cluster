@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { ApplicationProfile } from '@/components/careers/admin/ApplicationProfile';
 import { CareersAuthGate } from '@/components/careers/admin/CareersAuthGate';
-import { hasPassword, isAdminRequest } from '@/lib/careers/auth';
+import { isAdminRequest } from '@/lib/careers/auth';
 
 type PageParams = { params: Promise<{ locale: string; id: string }> };
 
@@ -22,9 +22,8 @@ export default async function PostulacionProfilePage({ params }: PageParams) {
   const { locale, id } = await params;
   setRequestLocale(locale);
   const authed = await isAdminRequest();
-  const configured = await hasPassword();
   return (
-    <CareersAuthGate initial={authed ? 'ready' : configured ? 'login' : 'setup'}>
+    <CareersAuthGate initial={authed ? 'ready' : 'email'}>
       <ApplicationProfile id={id} />
     </CareersAuthGate>
   );

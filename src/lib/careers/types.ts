@@ -133,3 +133,15 @@ export function coerceStatus(value: string): ApplicationStatus | null {
 export function publicAssetUrl(applicationId: string, fileId: string) {
   return `/api/careers/files/${applicationId}/${fileId}`;
 }
+
+export type UserRole = 'owner' | 'member';
+export type UserStatus = 'pending' | 'approved' | 'rejected';
+
+export type PublicUser = {
+  email: string;
+  name: string;
+  role: UserRole;
+  status: UserStatus;
+  createdAt: string;
+  updatedAt: string;
+};

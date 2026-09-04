@@ -109,15 +109,15 @@ function csvCell(value: string) {
 }
 
 const STATUS_TONE: Record<ApplicationStatus, string> = {
-  new: 'bg-emerald-50 text-emerald-800',
-  screening: 'bg-sky-50 text-sky-800',
-  interview: 'bg-violet-50 text-violet-800',
-  test: 'bg-amber-50 text-amber-800',
-  offer: 'bg-[#02C39A]/20 text-[#08604c]',
-  hired: 'bg-ink-950 text-white',
-  hold: 'bg-stone-100 text-stone-600',
-  rejected: 'bg-rose-50 text-rose-800',
-  archived: 'bg-stone-100 text-stone-500',
+  new: 'bg-accent/15 text-ink-950',
+  screening: 'bg-ink-950/8 text-ink-950',
+  interview: 'bg-accent/15 text-ink-950',
+  test: 'bg-ink-950/8 text-ink-950',
+  offer: 'bg-accent text-accent-fg',
+  hired: 'bg-ink-950 text-paper',
+  hold: 'bg-ink-950/8 text-ink-700',
+  rejected: 'bg-ink-950/8 text-ink-700',
+  archived: 'bg-ink-950/5 text-faint',
 };
 
 export function StatusBadge({
@@ -129,7 +129,7 @@ export function StatusBadge({
 }) {
   return (
     <span
-      className={`inline-flex rounded-[999px] px-2.5 py-1 text-xs font-medium ${STATUS_TONE[status]}`}
+      className={`inline-flex px-2 py-1 font-mono text-[10px] uppercase tracking-[0.14em] ${STATUS_TONE[status]}`}
     >
       {label}
     </span>
@@ -177,4 +177,13 @@ export function RatingStars({
   );
 }
 
-export const inputClass = 'crm-input [&>option]:bg-white';
+export const inputClass =
+  'w-full bg-surface px-4 py-3 text-[15px] text-fg placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)] [&>option]:bg-paper';
+
+export const paperCard = 'border border-ink-950/10 bg-paper p-6 sm:p-7';
+
+export const btnSolid =
+  'inline-flex items-center justify-center bg-ink-950 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-paper hover:opacity-90 disabled:opacity-50';
+
+export const btnQuiet =
+  'inline-flex items-center justify-center bg-surface px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-fg hover:bg-surface-2 disabled:opacity-50';

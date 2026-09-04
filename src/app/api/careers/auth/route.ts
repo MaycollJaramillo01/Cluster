@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server';
 import {
   clearSession,
-  hasPassword,
+  createResetToken,
   isAdminRequest,
-  setupPassword,
-  verifyPassword,
+  loginUser,
+  lookupEmail,
+  normalizeEmail,
+  readAdminSession,
+  registerUser,
+  resetPassword,
+  setupUserPassword,
   withSession,
 } from '@/lib/careers/auth';
+import { notifyUserSignup, sendCareersResetEmail } from '@/lib/careers/email';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -21,87 +27,162 @@ function clientIp(request: Request) {
   );
 }
 
-function locked(ip: string) {
+function locked(key: string) {
   const now = Date.now();
-  const row = attempts.get(ip);
+  const row = attempts.get(key);
   if (!row || now > row.resetAt) {
-    attempts.set(ip, { count: 0, resetAt: now + 15 * 60 * 1000 });
+    attempts.set(key, { count: 0, resetAt: now + 15 * 60 * 1000 });
     return false;
   }
   return row.count >= 8;
 }
 
-function fail(ip: string) {
-  const row = attempts.get(ip) ?? { count: 0, resetAt: Date.now() + 15 * 60 * 1000 };
+function fail(key: string) {
+  const row = attempts.get(key) ?? { count: 0, resetAt: Date.now() + 15 * 60 * 1000 };
   row.count += 1;
-  attempts.set(ip, row);
+  attempts.set(key, row);
 }
 
+type Body = {
+  action?: string;
+  email?: string;
+  password?: string;
+  token?: string;
+  name?: string;
+};
+
 export async function GET() {
-  if (await isAdminRequest()) {
-    return NextResponse.json({ ok: true, authed: true });
+  const session = await readAdminSession();
+  if (session) {
+    return NextResponse.json({
+      ok: true,
+      authed: true,
+      email: session.email,
+      name: session.name,
+      role: session.role,
+      pendingCount: session.pendingCount,
+    });
   }
-  const configured = await hasPassword();
-  return NextResponse.json({
-    ok: false,
-    authed: false,
-    setup: !configured,
-  });
+  return NextResponse.json({ ok: false, authed: false });
 }
 
 export async function POST(request: Request) {
   const ip = clientIp(request);
-  if (locked(ip)) {
-    return NextResponse.json({ ok: false, error: 'locked' }, { status: 429 });
-  }
-
-  let body: { password?: string };
+  let body: Body;
   try {
-    body = (await request.json()) as { password?: string };
+    body = (await request.json()) as Body;
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
   }
 
+  const action = String(body.action ?? 'login');
+  const email = String(body.email ?? '');
   const password = String(body.password ?? '');
-  if (!(await hasPassword())) {
-    return NextResponse.json({ ok: false, error: 'needs_setup' }, { status: 400 });
-  }
-  if (!(await verifyPassword(password))) {
-    fail(ip);
-    return NextResponse.json({ ok: false, error: 'invalid_password' }, { status: 401 });
-  }
+  const token = String(body.token ?? '');
+  const name = String(body.name ?? '');
+  const key = `${ip}:${action}`;
 
-  attempts.delete(ip);
-  return withSession(NextResponse.json({ ok: true, authed: true }));
-}
-
-export async function PUT(request: Request) {
-  const ip = clientIp(request);
-  if (locked(ip)) {
+  if (action !== 'lookup' && locked(key)) {
     return NextResponse.json({ ok: false, error: 'locked' }, { status: 429 });
   }
 
-  let body: { password?: string };
-  try {
-    body = (await request.json()) as { password?: string };
-  } catch {
-    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  if (action === 'lookup') {
+    const next = await lookupEmail(email);
+    return NextResponse.json({ ok: true, next });
   }
 
-  const password = String(body.password ?? '');
-  if (password.length < 8) {
-    return NextResponse.json({ ok: false, error: 'password_too_short' }, { status: 400 });
+  if (action === 'register') {
+    const result = await registerUser({ email, password, name });
+    if (!result.ok) {
+      fail(key);
+      const status = result.error === 'already_registered' ? 409 : 400;
+      return NextResponse.json({ ok: false, error: result.error }, { status });
+    }
+    attempts.delete(key);
+    if (result.authed) {
+      return withSession(
+        NextResponse.json({
+          ok: true,
+          authed: true,
+          email: result.email,
+          name: result.name,
+          status: result.status,
+        }),
+        result.email,
+      );
+    }
+    await notifyUserSignup({ name: result.name, email: result.email });
+    return NextResponse.json({
+      ok: true,
+      authed: false,
+      email: result.email,
+      status: result.status,
+    });
   }
 
-  const result = await setupPassword(password);
-  if (!result.ok) {
-    return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
+  if (action === 'setup') {
+    const result = await setupUserPassword(email, password, name);
+    if (!result.ok) {
+      fail(key);
+      return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
+    }
+    attempts.delete(key);
+    return withSession(
+      NextResponse.json({ ok: true, authed: true, email: result.email, name: result.name }),
+      result.email,
+    );
   }
 
-  attempts.delete(ip);
-  return withSession(NextResponse.json({ ok: true, authed: true }));
+  if (action === 'login') {
+    const result = await loginUser(email, password);
+    if (!result.ok) {
+      fail(key);
+      const status =
+        result.error === 'needs_setup' || result.error === 'pending' ? 400 : 401;
+      return NextResponse.json({ ok: false, error: result.error }, { status });
+    }
+    attempts.delete(key);
+    return withSession(
+      NextResponse.json({
+        ok: true,
+        authed: true,
+        email: result.email,
+        name: result.name,
+        role: result.role,
+      }),
+      result.email,
+    );
+  }
+
+  if (action === 'forgot') {
+    const origin = new URL(request.url).origin;
+    const result = await createResetToken(email);
+    if (result.token) {
+      const resetUrl = `${origin}/postulaciones?reset=${result.token}`;
+      await sendCareersResetEmail(normalizeEmail(email), resetUrl);
+    }
+    return NextResponse.json({ ok: true, sent: true });
+  }
+
+  if (action === 'reset') {
+    const result = await resetPassword(token, password);
+    if (!result.ok) {
+      fail(key);
+      return NextResponse.json({ ok: false, error: result.error }, { status: 400 });
+    }
+    attempts.delete(key);
+    return withSession(
+      NextResponse.json({ ok: true, authed: true, email: result.email, name: result.name }),
+      result.email,
+    );
+  }
+
+  return NextResponse.json({ ok: false, error: 'invalid_action' }, { status: 400 });
 }
 
 export async function DELETE() {
+  if (!(await isAdminRequest())) {
+    return clearSession(NextResponse.json({ ok: true, authed: false }));
+  }
   return clearSession(NextResponse.json({ ok: true, authed: false }));
 }
