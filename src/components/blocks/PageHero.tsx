@@ -25,6 +25,8 @@ type PageHeroProps = {
   visual?: ReactNode;
   /** Full-bleed muted looping background video (edge-to-edge). */
   videoSrc?: string;
+  /** Hide the default schedule / WhatsApp row (internal pages). */
+  hideCtas?: boolean;
   children?: ReactNode;
 };
 
@@ -97,6 +99,7 @@ export function PageHero({
   image,
   visual,
   videoSrc,
+  hideCtas,
   children,
 }: PageHeroProps) {
   const tc = useTranslations('Common');
@@ -177,27 +180,29 @@ export function PageHero({
               </Reveal>
             )}
 
-            <Reveal delay={200}>
-              <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Button
-                  href={resolvedPrimaryCta.href}
-                  external={resolvedPrimaryCta.href.startsWith('http')}
-                  size="lg"
-                  iconRight="arrow-right"
-                >
-                  {resolvedPrimaryCta.label}
-                </Button>
-                <Button
-                  href={whatsappLink(whatsappMessage)}
-                  external
-                  variant="ghost"
-                  size="lg"
-                  icon="whatsapp"
-                >
-                  {tc('whatsapp')}
-                </Button>
-              </div>
-            </Reveal>
+            {!hideCtas ? (
+              <Reveal delay={200}>
+                <div className="mt-10 flex flex-wrap items-center gap-3">
+                  <Button
+                    href={resolvedPrimaryCta.href}
+                    external={resolvedPrimaryCta.href.startsWith('http')}
+                    size="lg"
+                    iconRight="arrow-right"
+                  >
+                    {resolvedPrimaryCta.label}
+                  </Button>
+                  <Button
+                    href={whatsappLink(whatsappMessage)}
+                    external
+                    variant="ghost"
+                    size="lg"
+                    icon="whatsapp"
+                  >
+                    {tc('whatsapp')}
+                  </Button>
+                </div>
+              </Reveal>
+            ) : null}
 
             {children}
           </div>

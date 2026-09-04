@@ -48,7 +48,7 @@ export function Footer() {
         { label: tn('cases'), href: '/casos-de-exito' },
         { label: tn('blog'), href: '/blog' },
         { label: tn('contact'), href: '/contacto' },
-        { label: tn('careers'), href: '/carreras/editor-de-video' },
+        { label: tn('careers'), href: '/carreras' },
       ],
     },
   ];
