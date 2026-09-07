@@ -1,261 +1,172 @@
+import type {
+  LandingBenefit,
+  LandingHeroContent,
+  LandingProblem,
+  LandingSectionCopy,
+  LandingStep,
+} from '@/lib/landings/types';
+
 export const landingMeta = {
-  title: 'Sistema de conversión para clínicas de medicina estética',
+  title: 'Qué puede hacer la IA para una clínica estética | Cluster Media',
   description:
-    'Convierte más consultas en citas y más citas en tratamientos. Diagnóstico de conversión de pacientes para clínicas de medicina estética.',
-  lastUpdated: '2026-08-21',
+    'Sistema automatizado para organizar respuestas, citas y seguimiento comercial en clínicas de medicina estética.',
+  lastUpdated: '2026-08-22',
 } as const;
 
-export const heroCopy = {
-  eyebrow: 'Para clínicas de medicina estética',
-  headline: 'Convierte más consultas en citas y más citas en tratamientos.',
+export const heroCopy: LandingHeroContent = {
+  eyebrow: 'Clínicas de medicina estética',
+  headline: '¿Qué puede hacer la IA para una clínica estética?',
+  headlineHighlight: 'clínica estética',
   subheadline:
-    'Centralizamos y automatizamos el seguimiento de tus prospectos desde que llegan por Meta, Google, Instagram, WhatsApp o tu web hasta que reservan, asisten y avanzan hacia un tratamiento.',
-  cta: 'Analizar mi proceso de conversión',
-  ctaAlt: 'Quiero descubrir dónde pierdo pacientes',
-  micro: 'Diagnóstico inicial sin compromiso.',
-} as const;
+    'Un sistema automatizado organiza la respuesta y el seguimiento desde WhatsApp, Instagram, Meta y tu web hasta que el paciente reserva, asiste y avanza a tratamiento.',
+  impactStat:
+    'En promedio, la sistematización y automatización de los canales aumentan al menos el 18% el cierre de las ventas.',
+  impactStatHighlight: 'ventas',
+  calculatorLinkLabel: 'Haz el cálculo del impacto',
+  sideCaption: 'Más citas y tratamientos con el mismo equipo.',
+};
 
-export const pipelineStages = [
-  'Nueva consulta',
-  'Conversación',
-  'Cita',
-  'Asistencia',
-  'Tratamiento',
-  'Recurrencia',
-] as const;
+export const sections: LandingSectionCopy = {
+  video: {
+    eyebrow: 'Así se ve en acción',
+    title: 'El sistema trabajando por tu clínica.',
+    description:
+      'Respuesta, seguimiento y orden comercial — sin depender de que alguien esté siempre disponible.',
+  },
+  problem: {
+    eyebrow: 'El problema',
+    title: 'Inviertes en publicidad, pero el seguimiento no acompaña.',
+    description:
+      'No es falta de interés: es falta de orden comercial después de la primera consulta.',
+  },
+  solution: {
+    eyebrow: 'La solución',
+    title: 'Que tus ventas dependan menos de personas y más de tu sistema.',
+    description:
+      'Sin cambiar tu software clínico. Nos enfocamos en captación, citas y seguimiento comercial.',
+  },
+  cases: {
+    eyebrow: 'Prueba social',
+    title: 'Casos de éxito',
+    description:
+      'Resultados reales de clientes de Cluster en salud, retail y generación de oportunidades.',
+  },
+  steps: {
+    eyebrow: 'Cómo funciona',
+    title: 'Proceso fácil y ágil',
+    description: 'Cuatro fases claras. Sin tecnicismos innecesarios.',
+  },
+  pricing: {
+    eyebrow: 'Próximo paso',
+    title: 'Empezamos con un diagnóstico de dónde se pierden tus ventas.',
+    description:
+      'Grandes o pequeñas: primero entendemos tu proceso. Luego diseñamos el sistema a tu medida — sin publicar precios genéricos.',
+  },
+  contact: {
+    eyebrow: 'Contacto',
+    title: 'Hablemos de tu clínica.',
+    description: 'WhatsApp, llamada o formulario breve. Tú eliges.',
+  },
+};
 
-export const problemBlocks = [
+export const problems: readonly LandingProblem[] = [
   {
-    n: '01',
-    text: 'Una consulta entra fuera de horario y nadie responde hasta el día siguiente.',
+    title: 'Consultas que nadie responde a tiempo',
+    text: 'Llegan fuera de horario por Instagram o WhatsApp y la respuesta llega al día siguiente. Para entonces el paciente ya contactó otra clínica.',
   },
   {
-    n: '02',
-    text: 'El prospecto pregunta precio, recibe información y desaparece.',
+    title: 'Citas que no se confirman',
+    text: 'Reservan valoración pero no asisten. Sin recordatorios ni recuperación, pierdes huecos en agenda y revenue.',
   },
   {
-    n: '03',
-    text: 'Reserva una cita, pero nadie confirma correctamente su asistencia.',
+    title: 'Presupuestos sin seguimiento',
+    text: 'El paciente recibe la propuesta y desaparece. Nadie retoma la conversación con un proceso claro.',
   },
-  {
-    n: '04',
-    text: 'No se presenta y no existe un proceso sistemático para recuperarlo.',
-  },
-  {
-    n: '05',
-    text: 'Recibe una valoración o presupuesto y nadie vuelve a darle seguimiento.',
-  },
-  {
-    n: '06',
-    text: 'Un paciente termina su tratamiento y nunca recibe una campaña de reactivación.',
-  },
-] as const;
+];
 
-export const systemModules = [
+export const benefits: readonly LandingBenefit[] = [
   {
-    title: 'Respuesta inicial',
-    text: 'Atención inmediata a nuevas consultas.',
+    title: 'Respuesta rápida y ordenada',
+    text: 'Cada consulta entra en un flujo visible: quién respondió, en qué etapa está y qué sigue.',
+    highlight: 'Menos leads perdidos',
   },
   {
-    title: 'Calificación',
-    text: 'Recopila información comercial necesaria antes de intervenir manualmente.',
+    title: 'Más citas confirmadas',
+    text: 'Recordatorios y seguimiento antes y después de la valoración para reducir no-shows.',
+    highlight: 'Agenda más llena',
   },
   {
-    title: 'Agenda',
-    text: 'Facilita reserva de citas.',
+    title: 'Menos carga en recepción',
+    text: 'Automatizamos lo repetitivo. Tu equipo interviene cuando hace falta una persona.',
+    highlight: 'Tiempo optimizado',
   },
-  {
-    title: 'Recordatorios',
-    text: 'Reduce olvidos y facilita confirmación o reprogramación.',
-  },
-  {
-    title: 'Recuperación de no-shows',
-    text: 'Secuencia específica para pacientes que no asistieron.',
-  },
-  {
-    title: 'Seguimiento post-valoración',
-    text: 'Mantiene conversación con pacientes que todavía no decidieron iniciar tratamiento.',
-  },
-  {
-    title: 'Reactivación',
-    text: 'Vuelve a contactar pacientes anteriores cuando corresponde comercialmente.',
-  },
-  {
-    title: 'Reseñas',
-    text: 'Solicitud automatizada a pacientes satisfechos según el flujo definido.',
-  },
-  {
-    title: 'Pipeline',
-    text: 'Cada oportunidad tiene una etapa visible.',
-  },
-  {
-    title: 'Reporting',
-    text: 'Permite conocer qué canales producen citas y tratamientos.',
-  },
-] as const;
+];
 
-export const followUpPipeline = [
-  'Consulta',
-  'Cita reservada',
-  'Asistió',
-  'Tratamiento recomendado',
-  'En decisión',
-  'Tratamiento iniciado',
-  'Recurrencia',
-] as const;
-
-export const followUpExamples = [
-  'Seguimiento 24–48 horas después de la valoración',
-  'Recordatorio de propuesta',
-  'Información adicional',
-  'Posibilidad de resolver dudas',
-  'Opciones de financiación si la clínica dispone de ellas',
-  'Intervención humana cuando existe intención',
-] as const;
-
-export const handoffExamples = [
-  'Pregunta compleja',
-  'Paciente con intención alta',
-  'Consulta sensible',
-  'Negociación',
-  'Solicitud clínica',
-  'Reclamación',
-] as const;
-
-export const implementationSteps = [
+export const howItWorks: readonly LandingStep[] = [
   {
     n: '01',
     title: 'Diagnóstico',
-    text: 'Mapeamos el recorrido comercial actual.',
+    text: 'Revisamos cómo entran las consultas hoy y dónde se pierden citas o tratamientos.',
   },
   {
     n: '02',
     title: 'Diseño',
-    text: 'Definimos pipeline, mensajes, automatizaciones y reglas.',
+    text: 'Definimos mensajes, etapas y reglas que tu equipo entiende sin manual técnico.',
   },
   {
     n: '03',
-    title: 'Integración',
-    text: 'Conectamos canales y herramientas necesarias.',
+    title: 'Implementación',
+    text: 'Conectamos canales, probamos escenarios reales y capacitamos a recepción.',
   },
   {
     n: '04',
-    title: 'Lanzamiento',
-    text: 'Probamos todos los escenarios.',
-  },
-  {
-    n: '05',
     title: 'Optimización',
-    text: 'Analizamos conversiones y ajustamos.',
+    text: 'Medimos consultas → citas → tratamientos y ajustamos lo que no convierte.',
   },
+];
+
+export const pricingBullets = [
+  'Mapa de dónde se caen tus consultas y citas',
+  'Prioridades claras según tu volumen y canales',
+  'Propuesta de sistema a la medida (sin precio genérico)',
+  'Siguiente paso concreto para sistematizar ventas',
 ] as const;
 
-export const integrations = [
-  'Formularios web',
-  'Meta',
-  'Google',
-  'WhatsApp',
-  'Calendario',
-  'CRM',
-  'Software existente (cuando haya API)',
+export const caseStudySlugs = [
+  'clinicas-medicas-ojine',
+  'ink-express',
+  'car-depot',
 ] as const;
 
-export const demoLeads = [
-  {
-    id: 'Lead 001',
-    source: 'Meta',
-    status: 'Cita reservada',
-    next: 'Confirmar',
-  },
-  {
-    id: 'Lead 002',
-    source: 'Instagram',
-    status: 'Valoración realizada',
-    next: 'Follow-up',
-  },
-  {
-    id: 'Lead 003',
-    source: 'Google',
-    status: 'No-show',
-    next: 'Recuperación',
-  },
-] as const;
-
-export const sources = ['Meta', 'Google', 'Instagram', 'Web', 'WhatsApp'] as const;
-
-export const consultationBuckets = [
-  { label: 'Menos de 25', value: '<25' },
-  { label: '25–50', value: '25-50' },
-  { label: '51–100', value: '51-100' },
-  { label: '101–250', value: '101-250' },
-  { label: '250+', value: '250+' },
-] as const;
-
-export const leadSources = [
-  'Meta Ads',
-  'Instagram orgánico',
-  'Google Ads',
-  'Google Maps',
-  'Website',
-  'WhatsApp',
-  'Referidos',
-  'Otro',
-] as const;
-
-export const afterInquiryOptions = [
-  { label: 'Recepción responde manualmente', value: 'recepcion' },
-  { label: 'Equipo comercial', value: 'comercial' },
-  { label: 'Chatbot', value: 'chatbot' },
-  { label: 'CRM', value: 'crm' },
-  { label: 'No existe un proceso uniforme', value: 'ninguno' },
-] as const;
-
-export const mainProblems = [
-  { label: 'Tiempo de respuesta', value: 'respuesta' },
-  { label: 'Leads que desaparecen', value: 'desaparecen' },
-  { label: 'Baja agenda', value: 'agenda' },
-  { label: 'No-shows', value: 'noshows' },
-  { label: 'Pacientes que no compran después de valoración', value: 'cierre' },
-  { label: 'Seguimiento', value: 'seguimiento' },
-  { label: 'Reactivación', value: 'reactivacion' },
-  { label: 'Medición', value: 'medicion' },
-  { label: 'Otro', value: 'otro' },
-] as const;
+export const calculatorNudge =
+  '¿No sabes estos datos? Esa sería la primera señal de que necesitas sistematizar tus ventas.';
 
 export const faqs = [
   {
-    q: '¿Esto reemplaza nuestro software clínico?',
-    a: 'Opera como capa de captación y seguimiento comercial. La historia clínica permanece en tu software clínico.',
+    q: '¿Reemplaza nuestro software clínico?',
+    a: 'No. Trabajamos la capa comercial: consultas, citas y seguimiento. La historia clínica sigue en tu sistema.',
   },
   {
-    q: '¿Tenemos que cambiar nuestro WhatsApp?',
-    a: 'Depende de la infraestructura actual y de la solución diseñada para tu clínica.',
+    q: '¿Mi equipo puede seguir respondiendo por WhatsApp?',
+    a: 'Sí. Recepción o comercial pueden tomar cualquier conversación cuando lo necesiten.',
   },
   {
-    q: '¿Puede responder una persona?',
-    a: 'Sí. Recepción y comerciales pueden tomar cualquier conversación en el momento que haga falta.',
+    q: '¿Sirve si ya invertimos en Meta o Google?',
+    a: 'Sí. Está pensado para clínicas que ya captan consultas y necesitan convertirlas mejor.',
   },
   {
-    q: '¿La IA responde preguntas médicas?',
-    a: 'Las preguntas clínicas se derivan al personal correspondiente. El sistema se configura para respetar el criterio médico.',
+    q: '¿La IA responde temas médicos?',
+    a: 'No sustituye criterio médico. Las preguntas clínicas se derivan al personal correspondiente.',
   },
   {
-    q: '¿Sirve si hacemos publicidad en Meta y Google?',
-    a: 'Sí. Está pensado para clínicas que ya invierten en captación y necesitan control sobre citas y tratamientos.',
-  },
-  {
-    q: '¿Puede identificar qué campaña generó una cita?',
-    a: 'Con las integraciones adecuadas se puede rastrear de anuncio a lead, cita y cliente.',
-  },
-  {
-    q: '¿Puede ayudar con pacientes antiguos?',
-    a: 'Sí, con base legal y consentimiento adecuados para esas comunicaciones.',
-  },
-  {
-    q: '¿Es simplemente un chatbot?',
-    a: 'El chatbot puede ser un componente. El núcleo es el proceso comercial completo: seguimiento, citas, recuperación y reporting.',
+    q: '¿Cuánto tarda el diagnóstico?',
+    a: 'Tras la primera conversación te confirmamos alcance y tiempos. El objetivo es claridad rápida, no un proyecto eterno.',
   },
 ] as const;
 
-export const responseTimePromise =
-  'Respondemos el diagnóstico en menos de 1 día hábil.';
+export const pipelineStages = [
+  'Consulta',
+  'Cita',
+  'Asistencia',
+  'Tratamiento',
+] as const;

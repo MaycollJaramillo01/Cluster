@@ -52,7 +52,10 @@ export type TrackEventName =
   | 'QualifiedLead'
   | 'WhatsAppClick'
   | 'ScheduleStart'
-  | 'AppointmentBooked';
+  | 'AppointmentBooked'
+  | 'QuizStart'
+  | 'QuizStep'
+  | 'QuizComplete';
 
 declare global {
   interface Window {
