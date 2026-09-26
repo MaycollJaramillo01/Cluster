@@ -1,12 +1,7 @@
 import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { PageHero } from '@/components/blocks/PageHero';
-import { Section, SectionHeading } from '@/components/ui/Section';
-import { CTASection } from '@/components/blocks/CTASection';
-import { FAQ } from '@/components/blocks/FAQ';
-import { ChallengeSolutionMap } from '@/components/automatizaciones-ia/ChallengeSolutionMap';
-import { Reveal } from '@/components/ui/Reveal';
-import { Icon } from '@/components/ui/Icon';
+import { setRequestLocale } from 'next-intl/server';
+import { AgentLanding } from '@/components/automatizaciones-ia/AgentLanding';
+import { getAgentContent } from '@/components/automatizaciones-ia/content';
 import {
   JsonLd,
   serviceSchema,
@@ -19,79 +14,58 @@ type PageParams = { params: Promise<{ locale: string }> };
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'Automation' });
+  const content = getAgentContent(locale);
+  const path = content.locale === 'en' ? '/en/automatizaciones-ia' : '/automatizaciones-ia';
 
   return {
-    title: t('metaTitle'),
-    description: t('metaDescription'),
-    alternates: { canonical: '/automatizaciones-ia' },
+    title: { absolute: content.meta.title },
+    description: content.meta.description,
+    alternates: {
+      canonical: path,
+      languages: {
+        es: '/automatizaciones-ia',
+        en: '/en/automatizaciones-ia',
+        'x-default': '/automatizaciones-ia',
+      },
+    },
+    openGraph: {
+      title: content.meta.title,
+      description: content.meta.description,
+      url: `${site.url}${path}`,
+      locale: content.locale === 'en' ? 'en_US' : 'es_HN',
+      alternateLocale: content.locale === 'en' ? 'es_HN' : 'en_US',
+      type: 'website',
+      siteName: site.name,
+    },
   };
 }
 
 export default async function AutomatizacionesPage({ params }: PageParams) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations('Automation');
-  const tc = await getTranslations('Common');
-
-  const problems = t.raw('problems') as string[];
-  const solutions = t.raw('solutions') as string[];
-  const faqs = t.raw('faqs') as { q: string; a: string }[];
+  const content = getAgentContent(locale);
+  const path = content.locale === 'en' ? '/en/automatizaciones-ia' : '/automatizaciones-ia';
+  const pageUrl = `${site.url}${path}`;
 
   return (
     <>
       <JsonLd
         data={serviceSchema({
-          name: t('metaTitle'),
-          description: t('metaDescription'),
-          url: `${site.url}/automatizaciones-ia`,
+          name: content.meta.title,
+          description: content.meta.description,
+          url: pageUrl,
+          price: '120',
         })}
       />
-      <JsonLd data={faqSchema(faqs)} />
+      <JsonLd data={faqSchema(content.faqs)} />
       <JsonLd
         data={breadcrumbSchema([
-          { name: tc('home'), url: site.url },
-          { name: t('heroEyebrow'), url: `${site.url}/automatizaciones-ia` },
+          { name: content.locale === 'en' ? 'Home' : 'Inicio', url: `${site.url}${content.locale === 'en' ? '/en' : ''}` },
+          { name: content.hero.eyebrow, url: pageUrl },
         ])}
       />
 
-      <PageHero
-        videoSrc="/assets/videos/heroes/ia-automatizaciones.mp4"
-        eyebrow={t('heroEyebrow')}
-        title={t('heroTitle')}
-        subtitle={t('heroSubtitle')}
-        whatsappMessage={t('heroWhatsapp')}
-      />
-
-      <Section tone="light">
-        <Reveal>
-          <ChallengeSolutionMap problems={problems} solutions={solutions} />
-        </Reveal>
-      </Section>
-
-      <Section tone="dark">
-        <div className="mx-auto max-w-3xl text-center">
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface text-accent">
-            <Icon name="bot" size={28} />
-          </span>
-          <h2 className="mt-6 font-display text-3xl font-bold text-white sm:text-4xl">
-            {t('insightTitle')}
-          </h2>
-          <p className="mt-5 text-lg leading-relaxed text-white/70">{t('insightText')}</p>
-        </div>
-      </Section>
-
-      <Section tone="soft">
-        <SectionHeading
-          eyebrow={t('faqEyebrow')}
-          align="center"
-          title={t('faqTitle')}
-          className="mb-12"
-        />
-        <FAQ items={faqs} />
-      </Section>
-
-      <CTASection title={t('ctaTitle')} whatsappMessage={t('ctaWhatsapp')} />
+      <AgentLanding content={content} />
     </>
   );
 }

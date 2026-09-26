@@ -76,6 +76,8 @@ export function Header() {
     };
   }, [open]);
 
+  if (pathname === '/automatizaciones-ia') return null;
+
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 

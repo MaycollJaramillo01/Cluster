@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import { Logo } from '@/components/ui/Logo';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { site, whatsappLink } from '@/lib/site';
@@ -17,6 +17,9 @@ export function Footer() {
   const t = useTranslations('Footer');
   const tn = useTranslations('Nav');
   const tc = useTranslations('Common');
+  const pathname = usePathname();
+
+  if (pathname === '/automatizaciones-ia') return null;
 
   const columns = [
     {
