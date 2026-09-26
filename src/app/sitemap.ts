@@ -13,7 +13,7 @@ const routes = [
   { path: '/redes-sociales', priority: 0.8, freq: 'monthly' as const },
   { path: '/google-ads', priority: 0.8, freq: 'monthly' as const },
   { path: '/branding', priority: 0.8, freq: 'monthly' as const },
-  { path: '/automatizaciones-ia', priority: 0.8, freq: 'monthly' as const },
+  { path: '/agentes-ia', priority: 0.8, freq: 'monthly' as const },
   { path: '/websites-seo', priority: 0.8, freq: 'monthly' as const },
   { path: '/desarrollo-web', priority: 0.9, freq: 'monthly' as const },
   { path: '/desarrollo-web/website', priority: 0.85, freq: 'monthly' as const },

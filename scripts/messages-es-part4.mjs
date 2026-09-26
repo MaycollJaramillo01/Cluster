@@ -69,7 +69,7 @@ export const esPart4 = {
         cta: 'Quiero Google Ads',
       },
       {
-        slug: 'automatizaciones-ia',
+        slug: 'agentes-ia',
         name: 'IA / Automatizaciones',
         short: 'Responde más rápido y pierde menos leads.',
         description:

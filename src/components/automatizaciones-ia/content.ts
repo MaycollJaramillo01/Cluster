@@ -1,6 +1,5 @@
 export type AgentContent = {
   locale: 'es' | 'en';
-  nav: { label: string; href: string }[];
   hero: {
     eyebrow: string;
     title: [string, string];
@@ -27,12 +26,6 @@ export type AgentContent = {
 
 const es: AgentContent = {
   locale: 'es',
-  nav: [
-    { label: 'Cómo funciona', href: '#como-funciona' },
-    { label: 'Beneficios', href: '#beneficios' },
-    { label: 'Industrias', href: '#industrias' },
-    { label: 'Precio', href: '#precio' },
-  ],
   hero: {
     eyebrow: 'Agentes IA para WhatsApp',
     title: ['Tu próximo cliente', 'merece una respuesta.'],
@@ -151,12 +144,6 @@ const es: AgentContent = {
 
 const en: AgentContent = {
   locale: 'en',
-  nav: [
-    { label: 'How it works', href: '#como-funciona' },
-    { label: 'Benefits', href: '#beneficios' },
-    { label: 'Industries', href: '#industrias' },
-    { label: 'Pricing', href: '#precio' },
-  ],
   hero: {
     eyebrow: 'AI agents for WhatsApp',
     title: ['Your next customer', 'deserves a reply.'],

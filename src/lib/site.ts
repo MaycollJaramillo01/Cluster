@@ -42,7 +42,7 @@ export const mainNav = [
       { label: 'Branding', href: '/branding' },
       { label: 'Redes Sociales', href: '/redes-sociales' },
       { label: 'Google Ads', href: '/google-ads' },
-      { label: 'IA / Automatizaciones', href: '/automatizaciones-ia' },
+      { label: 'IA / Automatizaciones', href: '/agentes-ia' },
       { label: 'Websites / SEO', href: '/websites-seo' },
       { label: 'Desarrollo web', href: '/desarrollo-web' },
       { label: 'SEO Audit', href: '/seo-audit' },
@@ -154,8 +154,8 @@ export const services: Service[] = [
     icon: 'target',
   },
   {
-    slug: 'automatizaciones-ia',
-    href: '/automatizaciones-ia',
+    slug: 'agentes-ia',
+    href: '/agentes-ia',
     name: 'IA / Automatizaciones',
     short: 'Responde más rápido y pierde menos leads.',
     description:

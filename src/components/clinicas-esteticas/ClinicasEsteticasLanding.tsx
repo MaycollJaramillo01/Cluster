@@ -635,7 +635,7 @@ export function ClinicasEsteticasLanding({ country }: Props) {
       <section className="theme-dark border-t border-line bg-ink-950 py-10 text-fg">
         <div className="container-x flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-4 text-sm text-muted">
-            <Link href="/automatizaciones-ia" className="hover:text-accent">
+            <Link href="/agentes-ia" className="hover:text-accent">
               {tn('automation')}
             </Link>
             <Link href="/contacto" className="hover:text-accent">

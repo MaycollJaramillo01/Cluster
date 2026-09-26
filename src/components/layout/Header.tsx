@@ -25,7 +25,7 @@ const navItems: NavItem[] = [
       { labelKey: 'branding', href: '/branding' },
       { labelKey: 'social', href: '/redes-sociales' },
       { labelKey: 'googleAds', href: '/google-ads' },
-      { labelKey: 'automation', href: '/automatizaciones-ia' },
+      { labelKey: 'automation', href: '/agentes-ia' },
       { labelKey: 'websitesSeo', href: '/websites-seo' },
       { labelKey: 'webDev', href: '/desarrollo-web' },
       { labelKey: 'seoAudit', href: '/seo-audit' },
@@ -76,7 +76,8 @@ export function Header() {
     };
   }, [open]);
 
-  if (pathname === '/automatizaciones-ia') return null;
+  // ponytail: única página de fondo claro; si aparecen más, pasar a una lista.
+  const solid = pathname === '/agentes-ia';
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -84,9 +85,11 @@ export function Header() {
   return (
     <header
       className={`header-enter fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        scrolled || open
-          ? 'bg-ink-900/80 shadow-[0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl'
-          : 'bg-transparent'
+        solid
+          ? 'bg-ink-900'
+          : scrolled || open
+            ? 'bg-ink-900/80 shadow-[0_1px_0_0_rgba(255,255,255,0.06)] backdrop-blur-xl'
+            : 'bg-transparent'
       }`}
     >
       <div className="container-x flex h-[76px] items-center justify-between gap-4">

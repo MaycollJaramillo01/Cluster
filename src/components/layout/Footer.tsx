@@ -19,7 +19,7 @@ export function Footer() {
   const tc = useTranslations('Common');
   const pathname = usePathname();
 
-  if (pathname === '/automatizaciones-ia') return null;
+  if (pathname === '/agentes-ia') return null;
 
   const columns = [
     {
@@ -29,7 +29,7 @@ export function Footer() {
         { label: t('monthlyPlans'), href: '/#planes' },
         { label: tn('social'), href: '/redes-sociales' },
         { label: tn('googleAds'), href: '/google-ads' },
-        { label: tn('automation'), href: '/automatizaciones-ia' },
+        { label: tn('automation'), href: '/agentes-ia' },
         { label: tn('websitesSeo'), href: '/websites-seo' },
         { label: tn('seoAudit'), href: '/seo-audit' },
       ],

@@ -10,7 +10,7 @@ export function FloatingWhatsApp() {
   const pathname = usePathname();
 
   if (
-    pathname === '/automatizaciones-ia' ||
+    pathname === '/agentes-ia' ||
     pathname.startsWith('/postulaciones') ||
     pathname.startsWith('/carreras')
   ) {

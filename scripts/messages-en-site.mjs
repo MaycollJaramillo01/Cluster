@@ -69,7 +69,7 @@ export const enSiteOverrides = {
         cta: 'I want Google Ads',
       },
       {
-        slug: 'automatizaciones-ia',
+        slug: 'agentes-ia',
         name: 'AI / Automations',
         short: 'Respond faster and lose fewer leads.',
         description:

@@ -33,7 +33,7 @@ const solutionHrefs = [
   '/branding',
   '/websites-seo',
   '/redes-sociales',
-  '/automatizaciones-ia',
+  '/agentes-ia',
 ] as const;
 
 const solutionVideos: (SolutionVideo | undefined)[] = [

@@ -53,7 +53,6 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
   const en = c.locale === 'en';
   const root = useRef<HTMLDivElement>(null);
   const industryButtons = useRef<(HTMLButtonElement | null)[]>([]);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [stage, setStage] = useState(0);
   const [industry, setIndustry] = useState(0);
   const demoUrl = whatsappLink(en ? "Hi Cluster Media, I'd like a demo of an AI agent for my business." : 'Hola Cluster Media, quiero una demostración de un Agente IA para mi negocio.');
@@ -94,13 +93,6 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
     return () => { stop(); media.removeEventListener('change', start); };
   }, []);
 
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') setMenuOpen(false); };
-    document.addEventListener('keydown', close);
-    return () => document.removeEventListener('keydown', close);
-  }, [menuOpen]);
-
   function changeIndustry(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let next = index;
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (index + 1) % c.industries.length;
@@ -114,15 +106,6 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
   }
 
   return <div className={s.page} ref={root}>
-    <header className={s.header}>
-      <div className={s.navbar}>
-        <Logo variant="dark" />
-        <nav className={s.desktopNav} aria-label={en ? 'Page navigation' : 'Navegación de la página'}>{c.nav.map(link => <a href={link.href} key={link.href}>{link.label}</a>)}</nav>
-        <div className={s.navActions}><a className={s.locale} href={en ? '/automatizaciones-ia' : '/en/automatizaciones-ia'} aria-label={en ? 'Ver en español' : 'Read in English'}>{en ? 'ES' : 'EN'}</a><Action href={demoUrl}>{demoText}</Action><button className={s.menuToggle} aria-expanded={menuOpen} aria-controls="agent-mobile-nav" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? (en ? 'Close menu' : 'Cerrar menú') : (en ? 'Open menu' : 'Abrir menú')}><Icon name={menuOpen ? 'close' : 'menu'} size={22} /></button></div>
-      </div>
-      {menuOpen && <nav id="agent-mobile-nav" className={s.mobileNav} aria-label={en ? 'Mobile navigation' : 'Navegación móvil'}>{c.nav.map(link => <a key={link.href} href={link.href} onClick={() => setMenuOpen(false)}>{link.label}<Arrow /></a>)}</nav>}
-    </header>
-
     <section className={`${s.container} ${s.hero}`} aria-labelledby="agent-title">
       <div className={s.heroCopy}>
         <p className={s.eyebrow} data-intro><Icon name="whatsapp" size={16} strokeWidth={0} fill="currentColor" />{c.hero.eyebrow}</p>

@@ -17,6 +17,13 @@ const nextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  // Old AI landing slug: keep shared links, ads and indexed URLs working.
+  async redirects() {
+    return [
+      { source: '/automatizaciones-ia', destination: '/agentes-ia', permanent: true },
+      { source: '/en/automatizaciones-ia', destination: '/en/agentes-ia', permanent: true },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

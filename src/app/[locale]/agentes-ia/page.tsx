@@ -15,7 +15,7 @@ type PageParams = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { locale } = await params;
   const content = getAgentContent(locale);
-  const path = content.locale === 'en' ? '/en/automatizaciones-ia' : '/automatizaciones-ia';
+  const path = content.locale === 'en' ? '/en/agentes-ia' : '/agentes-ia';
 
   return {
     title: { absolute: content.meta.title },
@@ -23,9 +23,9 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
     alternates: {
       canonical: path,
       languages: {
-        es: '/automatizaciones-ia',
-        en: '/en/automatizaciones-ia',
-        'x-default': '/automatizaciones-ia',
+        es: '/agentes-ia',
+        en: '/en/agentes-ia',
+        'x-default': '/agentes-ia',
       },
     },
     openGraph: {
@@ -44,7 +44,7 @@ export default async function AutomatizacionesPage({ params }: PageParams) {
   const { locale } = await params;
   setRequestLocale(locale);
   const content = getAgentContent(locale);
-  const path = content.locale === 'en' ? '/en/automatizaciones-ia' : '/automatizaciones-ia';
+  const path = content.locale === 'en' ? '/en/agentes-ia' : '/agentes-ia';
   const pageUrl = `${site.url}${path}`;
 
   return (

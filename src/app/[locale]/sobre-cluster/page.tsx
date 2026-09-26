@@ -20,7 +20,7 @@ const capabilityMeta: { icon: IconName; href: string }[] = [
   { icon: 'globe', href: '/websites-seo' },
   { icon: 'megaphone', href: '/redes-sociales' },
   { icon: 'target', href: '/google-ads' },
-  { icon: 'bolt', href: '/automatizaciones-ia' },
+  { icon: 'bolt', href: '/agentes-ia' },
   { icon: 'search', href: '/seo-audit' },
 ];
 

@@ -51,7 +51,7 @@ const cardMeta = [
   },
   {
     index: 4,
-    href: '/automatizaciones-ia',
+    href: '/agentes-ia',
     variant: 'dark' as const,
     gridClass: 'md:col-span-2 min-h-44',
     titleClass: 'text-3xl lg:text-4xl',
