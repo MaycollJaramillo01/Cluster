@@ -12,6 +12,7 @@ import s from './AgentLanding.module.css';
 
 const benefitIcons: IconName[] = ['clock', 'target', 'link', 'calendar'];
 const capabilityIcons: IconName[] = ['whatsapp', 'target', 'clock', 'users', 'calendar', 'chart', 'link', 'arrow-right'];
+const industryVideos = ['inmobiliarias', 'constructora', 'medicos', 'clinicas-odontologicas', 'clinicas-esteticas'] as const;
 
 function Arrow() { return <Icon name="arrow-right" size={17} strokeWidth={2} />; }
 
@@ -19,7 +20,7 @@ function Action({ children, href, light = false }: { children: ReactNode; href: 
   return <a className={`${s.button} ${light ? s.buttonLight : ''}`} href={href} target={href.startsWith('https:') ? '_blank' : undefined} rel={href.startsWith('https:') ? 'noopener noreferrer' : undefined}>{children}<Arrow /></a>;
 }
 
-function Chat({ en, stage = 0, compact = false }: { en: boolean; stage?: number; compact?: boolean }) {
+function Chat({ en, stage = 0 }: { en: boolean; stage?: number }) {
   const conversations = en ? [
     ["Hi! I'd like information.", 'Of course. What service are you interested in?', 'Building a house.', 'Great. In which city would you like to build?'],
     ["I'm still reviewing the details.", 'Take your time. I can help with any questions.', 'Can we talk about the project?', 'Of course. Would you like to schedule a call?'],
@@ -35,7 +36,7 @@ function Chat({ en, stage = 0, compact = false }: { en: boolean; stage?: number;
     const animation = animate(body.current.children, { opacity: [0, 1], translateY: [8, 0], delay: stagger(125), duration: 500, ease: 'outCubic' });
     return () => { animation.revert(); };
   }, [stage]);
-  return <div className={`${s.chat} ${compact ? s.chatCompact : ''}`}>
+  return <div className={s.chat}>
     <div className={s.chatHeader}>
       <span className={s.chatBrand}><Icon name="whatsapp" size={20} fill="currentColor" strokeWidth={0} /></span>
       <div><b>{en ? 'Your business assistant' : 'Asistente de tu negocio'}</b><span>{en ? 'AI agent on WhatsApp' : 'Agente IA en WhatsApp'}</span></div>
@@ -49,12 +50,86 @@ function Chat({ en, stage = 0, compact = false }: { en: boolean; stage?: number;
   </div>;
 }
 
+function videoTime(seconds: number) {
+  const value = Number.isFinite(seconds) ? Math.floor(seconds) : 0;
+  return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;
+}
+
+function IndustryVideos({ c, industry, onSelect }: { c: AgentContent; industry: number; onSelect: (index: number) => void }) {
+  const en = c.locale === 'en';
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [error, setError] = useState(false);
+  const activeIndustry = c.industries[industry];
+  const activeVideo = `/assets/videos/agent-ia/${industryVideos[industry]}`;
+
+  useEffect(() => {
+    setCurrentTime(0);
+    setDuration(0);
+    setMuted(true);
+    setPlaying(false);
+    setError(false);
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) videoRef.current?.pause();
+  }, [industry]);
+
+  function togglePlayback() {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) void video.play().catch(() => setPlaying(false));
+    else video.pause();
+  }
+
+  function toggleAudio() {
+    const video = videoRef.current;
+    if (video) video.muted = !video.muted;
+  }
+
+  return <section id="videos" className={`${s.container} ${s.section} ${s.videoSection}`} aria-labelledby="videos-title">
+    <div className={s.videoShowcase} data-reveal>
+      <div className={s.videoIntro}>
+        <p className={s.eyebrow}>{en ? 'CLUSTER MEDIA VIDEOS' : 'VIDEOS DE CLUSTER MEDIA'}</p>
+        <h2 id="videos-title">{en ? 'AI agents for' : 'Agentes IA para'}<br /><em>{en ? 'your industry.' : 'tu industria.'}</em></h2>
+        <p>{en ? 'Five real videos. Choose your industry to see where an AI agent can support your team.' : 'Cinco videos. Elegí tu rubro y mirá dónde puede ayudar un Agente IA a tu equipo.'}</p>
+      </div>
+
+      <figure className={s.videoStage}>
+        <div className={s.videoStageHeader}><span>CLUSTER MEDIA / IA</span><span>{String(industry + 1).padStart(2, '0')} — 05</span></div>
+        <div className={s.videoCanvas}>
+          <video ref={videoRef} key={activeVideo} className={s.videoPlayer} autoPlay muted loop playsInline preload="metadata" poster={`${activeVideo}.webp`} aria-label={en ? `Video about AI agents for ${activeIndustry.title}` : `Video sobre agentes IA para ${activeIndustry.title}`} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onVolumeChange={event => setMuted(event.currentTarget.muted)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onLoadedMetadata={event => { setDuration(event.currentTarget.duration); if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) void event.currentTarget.play().catch(() => setPlaying(false)); }} onError={() => { setError(true); setPlaying(false); }} onClick={togglePlayback}>
+            <source src={`${activeVideo}.mp4`} type="video/mp4" />
+            {en ? 'Your browser cannot play this video.' : 'Tu navegador no puede reproducir este video.'}
+          </video>
+          {!playing && !error && <button className={s.videoCenterPlay} type="button" onClick={togglePlayback} aria-label={en ? 'Play video' : 'Reproducir video'}><Icon name="play" size={24} fill="currentColor" strokeWidth={0} /></button>}
+          {error && <p className={s.videoError}>{en ? 'The video could not be loaded.' : 'No se pudo cargar el video.'}</p>}
+        </div>
+        <div className={s.videoControls} role="group" aria-label={en ? 'Video controls' : 'Controles de video'}>
+          <button type="button" onClick={togglePlayback} aria-label={playing ? (en ? 'Pause video' : 'Pausar video') : (en ? 'Play video' : 'Reproducir video')}><Icon name={playing ? 'pause' : 'play'} size={17} fill="currentColor" strokeWidth={0} /></button>
+          <input type="range" min="0" max={duration || 1} step="0.1" value={Math.min(currentTime, duration || 1)} onChange={event => { const video = videoRef.current; if (video) video.currentTime = event.currentTarget.valueAsNumber; }} aria-label={en ? 'Video progress' : 'Avance del video'} />
+          <time>{videoTime(currentTime)} / {videoTime(duration)}</time>
+          <button type="button" onClick={toggleAudio} aria-label={muted ? (en ? 'Unmute video' : 'Activar sonido') : (en ? 'Mute video' : 'Silenciar video')}><Icon name={muted ? 'volume-off' : 'volume'} size={17} strokeWidth={1.8} /></button>
+        </div>
+        <figcaption>{en ? 'Starts without sound. Turn audio on when you want to listen.' : 'Inicia sin sonido. Activá el audio cuando quieras escucharlo.'}</figcaption>
+      </figure>
+
+      <div className={s.videoBody}>
+        <div className={s.videoDetail} aria-live="polite"><span>{String(industry + 1).padStart(2, '0')} / 05</span><h3>{activeIndustry.title}</h3><p>{activeIndustry.description} {activeIndustry.outcome}</p><a className={s.textLink} href="#industrias">{en ? 'Explore this application' : 'Conocé esta aplicación'}<Arrow /></a></div>
+        <div className={s.videoChoices} role="group" aria-label={en ? 'Choose a video by industry' : 'Elegí un video por industria'}>{c.industries.map((item, index) => <button type="button" key={item.title} aria-pressed={industry === index} onClick={() => onSelect(index)}><Image src={`/assets/videos/agent-ia/${industryVideos[index]}.webp`} alt="" width={54} height={96} /><span><small>{String(index + 1).padStart(2, '0')}</small>{item.title}</span></button>)}</div>
+      </div>
+    </div>
+  </section>;
+}
+
 export function AgentLanding({ content: c }: { content: AgentContent }) {
   const en = c.locale === 'en';
   const root = useRef<HTMLDivElement>(null);
+  const heroVideo = useRef<HTMLVideoElement>(null);
   const industryButtons = useRef<(HTMLButtonElement | null)[]>([]);
   const [stage, setStage] = useState(0);
   const [industry, setIndustry] = useState(0);
+  const [heroPlaying, setHeroPlaying] = useState(true);
   const demoUrl = whatsappLink(en ? "Hi Cluster Media, I'd like a demo of an AI agent for my business." : 'Hola Cluster Media, quiero una demostración de un Agente IA para mi negocio.');
   const automateUrl = whatsappLink(en ? 'Hi, I want to automate my WhatsApp and follow up with my prospects.' : 'Hola, quiero automatizar mi WhatsApp y el seguimiento de mis prospectos.');
   const demoText = en ? 'Request a demo' : 'Solicitar demo';
@@ -93,6 +168,9 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
     return () => { stop(); media.removeEventListener('change', start); };
   }, []);
 
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) heroVideo.current?.pause();
+  }, []);
   function changeIndustry(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let next = index;
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') next = (index + 1) % c.industries.length;
@@ -106,23 +184,24 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
   }
 
   return <div className={s.page} ref={root}>
-    <section className={`${s.container} ${s.hero}`} aria-labelledby="agent-title">
+    <section className={s.hero} aria-labelledby="agent-title">
+      <video ref={heroVideo} className={s.heroBackground} autoPlay muted loop playsInline preload="metadata" poster="/assets/videos/agent-ia/hero-automation-poster.webp" aria-hidden="true" onPlay={() => setHeroPlaying(true)} onPause={() => setHeroPlaying(false)}><source src="/assets/videos/services/automatizacion.mp4" type="video/mp4" /></video>
+      <div className={s.heroTint} aria-hidden="true" />
+      <div className={`${s.container} ${s.heroInner}`}>
       <div className={s.heroCopy}>
         <p className={s.eyebrow} data-intro><Icon name="whatsapp" size={16} strokeWidth={0} fill="currentColor" />{c.hero.eyebrow}</p>
         <h1 id="agent-title" data-intro>{c.hero.title[0]}<br /><em>{c.hero.title[1]}</em></h1>
         <p className={s.heroDescription} data-intro>{c.hero.description}</p>
-        <div className={s.heroActions} data-intro><Action href={automateUrl}>{c.hero.primary}</Action><a className={s.textLink} href="#como-funciona"><Icon name="play" size={15} fill="currentColor" strokeWidth={0} />{c.hero.secondary}</a></div>
+        <div className={s.heroActions} data-intro><Action href={automateUrl}>{c.hero.primary}</Action><a className={s.textLink} href="#videos"><Icon name="play" size={15} fill="currentColor" strokeWidth={0} />{c.hero.secondary}</a></div>
         <p className={s.heroNote} data-intro>{c.hero.note}</p>
       </div>
-      <div className={s.heroVisual} data-intro>
-        <div className={s.modelBackdrop} aria-hidden="true" />
-        <div className={s.phoneModel}><div className={s.phoneTop} aria-hidden="true"><span>9:41</span><span>••• ▰</span></div><Chat en={en} compact /><div className={s.phoneBottom} aria-hidden="true" /></div>
-        <div className={s.followNote}><span className={s.noteIcon}><Icon name="calendar" size={20} strokeWidth={2} /></span><div><b>{en ? 'The conversation continues.' : 'La conversación sigue.'}</b><span>{en ? 'Follow-up is part of the process.' : 'El seguimiento es parte del proceso.'}</span></div><span className={s.noteCheck}>✓</span></div>
-        <p className={s.demoLabel}>{en ? 'Illustrative demo. No real customer data.' : 'Demostración ilustrativa. Sin datos de clientes.'}</p>
+      <div className={s.heroMediaControls}><span>{en ? 'Automation · illustrative video' : 'Automatización · video ilustrativo'}</span><button type="button" onClick={() => { const video = heroVideo.current; if (!video) return; if (video.paused) void video.play(); else video.pause(); }} aria-label={heroPlaying ? (en ? 'Pause background video' : 'Pausar video de fondo') : (en ? 'Play background video' : 'Reproducir video de fondo')}><Icon name={heroPlaying ? 'pause' : 'play'} size={14} fill="currentColor" strokeWidth={0} />{heroPlaying ? (en ? 'Pause' : 'Pausar') : (en ? 'Play' : 'Reproducir')}</button></div>
       </div>
     </section>
 
     <section className={`${s.container} ${s.benefitBar}`} aria-label={en ? 'Benefits at a glance' : 'Beneficios principales'}>{c.benefits.map((benefit, index) => <div className={s.benefit} key={benefit.title}><Icon name={benefitIcons[index]} size={22} strokeWidth={2.2} /><div><h2>{benefit.title}</h2><p>{benefit.text}</p></div></div>)}</section>
+
+    <IndustryVideos c={c} industry={industry} onSelect={setIndustry} />
 
     <section id="como-funciona" className={`${s.container} ${s.section}`} aria-labelledby="demo-title">
       <div className={s.centerHeading} data-reveal><p className={s.eyebrow}>{en ? 'A CONVERSATION THAT MOVES FORWARD' : 'UNA CONVERSACIÓN QUE AVANZA'}</p><h2 id="demo-title">{en ? 'From the first hello' : 'Del primer hola'}<br /><em>{en ? 'to the next step.' : 'al siguiente paso.'}</em></h2><p>{en ? 'Explore an example of how your agent responds, follows up and schedules.' : 'Explorá un ejemplo de cómo tu agente responde, da seguimiento y agenda.'}</p></div>
@@ -149,8 +228,15 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
     </section>
 
     <section className={s.softSection} aria-labelledby="comparison-title"><div className={`${s.container} ${s.section} ${s.comparisonLayout}`}>
-      <div className={s.sectionHeading} data-reveal><p className={s.eyebrow}>{en ? 'SUPPORT FOR YOUR TEAM' : 'UN REFUERZO PARA TU EQUIPO'}</p><h2 id="comparison-title">{en ? 'More consistency.' : 'Más constancia.'}<br /><em>{en ? 'Less repetitive work.' : 'Menos tareas repetitivas.'}</em></h2><p>{en ? 'Let your agent take care of routine conversations so people can focus on the decisions that need them.' : 'Tu agente se encarga de las conversaciones repetitivas para que las personas se concentren donde más aportan.'}</p><Action href={demoUrl}>{demoText}</Action></div>
-      <div className={s.comparison} data-reveal><table><caption className={s.srOnly}>{en ? 'AI agent and traditional support comparison' : 'Comparación de agente IA y atención tradicional'}</caption><thead><tr><th scope="col">{en ? 'Day to day' : 'En el día a día'}</th><th scope="col">{en ? 'AI agent' : 'Agente IA'}<small>{en ? 'From US$120/mo' : 'Desde US$120/mes'}</small></th><th scope="col">{en ? 'Traditional' : 'Tradicional'}</th></tr></thead><tbody>{c.comparison.map(row => <tr key={row.label}><th scope="row">{row.label}</th><td>{row.ai}</td><td>{row.traditional}</td></tr>)}</tbody></table><p>{en ? 'Capabilities depend on the agreed configuration. The agent can hand over to your team.' : 'Las funciones dependen de la configuración acordada. El agente puede transferir la conversación a tu equipo.'}</p></div>
+      <div className={s.sectionHeading} data-reveal><p className={s.eyebrow}>{en ? 'COST AND CAPABILITY' : 'COSTO Y CAPACIDAD'}</p><h2 id="comparison-title">{en ? 'Never tires. Never forgets.' : 'No se cansa. No olvida.'}<br /><em>{en ? 'Never leaves a prospect waiting.' : 'No deja prospectos esperando.'}</em></h2><p>{en ? 'Compare the starting monthly cost and day-to-day capacity. The AI agent supports your team; it does not replace human judgment.' : 'Compará el costo mensual inicial y la capacidad en el día a día. El Agente IA complementa a tu equipo; no reemplaza el criterio humano.'}</p><Action href={demoUrl}>{demoText}</Action></div>
+      <div className={s.comparison} data-reveal>
+        <div className={s.costCards}>
+          <div className={`${s.costCard} ${s.costCardFeatured}`}><span>{en ? 'OUR AI AGENT' : 'NUESTRO AGENTE IA'}</span><strong><small>{en ? 'From' : 'Desde'}</small> US$120</strong><p>{en ? 'per month · WhatsApp' : 'al mes · WhatsApp'}</p></div>
+          <div className={s.costCard}><span>{en ? 'HUMAN COLLABORATOR' : 'COLABORADOR HUMANO'}</span><strong><small>{en ? 'From' : 'Desde'}</small> L15,000</strong><p>{en ? 'per month + employment obligations' : 'al mes + obligaciones laborales'}</p></div>
+        </div>
+        <div className={s.comparisonTableScroll}><table><caption className={s.srOnly}>{en ? 'AI agent and human collaborator comparison' : 'Comparación entre Agente IA y colaborador humano'}</caption><thead><tr><th scope="col">{en ? 'Capability' : 'Capacidad'}</th><th scope="col">{en ? 'Our AI agent' : 'Nuestro Agente IA'}</th><th scope="col">{en ? 'Human collaborator' : 'Colaborador humano'}</th></tr></thead><tbody>{c.comparison.map(row => <tr key={row.label}><th scope="row">{row.label}</th><td>{row.ai}</td><td>{row.traditional}</td></tr>)}</tbody></table></div>
+        <p>{en ? 'Reference costs vary by location and employment terms. Capabilities depend on the agreed setup; the agent can hand over to your team.' : 'Costo de referencia del colaborador; puede variar según país y obligaciones laborales. Las funciones dependen de la configuración y el agente puede transferir la conversación a tu equipo.'}</p>
+      </div>
     </div></section>
 
     <section id="industrias" className={`${s.container} ${s.section}`} aria-labelledby="industry-title">
@@ -173,6 +259,6 @@ export function AgentLanding({ content: c }: { content: AgentContent }) {
     <section className={`${s.container} ${s.section} ${s.faqLayout}`} aria-labelledby="faq-title"><div className={s.sectionHeading} data-reveal><p className={s.eyebrow}>{en ? 'FREQUENTLY ASKED QUESTIONS' : 'PREGUNTAS FRECUENTES'}</p><h2 id="faq-title">{en ? 'Before' : 'Antes de'}<br /><em>{en ? 'we begin.' : 'empezar.'}</em></h2></div><div className={s.faqs} data-reveal>{c.faqs.map(faq => <details key={faq.q}><summary>{faq.q}<span className={s.faqPlus} aria-hidden="true" /></summary><p>{faq.a}</p></details>)}</div></section>
 
     <section className={`${s.container} ${s.final}`} aria-labelledby="final-title" data-reveal><p className={s.eyebrow}>{en ? 'YOUR NEXT CONVERSATION COUNTS' : 'TU PRÓXIMA CONVERSACIÓN CUENTA'}</p><h2 id="final-title">{en ? 'If someone reaches out,' : 'Si alguien escribe,'}<br /><em>{en ? 'someone responds.' : 'alguien responde.'}</em></h2><p>{en ? 'And if the conversation pauses, your agent follows up.' : 'Y si deja de responder, tu agente da seguimiento.'}</p><div className={s.finalActions}><Action href={demoUrl}>{demoText}</Action><a className={s.textLink} href={automateUrl} target="_blank" rel="noopener noreferrer">{en ? 'Talk on WhatsApp' : 'Hablar por WhatsApp'}<Arrow /></a></div></section>
-    <footer className={`${s.container} ${s.footer}`}><div className={s.footerTop}><Logo variant="dark" /><p>{en ? 'Technology that takes care of your opportunities.' : 'Tecnología que trabaja tus oportunidades.'}</p><a className={s.backTop} href="#agent-title">{en ? 'Back to top' : 'Volver arriba'}<span aria-hidden="true">↑</span></a></div><div className={s.footerBottom}><span>© {new Date().getFullYear()} Cluster Media</span><div><Link href="/privacidad">{en ? 'Privacy policy' : 'Privacidad'}</Link><Link href="/terminos">{en ? 'Terms and conditions' : 'Términos y condiciones'}</Link><Link href="/contacto">{en ? 'Contact' : 'Contacto'}</Link></div></div></footer>
+    <footer className={`${s.container} ${s.footer}`}><div className={s.footerTop}><Logo variant="light" /><p>{en ? 'Technology that takes care of your opportunities.' : 'Tecnología que trabaja tus oportunidades.'}</p><a className={s.backTop} href="#agent-title">{en ? 'Back to top' : 'Volver arriba'}<span aria-hidden="true">↑</span></a></div><div className={s.footerBottom}><span>© {new Date().getFullYear()} Cluster Media</span><div><Link href="/privacidad">{en ? 'Privacy policy' : 'Privacidad'}</Link><Link href="/terminos">{en ? 'Terms and conditions' : 'Términos y condiciones'}</Link><Link href="/contacto">{en ? 'Contact' : 'Contacto'}</Link></div></div></footer>
   </div>;
 }

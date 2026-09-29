@@ -29,6 +29,9 @@ export type IconName =
   | 'bolt'
   | 'upload'
   | 'play'
+  | 'pause'
+  | 'volume'
+  | 'volume-off'
   | 'link'
   | 'clock'
   | 'video'
@@ -137,6 +140,9 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   play: <path d="M8 6l12 6-12 6V6z" />,
+  pause: <><path d="M7 5h3v14H7z" /><path d="M14 5h3v14h-3z" /></>,
+  volume: <><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M16 9a4 4 0 010 6M18 6a8 8 0 010 12" /></>,
+  'volume-off': <><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M17 10l5 5m0-5l-5 5" /></>,
   link: (
     <>
       <path d="M10 13a5 5 0 007.07 0l1.41-1.41a5 5 0 00-7.07-7.07L10 5.93" />
