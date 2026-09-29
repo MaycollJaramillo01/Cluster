@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { setRequestLocale } from 'next-intl/server';
 import { AgentLanding } from '@/components/automatizaciones-ia/AgentLanding';
 import { getAgentContent } from '@/components/automatizaciones-ia/content';
+import { getAgentPriceReference } from '@/lib/agent-pricing';
 import {
   JsonLd,
   serviceSchema,
@@ -44,6 +46,8 @@ export default async function AutomatizacionesPage({ params }: PageParams) {
   const { locale } = await params;
   setRequestLocale(locale);
   const content = getAgentContent(locale);
+  const requestHeaders = await headers();
+  const humanPrice = await getAgentPriceReference(requestHeaders.get('x-vercel-ip-country'));
   const path = content.locale === 'en' ? '/en/agentes-ia' : '/agentes-ia';
   const pageUrl = `${site.url}${path}`;
 
@@ -65,7 +69,7 @@ export default async function AutomatizacionesPage({ params }: PageParams) {
         ])}
       />
 
-      <AgentLanding content={content} />
+      <AgentLanding content={content} humanPrice={humanPrice} />
     </>
   );
 }

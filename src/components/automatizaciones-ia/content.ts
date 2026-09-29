@@ -28,7 +28,7 @@ const es: AgentContent = {
   locale: 'es',
   hero: {
     eyebrow: 'Agentes IA para WhatsApp',
-    title: ['Tu negocio recibe prospectos.', 'Nuestro Agente IA se asegura de que no los pierdas.'],
+    title: ['Su negocio recibe prospectos.', 'Nuestro Agente IA se asegura de que no los pierda.'],
     description:
       'Responde, califica y da seguimiento automáticamente por WhatsApp, 24/7.',
     primary: 'Quiero automatizar mi WhatsApp',
@@ -36,63 +36,63 @@ const es: AgentContent = {
     note: 'Desde US$120/mes · Implementación personalizada',
   },
   benefits: [
-    { title: 'Responde 24/7', text: 'Atiende consultas, incluso fuera de tu horario.' },
-    { title: 'Califica', text: 'Hace las preguntas que tu equipo necesita para avanzar.' },
+    { title: 'Responde 24/7', text: 'Atiende consultas, incluso fuera de su horario.' },
+    { title: 'Califica', text: 'Hace las preguntas que su equipo necesita para avanzar.' },
     { title: 'Da seguimiento', text: 'Retoma la conversación según el proceso que definamos.' },
-    { title: 'Agenda', text: 'Coordina una cita según la disponibilidad de tu calendario.' },
+    { title: 'Agenda', text: 'Coordina una cita según la disponibilidad de su calendario.' },
   ],
   capabilities: [
-    { title: 'Atención automática', text: 'Responde consultas sobre tus servicios, horarios y preguntas frecuentes.' },
-    { title: 'Calificación', text: 'Consulta necesidades, ubicación y presupuesto antes de pasar a tu equipo.' },
-    { title: 'Seguimiento', text: 'Retoma oportunidades con mensajes y tiempos definidos para tu negocio.' },
+    { title: 'Atención automática', text: 'Responde consultas sobre sus servicios, horarios y preguntas frecuentes.' },
+    { title: 'Calificación', text: 'Consulta necesidades, ubicación y presupuesto antes de pasar a su equipo.' },
+    { title: 'Seguimiento', text: 'Retoma oportunidades con mensajes y tiempos definidos para su negocio.' },
     { title: 'Conversaciones que continúan', text: 'Acompaña a quien necesita más información antes de tomar una decisión.' },
     { title: 'Agenda de citas', text: 'Consulta disponibilidad y ayuda a coordinar el próximo paso.' },
     { title: 'Reactivación', text: 'Permite retomar prospectos anteriores cuando corresponde contactarlos.' },
-    { title: 'Oportunidades organizadas', text: 'Centraliza los datos y el estado de cada conversación en tu CRM.' },
-    { title: 'Pase a tu equipo', text: 'Deriva la conversación a una persona cuando necesita atención directa.' },
+    { title: 'Oportunidades organizadas', text: 'Centraliza los datos y el estado de cada conversación en su CRM.' },
+    { title: 'Pase a su equipo', text: 'Deriva la conversación a una persona cuando necesita atención directa.' },
   ],
   industries: [
     {
       title: 'Inmobiliarias',
       description: 'De la primera consulta a una visita con contexto.',
-      questions: ['¿Buscás comprar o alquilar?', '¿En qué zona?', '¿Cuál es tu presupuesto?'],
-      outcome: 'Tu asesor recibe la necesidad, la ubicación y el presupuesto para coordinar una visita.',
+      questions: ['¿Busca comprar o alquilar?', '¿En qué zona?', '¿Cuál es su presupuesto?'],
+      outcome: 'Su asesor recibe la necesidad, la ubicación y el presupuesto para coordinar una visita.',
     },
     {
       title: 'Construcción',
-      description: 'Entendé el proyecto antes de la primera llamada.',
-      questions: ['¿Qué tipo de proyecto tenés?', '¿Dónde se realizaría?', '¿Cuándo te gustaría comenzar?'],
+      description: 'Conozca el proyecto antes de la primera llamada.',
+      questions: ['¿Qué tipo de proyecto tiene?', '¿Dónde se realizaría?', '¿Cuándo le gustaría comenzar?'],
       outcome: 'El equipo comercial recibe los detalles iniciales y puede coordinar una llamada.',
     },
     {
       title: 'Clínicas médicas',
       description: 'Menos consultas administrativas pendientes.',
-      questions: ['¿Qué servicio necesitás?', '¿En qué sede?', '¿Qué horario te conviene?'],
+      questions: ['¿Qué servicio necesita?', '¿En qué sede?', '¿Qué horario le conviene?'],
       outcome: 'Orienta sobre servicios, horarios y citas; deriva las consultas clínicas al personal de salud.',
     },
     {
       title: 'Clínicas odontológicas',
       description: 'De la consulta sobre un servicio a una valoración.',
-      questions: ['¿Sobre qué servicio querés información?', '¿Es tu primera visita?', '¿Qué día te queda mejor?'],
+      questions: ['¿Sobre qué servicio desea información?', '¿Es su primera visita?', '¿Qué día le conviene?'],
       outcome: 'Comparte información de la clínica y ayuda a agendar una valoración con el profesional.',
     },
     {
       title: 'Estéticas',
-      description: 'Atendé el interés mientras tu equipo atiende en cabina.',
-      questions: ['¿Qué servicio te interesa?', '¿Querés agendar una valoración?', '¿Qué horario preferís?'],
+      description: 'Atienda el interés mientras su equipo atiende en cabina.',
+      questions: ['¿Qué servicio le interesa?', '¿Desea agendar una valoración?', '¿Qué horario prefiere?'],
       outcome: 'Informa sobre servicios, consulta disponibilidad y retoma solicitudes pendientes.',
     },
   ],
   problems: [
-    { title: 'Te escriben fuera de horario.', text: 'La consulta queda pendiente hasta que tu equipo vuelve a conectarse.' },
+    { title: 'Le escriben fuera de horario.', text: 'La consulta queda pendiente hasta que su equipo vuelve a conectarse.' },
     { title: 'Preguntan precio y desaparecen.', text: 'La conversación termina sin un próximo paso.' },
     { title: 'Llegan varias consultas a la vez.', text: 'Entre mensajes y tareas, algunas oportunidades quedan sin atender.' },
     { title: 'Todavía no están listos.', text: 'Quien necesita más tiempo también necesita una conversación que continúe.' },
   ],
   steps: [
-    { title: 'Entendemos tu negocio', text: 'Revisamos tus servicios, preguntas frecuentes y proceso comercial.' },
-    { title: 'Construimos tu agente', text: 'Definimos su forma de responder, la información que usa y cuándo pasa a tu equipo.' },
-    { title: 'Preparamos el seguimiento', text: 'Configuramos los mensajes, la agenda y las acciones que tu proceso necesita.' },
+    { title: 'Entendemos su negocio', text: 'Revisamos sus servicios, preguntas frecuentes y proceso comercial.' },
+    { title: 'Construimos su agente', text: 'Definimos su forma de responder, la información que usa y cuándo pasa a su equipo.' },
+    { title: 'Preparamos el seguimiento', text: 'Configuramos los mensajes, la agenda y las acciones que su proceso necesita.' },
     { title: 'Lo ponemos a trabajar', text: 'Conectamos WhatsApp, probamos las conversaciones y ajustamos antes de activar.' },
   ],
   comparison: [
@@ -111,11 +111,11 @@ const es: AgentContent = {
   faqs: [
     {
       q: '¿Es un chatbot?',
-      a: 'Es un agente con Inteligencia Artificial: puede interpretar preguntas, consultar la información de tu empresa y responder según el contexto de la conversación, en lugar de limitarse a un menú de respuestas fijas.',
+      a: 'Es un agente con Inteligencia Artificial: puede interpretar preguntas, consultar la información de su empresa y responder según el contexto de la conversación, en lugar de limitarse a un menú de respuestas fijas.',
     },
     {
       q: '¿Puede dar seguimiento?',
-      a: 'Sí. Configuramos mensajes y tiempos para retomar conversaciones, acompañar a prospectos que aún no están listos o reactivar oportunidades según tu proceso comercial.',
+      a: 'Sí. Configuramos mensajes y tiempos para retomar conversaciones, acompañar a prospectos que aún no están listos o reactivar oportunidades según su proceso comercial.',
     },
     {
       q: '¿Puede agendar citas?',
@@ -123,11 +123,11 @@ const es: AgentContent = {
     },
     {
       q: '¿Sirve para cualquier negocio?',
-      a: 'Funciona especialmente bien en empresas que reciben consultas, prospectos o solicitudes de cotización de forma recurrente. Revisamos tu proceso para determinar qué conviene automatizar y qué debe atender tu equipo.',
+      a: 'Funciona especialmente bien en empresas que reciben consultas, prospectos o solicitudes de cotización de forma recurrente. Revisamos su proceso para determinar qué conviene automatizar y qué debe atender su equipo.',
     },
     {
       q: '¿Necesito cambiar mi número de WhatsApp?',
-      a: 'Depende de la configuración actual de tu cuenta. Nuestro equipo revisa tu número y las opciones de conexión durante la implementación.',
+      a: 'Depende de la configuración actual de su cuenta. Nuestro equipo revisa su número y las opciones de conexión durante la implementación.',
     },
   ],
   planFeatures: [
@@ -141,7 +141,7 @@ const es: AgentContent = {
   ],
   meta: {
     title: 'Agentes IA para WhatsApp desde US$120/mes | Cluster Media',
-    description: 'Responde, califica y da seguimiento a tus prospectos con un Agente IA para WhatsApp. Desde US$120 al mes. Implementación personalizada con Cluster Media.',
+    description: 'Responde, califica y da seguimiento a sus prospectos con un Agente IA para WhatsApp. Desde US$120 al mes. Implementación personalizada con Cluster Media.',
   },
 };
 
