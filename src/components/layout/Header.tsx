@@ -42,6 +42,18 @@ const navItems: NavItem[] = [
       { labelKey: 'remodelaciones', href: '/remodelaciones' },
     ],
   },
+  {
+    labelKey: 'podcast',
+    href: '/participa',
+    children: [
+      { labelKey: 'podcastParticipate', href: '/participa' },
+      {
+        labelKey: 'podcastCommercial',
+        href: '/participa/asegura-tu-participacion',
+      },
+      { labelKey: 'podcastSponsors', href: '/patrocinios' },
+    ],
+  },
   { labelKey: 'plans', href: '/#planes' },
   { labelKey: 'cases', href: '/casos-de-exito' },
   { labelKey: 'about', href: '/sobre-cluster' },
@@ -56,6 +68,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const isPodcast = pathname === '/participa' || pathname.startsWith('/participa/') || pathname === '/patrocinios';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -82,6 +95,8 @@ export function Header() {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
+  if (isPodcast) return null;
+
   return (
     <header
       className={`header-enter fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
@@ -95,14 +110,17 @@ export function Header() {
       <div className="container-x flex h-[76px] items-center justify-between gap-4">
         <Logo />
 
-        <nav className="hidden items-center gap-0.5 lg:flex" aria-label={tc('navAria')}>
+        <nav className="hidden items-center gap-0.5 xl:flex" aria-label={tc('navAria')}>
           {navItems.map((item) => {
             const hasChildren = Boolean(item.children?.length);
             return (
-              <div key={item.href} className="group relative">
+              <div
+                key={item.href}
+                className={`group relative ${item.href === '/' ? 'hidden 2xl:block' : ''}`}
+              >
                 <Link
                   href={item.href}
-                  className={`inline-flex items-center gap-1 px-3 py-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] transition-colors ${
+                  className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] transition-colors ${
                     isActive(item.href) ||
                     item.children?.some((child) => isActive(child.href))
                       ? 'text-accent'
@@ -132,7 +150,7 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 lg:flex">
+        <div className="hidden items-center gap-2 xl:flex">
           <LanguageSwitcher />
           <a
             href={whatsappLink(tc('whatsappDefaultMessage'))}
@@ -153,14 +171,14 @@ export function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? tc('closeMenu') : tc('openMenu')}
           aria-expanded={open}
-          className="flex h-11 w-11 items-center justify-center border-0 bg-surface text-fg transition-colors hover:bg-surface-2 lg:hidden"
+          className="flex h-11 w-11 items-center justify-center border-0 bg-surface text-fg transition-colors hover:bg-surface-2 xl:hidden"
         >
           <Icon name={open ? 'close' : 'menu'} size={22} />
         </button>
       </div>
 
       <div
-        className={`overflow-hidden border-t border-line bg-ink-900 transition-[max-height] duration-500 ease-out lg:hidden ${
+        className={`overflow-hidden border-t border-line bg-ink-900 transition-[max-height] duration-500 ease-out xl:hidden ${
           open ? 'max-h-[85vh]' : 'max-h-0'
         }`}
       >
@@ -189,7 +207,7 @@ export function Header() {
                           current === item.href ? null : item.href,
                         )
                       }
-                      aria-label={tc('showServices')}
+                      aria-label={`${tc('showNavGroup')}: ${t(item.labelKey)}`}
                       aria-expanded={openGroup === item.href}
                       className="flex h-9 w-9 items-center justify-center border-0 text-faint"
                     >

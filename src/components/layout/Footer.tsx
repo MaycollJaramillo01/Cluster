@@ -19,7 +19,12 @@ export function Footer() {
   const tc = useTranslations('Common');
   const pathname = usePathname();
 
-  if (pathname === '/agentes-ia') return null;
+  if (
+    pathname === '/agentes-ia' ||
+    pathname === '/participa' ||
+    pathname.startsWith('/participa/') ||
+    pathname === '/patrocinios'
+  ) return null;
 
   const columns = [
     {

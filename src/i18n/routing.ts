@@ -8,5 +8,7 @@ export const routing = defineRouting({
   locales,
   defaultLocale,
   localePrefix: 'as-needed',
-  localeDetection: true,
+  // Explicit URLs are more predictable for campaigns and avoid recursive
+  // default-locale redirects in self-hosted Next.js production servers.
+  localeDetection: false,
 });
