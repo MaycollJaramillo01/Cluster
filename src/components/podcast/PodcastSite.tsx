@@ -130,10 +130,10 @@ function PodcastChrome({ children, whatsappMessage }: { children: ReactNode; wha
   );
 }
 
-function Hero({ eyebrow, title, lead, image, imagePosition = 'center', children }: { eyebrow: string; title: string; lead: string; image: string; imagePosition?: string; children: ReactNode }) {
+function Hero({ eyebrow, title, lead, image, imageAlt = 'Grabación de una conversación en Cluster Podcast', imagePosition = 'center', children }: { eyebrow: string; title: string; lead: string; image: string; imageAlt?: string; imagePosition?: string; children: ReactNode }) {
   return (
     <section className={styles.hero}>
-      <div className={styles.heroImage}><Image src={image} alt="Grabación de una conversación en Cluster Podcast" fill sizes="100vw" priority style={{ objectPosition: imagePosition }} /></div>
+      <div className={styles.heroImage}><Image src={image} alt={imageAlt} fill sizes="100vw" priority style={{ objectPosition: imagePosition }} /></div>
       <div className={`${styles.shell} ${styles.heroBody}`}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>{eyebrow}</p>
@@ -450,7 +450,7 @@ export function SponsorsLanding() {
   const wa = 'Hola, quisiera conocer las opciones de patrocinio de Cluster Podcast.';
   return (
     <PodcastChrome whatsappMessage={wa}>
-      <Hero eyebrow="Patrocinios" title="Tu marca en la conversación." lead="Conecta con la audiencia de Cluster Podcast mediante integraciones naturales y presencia multiplataforma." image="/assets/podcast/conversation-couch-close.webp" imagePosition="70% center"><a className={styles.button} href="#planes">Conocer patrocinios</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a></Hero>
+      <Hero eyebrow="Patrocinios" title="Tu marca en la conversación." lead="Conecta con la audiencia de Cluster Podcast mediante integraciones naturales y presencia multiplataforma." image="/assets/podcast/conversation-karlen-perez.webp" imageAlt="Karlen Pérez conversando con el anfitrión de Cluster Podcast" imagePosition="30% center"><a className={styles.button} href="#planes">Conocer patrocinios</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a></Hero>
       <section className={styles.section}><div className={styles.shell}><SectionHeading title="La audiencia ya está aquí." lead="Cada cifra conserva su ventana de medición para que el alcance sea claro y comparable." /><PodcastMetrics /></div></section>
       <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Una audiencia activa y conectada." /><div className={styles.audience}><div className={styles.featureImage}><Image src="/assets/podcast/conversation-couch-wide.webp" alt="Conversación entre anfitrión e invitado de Cluster Podcast" fill sizes="(max-width: 900px) 100vw, 46vw" style={{ objectPosition: '62% center' }} /></div><div className={styles.audienceStats}><div className={styles.audienceStat}><strong>44.4%</strong><span>de la audiencia de Instagram tiene entre 35 y 54 años.</span></div><div className={styles.audienceStat}><strong>57.5%</strong><span>hombres y 42.5% mujeres en Instagram.</span></div><div className={styles.audienceStat}><strong>22.7%</strong><span>Honduras, seguido por Estados Unidos con 21.7% y México con 7.9%.</span></div></div></div></div></section>
       <section className={`${styles.section} ${styles.sectionCompact}`}>
