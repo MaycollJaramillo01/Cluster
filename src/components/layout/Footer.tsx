@@ -21,6 +21,7 @@ export function Footer() {
 
   if (
     pathname === '/agentes-ia' ||
+    pathname === '/acuerdo-proveedores' ||
     pathname === '/participa' ||
     pathname.startsWith('/participa/') ||
     pathname === '/patrocinios'

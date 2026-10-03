@@ -6,7 +6,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/postulaciones', '/en/postulaciones'],
+      disallow: [
+        '/postulaciones',
+        '/en/postulaciones',
+        '/acuerdo-proveedores',
+        '/en/acuerdo-proveedores',
+      ],
     },
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,
