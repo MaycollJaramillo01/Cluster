@@ -35,7 +35,7 @@ const commitments = [
 
 const commercialCommitments = [
   'No promocionar su empresa, marca o servicios frente al cliente.',
-  'No compartir datos personales con fines comerciales.',
+  'No compartir sus datos personales de ningún tipo (teléfono o email).',
   'No buscar oportunidades de negocio propias o de terceros con el cliente.',
   'No utilizar la relación generada a través de Cluster para ofrecer posteriormente servicios de manera directa.',
 ];
