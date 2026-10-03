@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
 import { site } from '@/lib/site';
 
 export const runtime = 'nodejs';
@@ -44,6 +45,34 @@ function buildBody(lead: PodcastLead) {
     '',
     serializeGroup('Atribución', lead.attribution),
   ].join('\n');
+}
+
+function blobToken() {
+  return (
+    process.env.BLOB_READ_WRITE_TOKEN ||
+    process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN ||
+    ''
+  ).trim();
+}
+
+async function persistLead(lead: PodcastLead) {
+  const token = blobToken();
+  if (!token) return null;
+
+  const createdAt = new Date().toISOString();
+  const id = crypto.randomUUID();
+  const date = createdAt.slice(0, 10);
+  await put(
+    `podcast-leads/${date}/${createdAt.replaceAll(':', '-')}-${id}.json`,
+    JSON.stringify({ id, createdAt, ...lead }, null, 2),
+    {
+      token,
+      access: 'private',
+      addRandomSuffix: false,
+      contentType: 'application/json',
+    },
+  );
+  return 'blob';
 }
 
 async function sendWithResend(subject: string, body: string, replyTo: string) {
@@ -102,6 +131,13 @@ export async function POST(request: Request) {
   const body = buildBody(lead);
   const webhook = process.env.PODCAST_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;
   const channels: string[] = [];
+
+  try {
+    const storage = await persistLead(lead);
+    if (storage) channels.push(storage);
+  } catch (error) {
+    console.error('[podcast-lead] Blob storage error:', error);
+  }
 
   if (webhook) {
     try {

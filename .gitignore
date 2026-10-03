@@ -52,3 +52,4 @@ next-env.d.ts
 
 # Postulaciones (perfiles, archivos y hash de acceso local)
 /data/careers/
+.vercel
