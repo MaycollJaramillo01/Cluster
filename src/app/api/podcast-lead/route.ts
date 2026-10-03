@@ -101,6 +101,7 @@ export async function POST(request: Request) {
   const subject = `Cluster Podcast | ${kind} | ${nombre}`;
   const body = buildBody(lead);
   const webhook = process.env.PODCAST_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;
+  const channels: string[] = [];
 
   if (webhook) {
     try {
@@ -110,19 +111,18 @@ export async function POST(request: Request) {
         body: JSON.stringify({ source: 'cluster-podcast', subject, body, ...lead }),
       });
       if (!response.ok) throw new Error(`webhook_failed: ${await response.text()}`);
-      return NextResponse.json({ ok: true, channel: 'webhook' });
+      channels.push('webhook');
     } catch (error) {
       console.error('[podcast-lead] webhook error:', error);
-      return NextResponse.json({ ok: false, error: 'webhook_failed' }, { status: 502 });
     }
   }
 
   try {
     const resend = await sendWithResend(subject, body, leadEmail(lead));
-    if (resend) return NextResponse.json({ ok: true, channel: resend });
-    return NextResponse.json({ ok: true, channel: await sendWithFormSubmit(lead, subject, body) });
+    channels.push(resend || await sendWithFormSubmit(lead, subject, body));
+    return NextResponse.json({ ok: true, channels });
   } catch (error) {
-    console.error('[podcast-lead] delivery error:', error);
-    return NextResponse.json({ ok: false, error: 'delivery_failed' }, { status: 502 });
+    console.error('[podcast-lead] email delivery error:', error);
+    return NextResponse.json({ ok: false, error: 'email_delivery_failed', channels }, { status: 502 });
   }
 }

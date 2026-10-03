@@ -22,6 +22,14 @@ const guests = [
   'Karlen Pérez',
 ];
 
+const podcastMetrics = [
+  { platform: 'Facebook', value: '16M', detail: 'visualizaciones en los últimos 90 días. 5.3M espectadores y 91% de vistas de no seguidores.' },
+  { platform: 'TikTok', value: '9.5M', detail: 'visualizaciones en 60 días. 4.7M espectadores y 123K+ seguidores.' },
+  { platform: 'Instagram', value: '4.48M', detail: 'visualizaciones en 90 días. 1.85M espectadores.' },
+  { platform: 'YouTube', value: '10.7K', detail: 'suscriptores. 77.8K vistas en 28 días.' },
+  { platform: 'TikTok', value: '89.6%', detail: 'del tráfico proviene de Para ti.' },
+];
+
 const editorialFaqs = [
   ['¿Tiene algún costo postularme?', 'No. La postulación y la participación de las 2 historias seleccionadas cada mes no tienen costo.'],
   ['¿Cuándo seleccionan las historias?', 'Nuestro equipo realiza una selección cada mes.'],
@@ -141,6 +149,71 @@ function SectionHeading({ title, lead }: { title: string; lead?: string }) {
   return <><h2 className={styles.sectionTitle}>{title}</h2>{lead && <p className={styles.sectionLead}>{lead}</p>}</>;
 }
 
+function PodcastMetrics() {
+  return (
+    <div className={styles.metrics}>
+      {podcastMetrics.map((metric) => (
+        <article className={styles.metric} key={`${metric.platform}-${metric.value}`}>
+          <span className={styles.metricPlatform}>{metric.platform}</span>
+          <strong className={styles.metricValue}>{metric.value}</strong>
+          <p>{metric.detail}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function GuestShowcase() {
+  return (
+    <div className={styles.guestPanel} aria-label="Invitados destacados">
+      <p className={styles.guestLabel}>Invitados destacados</p>
+      <div className={styles.guestGrid}>
+        {guests.map((guest) => (
+          <div className={styles.guestCard} key={guest}>
+            <span aria-hidden="true">{guest.split(/\s+/).map((part) => part[0]).join('').slice(0, 2)}</span>
+            <strong>{guest}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BrandIntegration() {
+  const steps = [
+    ['Conversamos contigo', 'Definimos el enfoque y el lugar natural de tu marca.'],
+    ['Diseñamos la integración', 'Elegimos episodios, temas y momentos que encajen.'],
+    ['Producimos el contenido', 'Grabamos la conversación y las piezas para cada plataforma.'],
+    ['Amplificamos', 'Distribuimos la integración en el ecosistema del podcast.'],
+  ];
+
+  return (
+    <div className={styles.integrationBlock}>
+      <div className={styles.integrationGrid}>
+        <div className={styles.integrationImage}>
+          <Image src="/assets/podcast/podcast-guest.webp" alt="Producción de una conversación para integrar una marca" fill sizes="(max-width: 900px) 100vw, 42vw" />
+        </div>
+        <div className={styles.integrationCopy}>
+          <p className={styles.eyebrow}>No hacemos anuncios tradicionales</p>
+          <SectionHeading title="Integramos tu marca en conversaciones reales." lead="Creamos una presencia natural que acompaña la experiencia y fortalece la conexión con la audiencia." />
+          <div className={styles.integrationSteps}>
+            {steps.map(([title, detail]) => (
+              <article className={styles.integrationStep} key={title}>
+                <h3>{title}</h3>
+                <p>{detail}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className={styles.integrationProof}>
+        <strong>Más atención. Más recuerdo. Más conexión.</strong>
+        <p>La marca no interrumpe. Forma parte de la experiencia.</p>
+      </div>
+    </div>
+  );
+}
+
 function Faq({ items }: { items: string[][] }) {
   return <div className={styles.faq}>{items.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div>;
 }
@@ -197,17 +270,24 @@ export function EditorialLanding() {
 
       <section className={styles.section}>
         <div className={styles.shell}>
-          <SectionHeading title="Conversaciones con personas que tienen algo que contar." />
+          <SectionHeading title="Voces que han pasado por Cluster." />
           <div className={styles.mediaGrid}>
             <div className={styles.featureImage}><Image src="/assets/podcast/podcast-production.webp" alt="Producción profesional de Cluster Podcast" fill sizes="(max-width: 900px) 100vw, 66vw" /></div>
-            <div className={styles.nameRail} aria-label="Invitados destacados">{guests.map((guest) => <span key={guest}>{guest}</span>)}</div>
+            <GuestShowcase />
           </div>
         </div>
       </section>
 
       <section className={`${styles.section} ${styles.sectionSoft}`}>
         <div className={styles.shell}>
-          <SectionHeading title="No buscamos la empresa más grande. Buscamos una historia que valga la pena conversar." />
+          <SectionHeading title="El alcance de cada conversación." lead="Una comunidad multiplataforma que descubre, comparte y sigue las historias de Cluster Podcast." />
+          <PodcastMetrics />
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <div className={styles.shell}>
+          <SectionHeading title="Buscamos historias que conectan." />
           <div className={styles.asymGrid}>
             <article className={styles.storyLarge}><h3>Emprendimiento</h3><p>Personas construyendo negocios, proyectos e ideas.</p></article>
             <article className={styles.storySmall}><h3>Trayectoria</h3><p>Experiencias profesionales o personales que dejan algo que contar.</p></article>
@@ -216,7 +296,7 @@ export function EditorialLanding() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.sectionSoft}`}>
         <div className={styles.shell}>
           <SectionHeading title="Así funciona." />
           <div className={styles.steps}>
@@ -227,7 +307,7 @@ export function EditorialLanding() {
         </div>
       </section>
 
-      <section className={`${styles.section} ${styles.sectionSoft}`} id="postula">
+      <section className={styles.section} id="postula">
         <div className={`${styles.shell} ${styles.formWrap}`}>
           <div><SectionHeading title="Cuéntanos tu historia." lead="La postulación es breve. Solo pedimos la información necesaria para conocer lo que quieres compartir." /></div>
           <EditorialForm />
@@ -331,11 +411,12 @@ export function CommercialLanding() {
   const wa = 'Hola, vi la opción para asegurar una participación en Cluster Podcast y quisiera información.';
   return (
     <PodcastChrome whatsappMessage={wa}>
-      <Hero eyebrow="Participación comercial" title="Asegura tu participación en Cluster Podcast." lead="Cuéntanos tu historia y descubre la modalidad de participación que tenemos para ti." image="/assets/podcast/podcast-hero.webp">
+      <Hero eyebrow="Participación comercial" title="Asegura tu participación." lead="Cuéntanos tu historia y descubre la modalidad de participación que tenemos para ti." image="/assets/podcast/podcast-hero.webp">
         <a className={styles.button} href="#evaluacion">Evaluar mi participación</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a>
       </Hero>
-      <section className={styles.section}><div className={styles.shell}><SectionHeading title="Una conversación que continúa después del episodio." /><div className={styles.distribution}><article className={styles.distributionItem}><h3>Episodio completo</h3></article><article className={styles.distributionItem}><h3>Producción profesional</h3><p>Grabación cuidada de principio a fin.</p></article><article className={styles.distributionItem}><h3>Distribución multiplataforma</h3><p>La conversación vive en los canales de Cluster.</p></article><article className={styles.distributionItem}><h3>5 clips</h3><p>Publicados por Cluster Podcast.</p></article><article className={styles.distributionItem}><h3>Una historia</h3><p>Contada con espacio, ritmo y una producción a su altura.</p></article></div></div></section>
-      <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Evalúa tu participación." lead="Tres pasos breves. Sin tarjeta, sin checkout y sin formularios interminables." /><CommercialEvaluation /></div></section>
+      <section className={styles.section}><div className={styles.shell}><SectionHeading title="Tu episodio sigue circulando." /><div className={styles.distribution}><article className={styles.distributionItem}><h3>Episodio completo</h3></article><article className={styles.distributionItem}><h3>Producción profesional</h3><p>Grabación cuidada de principio a fin.</p></article><article className={styles.distributionItem}><h3>Distribución multiplataforma</h3><p>La conversación vive en los canales de Cluster.</p></article><article className={styles.distributionItem}><h3>5 clips</h3><p>Publicados por Cluster Podcast.</p></article><article className={styles.distributionItem}><h3>Una historia</h3><p>Contada con espacio, ritmo y una producción a su altura.</p></article></div></div></section>
+      <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Tu conversación, en cifras." lead="El alcance combinado de Cluster Podcast lleva cada episodio a una audiencia activa en varias plataformas." /><PodcastMetrics /></div></section>
+      <section className={styles.section}><div className={styles.shell}><SectionHeading title="Conoce tu modalidad." lead="Tres pasos breves. Sin tarjeta, sin checkout y sin formularios interminables." /><CommercialEvaluation /></div></section>
     </PodcastChrome>
   );
 }
@@ -368,14 +449,15 @@ export function SponsorsLanding() {
   const wa = 'Hola, quisiera conocer las opciones de patrocinio de Cluster Podcast.';
   return (
     <PodcastChrome whatsappMessage={wa}>
-      <Hero eyebrow="Patrocinios" title="Haz que tu marca sea parte de la conversación." lead="Conecta con la audiencia de Cluster Podcast mediante integraciones naturales y presencia multiplataforma." image="/assets/podcast/podcast-production.webp"><a className={styles.button} href="#planes">Conocer patrocinios</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a></Hero>
-      <section className={styles.section}><div className={styles.shell}><SectionHeading title="La audiencia ya está aquí." lead="Cada cifra conserva su ventana de medición para que el alcance sea claro y comparable." /><div className={styles.metrics}><article className={styles.metric}><span className={styles.metricPlatform}>Facebook</span><strong className={styles.metricValue}>16M</strong><p>visualizaciones en los últimos 90 días. 5.3M espectadores y 91% de vistas de no seguidores.</p></article><article className={styles.metric}><span className={styles.metricPlatform}>TikTok</span><strong className={styles.metricValue}>9.5M</strong><p>visualizaciones en 60 días. 4.7M espectadores y 123K+ seguidores.</p></article><article className={styles.metric}><span className={styles.metricPlatform}>Instagram</span><strong className={styles.metricValue}>4.48M</strong><p>visualizaciones en 90 días. 1.85M espectadores.</p></article><article className={styles.metric}><span className={styles.metricPlatform}>YouTube</span><strong className={styles.metricValue}>10.7K</strong><p>suscriptores. 77.8K vistas en 28 días.</p></article><article className={styles.metric}><span className={styles.metricPlatform}>TikTok</span><strong className={styles.metricValue}>89.6%</strong><p>del tráfico proviene de Para ti.</p></article></div></div></section>
-      <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Una audiencia adulta, activa y conectada dentro y fuera de Honduras." /><div className={styles.audience}><div className={styles.featureImage}><Image src="/assets/podcast/podcast-hero.webp" alt="Conversación de negocios en Cluster Podcast" fill sizes="(max-width: 900px) 100vw, 46vw" /></div><div className={styles.audienceStats}><div className={styles.audienceStat}><strong>44.4%</strong><span>de la audiencia de Instagram tiene entre 35 y 54 años.</span></div><div className={styles.audienceStat}><strong>57.5%</strong><span>hombres y 42.5% mujeres en Instagram.</span></div><div className={styles.audienceStat}><strong>22.7%</strong><span>Honduras, seguido por Estados Unidos con 21.7% y México con 7.9%.</span></div></div></div></div></section>
-      <section className={styles.section}><div className={styles.shell}><SectionHeading title="Tu marca no tiene que interrumpir la conversación para formar parte de ella." lead="Diseñamos integraciones naturales con presencia en el episodio y en las piezas que continúan circulando." /><div className={styles.distribution}><article className={styles.distributionItem}><h3>Una conversación. Múltiples puntos de contacto.</h3></article><article className={styles.distributionItem}><h3>Mención de apertura</h3></article><article className={styles.distributionItem}><h3>Integración orgánica</h3></article><article className={styles.distributionItem}><h3>Presencia visual</h3></article><article className={styles.distributionItem}><h3>Clips multiplataforma</h3></article></div></div></section>
-      <section className={`${styles.section} ${styles.sectionSoft}`} id="planes"><div className={styles.shell}><SectionHeading title="Elige cómo quieres formar parte de la conversación." /><div className={styles.plans}>{plans.map((plan) => <article className={`${styles.plan} ${plan.featured ? styles.planFeatured : ''}`} key={plan.name}><h3>{plan.name}</h3><p className={styles.planPrice}>{plan.price}</p><p>{plan.note} Precios más impuestos.</p><ul>{plan.items.map((item) => <li key={item}>{item}</li>)}</ul><a className={plan.featured ? styles.button : styles.buttonSecondary} href="#contacto" onClick={() => trackEvent(plan.featured ? 'sponsor_official_partner_click' : plan.name === 'Partner' ? 'sponsor_partner_click' : 'sponsor_episode_click')}>{plan.cta}</a></article>)}</div><div className={styles.bridge}><div><h2>¿Necesitas exclusividad de categoría?</h2><p>Podemos desarrollar propuestas personalizadas según la marca, período y alcance.</p></div><a className={styles.buttonSecondary} href="#contacto">Hablar con nuestro equipo</a></div></div></section>
-      <section className={styles.section} id="contacto"><div className={`${styles.shell} ${styles.formWrap}`}><div><SectionHeading title="¿Hacemos que tu marca forme parte de la próxima conversación?" lead="Déjanos tus datos. Al enviar podrás reservar una reunión sin volver a completar la información básica." /></div><SponsorForm /></div></section>
-      <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Preguntas frecuentes" /><Faq items={sponsorFaqs} /></div></section>
-      <section className={styles.finalVisual}><div className={styles.shell}><h2>Las buenas conversaciones generan atención. Haz que tu marca esté presente.</h2><div className={styles.actions}><a className={styles.button} href="#contacto">Solicitar contacto</a><a className={styles.buttonWhatsApp} href={whatsappLink(wa)} target="_blank" rel="noreferrer">WhatsApp</a></div></div></section>
+      <Hero eyebrow="Patrocinios" title="Tu marca en la conversación." lead="Conecta con la audiencia de Cluster Podcast mediante integraciones naturales y presencia multiplataforma." image="/assets/podcast/podcast-production.webp"><a className={styles.button} href="#planes">Conocer patrocinios</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a></Hero>
+      <section className={styles.section}><div className={styles.shell}><SectionHeading title="La audiencia ya está aquí." lead="Cada cifra conserva su ventana de medición para que el alcance sea claro y comparable." /><PodcastMetrics /></div></section>
+      <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Una audiencia activa y conectada." /><div className={styles.audience}><div className={styles.featureImage}><Image src="/assets/podcast/podcast-hero.webp" alt="Conversación de negocios en Cluster Podcast" fill sizes="(max-width: 900px) 100vw, 46vw" /></div><div className={styles.audienceStats}><div className={styles.audienceStat}><strong>44.4%</strong><span>de la audiencia de Instagram tiene entre 35 y 54 años.</span></div><div className={styles.audienceStat}><strong>57.5%</strong><span>hombres y 42.5% mujeres en Instagram.</span></div><div className={styles.audienceStat}><strong>22.7%</strong><span>Honduras, seguido por Estados Unidos con 21.7% y México con 7.9%.</span></div></div></div></div></section>
+      <section className={styles.section}><div className={styles.shell}><SectionHeading title="Presencia que se siente natural." lead="Diseñamos integraciones con presencia en el episodio y en las piezas que continúan circulando." /><div className={styles.distribution}><article className={styles.distributionItem}><h3>Una conversación. Múltiples puntos de contacto.</h3></article><article className={styles.distributionItem}><h3>Mención de apertura</h3></article><article className={styles.distributionItem}><h3>Integración orgánica</h3></article><article className={styles.distributionItem}><h3>Presencia visual</h3></article><article className={styles.distributionItem}><h3>Clips multiplataforma</h3></article></div></div></section>
+      <section className={`${styles.section} ${styles.sectionSoft}`} id="planes"><div className={styles.shell}><SectionHeading title="Elige tu nivel de presencia." /><div className={styles.plans}>{plans.map((plan) => <article className={`${styles.plan} ${plan.featured ? styles.planFeatured : ''}`} key={plan.name}><h3>{plan.name}</h3><p className={styles.planPrice}>{plan.price}</p><p>{plan.note} Precios más impuestos.</p><ul>{plan.items.map((item) => <li key={item}>{item}</li>)}</ul><a className={plan.featured ? styles.button : styles.buttonSecondary} href="#contacto" onClick={() => trackEvent(plan.featured ? 'sponsor_official_partner_click' : plan.name === 'Partner' ? 'sponsor_partner_click' : 'sponsor_episode_click')}>{plan.cta}</a></article>)}</div><div className={styles.bridge}><div><h2>¿Necesitas exclusividad de categoría?</h2><p>Podemos desarrollar propuestas personalizadas según la marca, período y alcance.</p></div><a className={styles.buttonSecondary} href="#contacto">Hablar con nuestro equipo</a></div></div></section>
+      <section className={styles.section}><div className={styles.shell}><BrandIntegration /></div></section>
+      <section className={`${styles.section} ${styles.sectionSoft}`} id="contacto"><div className={`${styles.shell} ${styles.formWrap}`}><div><SectionHeading title="Hablemos de tu marca." lead="Déjanos tus datos. Al enviar podrás reservar una reunión sin volver a completar la información básica." /></div><SponsorForm /></div></section>
+      <section className={styles.section}><div className={styles.shell}><SectionHeading title="Preguntas frecuentes" /><Faq items={sponsorFaqs} /></div></section>
+      <section className={styles.finalVisual}><div className={styles.shell}><h2>Convierte atención en presencia de marca.</h2><div className={styles.actions}><a className={styles.button} href="#contacto">Solicitar contacto</a><a className={styles.buttonWhatsApp} href={whatsappLink(wa)} target="_blank" rel="noreferrer">WhatsApp</a></div></div></section>
     </PodcastChrome>
   );
 }
