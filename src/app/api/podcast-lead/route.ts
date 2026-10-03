@@ -117,12 +117,32 @@ export async function POST(request: Request) {
     }
   }
 
+  let emailDelivered = false;
+
   try {
     const resend = await sendWithResend(subject, body, leadEmail(lead));
-    channels.push(resend || await sendWithFormSubmit(lead, subject, body));
-    return NextResponse.json({ ok: true, channels });
+    if (resend) {
+      channels.push(resend);
+      emailDelivered = true;
+    }
   } catch (error) {
-    console.error('[podcast-lead] email delivery error:', error);
-    return NextResponse.json({ ok: false, error: 'email_delivery_failed', channels }, { status: 502 });
+    console.error('[podcast-lead] Resend error:', error);
   }
+
+  if (!emailDelivered) {
+    try {
+      channels.push(await sendWithFormSubmit(lead, subject, body));
+    } catch (error) {
+      console.error('[podcast-lead] FormSubmit error:', error);
+    }
+  }
+
+  if (channels.length > 0) {
+    return NextResponse.json({ ok: true, channels });
+  }
+
+  return NextResponse.json(
+    { ok: false, error: 'delivery_failed' },
+    { status: 502 },
+  );
 }

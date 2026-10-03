@@ -253,6 +253,10 @@
   border-top: 1px solid var(--podcast-line);
 }
 
+.sectionCompact {
+  padding-block: clamp(3.25rem, 5vw, 4.75rem);
+}
+
 .sectionSoft {
   background: var(--podcast-panel);
 }
@@ -541,6 +545,16 @@
 
 .bridgeBrand {
   background: linear-gradient(135deg, #0d2a23 0%, #101412 60%);
+}
+
+.planBridge {
+  margin-top: 1rem;
+  padding: clamp(1.75rem, 4vw, 3rem);
+}
+
+.planBridge h2 {
+  max-width: 680px;
+  font-size: clamp(2.5rem, 4.5vw, 4.2rem);
 }
 
 .faq {
@@ -938,12 +952,12 @@
 
 .integrationGrid {
   display: grid;
-  grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1.18fr);
+  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1.28fr);
 }
 
 .integrationImage {
   position: relative;
-  min-height: 760px;
+  min-height: 560px;
   overflow: hidden;
   border-right: 1px solid var(--podcast-line);
 }
@@ -960,25 +974,25 @@
 }
 
 .integrationCopy {
-  padding: clamp(2rem, 5vw, 4.5rem);
+  padding: clamp(1.75rem, 4vw, 3.25rem);
 }
 
 .integrationCopy .sectionTitle {
   max-width: 720px;
-  font-size: clamp(2.7rem, 5vw, 5rem);
+  font-size: clamp(2.45rem, 4.2vw, 4.2rem);
 }
 
 .integrationSteps {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  margin-top: var(--podcast-content-gap);
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
   background: var(--podcast-line);
 }
 
 .integrationStep {
-  min-height: 190px;
-  padding: 1.5rem;
+  min-height: 140px;
+  padding: 1.25rem;
   background: var(--podcast-panel);
 }
 
@@ -997,9 +1011,9 @@
 .integrationProof {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: end;
-  padding: clamp(1.75rem, 4vw, 3rem);
+  padding: clamp(1.4rem, 3vw, 2.25rem);
   border-top: 1px solid var(--podcast-line);
   background: var(--podcast-green);
   color: #06130f;
@@ -1008,7 +1022,7 @@
 .integrationProof strong {
   max-width: 14ch;
   font-family: var(--font-display), sans-serif;
-  font-size: clamp(2.2rem, 4.5vw, 4.4rem);
+  font-size: clamp(2rem, 3.6vw, 3.35rem);
   font-weight: 500;
   line-height: 0.95;
 }
@@ -1016,7 +1030,7 @@
 .integrationProof p {
   max-width: 34ch;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 650;
   line-height: 1.5;
 }
@@ -1177,7 +1191,7 @@
   }
 
   .integrationImage {
-    min-height: 64dvh;
+    min-height: clamp(420px, 55dvh, 520px);
     border-right: 0;
     border-bottom: 1px solid var(--podcast-line);
   }
@@ -1241,6 +1255,10 @@
     padding-block: 4.5rem;
   }
 
+  .sectionCompact {
+    padding-block: 3rem;
+  }
+
   .guestGrid,
   .integrationSteps,
   .distributionPoints {
@@ -1257,7 +1275,7 @@
   }
 
   .integrationImage {
-    min-height: 72dvh;
+    min-height: 380px;
   }
 
   .integrationCopy {

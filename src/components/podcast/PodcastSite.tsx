@@ -74,8 +74,9 @@ async function postLead(kind: LeadKind, data: LeadPayload) {
       referrer: document.referrer,
     }),
   });
-  if (!response.ok) throw new Error('submit_failed');
-  return response.json() as Promise<{ ok: boolean }>;
+  const result = await response.json().catch(() => null) as { ok?: boolean } | null;
+  if (!response.ok || !result?.ok) throw new Error('submit_failed');
+  return result;
 }
 
 function PodcastChrome({ children, whatsappMessage }: { children: ReactNode; whatsappMessage: string }) {
@@ -452,7 +453,7 @@ export function SponsorsLanding() {
       <Hero eyebrow="Patrocinios" title="Tu marca en la conversación." lead="Conecta con la audiencia de Cluster Podcast mediante integraciones naturales y presencia multiplataforma." image="/assets/podcast/conversation-couch-close.webp" imagePosition="70% center"><a className={styles.button} href="#planes">Conocer patrocinios</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a></Hero>
       <section className={styles.section}><div className={styles.shell}><SectionHeading title="La audiencia ya está aquí." lead="Cada cifra conserva su ventana de medición para que el alcance sea claro y comparable." /><PodcastMetrics /></div></section>
       <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Una audiencia activa y conectada." /><div className={styles.audience}><div className={styles.featureImage}><Image src="/assets/podcast/conversation-couch-wide.webp" alt="Conversación entre anfitrión e invitado de Cluster Podcast" fill sizes="(max-width: 900px) 100vw, 46vw" style={{ objectPosition: '62% center' }} /></div><div className={styles.audienceStats}><div className={styles.audienceStat}><strong>44.4%</strong><span>de la audiencia de Instagram tiene entre 35 y 54 años.</span></div><div className={styles.audienceStat}><strong>57.5%</strong><span>hombres y 42.5% mujeres en Instagram.</span></div><div className={styles.audienceStat}><strong>22.7%</strong><span>Honduras, seguido por Estados Unidos con 21.7% y México con 7.9%.</span></div></div></div></div></section>
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.sectionCompact}`}>
         <div className={styles.shell}>
           <SectionHeading title="Presencia que se siente natural." lead="Diseñamos integraciones con presencia en el episodio y en las piezas que continúan circulando." />
           <div className={`${styles.distribution} ${styles.distributionSponsor}`}>
@@ -469,9 +470,9 @@ export function SponsorsLanding() {
           </div>
         </div>
       </section>
-      <section className={`${styles.section} ${styles.sectionSoft}`} id="planes"><div className={styles.shell}><SectionHeading title="Elige tu nivel de presencia." /><div className={styles.plans}>{plans.map((plan) => <article className={`${styles.plan} ${plan.featured ? styles.planFeatured : ''}`} key={plan.name}><h3>{plan.name}</h3><p className={styles.planPrice}>{plan.price}</p><p>{plan.note} Precios más impuestos.</p><ul>{plan.items.map((item) => <li key={item}>{item}</li>)}</ul><a className={plan.featured ? styles.button : styles.buttonSecondary} href="#contacto" onClick={() => trackEvent(plan.featured ? 'sponsor_official_partner_click' : plan.name === 'Partner' ? 'sponsor_partner_click' : 'sponsor_episode_click')}>{plan.cta}</a></article>)}</div><div className={styles.bridge}><div><h2>¿Necesitas exclusividad de categoría?</h2><p>Podemos desarrollar propuestas personalizadas según la marca, período y alcance.</p></div><a className={styles.buttonSecondary} href="#contacto">Hablar con nuestro equipo</a></div></div></section>
-      <section className={styles.section}><div className={styles.shell}><BrandIntegration /></div></section>
-      <section className={`${styles.section} ${styles.sectionSoft}`} id="contacto"><div className={`${styles.shell} ${styles.formWrap}`}><div><SectionHeading title="Hablemos de tu marca." lead="Déjanos tus datos. Al enviar podrás reservar una reunión sin volver a completar la información básica." /></div><SponsorForm /></div></section>
+      <section className={`${styles.section} ${styles.sectionCompact}`}><div className={styles.shell}><BrandIntegration /></div></section>
+      <section className={`${styles.section} ${styles.sectionSoft} ${styles.sectionCompact}`} id="planes"><div className={styles.shell}><SectionHeading title="Elige tu nivel de presencia." /><div className={styles.plans}>{plans.map((plan) => <article className={`${styles.plan} ${plan.featured ? styles.planFeatured : ''}`} key={plan.name}><h3>{plan.name}</h3><p className={styles.planPrice}>{plan.price}</p><p>{plan.note} Precios más impuestos.</p><ul>{plan.items.map((item) => <li key={item}>{item}</li>)}</ul><a className={plan.featured ? styles.button : styles.buttonSecondary} href="#contacto" onClick={() => trackEvent(plan.featured ? 'sponsor_official_partner_click' : plan.name === 'Partner' ? 'sponsor_partner_click' : 'sponsor_episode_click')}>{plan.cta}</a></article>)}</div><div className={`${styles.bridge} ${styles.planBridge}`}><div><h2>¿Necesitas exclusividad de categoría?</h2><p>Podemos desarrollar propuestas personalizadas según la marca, período y alcance.</p></div><a className={styles.buttonSecondary} href="#contacto">Hablar con nuestro equipo</a></div></div></section>
+      <section className={`${styles.section} ${styles.sectionCompact}`} id="contacto"><div className={`${styles.shell} ${styles.formWrap}`}><div><SectionHeading title="Hablemos de tu marca." lead="Déjanos tus datos. Al enviar podrás reservar una reunión sin volver a completar la información básica." /></div><SponsorForm /></div></section>
       <section className={styles.section}><div className={styles.shell}><SectionHeading title="Preguntas frecuentes" /><Faq items={sponsorFaqs} /></div></section>
       <section className={styles.finalVisual}><div className={styles.shell}><h2>Convierte atención en presencia de marca.</h2><div className={styles.actions}><a className={styles.button} href="#contacto">Solicitar contacto</a><a className={styles.buttonWhatsApp} href={whatsappLink(wa)} target="_blank" rel="noreferrer">WhatsApp</a></div></div></section>
     </PodcastChrome>
