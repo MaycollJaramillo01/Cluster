@@ -1260,7 +1260,6 @@
   }
 
   .guestGrid,
-  .integrationSteps,
   .distributionPoints {
     grid-template-columns: 1fr;
   }
@@ -1275,11 +1274,11 @@
   }
 
   .integrationImage {
-    min-height: 380px;
+    min-height: 320px;
   }
 
   .integrationCopy {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 
   .integrationStep {
