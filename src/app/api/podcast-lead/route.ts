@@ -165,7 +165,7 @@ export async function POST(request: Request) {
     console.error('[podcast-lead] Resend error:', error);
   }
 
-  if (!emailDelivered) {
+  if (!emailDelivered && channels.length === 0) {
     try {
       channels.push(await sendWithFormSubmit(lead, subject, body));
     } catch (error) {
