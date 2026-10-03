@@ -881,12 +881,44 @@
   padding: 2rem;
 }
 
-.distributionItem:first-child {
+.distribution > .distributionItem:first-child,
+.distributionVisual {
   grid-row: span 2;
   min-height: 436px;
   background:
     linear-gradient(180deg, transparent 45%, rgba(10, 11, 11, 0.92)),
     url('/assets/podcast/conversation-guest.webp') 70% center / cover;
+}
+
+.distributionSponsor {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr);
+}
+
+.distributionVisual {
+  border: 1px solid var(--podcast-line);
+}
+
+.distributionDetails {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
+}
+
+.distributionTitle {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2.25rem, 4vw, 4rem);
+  line-height: 0.95;
+}
+
+.distributionPoints {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.distributionPoints .distributionItem {
+  min-height: 180px;
 }
 
 .distributionItem h3 {
@@ -1109,7 +1141,8 @@
 
   .storyLarge,
   .metric:first-child,
-  .distributionItem:first-child {
+  .distribution > .distributionItem:first-child,
+  .distributionVisual {
     grid-row: auto;
   }
 
@@ -1209,7 +1242,8 @@
   }
 
   .guestGrid,
-  .integrationSteps {
+  .integrationSteps,
+  .distributionPoints {
     grid-template-columns: 1fr;
   }
 
