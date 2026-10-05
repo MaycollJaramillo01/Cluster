@@ -1,46 +1,62 @@
+import { createHash } from 'crypto';
 import { NextResponse } from 'next/server';
+import { list, put } from '@vercel/blob';
 import { site } from '@/lib/site';
+import {
+  TOKEN_TTL_DAYS,
+  agreementHash,
+  agreementText,
+  openResponse,
+  parseSubmission,
+  sealResponse,
+  supplierAgreement,
+  type AgreementResponse,
+} from '@/lib/supplier-agreement';
 
 export const runtime = 'nodejs';
 
-type AgreementPayload = {
-  decision?: unknown;
-  supplier?: unknown;
+type AgreementRecord = AgreementResponse & {
+  id: string;
+  confirmedAt: string;
+  confirmIp: string;
+  confirmUserAgent: string;
 };
 
-function cleanText(value: unknown, maxLength: number) {
-  return String(value ?? '').trim().slice(0, maxLength);
-}
-
-function buildNotification(payload: { decision: 'si' | 'no'; supplier: string }) {
-  const decisionLabel = payload.decision === 'si' ? 'Sí' : 'No';
-  const receivedAt = new Date();
-  const receivedAtLabel = new Intl.DateTimeFormat('es-HN', {
-    dateStyle: 'full',
-    timeStyle: 'long',
-    timeZone: 'America/Tegucigalpa',
-  }).format(receivedAt);
-
+function requestMeta(request: Request) {
   return {
-    subject: `Acuerdo de proveedores | ${decisionLabel} | ${payload.supplier}`,
-    body: [
-      'Nueva respuesta al Acuerdo de Buenas Prácticas para Proveedores Externos',
-      '',
-      `Proveedor: ${payload.supplier}`,
-      `Respuesta: ${decisionLabel}`,
-      `Fecha: ${receivedAtLabel}`,
-      `Fecha ISO: ${receivedAt.toISOString()}`,
-    ].join('\n'),
-    decisionLabel,
-    receivedAt: receivedAt.toISOString(),
+    ip: (request.headers.get('x-forwarded-for') ?? '').split(',')[0].trim().slice(0, 60),
+    userAgent: (request.headers.get('user-agent') ?? '').slice(0, 200),
   };
 }
 
-async function sendViaResend(subject: string, body: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return null;
+function formatDate(iso: string) {
+  return new Intl.DateTimeFormat('es-HN', {
+    dateStyle: 'full',
+    timeStyle: 'long',
+    timeZone: 'America/Tegucigalpa',
+  }).format(new Date(iso));
+}
 
-  const from = process.env.CONTACT_FROM_EMAIL || 'Cluster Media <onboarding@resend.dev>';
+async function sendEmail(message: {
+  to: string[];
+  cc?: string[];
+  subject: string;
+  text: string;
+  html?: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    if (process.env.NODE_ENV === 'production') throw new Error('resend_not_configured');
+    console.info(
+      '[supplier-agreement] correo (sin RESEND_API_KEY):',
+      message.to,
+      message.cc ?? [],
+      message.subject,
+      `\n${message.text}`,
+    );
+    return;
+  }
+
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -48,90 +64,201 @@ async function sendViaResend(subject: string, body: string) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from,
-      to: [site.email],
-      subject,
-      text: body,
+      from: process.env.CONTACT_FROM_EMAIL || 'Cluster Media <onboarding@resend.dev>',
+      reply_to: site.email,
+      ...message,
     }),
   });
 
   if (!response.ok) throw new Error(`resend_failed: ${await response.text()}`);
-  return 'resend' as const;
 }
 
-async function sendViaFormSubmit(subject: string, body: string) {
-  const response = await fetch(`https://formsubmit.co/ajax/${site.email}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      name: 'Acuerdo de proveedores',
-      message: body,
-      _subject: subject,
-      _template: 'table',
-      _captcha: 'false',
-    }),
-  });
-
-  if (!response.ok) throw new Error(`formsubmit_failed: ${await response.text()}`);
-  return 'formsubmit' as const;
+function blobToken() {
+  return (
+    process.env.BLOB_READ_WRITE_TOKEN ||
+    process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN ||
+    ''
+  ).trim();
 }
 
-export async function POST(request: Request) {
-  let input: AgreementPayload;
+function recordPath(id: string) {
+  return `supplier-agreements/${id}.json`;
+}
+
+async function alreadyConfirmed(id: string) {
+  const token = blobToken();
+  if (!token) return false;
 
   try {
-    input = await request.json();
-  } catch {
+    const { blobs } = await list({ token, prefix: recordPath(id), limit: 1 });
+    return blobs.length > 0;
+  } catch (error) {
+    console.error('[supplier-agreement] blob lookup error:', error);
+    return false;
+  }
+}
+
+async function saveRecord(record: AgreementRecord) {
+  const token = blobToken();
+  if (!token) return;
+
+  try {
+    await put(recordPath(record.id), JSON.stringify(record, null, 2), {
+      token,
+      access: 'private',
+      addRandomSuffix: false,
+      contentType: 'application/json',
+    });
+  } catch (error) {
+    console.error('[supplier-agreement] blob storage error:', error);
+  }
+}
+
+function buildRecordEmail(record: AgreementRecord) {
+  const accepted = record.decision === 'si';
+
+  return {
+    subject: `Acuerdo de proveedores | ${accepted ? 'Sí' : 'No'} | ${record.fullName}`,
+    text: [
+      `Constancia de respuesta al ${supplierAgreement.title} de ${site.name}.`,
+      'La respuesta se envió desde el formulario del acuerdo y se confirmó desde el correo electrónico de quien responde (doble confirmación).',
+      '',
+      `Nombre completo: ${record.fullName}`,
+      `Número de identidad: ${record.idNumber}`,
+      `Correo electrónico: ${record.email}`,
+      `Teléfono: ${record.phone}`,
+      ...(record.supplier ? [`Proveedor: ${record.supplier}`] : []),
+      `Respuesta: ${accepted ? 'Sí, acepto' : 'No acepto'}`,
+      '',
+      `Formulario enviado: ${formatDate(record.submittedAt)}`,
+      `  ${record.submittedAt} | IP ${record.submitIp || 'no disponible'} | ${record.submitUserAgent || 'navegador no disponible'}`,
+      `Correo confirmado: ${formatDate(record.confirmedAt)}`,
+      `  ${record.confirmedAt} | IP ${record.confirmIp || 'no disponible'} | ${record.confirmUserAgent || 'navegador no disponible'}`,
+      `Folio: ${record.id}`,
+      `Huella SHA-256 del texto del acuerdo: ${record.textHash}`,
+      '',
+      '--------------------------------------------------',
+      '',
+      agreementText(),
+    ].join('\n'),
+  };
+}
+
+// Paso 1: valida los datos y envía el enlace de confirmación al correo indicado.
+// No se registra nada hasta que la persona confirme desde ese correo.
+export async function POST(request: Request) {
+  const input = await request.json().catch(() => null);
+  if (!input || typeof input !== 'object') {
     return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
   }
 
-  const decision = cleanText(input.decision, 2);
-  if (decision !== 'si' && decision !== 'no') {
-    return NextResponse.json({ ok: false, error: 'invalid_decision' }, { status: 400 });
+  const fields = parseSubmission(input);
+  if ('error' in fields) {
+    return NextResponse.json({ ok: false, error: fields.error }, { status: 400 });
   }
 
-  const supplier = cleanText(input.supplier, 80) || 'Proveedor no identificado';
-  const notification = buildNotification({ decision, supplier });
-  const webhook =
-    process.env.SUPPLIER_AGREEMENT_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;
+  try {
+    const meta = requestMeta(request);
+    const token = sealResponse({
+      ...fields,
+      submittedAt: new Date().toISOString(),
+      submitIp: meta.ip,
+      submitUserAgent: meta.userAgent,
+      textHash: agreementHash(),
+    });
+    // Host de la solicitud en lugar de site.url: el enlace debe abrir en el
+    // mismo dominio (o preview) donde la persona llenó el formulario.
+    const url = `${new URL(request.url).origin}/acuerdo-proveedores?confirmar=${token}`;
+    // Sin datos escritos por el usuario: este correo sale antes de verificar
+    // que la dirección pertenece a quien llenó el formulario.
+    const lines = [
+      'Hola,',
+      `Recibimos una respuesta al “${supplierAgreement.title}” de ${site.name} con este correo electrónico.`,
+      `Para que quede registrada, confírmala en este enlace (válido por ${TOKEN_TTL_DAYS} días):`,
+      url,
+      'Si no fuiste tú, ignora este mensaje: sin confirmación no se registra ninguna respuesta.',
+      site.name,
+    ];
+
+    await sendEmail({
+      to: [fields.email],
+      subject: `Confirma tu respuesta al acuerdo de proveedores de ${site.name}`,
+      text: lines.join('\n\n'),
+      html: lines
+        .map((line) =>
+          line === url ? `<p><a href="${url}">Confirmar mi respuesta</a></p>` : `<p>${line}</p>`,
+        )
+        .join(''),
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error('[supplier-agreement] confirmation email error:', error);
+    return NextResponse.json({ ok: false, error: 'email_failed' }, { status: 502 });
+  }
+}
+
+// Paso 2: la persona confirma desde el enlace recibido. Recién aquí se envía la
+// constancia con el acuerdo al proveedor y a la empresa, y se guarda el registro.
+export async function PUT(request: Request) {
+  const input = await request.json().catch(() => null);
+  const token = typeof input?.token === 'string' ? input.token : '';
+  const response = openResponse(token);
+  if (!response) {
+    return NextResponse.json({ ok: false, error: 'invalid_token' }, { status: 400 });
+  }
+
+  const id = createHash('sha256').update(token).digest('hex').slice(0, 32);
+  // ponytail: sin bloqueo entre esta consulta y el guardado; dos confirmaciones
+  // simultáneas enviarían la constancia dos veces (el botón se desactiva al
+  // enviar). Sin Blob configurado tampoco hay registro ni deduplicación.
+  if (await alreadyConfirmed(id)) {
+    return NextResponse.json({ ok: true, already: true });
+  }
+
+  const meta = requestMeta(request);
+  const record: AgreementRecord = {
+    id,
+    ...response,
+    confirmedAt: new Date().toISOString(),
+    confirmIp: meta.ip,
+    confirmUserAgent: meta.userAgent,
+  };
+  const email = buildRecordEmail(record);
 
   try {
-    if (webhook) {
-      const response = await fetch(webhook, {
+    await sendEmail({
+      to: [record.email],
+      cc: record.email === site.email ? undefined : [site.email],
+      ...email,
+    });
+  } catch (error) {
+    console.error('[supplier-agreement] record email error:', error);
+    return NextResponse.json({ ok: false, error: 'email_failed' }, { status: 502 });
+  }
+
+  await saveRecord(record);
+
+  const webhook =
+    process.env.SUPPLIER_AGREEMENT_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;
+  if (webhook) {
+    try {
+      const webhookResponse = await fetch(webhook, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           source: 'cluster-supplier-agreement',
           to: site.email,
-          supplier,
-          decision,
-          decisionLabel: notification.decisionLabel,
-          receivedAt: notification.receivedAt,
-          subject: notification.subject,
-          body: notification.body,
+          subject: email.subject,
+          body: email.text,
+          ...record,
         }),
       });
-
-      if (!response.ok) throw new Error(`webhook_failed: ${response.status}`);
-      return NextResponse.json({ ok: true, channel: 'webhook' });
+      if (!webhookResponse.ok) throw new Error(`webhook_failed: ${webhookResponse.status}`);
+    } catch (error) {
+      console.error('[supplier-agreement] webhook error:', error);
     }
-
-    const viaResend = await sendViaResend(notification.subject, notification.body);
-    if (viaResend) return NextResponse.json({ ok: true, channel: viaResend });
-
-    const viaFormSubmit = await sendViaFormSubmit(
-      notification.subject,
-      notification.body,
-    );
-    return NextResponse.json({ ok: true, channel: viaFormSubmit });
-  } catch (error) {
-    console.error('[supplier-agreement] notification error:', error);
-    return NextResponse.json(
-      { ok: false, error: 'notification_failed' },
-      { status: 502 },
-    );
   }
+
+  return NextResponse.json({ ok: true });
 }
