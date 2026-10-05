@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
 type Decision = 'si' | 'no';
 type SubmissionState = 'idle' | 'submitting' | 'success' | 'error';
@@ -119,8 +119,8 @@ export function SupplierAgreementForm({
           <p>
             Enviamos un enlace de confirmación a{' '}
             <strong className="break-words font-semibold text-paper">{email}</strong>. Tu respuesta
-            quedará registrada cuando lo abras y confirmes. Si no lo ves en unos minutos, revisa
-            la carpeta de spam.
+            quedará registrada cuando abras ese enlace. Si no lo ves en unos minutos, revisa la
+            carpeta de spam.
           </p>
           <button type="button" onClick={() => setSubmissionState('idle')} className={linkClass}>
             Corregir mis datos
@@ -229,7 +229,56 @@ export function SupplierAgreementConfirm({
     decision: Decision;
   } | null;
 }) {
-  const [submissionState, setSubmissionState] = useState<SubmissionState>('idle');
+  // Con un enlace válido arranca en "confirmando": el botón no llega a verse
+  // antes de que el efecto confirme.
+  const [submissionState, setSubmissionState] = useState<SubmissionState>(
+    response ? 'submitting' : 'idle',
+  );
+  const started = useRef(false);
+  const confirming = submissionState === 'submitting';
+
+  async function handleConfirm() {
+    setSubmissionState('submitting');
+
+    try {
+      const result = await fetch('/api/supplier-agreement', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+
+      const body = (await result.json()) as { ok?: boolean };
+      if (!result.ok || !body.ok) throw new Error('confirmation_failed');
+
+      window.location.replace('/acuerdo-proveedores/gracias');
+    } catch {
+      setSubmissionState('error');
+    }
+  }
+
+  useEffect(() => {
+    if (!response || started.current) return;
+    started.current = true;
+
+    // Abrir el enlace del correo confirma la respuesta. Hace falta un navegador
+    // real con la página a la vista: los filtros de correo que solo descargan
+    // o precargan la página no confirman.
+    // ponytail: un filtro que ejecute la página como un navegador normal sí
+    // confirmaría; la constancia guarda IP y navegador para distinguirlo.
+    if (navigator.webdriver) {
+      setSubmissionState('idle');
+      return;
+    }
+
+    // Si la pestaña se abrió en segundo plano, confirma cuando la persona la mire.
+    const confirmWhenVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', confirmWhenVisible);
+      void handleConfirm();
+    };
+    document.addEventListener('visibilitychange', confirmWhenVisible);
+    confirmWhenVisible();
+  }, []);
 
   if (!response) {
     return (
@@ -245,44 +294,16 @@ export function SupplierAgreementConfirm({
     );
   }
 
-  if (submissionState === 'success') {
-    return (
-      <Notice eyebrow="Respuesta confirmada" title="Gracias por completar el acuerdo">
-        <p>
-          Enviamos una copia del acuerdo y de tu respuesta a{' '}
-          <strong className="break-words font-semibold text-paper">{response.email}</strong> y al
-          equipo de Cluster Media.
-        </p>
-      </Notice>
-    );
-  }
-
-  async function handleConfirm() {
-    setSubmissionState('submitting');
-
-    try {
-      const result = await fetch('/api/supplier-agreement', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      });
-
-      const body = (await result.json()) as { ok?: boolean };
-      if (!result.ok || !body.ok) throw new Error('confirmation_failed');
-
-      setSubmissionState('success');
-    } catch {
-      setSubmissionState('error');
-    }
-  }
-
   return (
     <div className="border border-ink-900 bg-white p-6 sm:p-8">
       <p className={`${eyebrowClass} text-ink-900/55`}>Último paso</p>
-      <h2 className={`mt-4 ${headingClass}`}>Confirma tu respuesta</h2>
+      <h2 className={`mt-4 ${headingClass}`}>
+        {confirming ? 'Confirmando tu respuesta' : 'Confirma tu respuesta'}
+      </h2>
       <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-900/65">
-        Revisa tus datos. Al confirmar, enviaremos una copia del acuerdo y de tu respuesta a tu
-        correo y al equipo de Cluster Media.
+        {confirming
+          ? 'Un momento: estamos registrando tu respuesta.'
+          : 'Revisa tus datos. Al confirmar, enviaremos una copia del acuerdo y de tu respuesta a tu correo y al equipo de Cluster Media.'}
       </p>
 
       <dl className="mt-7 grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -305,10 +326,10 @@ export function SupplierAgreementConfirm({
       <button
         type="button"
         onClick={handleConfirm}
-        disabled={submissionState === 'submitting'}
-        className={`mt-7 ${buttonClass(submissionState !== 'submitting')}`}
+        disabled={confirming}
+        className={`mt-7 ${buttonClass(!confirming)}`}
       >
-        {submissionState === 'submitting' ? 'Confirmando' : 'Confirmar'}
+        {confirming ? 'Confirmando' : 'Confirmar'}
       </button>
 
       {submissionState === 'error' ? (

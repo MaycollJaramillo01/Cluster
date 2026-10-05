@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import Image from 'next/image';
 import {
   SupplierAgreementConfirm,
@@ -34,6 +35,16 @@ export default async function SupplierAgreementPage({ searchParams }: PageProps)
   // Enlace del correo de confirmación (doble opt-in): ?confirmar=<token>
   const token = first(query.confirmar);
   const pending = token ? openResponse(token) : null;
+  if (token) {
+    // Deja rastro de quién abre los enlaces (personas o filtros de correo) y
+    // de si el enlace seguía siendo válido.
+    console.info(
+      '[supplier-agreement] enlace de confirmación abierto:',
+      pending ? 'válido' : 'no válido',
+      '|',
+      (await headers()).get('user-agent'),
+    );
+  }
 
   return (
     <div className="theme-light min-h-[100dvh] bg-paper text-ink-900">

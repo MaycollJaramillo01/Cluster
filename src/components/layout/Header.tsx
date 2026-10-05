@@ -95,7 +95,7 @@ export function Header() {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
-  if (isPodcast || pathname === '/acuerdo-proveedores') return null;
+  if (isPodcast || pathname.startsWith('/acuerdo-proveedores')) return null;
 
   return (
     <header

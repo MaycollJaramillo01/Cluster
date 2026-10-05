@@ -47,6 +47,7 @@ function sender() {
 async function sendEmail(message: {
   to: string[];
   cc?: string[];
+  reply_to?: string;
   subject: string;
   text: string;
   html?: string;
@@ -216,8 +217,9 @@ async function sendToGhl(record: AgreementRecord, note: string) {
   }
 }
 
-// Paso 1: valida los datos y envía el enlace de confirmación al correo indicado.
-// No se registra nada hasta que la persona confirme desde ese correo.
+// Paso 1: valida los datos, envía el enlace de confirmación al correo indicado
+// y avisa a la empresa. La constancia y el registro llegan cuando la persona
+// confirma desde ese correo.
 export async function POST(request: Request) {
   const input = await request.json().catch(() => null);
   if (!input || typeof input !== 'object') {
@@ -231,9 +233,10 @@ export async function POST(request: Request) {
 
   try {
     const meta = requestMeta(request);
+    const submittedAt = new Date().toISOString();
     const token = sealResponse({
       ...fields,
-      submittedAt: new Date().toISOString(),
+      submittedAt,
       submitIp: meta.ip,
       submitUserAgent: meta.userAgent,
       textHash: agreementHash(),
@@ -246,7 +249,7 @@ export async function POST(request: Request) {
     const lines = [
       'Hola,',
       `Recibimos una respuesta al “${supplierAgreement.title}” de ${site.name} con este correo electrónico.`,
-      `Para que quede registrada, confírmala en este enlace (válido por ${TOKEN_TTL_DAYS} días):`,
+      `Para confirmarla y que quede registrada, abre este enlace (válido por ${TOKEN_TTL_DAYS} días):`,
       url,
       'Si no fuiste tú, ignora este mensaje: sin confirmación no se registra ninguna respuesta.',
       site.name,
@@ -262,6 +265,27 @@ export async function POST(request: Request) {
         )
         .join(''),
     });
+
+    // Aviso interno sin el enlace: confirmar le corresponde solo a quien
+    // recibe el correo. Si falla no se le muestra error a la persona.
+    await sendEmail({
+      to: [site.email],
+      reply_to: fields.email,
+      subject: `Acuerdo de proveedores | Pendiente de confirmar | ${fields.fullName}`,
+      text: [
+        `${fields.fullName} respondió al ${supplierAgreement.title} y todavía debe confirmarlo desde su correo.`,
+        '',
+        `Nombre completo: ${fields.fullName}`,
+        `Número de identidad: ${fields.idNumber}`,
+        `Correo electrónico: ${fields.email}`,
+        `Teléfono: ${fields.phone}`,
+        ...(fields.supplier ? [`Proveedor: ${fields.supplier}`] : []),
+        `Respuesta: ${fields.decision === 'si' ? 'Sí, acepto' : 'No acepto'}`,
+        `Formulario enviado: ${formatDate(submittedAt)}`,
+        '',
+        `Cuando abra el enlace que recibió llegará la constancia con el acuerdo. El enlace vence en ${TOKEN_TTL_DAYS} días.`,
+      ].join('\n'),
+    }).catch((error) => console.error('[supplier-agreement] internal notice error:', error));
 
     return NextResponse.json({ ok: true });
   } catch (error) {
