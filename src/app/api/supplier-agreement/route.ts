@@ -37,6 +37,13 @@ function formatDate(iso: string) {
   }).format(new Date(iso));
 }
 
+// CONTACT_FROM_EMAIL lo comparten otros formularios con su propio nombre
+// visible: aquí se usa solo su dirección, a nombre de Cluster Media.
+function sender() {
+  const from = process.env.CONTACT_FROM_EMAIL || 'onboarding@resend.dev';
+  return `${site.name} <${from.match(/<([^>]+)>/)?.[1] ?? from}>`;
+}
+
 async function sendEmail(message: {
   to: string[];
   cc?: string[];
@@ -64,7 +71,7 @@ async function sendEmail(message: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: process.env.CONTACT_FROM_EMAIL || 'Cluster Media <onboarding@resend.dev>',
+      from: sender(),
       reply_to: site.email,
       ...message,
     }),
@@ -116,32 +123,97 @@ async function saveRecord(record: AgreementRecord) {
 
 function buildRecordEmail(record: AgreementRecord) {
   const accepted = record.decision === 'si';
+  const summary = [
+    `Constancia de respuesta al ${supplierAgreement.title} de ${site.name}.`,
+    'La respuesta se envió desde el formulario del acuerdo y se confirmó desde el correo electrónico de quien responde (doble confirmación).',
+    '',
+    `Nombre completo: ${record.fullName}`,
+    `Número de identidad: ${record.idNumber}`,
+    `Correo electrónico: ${record.email}`,
+    `Teléfono: ${record.phone}`,
+    ...(record.supplier ? [`Proveedor: ${record.supplier}`] : []),
+    `Respuesta: ${accepted ? 'Sí, acepto' : 'No acepto'}`,
+    '',
+    `Formulario enviado: ${formatDate(record.submittedAt)}`,
+    `  ${record.submittedAt} | IP ${record.submitIp || 'no disponible'} | ${record.submitUserAgent || 'navegador no disponible'}`,
+    `Correo confirmado: ${formatDate(record.confirmedAt)}`,
+    `  ${record.confirmedAt} | IP ${record.confirmIp || 'no disponible'} | ${record.confirmUserAgent || 'navegador no disponible'}`,
+    `Folio: ${record.id}`,
+    `Huella SHA-256 del texto del acuerdo: ${record.textHash}`,
+  ].join('\n');
 
   return {
     subject: `Acuerdo de proveedores | ${accepted ? 'Sí' : 'No'} | ${record.fullName}`,
-    text: [
-      `Constancia de respuesta al ${supplierAgreement.title} de ${site.name}.`,
-      'La respuesta se envió desde el formulario del acuerdo y se confirmó desde el correo electrónico de quien responde (doble confirmación).',
-      '',
-      `Nombre completo: ${record.fullName}`,
-      `Número de identidad: ${record.idNumber}`,
-      `Correo electrónico: ${record.email}`,
-      `Teléfono: ${record.phone}`,
-      ...(record.supplier ? [`Proveedor: ${record.supplier}`] : []),
-      `Respuesta: ${accepted ? 'Sí, acepto' : 'No acepto'}`,
-      '',
-      `Formulario enviado: ${formatDate(record.submittedAt)}`,
-      `  ${record.submittedAt} | IP ${record.submitIp || 'no disponible'} | ${record.submitUserAgent || 'navegador no disponible'}`,
-      `Correo confirmado: ${formatDate(record.confirmedAt)}`,
-      `  ${record.confirmedAt} | IP ${record.confirmIp || 'no disponible'} | ${record.confirmUserAgent || 'navegador no disponible'}`,
-      `Folio: ${record.id}`,
-      `Huella SHA-256 del texto del acuerdo: ${record.textHash}`,
-      '',
-      '--------------------------------------------------',
-      '',
-      agreementText(),
-    ].join('\n'),
+    summary,
+    text: [summary, '', '-'.repeat(50), '', agreementText()].join('\n'),
   };
+}
+
+// GHL antepone el país de la cuenta (+1) a los teléfonos sin código de país: un
+// número hondureño de 8 dígitos quedaría guardado como "+1…".
+// ponytail: solo reconoce Honduras; otros países sin "+" quedan como los
+// interprete GHL. Pedir el país en el formulario si hace falta más.
+function ghlPhone(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  if (phone.startsWith('+')) return `+${digits}`;
+  if (digits.length === 8) return `+504${digits}`;
+  if (digits.length === 11 && digits.startsWith('504')) return `+${digits}`;
+  return phone;
+}
+
+// Mismo patrón que los scripts de la cuenta de GHL: upsert del contacto y una
+// nota con lo que no tiene campo propio (identidad, respuesta, folio).
+async function sendToGhl(record: AgreementRecord, note: string) {
+  const token = process.env.GHL_PRIVATE_INTEGRATION_TOKEN;
+  const locationId = process.env.GHL_LOCATION_ID;
+  if (!token || !locationId) return;
+
+  async function ghl(method: 'POST' | 'PUT' | 'DELETE', path: string, body: object) {
+    const response = await fetch(`https://services.leadconnectorhq.com${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Version: '2021-07-28',
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      throw new Error(`${method} ${path}: ${response.status} ${await response.text()}`);
+    }
+    return response.json();
+  }
+
+  try {
+    const contact = { locationId, name: record.fullName, email: record.email };
+    // Si GHL rechazara el teléfono se reintenta sin él: el contacto no se
+    // pierde y el teléfono tal como se escribió queda en la nota.
+    const result = await ghl('POST', '/contacts/upsert', {
+      ...contact,
+      phone: ghlPhone(record.phone),
+    }).catch(() => ghl('POST', '/contacts/upsert', contact));
+    const path = `/contacts/${result.contact.id}`;
+
+    // Los contactos nuevos entran con "No molestar": la cuenta tiene workflows
+    // de ventas que escriben y llaman a los contactos, y un proveedor no es un lead.
+    // ponytail: se activa justo después de crear; si un workflow disparara al
+    // instante de crearse el contacto, hay que crearlo ya con dnd.
+    if (result.new) await ghl('PUT', path, { dnd: true });
+
+    // Etiquetas por separado: enviarlas en el upsert reemplazaría las que ya
+    // tenga un contacto existente.
+    const accepted = record.decision === 'si';
+    await ghl('POST', `${path}/tags`, {
+      tags: ['proveedor', `acuerdo-proveedores-${accepted ? 'aceptado' : 'no-aceptado'}`],
+    });
+    await ghl('DELETE', `${path}/tags`, {
+      tags: [`acuerdo-proveedores-${accepted ? 'no-aceptado' : 'aceptado'}`],
+    });
+    await ghl('POST', `${path}/notes`, { body: note });
+  } catch (error) {
+    console.error('[supplier-agreement] GHL error:', error);
+  }
 }
 
 // Paso 1: valida los datos y envía el enlace de confirmación al correo indicado.
@@ -199,7 +271,8 @@ export async function POST(request: Request) {
 }
 
 // Paso 2: la persona confirma desde el enlace recibido. Recién aquí se envía la
-// constancia con el acuerdo al proveedor y a la empresa, y se guarda el registro.
+// constancia con el acuerdo al proveedor y a la empresa, se guarda el registro
+// y los datos pasan a GHL.
 export async function PUT(request: Request) {
   const input = await request.json().catch(() => null);
   const token = typeof input?.token === 'string' ? input.token : '';
@@ -230,7 +303,8 @@ export async function PUT(request: Request) {
     await sendEmail({
       to: [record.email],
       cc: record.email === site.email ? undefined : [site.email],
-      ...email,
+      subject: email.subject,
+      text: email.text,
     });
   } catch (error) {
     console.error('[supplier-agreement] record email error:', error);
@@ -238,6 +312,7 @@ export async function PUT(request: Request) {
   }
 
   await saveRecord(record);
+  await sendToGhl(record, email.summary);
 
   const webhook =
     process.env.SUPPLIER_AGREEMENT_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;
