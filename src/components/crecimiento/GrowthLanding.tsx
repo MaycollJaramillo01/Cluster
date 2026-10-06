@@ -7,8 +7,8 @@ import {
   Conversation,
   GrowthRuntime,
   HeroVideo,
+  QualificationFormCta,
   VerticalVideo,
-  WhatsAppCta,
   type GrowthCtx,
 } from './GrowthClient';
 import s from './GrowthLanding.module.css';
@@ -57,10 +57,10 @@ function Cta({
   className?: string;
 }) {
   return (
-    <WhatsAppCta ctx={ctx} cta={cta} className={`${s.cta} ${className}`}>
-      <Icon name="whatsapp" size={19} fill="currentColor" strokeWidth={0} />
+    <QualificationFormCta ctx={ctx} cta={cta} className={`${s.cta} ${className}`}>
+      <Icon name="arrow-right" size={19} strokeWidth={2} />
       {children}
-    </WhatsAppCta>
+    </QualificationFormCta>
   );
 }
 
@@ -80,7 +80,6 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
   const ctx: GrowthCtx = {
     slug: v.slug,
     campaignId: v.campaignId,
-    whatsappMessage: v.whatsappMessage,
   };
   const headline = v.hero.headline ?? base.hero.headline;
   const faqs = [...base.faq.items.slice(0, 2), ...v.faqs, ...base.faq.items.slice(2)];
@@ -305,10 +304,10 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
               <p>{card.text}</p>
             </article>
           ))}
-          <WhatsAppCta ctx={ctx} cta="features" className={s.featureCta}>
+          <QualificationFormCta ctx={ctx} cta="features" className={s.featureCta}>
             <span>{base.cta.primary}</span>
             <Icon name="arrow-right" size={22} strokeWidth={2} />
-          </WhatsAppCta>
+          </QualificationFormCta>
         </div>
         <div className={s.useCases} data-reveal>
           <p className={s.label}>

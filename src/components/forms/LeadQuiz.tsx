@@ -29,7 +29,13 @@ const TOTAL = 3;
 const inputClass =
   'w-full bg-surface py-3.5 pl-11 pr-4 text-[15px] text-fg placeholder:text-faint transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[color:var(--accent)]';
 
-export function LeadQuiz() {
+export function LeadQuiz({
+  industry,
+  campaignId,
+}: {
+  industry?: string;
+  campaignId?: string;
+} = {}) {
   const t = useTranslations('LeadQuiz');
   const tc = useTranslations('Common');
 
@@ -68,8 +74,15 @@ export function LeadQuiz() {
       website: String(data.get('website') || '—'),
       social: String(data.get('redes') || '—'),
     });
+    const context = [
+      industry && `Industria: ${industry}`,
+      campaignId && `Ref: ${campaignId}`,
+    ].filter(Boolean);
     setSent(true);
-    window.open(whatsappLink(decodeURIComponent(message)), '_blank');
+    window.open(
+      whatsappLink([decodeURIComponent(message), ...context].join('\n')),
+      '_blank',
+    );
   }
 
   if (sent) {

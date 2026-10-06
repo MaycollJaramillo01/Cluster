@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { Link } from '@/i18n/navigation';
 import { Icon } from '@/components/ui/Icon';
 import { trackEvent } from '@/lib/analytics';
 import { readLandingAttribution } from '@/lib/attribution';
-import { whatsappLink } from '@/lib/site';
 import type { ChatMessage, GrowthVideo, HeroVideo as HeroVideoSource } from './content';
 import s from './GrowthLanding.module.css';
 
 /** Lo único que las piezas interactivas necesitan saber de la vertical. */
-export type GrowthCtx = { slug: string; campaignId: string; whatsappMessage: string };
+export type GrowthCtx = { slug: string; campaignId: string };
 
 function attribution(ctx: GrowthCtx) {
   return readLandingAttribution({
@@ -17,15 +17,6 @@ function attribution(ctx: GrowthCtx) {
     country: '',
     landing: `/crecimiento/${ctx.slug}`,
   });
-}
-
-// El mensaje precargado lleva la referencia de campaña: GHL etiqueta por ese texto
-// y Alex no tiene que volver a preguntar de qué industria viene el prospecto.
-function whatsappUrl(ctx: GrowthCtx, attr?: ReturnType<typeof attribution>) {
-  const ref = [ctx.campaignId, attr?.source, attr?.utm_campaign.slice(0, 80)]
-    .filter(Boolean)
-    .join(' | ');
-  return whatsappLink(`${ctx.whatsappMessage}\n\nRef: ${ref}`);
 }
 
 function track(ctx: GrowthCtx, name: string, extra: Record<string, string | number> = {}) {
@@ -38,8 +29,8 @@ function track(ctx: GrowthCtx, name: string, extra: Record<string, string | numb
   });
 }
 
-/** Todos los CTA comerciales van al mismo destino: WhatsApp / Alex. */
-export function WhatsAppCta({
+/** Todos los CTA de estas landings abren el formulario de calificación. */
+export function QualificationFormCta({
   ctx,
   cta,
   className,
@@ -51,25 +42,17 @@ export function WhatsAppCta({
   className?: string;
   children: ReactNode;
 }) {
-  const [href, setHref] = useState(() => whatsappUrl(ctx));
-
-  useEffect(() => setHref(whatsappUrl(ctx, attribution(ctx))), [ctx]);
-
   return (
-    <a
+    <Link
       className={className}
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+      href={`/diagnostico?vertical=${encodeURIComponent(ctx.slug)}`}
       onClick={() => {
         track(ctx, 'cta_qualification_click', { cta });
-        track(ctx, 'whatsapp_click', { cta });
-        // Un clic a WhatsApp es un contacto, no un lead ni una venta.
-        window.fbq?.('track', 'Contact', { content_name: ctx.slug });
+        track(ctx, 'qualification_form_open', { cta });
       }}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 

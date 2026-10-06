@@ -1,8 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { LeadQuiz } from '@/components/forms/LeadQuiz';
+import { verticals } from '@/components/crecimiento/content';
 
 type PageParams = { params: Promise<{ locale: string }> };
+type PageProps = PageParams & {
+  searchParams: Promise<{ vertical?: string | string[] }>;
+};
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
   const { locale } = await params;
@@ -15,10 +19,12 @@ export async function generateMetadata({ params }: PageParams): Promise<Metadata
   };
 }
 
-export default async function DiagnosticoPage({ params }: PageParams) {
-  const { locale } = await params;
+export default async function DiagnosticoPage({ params, searchParams }: PageProps) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
   const t = await getTranslations('Diagnostico');
+  const requestedVertical = Array.isArray(query.vertical) ? query.vertical[0] : query.vertical;
+  const vertical = verticals.find((item) => item.slug === requestedVertical);
 
   return (
     <section className="theme-dark relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-ink-950 px-5 py-28 text-fg sm:py-32">
@@ -49,7 +55,7 @@ export default async function DiagnosticoPage({ params }: PageParams) {
           </p>
         </div>
 
-        <LeadQuiz />
+        <LeadQuiz industry={vertical?.industryName} campaignId={vertical?.campaignId} />
       </div>
     </section>
   );
