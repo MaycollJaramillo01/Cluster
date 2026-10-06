@@ -161,6 +161,7 @@ export async function POST(request: Request) {
   const body = buildEmailBody(lead);
 
   const webhook = process.env.CONTACT_WEBHOOK_URL;
+  let webhookDelivered = false;
   if (webhook) {
     try {
       const res = await fetch(webhook, {
@@ -174,21 +175,33 @@ export async function POST(request: Request) {
           body,
         }),
       });
-      return NextResponse.json({ ok: res.ok, channel: 'webhook' });
+      webhookDelivered = res.ok;
+      if (!res.ok) {
+        console.error('[contact] webhook rejected lead:', res.status);
+      }
     } catch (error) {
       console.error('[contact] webhook error:', error);
-      return NextResponse.json({ ok: false, channel: 'webhook' }, { status: 502 });
     }
   }
 
   try {
     const viaResend = await sendViaResend(subject, body, email);
     if (viaResend) {
-      return NextResponse.json({ ok: true, channel: viaResend });
+      return NextResponse.json({
+        ok: true,
+        channel: viaResend,
+        recipient: site.email,
+        webhook: webhook ? webhookDelivered : undefined,
+      });
     }
 
     const viaFormSubmit = await sendViaFormSubmit(lead, subject, body);
-    return NextResponse.json({ ok: true, channel: viaFormSubmit });
+    return NextResponse.json({
+      ok: true,
+      channel: viaFormSubmit,
+      recipient: site.email,
+      webhook: webhook ? webhookDelivered : undefined,
+    });
   } catch (error) {
     console.error('[contact] email error:', error);
     console.info('[contact] lead fallback log:', { subject, body, lead });
