@@ -117,7 +117,7 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
         <HeroVideo {...(v.hero.video ?? base.hero.video)} />
         <div className={`${s.container} ${s.heroInner}`}>
           <div className={s.heroCopy}>
-            <p className={s.eyebrow}>{v.hero.eyebrow}</p>
+            <p className={s.heroIndustry}>{v.industryName}</p>
             <h1 id="hero-title">
               {headline.map((line) =>
                 line.strong ? <em key={line.text}>{line.text}</em> : <span key={line.text}>{line.text}</span>,
@@ -134,22 +134,15 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
             <p className={s.legal}>{base.hero.legal}</p>
           </div>
 
-          <div className={s.board} role="group" aria-label={`Ejemplo ilustrativo: oportunidades · ${v.industryShortName}`}>
-            <div className={s.boardHead}>
-              <span>Oportunidades · {v.industryShortName}</span>
-              <span>{base.hero.boardLabel}</span>
-            </div>
-            {v.board.map(([label, status], i) => (
-              <div className={`${s.boardRow} ${i === 2 ? s.boardRowFocus : ''}`} style={order(i)} key={label}>
-                <span>{label}</span>
-                <span className={s.chip}>{status}</span>
-              </div>
-            ))}
-            <p className={s.boardFoot} style={order(v.board.length)}>
-              <Icon name="bolt" size={16} />
-              {base.hero.boardFoot}
-            </p>
-          </div>
+          <figure className={s.heroPhoto}>
+            <Image
+              src={v.hero.image.src}
+              alt={v.hero.image.alt}
+              fill
+              sizes="(min-width: 980px) 420px, 100vw"
+              style={{ objectPosition: v.hero.image.position }}
+            />
+          </figure>
         </div>
       </section>
 

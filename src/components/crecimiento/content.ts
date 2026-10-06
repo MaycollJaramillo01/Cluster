@@ -11,6 +11,14 @@ export type HeadlineLine = { text: string; strong?: boolean };
 /** Video de fondo del hero: mp4 liviano, sin audio, con su primer cuadro como póster. */
 export type HeroVideo = { src: string; poster: string };
 
+/** Foto del hero: tiene que leerse a primera vista como la industria de la landing. */
+export type HeroImage = {
+  src: string;
+  alt: string;
+  /** Punto de enfoque para el recorte vertical de escritorio (CSS object-position). */
+  position?: string;
+};
+
 export type ChatMessage = {
   /** `note` es una línea de contexto ("El prospecto deja de responder"), no un mensaje. */
   from: 'prospect' | 'alex' | 'followup' | 'note';
@@ -44,16 +52,15 @@ export type GrowthVertical = {
   /** Tag de GoHighLevel. Viaja en el mensaje precargado de WhatsApp. */
   campaignId: string;
   meta: { title: string; description: string };
+  /** El hero muestra `industryName` como etiqueta grande: no lleva otro texto encima del titular. */
   hero: {
-    eyebrow: string;
+    image: HeroImage;
     /** Opcional: reemplaza el titular base (variantes A/B). */
     headline?: HeadlineLine[];
     subheadline?: string;
     /** Opcional: video de fondo propio de la industria. Sin él se usa `base.hero.video`. */
     video?: HeroVideo;
   };
-  /** Visual del hero: [lo que hizo el prospecto, estado]. La tercera fila es la de seguimiento. */
-  board: [string, string][];
   pain: { examples: string[]; highlight: string };
   /** null = todavía no hay video final: la sección no se publica (en desarrollo se ve un marcador). */
   video: GrowthVideo | null;
@@ -86,7 +93,7 @@ export const base = {
     headline: [
       { text: 'Aumentamos sus ventas' },
       { text: 'hasta un 20%.', strong: true },
-      { text: 'O le devolvemos nuestros honorarios.*' },
+      { text: 'Garantizado por escrito.*' },
     ] as HeadlineLine[],
     subheadline:
       'Diseñamos y operamos un sistema que combina publicidad, automatización, inteligencia artificial y seguimiento para convertir en ventas a más de los prospectos de su negocio.',
@@ -99,8 +106,6 @@ export const base = {
       src: '/assets/videos/services/automatizacion.mp4',
       poster: '/assets/videos/agent-ia/hero-automation-poster.webp',
     } as HeroVideo,
-    boardLabel: 'Ejemplo',
-    boardFoot: 'Su equipo recibe un aviso cuando hay intención de compra.',
   },
   pain: {
     eyebrow: 'El problema no siempre es conseguir más prospectos',
@@ -370,6 +375,9 @@ const ojine: GrowthCase = {
 
 // ─────────────────────────────────────────────────────────────
 // Verticales
+// Fotos del hero en /public/assets/stock/crecimiento (Unsplash, licencia libre):
+//   clinicas-esteticas → Look Studio · inmobiliarias → Tobias Wilden · construccion → Wasif Ali
+//   clinicas-odontologicas es un cuadro del video dental propio.
 // ─────────────────────────────────────────────────────────────
 export const verticals: GrowthVertical[] = [
   {
@@ -382,13 +390,13 @@ export const verticals: GrowthVertical[] = [
       description:
         'Un sistema que combina publicidad, automatización, IA y seguimiento para convertir en pacientes a más de los prospectos de su clínica estética. Con garantía para negocios que califiquen.',
     },
-    hero: { eyebrow: 'Sistema de crecimiento para clínicas estéticas' },
-    board: [
-      ['Pregunta el precio de Botox', 'Respondido'],
-      ['Consulta por relleno de labios', 'Calificado'],
-      ['Dejó de responder', 'En seguimiento'],
-      ['Quiere agendar su valoración', 'Cita agendada'],
-    ],
+    hero: {
+      image: {
+        src: '/assets/stock/crecimiento/clinicas-esteticas.jpg',
+        alt: 'Tratamiento facial en una clínica estética',
+        position: '75% center',
+      },
+    },
     pain: {
       examples: [
         'Pregunta el precio y desaparece',
@@ -449,18 +457,16 @@ export const verticals: GrowthVertical[] = [
         'Un sistema que combina publicidad, automatización, IA y seguimiento para que más prospectos de su clínica odontológica lleguen a valoración. Con garantía para negocios que califiquen.',
     },
     hero: {
-      eyebrow: 'Sistema de crecimiento para clínicas odontológicas',
+      image: {
+        src: '/assets/stock/crecimiento/clinicas-odontologicas.jpg',
+        alt: 'Odontóloga atendiendo a una paciente en su consultorio',
+        position: '60% center',
+      },
       video: {
         src: '/assets/videos/crecimiento/clinicas-odontologicas.mp4',
         poster: '/assets/videos/crecimiento/clinicas-odontologicas.webp',
       },
     },
-    board: [
-      ['Pregunta por implantes', 'Respondido'],
-      ['Pide cotización de ortodoncia', 'Calificado'],
-      ['No confirmó su cita', 'En seguimiento'],
-      ['Quiere su valoración de carillas', 'Cita agendada'],
-    ],
     pain: {
       examples: [
         'Pregunta por implantes',
@@ -521,13 +527,13 @@ export const verticals: GrowthVertical[] = [
       description:
         'Un sistema que combina publicidad, automatización, IA y seguimiento para que más personas que consultan a su clínica médica terminen agendando. Con garantía para negocios que califiquen.',
     },
-    hero: { eyebrow: 'Sistema de crecimiento para clínicas médicas' },
-    board: [
-      ['Pregunta por una consulta', 'Respondido'],
-      ['Indica servicio y horario', 'Calificado'],
-      ['No terminó de agendar', 'En seguimiento'],
-      ['Quiere su cita esta semana', 'Cita agendada'],
-    ],
+    hero: {
+      image: {
+        src: '/assets/stock/medical.jpg',
+        alt: 'Recepción de una clínica médica',
+        position: '70% center',
+      },
+    },
     pain: {
       examples: [
         'Pregunta por una consulta',
@@ -585,13 +591,13 @@ export const verticals: GrowthVertical[] = [
       description:
         'Un sistema que combina publicidad, automatización, IA y seguimiento para que más interesados en sus propiedades lleguen a hablar con un asesor. Con garantía para negocios que califiquen.',
     },
-    hero: { eyebrow: 'Sistema de crecimiento para inmobiliarias' },
-    board: [
-      ['Pregunta por un apartamento', 'Respondido'],
-      ['Busca comprar · zona y presupuesto', 'Calificado'],
-      ['Pidió información y desapareció', 'En seguimiento'],
-      ['Quiere ver opciones', 'Pasa al asesor'],
-    ],
+    hero: {
+      image: {
+        src: '/assets/stock/crecimiento/inmobiliarias.jpg',
+        alt: 'Edificio de apartamentos con balcones al atardecer',
+        position: '85% center',
+      },
+    },
     pain: {
       examples: [
         'Pregunta por una propiedad',
@@ -648,13 +654,13 @@ export const verticals: GrowthVertical[] = [
       description:
         'Un sistema que combina publicidad, automatización, IA y seguimiento para que menos solicitudes de cotización queden sin retomar. Con garantía para negocios que califiquen.',
     },
-    hero: { eyebrow: 'Sistema de crecimiento para empresas de construcción' },
-    board: [
-      ['Solicita cotizar una remodelación', 'Respondido'],
-      ['Proyecto residencial · envió fotos', 'Calificado'],
-      ['Conversación detenida', 'En seguimiento'],
-      ['Pide una visita', 'Visita coordinada'],
-    ],
+    hero: {
+      image: {
+        src: '/assets/stock/crecimiento/construccion.jpg',
+        alt: 'Trabajadores con casco y chaleco en una obra en construcción',
+        position: '85% center',
+      },
+    },
     pain: {
       examples: [
         'Solicita cotización',

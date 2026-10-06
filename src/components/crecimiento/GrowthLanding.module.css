@@ -76,6 +76,8 @@
 .heroMedia:hover { background: rgba(255, 255, 255, .16); }
 .heroInner { display: grid; gap: 44px; padding-block: 34px 56px; }
 .heroCopy { min-width: 0; }
+/* La industria va arriba y grande: quien llega debe ver al instante que la página es para su negocio */
+.heroIndustry { display: inline-block; margin-bottom: 16px; padding: 8px 12px 6px; border-radius: 4px; background: var(--green); color: #06140f; font-family: var(--font-display), 'Arial Narrow', Impact, sans-serif; font-size: clamp(1.5rem, 6.4vw, 2.2rem); line-height: 1; letter-spacing: .03em; text-transform: uppercase; }
 .hero h1 { font-size: clamp(2.2rem, 9.6vw, 4.6rem); line-height: .96; }
 .hero h1 span { display: block; }
 /* "HASTA UN 20%" es el elemento de mayor peso de la página */
@@ -86,16 +88,9 @@
 .heroActions { display: flex; flex-direction: column; align-items: flex-start; margin-top: 22px; }
 .heroActions .micro { color: #c9d1cc; }
 
-.board { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.boardHead { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); color: var(--muted); font-family: var(--font-mono), monospace; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
-.boardRow { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 15px 18px; border-bottom: 1px solid var(--line); font-size: 14px; line-height: 1.35; }
-.chip { flex-shrink: 0; padding: 5px 8px; border: 1px solid #45564b; border-radius: 4px; background: #28342d; color: #c0e6d0; font-family: var(--font-mono), monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-.boardRowFocus { background: #18382f; }
-.boardRowFocus .chip { border-color: var(--green); background: var(--green); color: #06140f; }
-.boardFoot { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: #1c392e; color: #b8edd6; font-size: 13px; line-height: 1.4; }
-.boardFoot svg { flex-shrink: 0; color: var(--green); }
-.boardRow, .boardFoot { animation: rise .5s both; animation-delay: calc(var(--i) * .16s + .25s); }
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+/* Foto de la industria: completa en móvil, recorte vertical en escritorio */
+.heroPhoto { position: relative; overflow: hidden; aspect-ratio: 3 / 2; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.heroPhoto img { object-fit: cover; }
 
 /* Cards (problema, razones de la garantía, casos) */
 .cards { display: grid; gap: 12px; }
@@ -311,7 +306,8 @@
   .guarantee { grid-template-columns: auto 1fr; gap: 64px; align-items: center; padding: 56px; }
 }
 @media (min-width: 980px) {
-  .heroInner { grid-template-columns: minmax(0, 1fr) 400px; gap: 64px; align-items: center; padding-block: 52px 64px; }
+  .heroInner { grid-template-columns: minmax(0, 1fr) 420px; gap: 64px; align-items: center; padding-block: 52px 64px; }
+  .heroPhoto { aspect-ratio: 4 / 5; }
   .hero h1 { font-size: clamp(3rem, 4.6vw, 4.6rem); }
   .heroSub { font-size: 17px; }
   .cards { grid-template-columns: repeat(4, 1fr); gap: 14px; }
