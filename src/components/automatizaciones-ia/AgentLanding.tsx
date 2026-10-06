@@ -13,7 +13,11 @@ import s from './AgentLanding.module.css';
 
 const benefitIcons: IconName[] = ['clock', 'target', 'link', 'calendar'];
 const capabilityIcons: IconName[] = ['whatsapp', 'target', 'clock', 'users', 'calendar', 'chart', 'link', 'arrow-right'];
-const industryVideos = ['inmobiliarias', 'constructora', 'medicos', 'clinicas-odontologicas', 'clinicas-esteticas'] as const;
+const industryVideos = ['inmobiliarias', 'constructora-drone', 'medicos', 'clinicas-odontologicas', 'clinicas-esteticas'] as const;
+const industryPoster = (industry: (typeof industryVideos)[number]) =>
+  industry === 'medicos'
+    ? '/assets/videos/agent-ia/medicos-clinic-v2.jpg'
+    : `/assets/videos/agent-ia/${industry}.webp`;
 
 function Arrow() { return <Icon name="arrow-right" size={17} strokeWidth={2} />; }
 
@@ -151,7 +155,9 @@ function IndustryVideos({ c, industry, onSelect }: { c: AgentContent; industry: 
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState(false);
   const activeIndustry = c.industries[industry];
-  const activeVideo = `/assets/videos/agent-ia/${industryVideos[industry]}`;
+  const activeVideoName = industryVideos[industry];
+  const activeVideo = `/assets/videos/agent-ia/${activeVideoName}`;
+  const activePoster = industryPoster(activeVideoName);
 
   useEffect(() => {
     setCurrentTime(0);
@@ -177,17 +183,24 @@ function IndustryVideos({ c, industry, onSelect }: { c: AgentContent; industry: 
   return <section id="videos" className={`${s.container} ${s.section} ${s.videoSection}`} aria-labelledby="videos-title">
     <div className={s.videoShowcase} data-reveal>
       <div className={s.videoIntro}>
-        <p className={s.eyebrow}>{en ? 'CLUSTER MEDIA VIDEOS' : 'VIDEOS DE CLUSTER MEDIA'}</p>
-        <h2 id="videos-title">{en ? 'AI agents for' : 'Agentes IA para'}<br /><em>{en ? 'your industry.' : 'su industria.'}</em></h2>
+        <div className={s.videoIntroHead}>
+          <div>
+            <p className={s.eyebrow}>{en ? 'CLUSTER MEDIA VIDEOS' : 'VIDEOS DE CLUSTER MEDIA'}</p>
+            <h2 id="videos-title">{en ? 'AI agents for' : 'Agentes IA para'}<br /><em>{en ? 'your industry.' : 'su industria.'}</em></h2>
+          </div>
+          <span className={s.videoRobotMark} aria-hidden="true">
+            <Image src="/assets/agent-assistant-mark.png" alt="" width={72} height={72} />
+          </span>
+        </div>
         <p>{en ? 'Five real videos. Choose your industry to see where an AI agent can support your team.' : 'Cinco videos. Elija su rubro y descubra cómo un Agente IA puede apoyar a su equipo.'}</p>
       </div>
 
-      <div className={s.videoChoices} role="group" aria-label={en ? 'Choose a video by industry' : 'Elija un video por industria'}>{c.industries.map((item, index) => <button type="button" key={item.title} aria-pressed={industry === index} onClick={() => onSelect(index)}><Image src={`/assets/videos/agent-ia/${industryVideos[index]}.webp`} alt="" width={54} height={96} /><span><small>{String(index + 1).padStart(2, '0')}</small>{item.title}</span></button>)}</div>
+      <div className={s.videoChoices} role="group" aria-label={en ? 'Choose a video by industry' : 'Elija un video por industria'}>{c.industries.map((item, index) => <button type="button" key={item.title} data-industry={industryVideos[index]} aria-pressed={industry === index} onClick={() => onSelect(index)}><Image src={industryPoster(industryVideos[index])} alt="" width={54} height={96} /><span><small>{String(index + 1).padStart(2, '0')}</small>{item.title}</span></button>)}</div>
 
       <figure className={s.videoStage}>
         <div className={s.videoStageHeader}><span>CLUSTER MEDIA / IA</span><span>{String(industry + 1).padStart(2, '0')} — 05</span></div>
         <div className={s.videoCanvas}>
-          <video ref={videoRef} key={activeVideo} className={s.videoPlayer} autoPlay muted loop playsInline preload="metadata" poster={`${activeVideo}.webp`} aria-label={en ? `Video about AI agents for ${activeIndustry.title}` : `Video sobre agentes IA para ${activeIndustry.title}`} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onVolumeChange={event => setMuted(event.currentTarget.muted)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onLoadedMetadata={event => { setDuration(event.currentTarget.duration); if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) void event.currentTarget.play().catch(() => setPlaying(false)); }} onError={() => { setError(true); setPlaying(false); }} onClick={togglePlayback}>
+          <video ref={videoRef} key={activeVideo} className={s.videoPlayer} autoPlay muted loop playsInline preload="metadata" poster={activePoster} aria-label={en ? `Video about AI agents for ${activeIndustry.title}` : `Video sobre agentes IA para ${activeIndustry.title}`} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onVolumeChange={event => setMuted(event.currentTarget.muted)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onLoadedMetadata={event => { setDuration(event.currentTarget.duration); if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) void event.currentTarget.play().catch(() => setPlaying(false)); }} onError={() => { setError(true); setPlaying(false); }} onClick={togglePlayback}>
             <source src={`${activeVideo}.mp4`} type="video/mp4" />
             {en ? 'Your browser cannot play this video.' : 'Su navegador no puede reproducir este video.'}
           </video>

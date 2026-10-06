@@ -99,6 +99,27 @@
 .videoSection { border-bottom: 1px solid var(--line); }
 .videoShowcase { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); grid-template-areas: 'intro intro' 'choices choices' 'stage body'; column-gap: clamp(42px, 6vw, 88px); row-gap: 0; align-items: start; }
 .videoIntro { grid-area: intro; max-width: 660px; margin-bottom: 34px; }
+.videoIntroHead { display: flex; align-items: center; gap: 22px; }
+.videoIntroHead > div:first-child { min-width: 0; flex: 1; }
+.videoRobotMark { display: grid; width: 76px; aspect-ratio: 1; flex: none; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 50%; background: #101814; }
+.videoRobotMark img { width: 68px; height: 68px; object-fit: contain; }
+.videoChoices button[data-industry='clinicas-esteticas'],
+.videoChoices button[data-industry='clinicas-odontologicas'] {
+  border-color: #fff;
+  background: #fff;
+  color: #14211a;
+}
+.videoChoices button[data-industry='clinicas-esteticas'][aria-pressed='true'],
+.videoChoices button[data-industry='clinicas-odontologicas'][aria-pressed='true'] {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: inset 0 -3px var(--accent);
+  color: #14211a;
+}
+.videoChoices button[data-industry='clinicas-esteticas']:hover,
+.videoChoices button[data-industry='clinicas-odontologicas']:hover {
+  background: #f3fff9;
+}
 .videoIntro h2 { font-size: clamp(3.25rem, 4.7vw, 4.8rem); }
 .videoIntro > p:last-child { max-width: 470px; margin-top: 20px; color: var(--muted); font-size: 15px; }
 .videoStage { grid-area: stage; margin: 0; overflow: hidden; border: 1px solid #1a2920; border-radius: 6px; background: #17221c; color: #fff; }
@@ -418,6 +439,8 @@
   .section { padding-block: 68px; }
   .videoShowcase { grid-template-columns: 1fr; grid-template-areas: 'intro' 'choices' 'stage' 'body'; row-gap: 0; }
   .videoIntro { margin-bottom: 25px; }
+  .videoRobotMark { width: 58px; }
+  .videoRobotMark img { width: 52px; height: 52px; }
   .videoIntro h2 { font-size: 48px; }
   .videoIntro > p:last-child { font-size: 14px; margin-top: 16px; }
   .videoStage { width: min(100%, 420px); justify-self: center; }

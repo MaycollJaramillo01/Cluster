@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Section, SectionHeading, Eyebrow } from '@/components/ui/Section';
@@ -161,11 +162,25 @@ export function ClinicasEsteticasLanding({ country }: Props) {
 
       {/* PROBLEM */}
       <Section tone="light" id="problema">
-        <SectionHeading
-          eyebrow={t('problemEyebrow')}
-          title={t('problemTitle')}
-          description={t('problemIntro')}
-        />
+        <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+          <SectionHeading
+            eyebrow={t('problemEyebrow')}
+            title={t('problemTitle')}
+            description={t('problemIntro')}
+          />
+          <Reveal
+            delay={80}
+            className="relative min-h-[250px] overflow-hidden border border-line bg-paper sm:min-h-[330px]"
+          >
+            <Image
+              src="/assets/stock/aesthetic-clinic-waiting-room.jpg"
+              alt={t('problemImageAlt')}
+              fill
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              className="object-cover"
+            />
+          </Reveal>
+        </div>
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {problems.map((block, i) => (
             <Reveal
