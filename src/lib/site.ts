@@ -515,7 +515,7 @@ export const caseStudies: CaseStudy[] = [
     image: '/assets/stock/automotive.jpg',
   },
   {
-    slug: 'clinicas-medicas-ojine',
+    slug: 'clinicas-medicas-ogyne',
     client: 'Clínicas Médicas Ojíne',
     title: 'Comunicación digital para servicios de salud',
     summary: 'Presencia digital y comunicación para una marca médica.',
