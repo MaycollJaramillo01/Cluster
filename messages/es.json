@@ -940,7 +940,12 @@
     "titleBefore": "Tu plan ideal en ",
     "titleHighlight": "3 preguntas",
     "titleAfter": ".",
-    "subtitle": "Cuéntanos dónde estás y qué necesitas. Te enviamos una recomendación real, sin compromiso."
+    "subtitle": "Cuéntanos dónde estás y qué necesitas. Te enviamos una recomendación real, sin compromiso.",
+    "growthEyebrow": "Evaluación para negocios",
+    "growthTitleBefore": "¿Su negocio",
+    "growthTitleHighlight": "califica",
+    "growthTitleAfter": "?",
+    "growthSubtitle": "Responda tres preguntas rápidas. Revisaremos su información y le contactaremos para conversar sobre el siguiente paso."
   },
   "NotFound": {
     "code": "404",
@@ -1017,8 +1022,42 @@
         "sub": "Te contactamos con un plan adaptado a tu situación."
       }
     ],
+    "growthChallenges": [
+      { "id": "lt10", "label": "Menos de 10 oportunidades" },
+      { "id": "from10to30", "label": "Entre 10 y 30 oportunidades" },
+      { "id": "from31to100", "label": "Entre 31 y 100 oportunidades" },
+      { "id": "gt100", "label": "Más de 100 oportunidades" },
+      { "id": "unknown", "label": "No llevo ese registro" }
+    ],
+    "growthStages": [
+      { "id": "capacityYes", "label": "Sí, podemos atender nuevos clientes" },
+      { "id": "capacityAdjust", "label": "Sí, con algunos ajustes" },
+      { "id": "capacityNo", "label": "Por ahora no" }
+    ],
+    "growthQuestions": [
+      {
+        "step": "Paso 1 de 3",
+        "title": "¿Cuántas oportunidades nuevas recibe al mes?",
+        "sub": "Incluya consultas de su web, redes sociales, llamadas y otros canales."
+      },
+      {
+        "step": "Paso 2 de 3",
+        "title": "¿Puede atender nuevos clientes?",
+        "sub": "Esto nos ayuda a entender si su negocio está listo para crecer."
+      },
+      {
+        "step": "Paso 3 de 3",
+        "title": "¿Cómo podemos contactarle?",
+        "sub": "Deje su correo electrónico y, si prefiere, un teléfono para conversar."
+      }
+    ],
     "whatsappTemplate": "Quiero mi recomendación personalizada de Cluster Media:%0A• Desafío: {challenge}%0A• Etapa: {stage}%0A• Nombre: {name}%0A• Negocio: {business}%0A• WhatsApp: {whatsapp}%0A• Website: {website}%0A• Redes: {social}",
-    "businessField": "Nombre de tu negocio"
+    "businessField": "Nombre de tu negocio",
+    "growthSubmit": "Enviar formulario",
+    "growthDoneTitle": "Recibimos su formulario.",
+    "growthDoneText": "Nuestro equipo revisará sus respuestas y se pondrá en contacto con usted.",
+    "growthPhoneOptional": "Teléfono (opcional)",
+    "growthWhatsappOption": "Prefiero escribir por WhatsApp"
   },
   "ContactForm": {
     "serviceOptions": [

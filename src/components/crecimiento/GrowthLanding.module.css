@@ -51,6 +51,9 @@
 .cta:active { transform: scale(.98); }
 .cta + .micro { margin-top: 12px; }
 .ctaWide { width: 100%; }
+.whatsappOption { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 6px 0; color: #d8eee5; font-family: var(--font-mono), monospace; font-size: 13px; font-weight: 500; line-height: 1.3; text-decoration: underline; text-underline-offset: 4px; }
+.whatsappOption:hover { color: var(--green); }
+.micro + .whatsappOption { margin-top: 8px; }
 .textLink { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; font-weight: 500; }
 .textLink:hover { color: var(--green); }
 .actions { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 26px; }
@@ -277,7 +280,10 @@
 /* CTA fijo (móvil). GrowthRuntime pone data-sticky cuando no hay otro CTA en pantalla. */
 .sticky { position: fixed; inset: auto 0 0; z-index: 40; padding: 10px 14px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(17, 17, 17, .94); backdrop-filter: blur(10px); visibility: hidden; transform: translateY(100%); transition: transform .3s, visibility .3s; }
 .page[data-sticky] .sticky { visibility: visible; transform: none; }
+.stickyActions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .sticky .cta { width: 100%; min-height: 46px; }
+.stickyWhatsapp { min-height: 46px; padding: 0 12px; border: 1px solid rgba(2, 195, 154, .55); border-radius: 5px; color: var(--ink); font-size: 11px; text-decoration: none; }
+.stickyWhatsapp:hover { border-color: var(--green); }
 
 /* Entrada al hacer scroll. Sin JS todo queda visible. */
 .page [data-reveal] { transition: opacity .6s ease, transform .6s ease; }

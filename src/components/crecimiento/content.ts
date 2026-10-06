@@ -88,6 +88,7 @@ export const base = {
     qualify: 'Quiero saber si mi negocio califica',
     final: 'Evaluar mi negocio',
     sticky: 'Ver si califico',
+    whatsapp: 'Prefiero WhatsApp',
   },
   hero: {
     headline: [
@@ -98,7 +99,7 @@ export const base = {
     subheadline:
       'Diseñamos y operamos un sistema que combina publicidad, automatización, inteligencia artificial y seguimiento para convertir en ventas a más de los prospectos de su negocio.',
     exclusivity: 'No todos los negocios califican.',
-    microcopy: 'Alex le hará solamente 3 preguntas.',
+    microcopy: 'Responda 3 preguntas rápidas en el formulario.',
     legal:
       '*La garantía, porcentaje y condiciones aplicables se determinan después de analizar cada negocio.',
     // El mismo fondo de la landing de Agentes IA. Cada vertical puede reemplazarlo con `hero.video`.
@@ -336,9 +337,9 @@ export const base = {
   final: {
     eyebrow: 'El siguiente paso',
     title: 'Descubra si su negocio puede calificar.',
-    lead: 'Alex le hará tres preguntas rápidas para entender mejor su negocio y determinar cuál debería ser el siguiente paso.',
+    lead: 'Responda tres preguntas rápidas para que podamos entender mejor su negocio y definir el siguiente paso.',
     microcopy: 'Sin compromiso.',
-    next: ['Se abre WhatsApp', 'Alex le hace 3 preguntas', 'Definimos el siguiente paso'],
+    next: ['Complete el formulario', 'Revisamos sus respuestas', 'Definimos el siguiente paso'],
   },
   footer: {
     tagline: 'Sistema de crecimiento con garantía para negocios que califiquen.',

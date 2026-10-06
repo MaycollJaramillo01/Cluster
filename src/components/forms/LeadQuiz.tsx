@@ -15,6 +15,11 @@ const challengeIcons: Record<string, IconName> = {
   ventas: 'target',
   marca: 'sparkles',
   crecer: 'rocket',
+  lt10: 'users',
+  from10to30: 'target',
+  from31to100: 'chart',
+  gt100: 'rocket',
+  unknown: 'sparkles',
 };
 
 const stageIcons: Record<string, IconName> = {
@@ -22,6 +27,9 @@ const stageIcons: Record<string, IconName> = {
   escalar: 'chart',
   consolidada: 'shield',
   freelance: 'users',
+  capacityYes: 'check',
+  capacityAdjust: 'chart',
+  capacityNo: 'clock',
 };
 
 const TOTAL = 3;
@@ -32,20 +40,22 @@ const inputClass =
 export function LeadQuiz({
   industry,
   campaignId,
+  whatsappMessage,
 }: {
   industry?: string;
   campaignId?: string;
+  whatsappMessage?: string;
 } = {}) {
   const t = useTranslations('LeadQuiz');
   const tc = useTranslations('Common');
 
-  const challenges = (t.raw('challenges') as { id: string; label: string }[]).map(
+  const challenges = (t.raw(campaignId ? 'growthChallenges' : 'challenges') as { id: string; label: string }[]).map(
     (item) => ({ ...item, icon: challengeIcons[item.id] ?? 'bolt' }),
   );
-  const stages = (t.raw('stages') as { id: string; label: string }[]).map(
+  const stages = (t.raw(campaignId ? 'growthStages' : 'stages') as { id: string; label: string }[]).map(
     (item) => ({ ...item, icon: stageIcons[item.id] ?? 'users' }),
   );
-  const questions = t.raw('questions') as {
+  const questions = t.raw(campaignId ? 'growthQuestions' : 'questions') as {
     step: string;
     title: string;
     sub: string;
@@ -59,12 +69,50 @@ export function LeadQuiz({
   const [website, setWebsite] = useState('');
   const [redes, setRedes] = useState('');
   const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const growthWhatsappUrl = campaignId
+    ? whatsappLink(`${whatsappMessage || 'Hola, quiero saber si mi negocio califica.'}\n\nRef: ${campaignId}`)
+    : null;
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const chLabel = challenges.find((c) => c.id === challenge)?.label ?? '—';
     const stLabel = stages.find((s) => s.id === stage)?.label ?? '—';
+
+    if (campaignId) {
+      setStatus('loading');
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: String(data.get('nombre') || ''),
+            empresa: String(data.get('negocio') || ''),
+            pais: String(data.get('pais') || ''),
+            email: String(data.get('email') || ''),
+            telefono: String(data.get('whatsapp') || ''),
+            website: String(data.get('website') || ''),
+            servicio: 'Sistema de crecimiento con garantía',
+            origen: 'crecimiento',
+            mensaje: [
+              `Industria: ${industry || '—'}`,
+              `Campaña: ${campaignId}`,
+              `Oportunidades nuevas al mes: ${chLabel}`,
+              `Capacidad para nuevos clientes: ${stLabel}`,
+              `Redes: ${data.get('redes') || '—'}`,
+            ].join('\n'),
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error('submit_failed');
+        setSent(true);
+      } catch {
+        setStatus('error');
+      }
+      return;
+    }
+
     const message = t('whatsappTemplate', {
       challenge: chLabel,
       stage: stLabel,
@@ -74,15 +122,8 @@ export function LeadQuiz({
       website: String(data.get('website') || '—'),
       social: String(data.get('redes') || '—'),
     });
-    const context = [
-      industry && `Industria: ${industry}`,
-      campaignId && `Ref: ${campaignId}`,
-    ].filter(Boolean);
     setSent(true);
-    window.open(
-      whatsappLink([decodeURIComponent(message), ...context].join('\n')),
-      '_blank',
-    );
+    window.open(whatsappLink(decodeURIComponent(message)), '_blank');
   }
 
   if (sent) {
@@ -93,15 +134,19 @@ export function LeadQuiz({
             <Icon name="check" size={32} strokeWidth={2.5} />
           </span>
           <h2 className="mt-6 font-display text-2xl font-bold uppercase tracking-tight text-fg sm:text-3xl">
-            {tc('quizDoneTitle')}
+            {campaignId ? t('growthDoneTitle') : tc('quizDoneTitle')}
           </h2>
           <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
-            {tc('quizDoneText')}
+            {campaignId ? t('growthDoneText') : tc('quizDoneText')}
           </p>
           <Button
-            href={whatsappLink(tc('quizDoneWhatsapp'))}
+            href={whatsappLink(
+              campaignId
+                ? `Hola, acabo de completar el formulario para ${industry}. Ref: ${campaignId}`
+                : tc('quizDoneWhatsapp'),
+            )}
             external
-            variant="accent"
+            variant={campaignId ? 'outline-light' : 'accent'}
             icon="whatsapp"
             size="lg"
             className="mt-7"
@@ -203,17 +248,35 @@ export function LeadQuiz({
             icon="pin"
             name="negocio"
             placeholder={t('businessField')}
+            required={Boolean(campaignId)}
           />
           <IconField
-            icon="whatsapp"
+            icon={campaignId ? 'phone' : 'whatsapp'}
             name="whatsapp"
             type="tel"
             inputMode="numeric"
-            placeholder={tc('whatsappWithCountry')}
+            placeholder={campaignId ? t('growthPhoneOptional') : tc('whatsappWithCountry')}
             value={whatsapp}
             onChange={(v) => setWhatsapp(v.replace(/\D/g, ''))}
-            required
+            required={!campaignId}
           />
+          {campaignId && (
+            <>
+              <IconField
+                icon="mail"
+                name="email"
+                type="email"
+                placeholder={tc('email')}
+                required
+              />
+              <IconField
+                icon="globe"
+                name="pais"
+                placeholder={tc('country')}
+                required
+              />
+            </>
+          )}
           <IconField
             icon="globe"
             name="website"
@@ -236,12 +299,30 @@ export function LeadQuiz({
               size="lg"
               iconRight="arrow-right"
               className="flex-1 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
-              disabled={!name.trim() || !whatsapp.trim()}
+              disabled={!name.trim() || (!campaignId && !whatsapp.trim()) || status === 'loading'}
             >
-              {tc('receiveRecommendation')}
+              {status === 'loading'
+                ? tc('sending')
+                : campaignId
+                  ? t('growthSubmit')
+                  : tc('receiveRecommendation')}
             </Button>
           </div>
+          {status === 'error' && (
+            <p className="text-sm text-red-400" role="alert">{tc('formError')}</p>
+          )}
         </form>
+      )}
+      {growthWhatsappUrl && (
+        <a
+          href={growthWhatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm text-muted underline underline-offset-4 transition-colors hover:text-accent"
+        >
+          <Icon name="whatsapp" size={18} fill="currentColor" strokeWidth={0} />
+          {t('growthWhatsappOption')}
+        </a>
       )}
     </Card>
   );
@@ -336,6 +417,7 @@ function IconField({
         type={type}
         inputMode={inputMode}
         placeholder={placeholder}
+        aria-label={placeholder}
         required={required}
         value={value}
         onChange={onChange ? (e) => onChange(e.target.value) : undefined}

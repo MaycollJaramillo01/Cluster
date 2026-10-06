@@ -940,7 +940,12 @@
     "titleBefore": "Your ideal plan in ",
     "titleHighlight": "3 questions",
     "titleAfter": ".",
-    "subtitle": "Tell us where you are and what you need. We will send a real recommendation, no commitment."
+    "subtitle": "Tell us where you are and what you need. We will send a real recommendation, no commitment.",
+    "growthEyebrow": "Business evaluation",
+    "growthTitleBefore": "Does your business",
+    "growthTitleHighlight": "qualify",
+    "growthTitleAfter": "?",
+    "growthSubtitle": "Answer three quick questions. We will review your information and contact you about the next step."
   },
   "NotFound": {
     "code": "404",
@@ -1017,8 +1022,42 @@
         "sub": "We will contact you with a plan tailored to your situation."
       }
     ],
+    "growthChallenges": [
+      { "id": "lt10", "label": "Fewer than 10 opportunities" },
+      { "id": "from10to30", "label": "Between 10 and 30 opportunities" },
+      { "id": "from31to100", "label": "Between 31 and 100 opportunities" },
+      { "id": "gt100", "label": "More than 100 opportunities" },
+      { "id": "unknown", "label": "I do not track this yet" }
+    ],
+    "growthStages": [
+      { "id": "capacityYes", "label": "Yes, we can serve new customers" },
+      { "id": "capacityAdjust", "label": "Yes, with a few adjustments" },
+      { "id": "capacityNo", "label": "Not at the moment" }
+    ],
+    "growthQuestions": [
+      {
+        "step": "Step 1 of 3",
+        "title": "How many new opportunities do you receive each month?",
+        "sub": "Include inquiries from your website, social media, calls, and other channels."
+      },
+      {
+        "step": "Step 2 of 3",
+        "title": "Can you serve new customers?",
+        "sub": "This helps us understand whether your business is ready to grow."
+      },
+      {
+        "step": "Step 3 of 3",
+        "title": "How can we reach you?",
+        "sub": "Leave your email address and, if you prefer, a phone number for a conversation."
+      }
+    ],
     "whatsappTemplate": "I want my personalized Cluster Media recommendation:%0A• Challenge: {challenge}%0A• Stage: {stage}%0A• Name: {name}%0A• Business: {business}%0A• WhatsApp: {whatsapp}%0A• Website: {website}%0A• Social: {social}",
-    "businessField": "Your business name"
+    "businessField": "Your business name",
+    "growthSubmit": "Submit form",
+    "growthDoneTitle": "We received your form.",
+    "growthDoneText": "Our team will review your answers and get in touch with you.",
+    "growthPhoneOptional": "Phone (optional)",
+    "growthWhatsappOption": "I prefer to write on WhatsApp"
   },
   "ContactForm": {
     "serviceOptions": [

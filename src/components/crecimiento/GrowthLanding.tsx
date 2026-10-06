@@ -9,6 +9,7 @@ import {
   HeroVideo,
   QualificationFormCta,
   VerticalVideo,
+  WhatsAppOption,
   type GrowthCtx,
 } from './GrowthClient';
 import s from './GrowthLanding.module.css';
@@ -64,6 +65,25 @@ function Cta({
   );
 }
 
+function WhatsAppCta({
+  ctx,
+  cta,
+  className = '',
+  label = base.cta.whatsapp,
+}: {
+  ctx: GrowthCtx;
+  cta: string;
+  className?: string;
+  label?: string;
+}) {
+  return (
+    <WhatsAppOption ctx={ctx} cta={cta} className={`${s.whatsappOption} ${className}`}>
+      <Icon name="whatsapp" size={19} fill="currentColor" strokeWidth={0} />
+      {label}
+    </WhatsAppOption>
+  );
+}
+
 function Chain({ steps, focus }: { steps: string[]; focus?: number }) {
   return (
     <ol className={s.chain}>
@@ -80,6 +100,7 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
   const ctx: GrowthCtx = {
     slug: v.slug,
     campaignId: v.campaignId,
+    whatsappMessage: v.whatsappMessage,
   };
   const headline = v.hero.headline ?? base.hero.headline;
   const faqs = [...base.faq.items.slice(0, 2), ...v.faqs, ...base.faq.items.slice(2)];
@@ -135,6 +156,7 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
                 {base.cta.primary}
               </Cta>
               <p className={s.micro}>{base.hero.microcopy}</p>
+              <WhatsAppCta ctx={ctx} cta="hero" />
             </div>
             <p className={s.legal}>{base.hero.legal}</p>
           </div>
@@ -416,6 +438,7 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
               {base.cta.qualify}
             </Cta>
             <p className={s.micro}>{base.qualify.microcopy}</p>
+            <WhatsAppCta ctx={ctx} cta="qualify" />
           </div>
           <div className={s.criteria} data-reveal>
             <p className={s.label}>{base.qualify.criteriaLabel}</p>
@@ -493,6 +516,7 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
           {base.cta.final}
         </Cta>
         <p className={s.micro}>{base.final.microcopy}</p>
+        <WhatsAppCta ctx={ctx} cta="final" />
         <Chain steps={base.final.next} />
       </section>
 
@@ -511,9 +535,12 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
 
       {/* CTA fijo en móvil: aparece al pasar el hero y se retira cuando hay otro CTA en pantalla */}
       <div className={s.sticky}>
-        <Cta ctx={ctx} cta="sticky">
-          {base.cta.sticky}
-        </Cta>
+        <div className={s.stickyActions}>
+          <Cta ctx={ctx} cta="sticky">
+            {base.cta.sticky}
+          </Cta>
+          <WhatsAppCta ctx={ctx} cta="sticky" className={s.stickyWhatsapp} label="WhatsApp" />
+        </div>
       </div>
     </div>
   );

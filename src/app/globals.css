@@ -394,7 +394,7 @@
     }
   }
   .page-enter {
-    animation: pageEnter 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: pageEnter 0.65s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   }
 
   @keyframes headerEnter {

@@ -43,19 +43,25 @@ export default async function DiagnosticoPage({ params, searchParams }: PageProp
         <div className="mb-10 text-center">
           <span className="mono-label inline-flex items-center gap-3 text-accent">
             <span className="inline-block h-px w-8 bg-accent" />
-            {t('eyebrow')}
+            {vertical ? t('growthEyebrow') : t('eyebrow')}
           </span>
           <h1 className="mt-5 font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight text-fg sm:text-5xl">
-            {t('titleBefore')}{' '}
-            <span className="text-accent">{t('titleHighlight')}</span>
-            {t('titleAfter')}
+            {vertical ? t('growthTitleBefore') : t('titleBefore')}{' '}
+            <span className="text-accent">
+              {vertical ? t('growthTitleHighlight') : t('titleHighlight')}
+            </span>
+            {vertical ? t('growthTitleAfter') : t('titleAfter')}
           </h1>
           <p className="mx-auto mt-4 max-w-md text-[15px] leading-relaxed text-muted">
-            {t('subtitle')}
+            {vertical ? t('growthSubtitle') : t('subtitle')}
           </p>
         </div>
 
-        <LeadQuiz industry={vertical?.industryName} campaignId={vertical?.campaignId} />
+        <LeadQuiz
+          industry={vertical?.industryName}
+          campaignId={vertical?.campaignId}
+          whatsappMessage={vertical?.whatsappMessage}
+        />
       </div>
     </section>
   );

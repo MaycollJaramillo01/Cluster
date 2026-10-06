@@ -5,11 +5,12 @@ import { Link } from '@/i18n/navigation';
 import { Icon } from '@/components/ui/Icon';
 import { trackEvent } from '@/lib/analytics';
 import { readLandingAttribution } from '@/lib/attribution';
+import { whatsappLink } from '@/lib/site';
 import type { ChatMessage, GrowthVideo, HeroVideo as HeroVideoSource } from './content';
 import s from './GrowthLanding.module.css';
 
 /** Lo único que las piezas interactivas necesitan saber de la vertical. */
-export type GrowthCtx = { slug: string; campaignId: string };
+export type GrowthCtx = { slug: string; campaignId: string; whatsappMessage: string };
 
 function attribution(ctx: GrowthCtx) {
   return readLandingAttribution({
@@ -17,6 +18,13 @@ function attribution(ctx: GrowthCtx) {
     country: '',
     landing: `/crecimiento/${ctx.slug}`,
   });
+}
+
+function whatsappUrl(ctx: GrowthCtx, attr?: ReturnType<typeof attribution>) {
+  const ref = [ctx.campaignId, attr?.source, attr?.utm_campaign.slice(0, 80)]
+    .filter(Boolean)
+    .join(' | ');
+  return whatsappLink(`${ctx.whatsappMessage}\n\nRef: ${ref}`);
 }
 
 function track(ctx: GrowthCtx, name: string, extra: Record<string, string | number> = {}) {
@@ -53,6 +61,38 @@ export function QualificationFormCta({
     >
       {children}
     </Link>
+  );
+}
+
+/** WhatsApp queda disponible como alternativa al formulario. */
+export function WhatsAppOption({
+  ctx,
+  cta,
+  className,
+  children,
+}: {
+  ctx: GrowthCtx;
+  cta: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  const [href, setHref] = useState(() => whatsappUrl(ctx));
+
+  useEffect(() => setHref(whatsappUrl(ctx, attribution(ctx))), [ctx]);
+
+  return (
+    <a
+      className={className}
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => {
+        track(ctx, 'whatsapp_click', { cta });
+        window.fbq?.('track', 'Contact', { content_name: ctx.slug });
+      }}
+    >
+      {children}
+    </a>
   );
 }
 
