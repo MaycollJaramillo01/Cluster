@@ -62,8 +62,8 @@ export type GrowthVertical = {
     video?: HeroVideo;
   };
   pain: { examples: string[]; highlight: string };
-  /** null = todavía no hay video final: la sección no se publica (en desarrollo se ve un marcador). */
-  video: GrowthVideo | null;
+  /** Video de la industria que se muestra en el segundo bloque de la página. */
+  video: GrowthVideo;
   conversation: { messages: ChatMessage[]; outcome: string[]; note?: string };
   useCases: string[];
   /** Ejemplo de alerta que recibe el equipo (momento humano). */
@@ -409,7 +409,13 @@ export const verticals: GrowthVertical[] = [
       highlight:
         'En una clínica estética, unas pocas oportunidades recuperadas pueden representar miles de dólares.',
     },
-    video: null,
+    video: {
+      src: '/assets/videos/agent-ia/clinicas-esteticas.mp4',
+      poster: '/assets/videos/agent-ia/clinicas-esteticas.webp',
+      title: 'Atención para clínicas estéticas',
+      description: 'Ejemplo de atención inicial para consultas sobre tratamientos y valoraciones.',
+      portrait: true,
+    },
     conversation: {
       messages: [
         { from: 'prospect', text: 'Hola, quisiera saber cuánto cuesta el tratamiento de Botox.' },
@@ -480,7 +486,13 @@ export const verticals: GrowthVertical[] = [
       highlight:
         'Un paciente que no termina agendando puede representar cientos o miles de dólares en tratamientos perdidos.',
     },
-    video: null,
+    video: {
+      src: '/assets/videos/agent-ia/clinicas-odontologicas.mp4',
+      poster: '/assets/videos/agent-ia/clinicas-odontologicas.webp',
+      title: 'Atención para clínicas odontológicas',
+      description: 'Ejemplo de atención a consultas sobre tratamientos y citas odontológicas.',
+      portrait: true,
+    },
     conversation: {
       messages: [
         { from: 'prospect', text: 'Hola, ¿cuánto cuesta un implante dental?' },
@@ -529,9 +541,9 @@ export const verticals: GrowthVertical[] = [
     },
     hero: {
       image: {
-        src: '/assets/stock/medical.jpg',
-        alt: 'Recepción de una clínica médica',
-        position: '70% center',
+        src: '/assets/stock/crecimiento/clinicas-medicas.jpg',
+        alt: 'Médica conversa con una paciente en un consultorio luminoso',
+        position: '54% center',
       },
     },
     pain: {
@@ -546,7 +558,13 @@ export const verticals: GrowthVertical[] = [
       highlight:
         'Cada persona que pregunta y no llega a agendar es una consulta que su clínica deja de atender.',
     },
-    video: null,
+    video: {
+      src: '/assets/videos/agent-ia/medicos.mp4',
+      poster: '/assets/videos/agent-ia/medicos.webp',
+      title: 'Atención para clínicas médicas',
+      description: 'Ejemplo de atención a consultas de servicios, horarios y citas médicas.',
+      portrait: true,
+    },
     conversation: {
       messages: [
         { from: 'prospect', text: 'Hola, quisiera una cita con un especialista.' },
@@ -610,7 +628,13 @@ export const verticals: GrowthVertical[] = [
       highlight:
         'En bienes raíces, una sola oportunidad perdida puede representar miles de dólares en comisión.',
     },
-    video: null,
+    video: {
+      src: '/assets/videos/agent-ia/inmobiliarias.mp4',
+      poster: '/assets/videos/agent-ia/inmobiliarias.webp',
+      title: 'Atención para inmobiliarias',
+      description: 'Ejemplo de seguimiento a personas interesadas en comprar o alquilar una propiedad.',
+      portrait: true,
+    },
     conversation: {
       messages: [
         { from: 'prospect', text: 'Hola. ¿Todavía está disponible el apartamento que vi?' },
@@ -672,7 +696,12 @@ export const verticals: GrowthVertical[] = [
       ],
       highlight: 'Una conversación olvidada puede significar perder un proyecto completo.',
     },
-    video: null,
+    video: {
+      src: '/assets/videos/agent-ia/constructora-drone.mp4',
+      poster: '/assets/videos/agent-ia/constructora-drone.webp',
+      title: 'Una obra vista desde el dron',
+      description: 'Toma aérea de una construcción urbana en desarrollo.',
+    },
     conversation: {
       messages: [
         { from: 'prospect', text: 'Hola, necesito cotizar una remodelación.' },

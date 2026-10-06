@@ -78,6 +78,7 @@
 .heroCopy { min-width: 0; }
 /* La industria va arriba y grande: quien llega debe ver al instante que la página es para su negocio */
 .heroIndustry { display: inline-block; margin-bottom: 16px; padding: 8px 12px 6px; border-radius: 4px; background: var(--green); color: #06140f; font-family: var(--font-display), 'Arial Narrow', Impact, sans-serif; font-size: clamp(1.5rem, 6.4vw, 2.2rem); line-height: 1; letter-spacing: .03em; text-transform: uppercase; }
+.heroIndustryLight { background: #fff; color: #101814; }
 .hero h1 { font-size: clamp(2.2rem, 9.6vw, 4.6rem); line-height: .96; }
 .hero h1 span { display: block; }
 /* "HASTA UN 20%" es el elemento de mayor peso de la página */
@@ -105,8 +106,15 @@
 .exampleList li:last-child { border-style: dashed; border-color: #2b5b4d; background: transparent; color: #b8edd6; }
 .highlight { padding-left: 20px; border-left: 3px solid var(--green); font-family: var(--font-display), 'Arial Narrow', Impact, sans-serif; font-size: clamp(1.9rem, 6.6vw, 2.9rem); line-height: 1.02; text-transform: uppercase; text-wrap: balance; }
 
-/* 03 — 100 prospectos → X ventas → una parte no compra. Proporciones ilustrativas, sin cifras. */
+/* 04 — 100 prospectos → X ventas → una parte no compra. Proporciones ilustrativas, sin cifras. */
 .math { display: grid; gap: 22px; max-width: 720px; margin-inline: auto; }
+.ideaLayout { display: grid; gap: 32px; align-items: center; }
+.ideaCopy .heading { margin-bottom: 28px; }
+.ideaCopy .math { max-width: none; margin-inline: 0; }
+.ideaCopy .conclusion { max-width: none; margin: 32px 0 0; text-align: left; }
+.ideaCopy .conclusion + .footnote { text-align: left; }
+.ideaImage { position: relative; min-height: 260px; overflow: hidden; aspect-ratio: 4 / 3; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ideaImage img { object-fit: cover; }
 .mathRow { display: grid; grid-template-columns: 76px 1fr; gap: 16px; align-items: center; }
 .mathNum { font-family: var(--font-display), 'Arial Narrow', Impact, sans-serif; font-size: 56px; line-height: .85; text-align: right; }
 .mathRow .label { margin-bottom: 8px; }
@@ -133,9 +141,14 @@
 .principle { margin-top: 20px; padding-top: 32px; border-top: 1px solid var(--line); }
 .principle > p { max-width: 640px; font-family: var(--font-display), 'Arial Narrow', Impact, sans-serif; font-size: clamp(1.8rem, 6.4vw, 2.6rem); line-height: 1.02; text-transform: uppercase; text-wrap: balance; }
 
-/* 05 — Video */
+/* 02 — Video */
 .videoSection { border-top: 1px solid var(--line); }
-.videoStage { overflow: hidden; max-width: 860px; border: 1px solid #303b34; border-radius: 8px; background: #171d19; }
+.videoLayout { display: grid; gap: 32px; align-items: center; }
+.videoIntro { display: flex; gap: 20px; align-items: flex-start; }
+.videoIntro .heading { margin-bottom: 0; }
+.videoRobotMark { display: grid; width: 76px; aspect-ratio: 1; flex: none; place-items: center; overflow: hidden; border: 1px solid var(--line); border-radius: 50%; background: #101814; }
+.videoRobotMark img { width: 68px; height: 68px; object-fit: contain; }
+.videoStage { margin-inline: auto; overflow: hidden; max-width: 860px; border: 1px solid #303b34; border-radius: 8px; background: #171d19; }
 .videoPortrait { max-width: 360px; }
 .video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #0d120f; object-fit: cover; }
 .videoPortrait .video { aspect-ratio: 9 / 16; }
@@ -291,6 +304,10 @@
 @media (min-width: 900px) {
   .page { --header: 72px; }
   .section { padding-block: 108px; }
+  .ideaLayout { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(36px, 6vw, 80px); }
+  .ideaImage { min-height: 420px; aspect-ratio: 4 / 5; }
+  .videoLayout { grid-template-columns: minmax(0, 1fr) minmax(320px, 560px); }
+  .videoStage { margin: 0 0 0 auto; }
   .heading { margin-bottom: 48px; }
   .lead { font-size: 17px; }
   .nav { gap: 26px; }
@@ -304,6 +321,12 @@
   .features { grid-template-columns: repeat(4, 1fr); }
   .features > * { padding: 28px 24px; }
   .guarantee { grid-template-columns: auto 1fr; gap: 64px; align-items: center; padding: 56px; }
+}
+
+@media (max-width: 599px) {
+  .videoIntro { gap: 14px; align-items: center; }
+  .videoRobotMark { width: 56px; }
+  .videoRobotMark img { width: 50px; height: 50px; }
 }
 @media (min-width: 980px) {
   .heroInner { grid-template-columns: minmax(0, 1fr) 420px; gap: 64px; align-items: center; padding-block: 52px 64px; }

@@ -84,8 +84,14 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
   };
   const headline = v.hero.headline ?? base.hero.headline;
   const faqs = [...base.faq.items.slice(0, 2), ...v.faqs, ...base.faq.items.slice(2)];
-  // El marcador de video pendiente nunca se publica: solo existe en desarrollo.
-  const showVideo = Boolean(v.video) || process.env.NODE_ENV === 'development';
+  const highlightIndustry = v.slug === 'clinicas-esteticas' || v.slug === 'clinicas-odontologicas';
+  const ideaImage = v.slug === 'clinicas-esteticas'
+    ? {
+        src: '/assets/stock/aesthetic-clinic-waiting-room.jpg',
+        alt: 'Clientes conversan con la recepción en la sala de espera de una clínica estética.',
+        position: 'center',
+      }
+    : v.hero.image;
 
   return (
     <div className={s.page} id="crecimiento">
@@ -117,7 +123,7 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
         <HeroVideo {...(v.hero.video ?? base.hero.video)} />
         <div className={`${s.container} ${s.heroInner}`}>
           <div className={s.heroCopy}>
-            <p className={s.heroIndustry}>{v.industryName}</p>
+            <p className={`${s.heroIndustry} ${highlightIndustry ? s.heroIndustryLight : ''}`}>{v.industryName}</p>
             <h1 id="hero-title">
               {headline.map((line) =>
                 line.strong ? <em key={line.text}>{line.text}</em> : <span key={line.text}>{line.text}</span>,
@@ -146,7 +152,26 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
         </div>
       </section>
 
-      {/* 02 — Identificación del problema */}
+      {/* 02 — Video de la industria y asistente IA */}
+      <section className={`${s.container} ${s.section} ${s.videoSection}`} aria-labelledby="video-title">
+        <div className={s.videoLayout}>
+          <div className={s.videoIntro}>
+            <span className={s.videoRobotMark} aria-hidden="true">
+              <Image src="/assets/agent-assistant-mark.png" alt="" width={72} height={72} />
+            </span>
+            <Heading id="video-title" eyebrow={base.video.eyebrow} title={base.video.title} lead={base.video.lead} />
+          </div>
+          <figure className={`${s.videoStage} ${v.video.portrait ? s.videoPortrait : ''}`} data-reveal>
+            <VerticalVideo ctx={ctx} video={v.video} />
+            <figcaption>
+              <b>{v.video.title}</b>
+              {v.video.description}
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      {/* 03 — Identificación del problema */}
       <section className={`${s.container} ${s.section}`} aria-labelledby="pain-title">
         <Heading id="pain-title" eyebrow={base.pain.eyebrow} title={base.pain.title} lead={base.pain.lead} />
         <div className={s.cards}>
@@ -173,48 +198,59 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
         </div>
       </section>
 
-      {/* 03 — La lógica antes de la garantía */}
+      {/* 04 — La lógica antes de la garantía */}
       <section className={s.soft} aria-labelledby="idea-title">
-        <div className={`${s.container} ${s.section}`}>
-          <Heading id="idea-title" eyebrow={base.idea.eyebrow} title={base.idea.title} lead={base.idea.lead} center />
-          <div className={s.math} data-reveal>
-            <div className={s.mathRow}>
-              <span className={s.mathNum}>100</span>
-              <div>
-                <p className={s.label}>{base.idea.rows[0]}</p>
-                <div className={s.bar}>
-                  <i style={{ width: '100%' }} />
+        <div className={`${s.container} ${s.section} ${s.ideaLayout}`}>
+          <div className={s.ideaCopy}>
+            <Heading id="idea-title" eyebrow={base.idea.eyebrow} title={base.idea.title} lead={base.idea.lead} />
+            <div className={s.math} data-reveal>
+              <div className={s.mathRow}>
+                <span className={s.mathNum}>100</span>
+                <div>
+                  <p className={s.label}>{base.idea.rows[0]}</p>
+                  <div className={s.bar}>
+                    <i style={{ width: '100%' }} />
+                  </div>
+                </div>
+              </div>
+              <div className={s.mathRow}>
+                <span className={s.mathNum}>X</span>
+                <div>
+                  <p className={s.label}>{base.idea.rows[1]}</p>
+                  <div className={s.bar}>
+                    <i className={s.barSales} style={{ width: '24%' }} />
+                  </div>
+                </div>
+              </div>
+              <div className={s.mathRow}>
+                <span className={s.mathNum} aria-hidden="true" />
+                <div>
+                  <p className={s.label}>{base.idea.rows[2]}</p>
+                  <div className={`${s.bar} ${s.barLost}`}>
+                    <i className={s.barRecovered} style={{ width: '14%' }} />
+                  </div>
+                  <p className={s.recovered}>↑ {base.idea.recovered}</p>
                 </div>
               </div>
             </div>
-            <div className={s.mathRow}>
-              <span className={s.mathNum}>X</span>
-              <div>
-                <p className={s.label}>{base.idea.rows[1]}</p>
-                <div className={s.bar}>
-                  <i className={s.barSales} style={{ width: '24%' }} />
-                </div>
-              </div>
-            </div>
-            <div className={s.mathRow}>
-              <span className={s.mathNum} aria-hidden="true" />
-              <div>
-                <p className={s.label}>{base.idea.rows[2]}</p>
-                <div className={`${s.bar} ${s.barLost}`}>
-                  <i className={s.barRecovered} style={{ width: '14%' }} />
-                </div>
-                <p className={s.recovered}>↑ {base.idea.recovered}</p>
-              </div>
-            </div>
+            <p className={s.conclusion} data-reveal>
+              {base.idea.conclusion}
+            </p>
+            <p className={s.footnote}>{base.idea.note}</p>
           </div>
-          <p className={s.conclusion} data-reveal>
-            {base.idea.conclusion}
-          </p>
-          <p className={s.footnote}>{base.idea.note}</p>
+          <figure className={s.ideaImage} data-reveal>
+            <Image
+              src={ideaImage.src}
+              alt={ideaImage.alt}
+              fill
+              sizes="(min-width: 900px) 42vw, 100vw"
+              style={{ objectPosition: ideaImage.position }}
+            />
+          </figure>
         </div>
       </section>
 
-      {/* 04 — El sistema */}
+      {/* 05 — El sistema */}
       <section className={`${s.container} ${s.section}`} id="como-funciona" aria-labelledby="system-title">
         <Heading id="system-title" eyebrow={base.system.eyebrow} title={base.system.title} lead={base.system.lead} />
         <ol className={s.steps} data-reveal>
@@ -241,29 +277,6 @@ export function GrowthLanding({ v }: { v: GrowthVertical }) {
           </div>
         </div>
       </section>
-
-      {/* 05 — Video de la vertical */}
-      {showVideo && (
-        <section className={`${s.container} ${s.section} ${s.videoSection}`} aria-labelledby="video-title">
-          <Heading id="video-title" eyebrow={base.video.eyebrow} title={base.video.title} lead={base.video.lead} />
-          <figure className={`${s.videoStage} ${v.video?.portrait ? s.videoPortrait : ''}`} data-reveal>
-            {v.video ? (
-              <>
-                <VerticalVideo ctx={ctx} video={v.video} />
-                <figcaption>
-                  <b>{v.video.title}</b>
-                  {v.video.description}
-                </figcaption>
-              </>
-            ) : (
-              <p className={s.videoPending}>
-                Video pendiente para «{v.industryName}». Este marcador solo se ve en desarrollo: en producción la
-                sección no aparece hasta definir `video` en content.ts.
-              </p>
-            )}
-          </figure>
-        </section>
-      )}
 
       {/* 06 — Conversación simulada */}
       <section className={s.soft} aria-labelledby="chat-title">
