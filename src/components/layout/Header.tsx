@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { Logo } from '@/components/ui/Logo';
@@ -14,10 +14,14 @@ type NavItem = {
   labelKey: string;
   href: string;
   children?: NavChild[];
+  /** Para secciones que solo existen en un idioma: el enlace siempre lleva a ese. */
+  locale?: 'es';
+  /** Solo cabe en el menú de escritorio desde 1600 px; en el menú móvil aparece siempre. */
+  wideOnly?: boolean;
 };
 
 const navItems: NavItem[] = [
-  { labelKey: 'home', href: '/' },
+  { labelKey: 'home', href: '/', wideOnly: true },
   {
     labelKey: 'services',
     href: '/servicios',
@@ -43,6 +47,18 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    labelKey: 'growth',
+    href: '/crecimiento/clinicas-esteticas',
+    locale: 'es',
+    children: [
+      { labelKey: 'clinicasEsteticas', href: '/crecimiento/clinicas-esteticas' },
+      { labelKey: 'clinicasOdontologicas', href: '/crecimiento/clinicas-odontologicas' },
+      { labelKey: 'clinicasMedicas', href: '/crecimiento/clinicas-medicas' },
+      { labelKey: 'inmobiliarias', href: '/crecimiento/inmobiliarias' },
+      { labelKey: 'construccion', href: '/crecimiento/construccion' },
+    ],
+  },
+  {
     labelKey: 'podcast',
     href: '/participa',
     children: [
@@ -57,14 +73,18 @@ const navItems: NavItem[] = [
   { labelKey: 'plans', href: '/#planes' },
   { labelKey: 'cases', href: '/casos-de-exito' },
   { labelKey: 'about', href: '/sobre-cluster' },
-  { labelKey: 'blog', href: '/blog' },
-  { labelKey: 'contact', href: '/contacto' },
+  { labelKey: 'blog', href: '/blog', wideOnly: true },
+  { labelKey: 'contact', href: '/contacto', wideOnly: true },
 ];
 
 export function Header() {
   const t = useTranslations('Nav');
   const tc = useTranslations('Common');
   const pathname = usePathname();
+  const currentLocale = useLocale();
+  // Solo se fuerza el idioma al enlazar desde otro: en el propio idioma el enlace queda sin prefijo.
+  const linkLocale = (item: NavItem) =>
+    item.locale === currentLocale ? undefined : item.locale;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -111,8 +131,8 @@ export function Header() {
             : 'bg-transparent'
       }`}
     >
-      <div className="container-x flex h-[76px] items-center justify-between gap-4">
-        <Logo />
+      <div className="mx-auto flex h-[76px] w-full max-w-[1760px] items-center justify-between gap-4 px-5 sm:px-8 min-[1600px]:px-12">
+        <Logo className="shrink-0" />
 
         <nav className="hidden items-center gap-0.5 xl:flex" aria-label={tc('navAria')}>
           {navItems.map((item) => {
@@ -120,11 +140,12 @@ export function Header() {
             return (
               <div
                 key={item.href}
-                className={`group relative ${item.href === '/' ? 'hidden 2xl:block' : ''}`}
+                className={`group relative ${item.wideOnly ? 'hidden min-[1600px]:block' : ''}`}
               >
                 <Link
                   href={item.href}
-                  className={`inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-2 font-mono text-[10px] font-medium uppercase tracking-[0.08em] transition-colors ${
+                  locale={linkLocale(item)}
+                  className={`inline-flex items-center gap-1 whitespace-nowrap px-2 py-2 font-mono min-[1600px]:px-2.5 text-[10px] font-medium uppercase tracking-[0.08em] transition-colors ${
                     isActive(item.href) ||
                     item.children?.some((child) => isActive(child.href))
                       ? 'text-accent'
@@ -141,6 +162,7 @@ export function Header() {
                         <Link
                           key={child.href}
                           href={child.href}
+                          locale={linkLocale(item)}
                           className="block px-3.5 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface hover:text-accent"
                         >
                           {t(child.labelKey)}
@@ -154,14 +176,14 @@ export function Header() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-2 xl:flex">
+        <div className="hidden shrink-0 items-center gap-2 xl:flex">
           <LanguageSwitcher />
           <a
             href={whatsappLink(tc('whatsappDefaultMessage'))}
             target="_blank"
             rel="noopener noreferrer"
             aria-label={tc('whatsapp')}
-            className="flex h-10 w-10 items-center justify-center border-0 bg-surface text-muted transition-all hover:bg-[#25D366] hover:text-white"
+            className="hidden h-10 w-10 items-center justify-center border-0 bg-surface text-muted transition-all hover:bg-[#25D366] hover:text-white min-[1600px]:flex"
           >
             <Icon name="whatsapp" size={18} />
           </a>
@@ -194,6 +216,7 @@ export function Header() {
                 <div className="flex items-center justify-between">
                   <Link
                     href={item.href}
+                    locale={linkLocale(item)}
                     className={`flex-1 px-3 py-3 text-lg font-medium ${
                       isActive(item.href) ||
                       item.children?.some((child) => isActive(child.href))
@@ -231,6 +254,7 @@ export function Header() {
                       <Link
                         key={child.href}
                         href={child.href}
+                        locale={linkLocale(item)}
                         className="px-3 py-2.5 text-[15px] text-muted"
                       >
                         {t(child.labelKey)}
