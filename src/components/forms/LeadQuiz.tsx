@@ -37,15 +37,227 @@ const TOTAL = 3;
 const inputClass =
   'w-full bg-surface py-3.5 pl-11 pr-4 text-[15px] text-fg placeholder:text-faint transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[color:var(--accent)]';
 
-export function LeadQuiz({
-  industry,
-  campaignId,
-  whatsappMessage,
-}: {
+const countries = [
+  { value: 'HN|Honduras|+504', label: '🇭🇳 Honduras (+504)', placeholder: '9999-9999' },
+  { value: 'NI|Nicaragua|+505', label: '🇳🇮 Nicaragua (+505)', placeholder: '8888-8888' },
+  { value: 'CR|Costa Rica|+506', label: '🇨🇷 Costa Rica (+506)', placeholder: '8888-8888' },
+  { value: 'GT|Guatemala|+502', label: '🇬🇹 Guatemala (+502)', placeholder: '5555-5555' },
+  { value: 'SV|El Salvador|+503', label: '🇸🇻 El Salvador (+503)', placeholder: '7777-7777' },
+  { value: 'PA|Panamá|+507', label: '🇵🇦 Panamá (+507)', placeholder: '6000-0000' },
+  { value: 'MX|México|+52', label: '🇲🇽 México (+52)', placeholder: '55 1234 5678' },
+  { value: 'CO|Colombia|+57', label: '🇨🇴 Colombia (+57)', placeholder: '300 123 4567' },
+  { value: 'VE|Venezuela|+58', label: '🇻🇪 Venezuela (+58)', placeholder: '412 123 4567' },
+  { value: 'EC|Ecuador|+593', label: '🇪🇨 Ecuador (+593)', placeholder: '99 123 4567' },
+  { value: 'PE|Perú|+51', label: '🇵🇪 Perú (+51)', placeholder: '912 345 678' },
+  { value: 'BO|Bolivia|+591', label: '🇧🇴 Bolivia (+591)', placeholder: '71234567' },
+  { value: 'CL|Chile|+56', label: '🇨🇱 Chile (+56)', placeholder: '9 1234 5678' },
+  { value: 'AR|Argentina|+54', label: '🇦🇷 Argentina (+54)', placeholder: '11 1234 5678' },
+  { value: 'UY|Uruguay|+598', label: '🇺🇾 Uruguay (+598)', placeholder: '99 123 456' },
+  { value: 'PY|Paraguay|+595', label: '🇵🇾 Paraguay (+595)', placeholder: '981 123456' },
+  { value: 'DO|República Dominicana|+1', label: '🇩🇴 Rep. Dominicana (+1)', placeholder: '809 555 0123' },
+  { value: 'PR|Puerto Rico|+1', label: '🇵🇷 Puerto Rico (+1)', placeholder: '787 555 0123' },
+  { value: 'US|Estados Unidos|+1', label: '🇺🇸 Estados Unidos (+1)', placeholder: '305 555 0123' },
+  { value: 'ES|España|+34', label: '🇪🇸 España (+34)', placeholder: '612 345 678' },
+] as const;
+
+type LeadQuizProps = {
   industry?: string;
   campaignId?: string;
   whatsappMessage?: string;
-} = {}) {
+};
+
+export function LeadQuiz(props: LeadQuizProps = {}) {
+  if (props.campaignId) {
+    return (
+      <GrowthQualificationForm
+        industry={props.industry}
+        campaignId={props.campaignId}
+        whatsappMessage={props.whatsappMessage}
+      />
+    );
+  }
+
+  return <StandardLeadQuiz />;
+}
+
+function GrowthQualificationForm({
+  industry,
+  campaignId,
+  whatsappMessage,
+}: Required<Pick<LeadQuizProps, 'campaignId'>> & Omit<LeadQuizProps, 'campaignId'>) {
+  const t = useTranslations('LeadQuiz');
+  const tc = useTranslations('Common');
+  const [callWindow, setCallWindow] = useState('');
+  const [countryValue, setCountryValue] = useState('');
+  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const country = countries.find((item) => item.value === countryValue);
+  const whatsappUrl = whatsappLink(
+    `${whatsappMessage || 'Hola, quiero saber si mi negocio califica.'}\n\nRef: ${campaignId}`,
+  );
+  const callWindows = t.raw('callWindows') as { id: string; label: string }[];
+  const prospectOptions = t.raw('prospectOptions') as { id: string; label: string }[];
+
+  async function handleGrowthSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setStatus('loading');
+    const data = new FormData(e.currentTarget);
+    const [, countryName = '', dialCode = ''] = countryValue.split('|');
+    const windowLabel = callWindows.find((item) => item.id === data.get('horario'))?.label || '';
+    const prospectLabel = prospectOptions.find((item) => item.id === data.get('prospectos'))?.label || '';
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: String(data.get('nombre') || ''),
+          empresa: String(data.get('negocio') || ''),
+          pais: countryName,
+          telefono: `${dialCode} ${String(data.get('telefono') || '')}`.trim(),
+          servicio: 'Sistema de crecimiento con garantía',
+          origen: 'crecimiento',
+          mensaje: [
+            `Industria: ${industry || 'Sin especificar'}`,
+            `Campaña: ${campaignId}`,
+            `Horario para llamar: ${windowLabel}`,
+            `Hora ideal: ${String(data.get('horaIdeal') || '')}`,
+            `Prospectos actuales: ${prospectLabel}`,
+          ].join('\n'),
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) throw new Error('submit_failed');
+      setSent(true);
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  if (sent) {
+    return (
+      <Card>
+        <div className="flex flex-col items-center py-6 text-center">
+          <span className="flex h-16 w-16 items-center justify-center bg-accent text-accent-fg">
+            <Icon name="check" size={32} strokeWidth={2.5} />
+          </span>
+          <h2 className="mt-6 font-display text-2xl font-bold uppercase tracking-tight text-fg sm:text-3xl">
+            {t('growthDoneTitle')}
+          </h2>
+          <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
+            {t('growthDoneText')}
+          </p>
+          <Button href={whatsappUrl} external variant="outline-light" icon="whatsapp" size="lg" className="mt-7">
+            {tc('openWhatsapp')}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <form onSubmit={handleGrowthSubmit} className="space-y-6">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <LabeledField label={t('fullNameLabel')} name="nombre" autoComplete="name" required />
+          <LabeledField label={t('businessNameLabel')} name="negocio" autoComplete="organization" required />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-fg" htmlFor="telefono">
+            {t('phoneLabel')}
+          </label>
+          <div className="grid grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-px bg-line focus-within:ring-2 focus-within:ring-[color:var(--accent)]">
+            <select
+              id="pais"
+              name="pais"
+              value={countryValue}
+              onChange={(e) => setCountryValue(e.target.value)}
+              required
+              aria-label={t('countryCodeLabel')}
+              className="min-w-0 bg-surface px-3 py-3.5 text-[15px] text-fg outline-none"
+            >
+              <option value="">{t('countryCodePlaceholder')}</option>
+              {countries.map((item) => (
+                <option key={item.value} value={item.value}>{item.label}</option>
+              ))}
+            </select>
+            <input
+              id="telefono"
+              name="telefono"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel-national"
+              required
+              placeholder={country?.placeholder || t('phonePlaceholder')}
+              className="min-w-0 bg-surface px-3 py-3.5 text-[15px] text-fg placeholder:text-faint outline-none"
+            />
+          </div>
+        </div>
+
+        <RadioGroup
+          legend={t('callWindowLabel')}
+          name="horario"
+          options={callWindows}
+          value={callWindow}
+          onChange={setCallWindow}
+        />
+
+        {callWindow && (
+          <div className="border-l-2 border-accent pl-4">
+            <label className="mb-2 block text-sm font-semibold text-fg" htmlFor="horaIdeal">
+              {t('idealTimeLabel')}
+            </label>
+            <input
+              id="horaIdeal"
+              name="horaIdeal"
+              type="time"
+              required
+              className="w-full bg-surface px-4 py-3.5 text-[15px] text-fg outline-none focus:ring-2 focus:ring-inset focus:ring-[color:var(--accent)]"
+            />
+          </div>
+        )}
+
+        <RadioGroup
+          legend={t('prospectsLabel')}
+          name="prospectos"
+          options={prospectOptions}
+        />
+
+        <div className="pt-1">
+          <Button
+            type="submit"
+            variant="accent"
+            size="lg"
+            iconRight="arrow-right"
+            className="w-full disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={status === 'loading'}
+          >
+            {status === 'loading' ? tc('sending') : t('growthSubmit')}
+          </Button>
+          <p className="mt-3 text-center text-sm leading-relaxed text-muted">{t('growthMicrocopy')}</p>
+          {status === 'error' && <p className="mt-3 text-sm text-red-400" role="alert">{tc('formError')}</p>}
+        </div>
+      </form>
+
+      <a
+        href={whatsappUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-6 flex min-h-11 items-center justify-center gap-2 border-t border-line pt-5 text-sm text-muted underline underline-offset-4 transition-colors hover:text-accent"
+      >
+        <Icon name="whatsapp" size={18} fill="currentColor" strokeWidth={0} />
+        {t('growthWhatsappOption')}
+      </a>
+    </Card>
+  );
+}
+
+function StandardLeadQuiz({
+  industry,
+  campaignId,
+  whatsappMessage,
+}: LeadQuizProps = {}) {
   const t = useTranslations('LeadQuiz');
   const tc = useTranslations('Common');
 
@@ -345,6 +557,71 @@ function Card({ children }: { children: React.ReactNode }) {
       ))}
       {children}
     </div>
+  );
+}
+
+function LabeledField({
+  label,
+  name,
+  autoComplete,
+  required,
+}: {
+  label: string;
+  name: string;
+  autoComplete?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-fg" htmlFor={name}>{label}</label>
+      <input
+        id={name}
+        name={name}
+        type="text"
+        autoComplete={autoComplete}
+        required={required}
+        className="w-full bg-surface px-4 py-3.5 text-[15px] text-fg outline-none transition-colors focus:ring-2 focus:ring-inset focus:ring-[color:var(--accent)]"
+      />
+    </div>
+  );
+}
+
+function RadioGroup({
+  legend,
+  name,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  name: string;
+  options: { id: string; label: string }[];
+  value?: string;
+  onChange?: (value: string) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="mb-3 text-sm font-semibold leading-snug text-fg">{legend}</legend>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map((option) => (
+          <label
+            key={option.id}
+            className="flex min-h-12 cursor-pointer items-center gap-3 border border-line bg-surface px-4 py-3 text-sm text-muted transition-colors hover:border-white/25 hover:text-fg has-[:checked]:border-accent has-[:checked]:bg-accent/10 has-[:checked]:text-fg"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={option.id}
+              checked={value === undefined ? undefined : value === option.id}
+              onChange={(event) => onChange?.(event.target.value)}
+              required
+              className="h-4 w-4 accent-[color:var(--accent)]"
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 

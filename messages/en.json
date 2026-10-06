@@ -945,7 +945,7 @@
     "growthTitleBefore": "Does your business",
     "growthTitleHighlight": "qualify",
     "growthTitleAfter": "?",
-    "growthSubtitle": "Answer three quick questions. We will review your information and contact you about the next step."
+    "growthSubtitle": "Complete this short form so we can learn about your business and define the next step."
   },
   "NotFound": {
     "code": "404",
@@ -1053,11 +1053,33 @@
     ],
     "whatsappTemplate": "I want my personalized Cluster Media recommendation:%0A• Challenge: {challenge}%0A• Stage: {stage}%0A• Name: {name}%0A• Business: {business}%0A• WhatsApp: {whatsapp}%0A• Website: {website}%0A• Social: {social}",
     "businessField": "Your business name",
-    "growthSubmit": "Submit form",
+    "growthSubmit": "See if my business qualifies",
     "growthDoneTitle": "We received your form.",
-    "growthDoneText": "Our team will review your answers and get in touch with you.",
+    "growthDoneText": "We will contact you to learn a little more about your business.",
     "growthPhoneOptional": "Phone (optional)",
-    "growthWhatsappOption": "I prefer to write on WhatsApp"
+    "growthWhatsappOption": "I prefer to write on WhatsApp",
+    "fullNameLabel": "Full name",
+    "businessNameLabel": "Business name",
+    "phoneLabel": "Phone number",
+    "countryCodeLabel": "Country and international code",
+    "countryCodePlaceholder": "Country and code",
+    "phonePlaceholder": "Phone number",
+    "callWindowLabel": "When can we call you?",
+    "callWindows": [
+      { "id": "morning", "label": "Morning" },
+      { "id": "noon", "label": "Midday" },
+      { "id": "afternoon", "label": "Afternoon" },
+      { "id": "evening", "label": "Evening" }
+    ],
+    "idealTimeLabel": "Ideal time to call you",
+    "prospectsLabel": "Do you currently receive a steady flow of prospects through the internet, social media or WhatsApp?",
+    "prospectOptions": [
+      { "id": "constant", "label": "Yes, consistently" },
+      { "id": "some", "label": "A few each month" },
+      { "id": "few", "label": "Very few" },
+      { "id": "none", "label": "Not yet" }
+    ],
+    "growthMicrocopy": "We will contact you to learn a little more about your business."
   },
   "ContactForm": {
     "serviceOptions": [

@@ -145,8 +145,10 @@ export async function POST(request: Request) {
   const nombre = asText(lead.nombre);
   const email = asText(lead.email);
   const pais = asText(lead.pais);
+  const telefono = asText(lead.telefono);
+  const isGrowthLead = asText(lead.origen) === 'crecimiento';
 
-  if (!nombre || !email || !pais) {
+  if (!nombre || !pais || (isGrowthLead ? !telefono : !email)) {
     return NextResponse.json(
       { ok: false, error: 'missing_required_fields' },
       { status: 400 },

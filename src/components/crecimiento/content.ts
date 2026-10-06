@@ -99,7 +99,7 @@ export const base = {
     subheadline:
       'Diseñamos y operamos un sistema que combina publicidad, automatización, inteligencia artificial y seguimiento para convertir en ventas a más de los prospectos de su negocio.',
     exclusivity: 'No todos los negocios califican.',
-    microcopy: 'Responda 3 preguntas rápidas en el formulario.',
+    microcopy: 'Complete el formulario. Toma menos de un minuto.',
     legal:
       '*La garantía, porcentaje y condiciones aplicables se determinan después de analizar cada negocio.',
     // El mismo fondo de la landing de Agentes IA. Cada vertical puede reemplazarlo con `hero.video`.
@@ -278,7 +278,7 @@ export const base = {
       'Proceso que pueda medirse',
       'Disposición para utilizar el sistema acordado',
     ],
-    microcopy: 'Son solamente 3 preguntas iniciales.',
+    microcopy: 'Toma menos de un minuto.',
   },
   trust: {
     eyebrow: 'Quiénes están detrás del sistema',
@@ -337,7 +337,7 @@ export const base = {
   final: {
     eyebrow: 'El siguiente paso',
     title: 'Descubra si su negocio puede calificar.',
-    lead: 'Responda tres preguntas rápidas para que podamos entender mejor su negocio y definir el siguiente paso.',
+    lead: 'Complete el formulario para que podamos entender mejor su negocio y definir el siguiente paso.',
     microcopy: 'Sin compromiso.',
     next: ['Complete el formulario', 'Revisamos sus respuestas', 'Definimos el siguiente paso'],
   },

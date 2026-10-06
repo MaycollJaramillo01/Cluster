@@ -945,7 +945,7 @@
     "growthTitleBefore": "¿Su negocio",
     "growthTitleHighlight": "califica",
     "growthTitleAfter": "?",
-    "growthSubtitle": "Responda tres preguntas rápidas. Revisaremos su información y le contactaremos para conversar sobre el siguiente paso."
+    "growthSubtitle": "Complete este formulario breve para que podamos conocer su negocio y definir el siguiente paso."
   },
   "NotFound": {
     "code": "404",
@@ -1053,11 +1053,33 @@
     ],
     "whatsappTemplate": "Quiero mi recomendación personalizada de Cluster Media:%0A• Desafío: {challenge}%0A• Etapa: {stage}%0A• Nombre: {name}%0A• Negocio: {business}%0A• WhatsApp: {whatsapp}%0A• Website: {website}%0A• Redes: {social}",
     "businessField": "Nombre de tu negocio",
-    "growthSubmit": "Enviar formulario",
+    "growthSubmit": "Ver si mi negocio califica",
     "growthDoneTitle": "Recibimos su formulario.",
-    "growthDoneText": "Nuestro equipo revisará sus respuestas y se pondrá en contacto con usted.",
+    "growthDoneText": "Te contactaremos para conocer un poco más sobre tu negocio.",
     "growthPhoneOptional": "Teléfono (opcional)",
-    "growthWhatsappOption": "Prefiero escribir por WhatsApp"
+    "growthWhatsappOption": "Prefiero escribir por WhatsApp",
+    "fullNameLabel": "Nombre y apellido",
+    "businessNameLabel": "Nombre del negocio",
+    "phoneLabel": "Número de teléfono",
+    "countryCodeLabel": "País y código internacional",
+    "countryCodePlaceholder": "País y código",
+    "phonePlaceholder": "Número de teléfono",
+    "callWindowLabel": "¿En qué horario podemos llamarte?",
+    "callWindows": [
+      { "id": "morning", "label": "Mañana" },
+      { "id": "noon", "label": "Mediodía" },
+      { "id": "afternoon", "label": "Tarde" },
+      { "id": "evening", "label": "Noche" }
+    ],
+    "idealTimeLabel": "Hora ideal para llamarte",
+    "prospectsLabel": "¿Actualmente recibís prospectos de forma constante por internet, redes sociales o WhatsApp?",
+    "prospectOptions": [
+      { "id": "constant", "label": "Sí, constantemente" },
+      { "id": "some", "label": "Algunos cada mes" },
+      { "id": "few", "label": "Muy pocos" },
+      { "id": "none", "label": "Todavía no" }
+    ],
+    "growthMicrocopy": "Te contactaremos para conocer un poco más sobre tu negocio."
   },
   "ContactForm": {
     "serviceOptions": [
