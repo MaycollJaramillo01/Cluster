@@ -2,6 +2,7 @@ type CheckoutData = Record<string, unknown>;
 
 export type PodcastCheckoutSession = {
   id: string;
+  url?: string | null;
   amount_total: number | null;
   currency: string | null;
   payment_status: string;
