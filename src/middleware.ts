@@ -6,6 +6,11 @@ const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // CRM interno. Vive fuera de los prefijos de idioma.
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+    return NextResponse.next();
+  }
   const isInternalPodcastRewrite =
     request.nextUrl.searchParams.get('__podcast') === '1' &&
     (pathname === '/es/participa' ||

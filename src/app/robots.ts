@@ -11,6 +11,7 @@ export default function robots(): MetadataRoute.Robots {
         '/en/postulaciones',
         '/acuerdo-proveedores',
         '/en/acuerdo-proveedores',
+        '/dashboard',
       ],
     },
     sitemap: `${site.url}/sitemap.xml`,
