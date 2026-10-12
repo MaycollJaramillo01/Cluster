@@ -81,7 +81,7 @@ async function postLead(kind: LeadKind, data: LeadPayload) {
   return result;
 }
 
-function PodcastChrome({ children, whatsappMessage }: { children: ReactNode; whatsappMessage: string }) {
+function PodcastChrome({ children, whatsappMessage, className = '' }: { children: ReactNode; whatsappMessage: string; className?: string }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -97,7 +97,7 @@ function PodcastChrome({ children, whatsappMessage }: { children: ReactNode; wha
   ];
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${className}`.trim()}>
       <AnalyticsTags />
       <header className={styles.header}>
         <div className={`${styles.shell} ${styles.headerInner}`}>
@@ -320,8 +320,12 @@ export function EditorialLanding() {
         </div>
       </section>
 
-      <section className={styles.section}><div className={styles.shell}><div className={styles.bridge}><div><h2>¿Prefieres no esperar la selección?</h2><p>Solicita una participación comercial en Cluster Podcast y conoce la modalidad disponible para ti.</p></div><Link className={styles.button} href="/participa/asegura-tu-participacion">Asegurar mi participación</Link></div></div></section>
-      <section className={styles.section}><div className={styles.shell}><div className={`${styles.bridge} ${styles.bridgeBrand}`}><div><p className={styles.eyebrow}>Para empresas</p><h2>¿Representas a una marca?</h2><p>Integra tu marca a las conversaciones y contenidos de Cluster Podcast.</p></div><Link className={styles.buttonSecondary} href="/patrocinios">Explorar patrocinios</Link></div></div></section>
+      <section className={styles.section}>
+        <div className={`${styles.shell} ${styles.ctaGroup}`}>
+          <div className={styles.bridge}><div><h2>¿Prefieres no esperar la selección?</h2><p>Solicita una participación comercial en Cluster Podcast y conoce la modalidad disponible para ti.</p></div><Link className={styles.button} href="/participa/asegura-tu-participacion">Asegurar mi participación</Link></div>
+          <div className={`${styles.bridge} ${styles.bridgeBrand}`}><div><p className={styles.eyebrow}>Para empresas</p><h2>¿Representas a una marca?</h2><p>Integra tu marca a las conversaciones y contenidos de Cluster Podcast.</p></div><Link className={styles.buttonSecondary} href="/patrocinios">Explorar patrocinios</Link></div>
+        </div>
+      </section>
       <section className={`${styles.section} ${styles.sectionSoft}`}><div className={styles.shell}><SectionHeading title="Preguntas frecuentes" /><Faq items={editorialFaqs} /></div></section>
     </PodcastChrome>
   );
@@ -421,10 +425,10 @@ function CommercialEvaluation() {
           <div className={styles.pricePanel}>
             <p className={styles.priceLabel}>Valor de participación</p>
             <p className={`${styles.price} ${support ? styles.priceSupported : ''}`}>{support ? '$300' : '$600'}</p>
-            <label className={styles.supportChoice}><input type="checkbox" checked={support} onChange={(event) => { setSupport(event.target.checked); trackEvent('commercial_support_selected', { selected: event.target.checked }); }} /><span>No puedo pagar por completo. Quiero solicitar ayuda.</span></label>
-            {support && <><div className={styles.supportLine}><span>Valor</span><span>$600</span></div><div className={styles.supportLine}><span>Apoyo Cluster</span><strong>- $300</strong></div><p className={styles.helper}>Solicitud de apoyo sujeta a aprobación de Cluster.</p></>}
             {error && <p className={styles.error}>{error}</p>}
             <button className={styles.button} type="button" onClick={submitRequest}>{support ? 'Enviar solicitud de apoyo' : 'Solicitar mi participación'}</button>
+            <label className={styles.supportChoice}><input type="checkbox" checked={support} onChange={(event) => { setSupport(event.target.checked); trackEvent('commercial_support_selected', { selected: event.target.checked }); }} /><span>No puedo cubrir el costo. Necesito ayuda de Cluster.</span></label>
+            {support && <><div className={styles.supportLine}><span>Valor</span><span>$600</span></div><div className={styles.supportLine}><span>Apoyo Cluster</span><strong>- $300</strong></div><p className={styles.helper}>Solicitud de apoyo sujeta a aprobación de Cluster.</p></>}
           </div>
         </div>
       </div>
@@ -445,8 +449,8 @@ function CommercialEvaluation() {
 export function CommercialLanding() {
   const wa = 'Hola, vi la opción para asegurar una participación en Cluster Podcast y quisiera información.';
   return (
-    <PodcastChrome whatsappMessage={wa}>
-      <Hero eyebrow="Participación comercial" title="Cuéntanos tu historia." lead="La participación es pagada. Agenda ya la fecha de tu entrevista por $600 USD." image="/assets/podcast/conversation-studio.webp" imagePosition="25% center">
+    <PodcastChrome whatsappMessage={wa} className={styles.commercial}>
+      <Hero eyebrow="Participación comercial" title="Cuéntanos tu historia." lead="La participación es pagada, agenda ya tu entrevista." image="/assets/podcast/conversation-studio.webp" imagePosition="25% center">
         <a className={styles.button} href="#evaluacion">Agendar entrevista</a><a className={styles.buttonSecondary} href={whatsappLink(wa)} target="_blank" rel="noreferrer">Hablar por WhatsApp</a>
       </Hero>
       <section className={styles.section}><div className={styles.shell}><SectionHeading title="Tu episodio sigue circulando." /><div className={styles.distribution}><article className={styles.distributionItem}><h3>Episodio completo</h3></article><article className={styles.distributionItem}><h3>Producción profesional</h3><p>Grabación cuidada de principio a fin.</p></article><article className={styles.distributionItem}><h3>Distribución multiplataforma</h3><p>La conversación vive en los canales de Cluster.</p></article><article className={styles.distributionItem}><h3>5 clips</h3><p>Publicados por Cluster Podcast.</p></article><article className={styles.distributionItem}><h3>Una historia</h3><p>Contada con espacio, ritmo y una producción a su altura.</p></article></div></div></section>

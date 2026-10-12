@@ -7,8 +7,8 @@
   --podcast-line: rgba(244, 246, 244, 0.14);
   --podcast-green: #02c39a;
   --podcast-green-dark: #003f34;
-  --podcast-section-space: clamp(5rem, 8vw, 7.5rem);
-  --podcast-content-gap: clamp(2.25rem, 4vw, 3rem);
+  --podcast-section-space: clamp(3.25rem, 5vw, 4.75rem);
+  --podcast-content-gap: clamp(1.5rem, 2.5vw, 2.25rem);
   min-height: 100dvh;
   background: var(--podcast-bg);
   color: var(--podcast-fg);
@@ -226,6 +226,12 @@
   color: #07120f;
 }
 
+.commercial .button,
+.commercial .buttonSecondary,
+.commercial .buttonWhatsApp {
+  border-color: var(--podcast-green);
+}
+
 .button:hover,
 .buttonSecondary:hover,
 .buttonWhatsApp:hover {
@@ -251,10 +257,11 @@
   position: relative;
   padding-block: var(--podcast-section-space);
   border-top: 1px solid var(--podcast-line);
+  scroll-margin-top: 72px;
 }
 
 .sectionCompact {
-  padding-block: clamp(3.25rem, 5vw, 4.75rem);
+  padding-block: clamp(2.75rem, 4vw, 3.75rem);
 }
 
 .sectionSoft {
@@ -326,7 +333,7 @@
   position: relative;
   display: flex;
   min-height: 128px;
-  align-items: flex-end;
+  align-items: center;
   overflow: hidden;
   padding: 1.25rem;
   background: #0d100f;
@@ -385,6 +392,12 @@
   padding: clamp(1.5rem, 4vw, 3rem);
 }
 
+.storySmall {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .storyLarge {
   grid-row: span 2;
   display: flex;
@@ -419,7 +432,11 @@
 }
 
 .step {
+  display: flex;
   min-height: 260px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.85rem;
   padding: 2rem;
 }
 
@@ -430,22 +447,26 @@
 }
 
 .step h3 {
-  margin: 4rem 0 0;
+  margin: 0;
   font-size: 2rem;
   line-height: 1;
 }
 
 .step p {
-  margin: 0.85rem 0 0;
+  margin: 0;
   color: var(--podcast-muted);
   line-height: 1.55;
 }
 
 .formWrap {
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
-  gap: clamp(1.5rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(16rem, 23rem) minmax(0, 1fr);
+  gap: 1.25rem;
   align-items: start;
+}
+
+.formWrap .sectionTitle {
+  text-wrap: wrap;
 }
 
 .formAlternative {
@@ -466,6 +487,13 @@
   background: var(--podcast-panel);
 }
 
+.form > .button,
+.form > .buttonSecondary {
+  justify-self: start;
+  width: fit-content;
+  margin-top: 0.35rem;
+}
+
 .field {
   display: grid;
   gap: 0.55rem;
@@ -476,6 +504,14 @@
   color: #dfe4e1;
   font-size: 0.88rem;
   font-weight: 600;
+}
+
+.legend {
+  margin: 1.5rem 0 0;
+}
+
+.legend + .options {
+  margin-top: 0.85rem;
 }
 
 .field input,
@@ -529,12 +565,17 @@
   color: #7ce6bd;
 }
 
+.ctaGroup {
+  display: grid;
+  gap: 1rem;
+}
+
 .bridge {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2rem;
-  align-items: end;
-  padding: clamp(2rem, 6vw, 5rem);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 3.25rem);
   border: 1px solid var(--podcast-line);
   background: var(--podcast-panel);
 }
@@ -601,6 +642,15 @@
   padding: clamp(1.5rem, 5vw, 4rem);
   border: 1px solid var(--podcast-line);
   background: var(--podcast-panel);
+  scroll-margin-top: 88px;
+}
+
+.evaluation > .actions {
+  justify-content: flex-end;
+}
+
+.evaluation > .actions .buttonSecondary {
+  margin-right: auto;
 }
 
 .progress {
@@ -684,36 +734,54 @@
 
 .supportChoice {
   display: flex;
-  max-width: 34rem;
   align-items: flex-start;
-  gap: 0.8rem;
-  margin-top: 2.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--podcast-line);
-  color: var(--podcast-fg);
-  font-size: 0.95rem;
-  font-weight: 750;
-  line-height: 1.5;
+  gap: 0.5rem;
+  margin-top: 1.15rem;
+  color: rgba(166, 173, 168, 0.38);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.supportChoice:hover,
+.supportChoice:focus-within {
+  color: rgba(166, 173, 168, 0.62);
 }
 
 .supportChoice input {
-  width: 18px;
-  height: 18px;
+  width: 13px;
+  height: 13px;
   flex: 0 0 auto;
-  margin-top: 0.15rem;
-  accent-color: var(--podcast-green);
+  margin-top: 0.12rem;
+  accent-color: rgba(166, 173, 168, 0.45);
 }
 
 .processing {
-  display: grid;
+  display: flex;
   min-height: 360px;
-  place-items: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.processing > div {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.processing .sectionLead {
+  margin: 1.15rem 0 0;
   text-align: center;
 }
 
 .processingMark {
   width: 84px;
   height: 84px;
+  margin-inline: auto;
   border: 2px solid rgba(244, 246, 244, 0.14);
   border-top-color: var(--podcast-green);
   border-radius: 50%;
@@ -750,6 +818,15 @@
   padding: 2rem;
   border: 1px solid var(--podcast-line);
   background: #0b0e0c;
+}
+
+.pricePanel .price {
+  margin-bottom: 0.35rem;
+}
+
+.pricePanel .button {
+  width: 100%;
+  margin-top: 0.85rem;
 }
 
 .successPayment {
@@ -827,9 +904,19 @@
 }
 
 .metric:first-child {
+  display: flex;
   grid-row: span 2;
   min-height: 560px;
+  flex-direction: column;
   background: linear-gradient(150deg, rgba(2, 195, 154, 0.2), var(--podcast-panel) 48%);
+}
+
+.metric:first-child .metricValue {
+  margin-top: auto;
+}
+
+.metric:first-child p {
+  margin-bottom: auto;
 }
 
 .metricPlatform {
@@ -962,6 +1049,12 @@
     url('/assets/podcast/conversation-guest.webp') 70% center / cover;
 }
 
+.distribution > .distributionItem:first-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
 .distributionSponsor {
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr);
 }
@@ -990,7 +1083,10 @@
 }
 
 .distributionPoints .distributionItem {
+  display: flex;
   min-height: 180px;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .distributionItem h3 {
@@ -1070,7 +1166,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
   gap: 1.5rem;
-  align-items: end;
+  align-items: center;
   padding: clamp(1.4rem, 3vw, 2.25rem);
   border-top: 1px solid var(--podcast-line);
   background: var(--podcast-green);
@@ -1249,6 +1345,11 @@
     align-items: start;
   }
 
+  .bridge .button,
+  .bridge .buttonSecondary {
+    justify-self: start;
+  }
+
   .metrics {
     grid-template-columns: 1fr 1fr;
   }
@@ -1324,11 +1425,22 @@
   }
 
   .section {
-    padding-block: 4.5rem;
+    padding-block: 3.5rem;
   }
 
   .sectionCompact {
-    padding-block: 3rem;
+    padding-block: 2.75rem;
+  }
+
+  .form > .button,
+  .form > .buttonSecondary {
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .evaluation > .actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
   }
 
   .guestGrid,
