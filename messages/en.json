@@ -1,4 +1,14 @@
 {
+  "ContactCaptcha": {
+    "label": "Security verification",
+    "imageAlt": "Six-digit security code",
+    "loading": "Loading code…",
+    "loadError": "We could not load the code. Please try again.",
+    "refresh": "New code",
+    "placeholder": "Enter the 6 digits",
+    "hint": "Copy the numbers in the image. The code expires in 5 minutes.",
+    "invalid": "The code is incorrect or expired. Enter the new code and try again."
+  },
   "Meta": {
     "titleDefault": "Cluster Media | Digital communication that connects with your audience",
     "titleTemplate": "%s | Cluster Media",

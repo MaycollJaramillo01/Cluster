@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { site } from '@/lib/site';
+import { ContactCaptcha, contactCaptchaPayload } from '@/components/forms/ContactCaptcha';
 
 const inputClass =
   'w-full rounded-xl bg-surface px-4 py-3 text-[15px] text-fg placeholder:text-faint transition-colors focus:bg-surface focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]';
@@ -29,6 +30,8 @@ export function ContactForm({
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [captchaRevision, setCaptchaRevision] = useState(0);
+  const captchaT = useTranslations('ContactCaptcha');
   const serviceOptions = t.raw('serviceOptions') as string[];
 
   const matchedDefaultService =
@@ -48,6 +51,7 @@ export function ContactForm({
     const form = e.currentTarget;
     const data = new FormData(form);
     const payload = {
+      ...contactCaptchaPayload(data),
       nombre: String(data.get('nombre') ?? ''),
       empresa: String(data.get('empresa') ?? ''),
       pais: String(data.get('pais') ?? ''),
@@ -79,13 +83,14 @@ export function ContactForm({
           setSent(true);
           return;
         }
-        throw new Error(result.error || tc('formError'));
+        throw new Error(result.error === 'captcha_invalid' ? captchaT('invalid') : tc('formError'));
       }
 
       setSent(true);
       form.reset();
     } catch (err) {
       setError(err instanceof Error ? err.message : tc('formError'));
+      setCaptchaRevision((value) => value + 1);
     } finally {
       setSending(false);
     }
@@ -180,6 +185,8 @@ export function ContactForm({
           className={inputClass}
         />
       </div>
+
+      <ContactCaptcha revision={captchaRevision} disabled={sending} />
 
       <Button
         type="submit"

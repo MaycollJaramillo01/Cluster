@@ -10,6 +10,7 @@ import {
   type LandingAttribution,
 } from '@/lib/attribution';
 import { site, whatsappLink } from '@/lib/site';
+import { ContactCaptcha, contactCaptchaPayload } from '@/components/forms/ContactCaptcha';
 
 type MinimalLeadFormProps = {
   /** Namespace de next-intl (Remodelaciones | ClinicasDentales) */
@@ -37,6 +38,9 @@ export function MinimalLeadForm({
 }: MinimalLeadFormProps) {
   const t = useTranslations(i18nNamespace);
   const tc = useTranslations('Common');
+  const captchaT = useTranslations('ContactCaptcha');
+  const [captchaRevision, setCaptchaRevision] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>(
     'idle',
   );
@@ -93,6 +97,7 @@ export function MinimalLeadForm({
     }
 
     const payload = {
+      ...contactCaptchaPayload(data),
       nombre: String(data.get('nombre') || ''),
       empresa: String(data.get('empresa') || ''),
       telefono: String(data.get('telefono') || ''),
@@ -116,12 +121,17 @@ export function MinimalLeadForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('submit_failed');
+      const result = await res.json();
+      if (!res.ok || !result.ok) {
+        throw new Error(result.error === 'captcha_invalid' ? captchaT('invalid') : tc('formError'));
+      }
       trackEvent('Lead', { vertical, origen, page: landingPath });
       setStatus('done');
       form.reset();
-    } catch {
+    } catch (error) {
       setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : tc('formError'));
+      setCaptchaRevision((value) => value + 1);
     }
   }
 
@@ -191,13 +201,15 @@ export function MinimalLeadForm({
         />
       </div>
 
+      <ContactCaptcha revision={captchaRevision} disabled={status === 'loading'} />
+
       <div className="mt-8 flex justify-end">
         <Button type="submit" size="lg" disabled={status === 'loading'}>
           {status === 'loading' ? tc('sending') : t('formCta')}
         </Button>
       </div>
       {status === 'error' && (
-        <p className="mt-4 text-sm text-red-400">{tc('formError')}</p>
+        <p className="mt-4 text-sm text-red-400" role="alert">{errorMessage}</p>
       )}
     </form>
   );

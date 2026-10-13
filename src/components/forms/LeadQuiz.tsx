@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { whatsappLink } from '@/lib/site';
+import { ContactCaptcha, contactCaptchaPayload } from './ContactCaptcha';
 
 type Option = { id: string; label: string; icon: IconName };
 
@@ -87,6 +88,9 @@ function GrowthQualificationForm({
 }: Required<Pick<LeadQuizProps, 'campaignId'>> & Omit<LeadQuizProps, 'campaignId'>) {
   const t = useTranslations('LeadQuiz');
   const tc = useTranslations('Common');
+  const captchaT = useTranslations('ContactCaptcha');
+  const [captchaRevision, setCaptchaRevision] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
   const [callWindow, setCallWindow] = useState('');
   const [countryValue, setCountryValue] = useState('');
   const [sent, setSent] = useState(false);
@@ -111,6 +115,7 @@ function GrowthQualificationForm({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          ...contactCaptchaPayload(data),
           nombre: String(data.get('nombre') || ''),
           empresa: String(data.get('negocio') || ''),
           pais: countryName,
@@ -127,10 +132,14 @@ function GrowthQualificationForm({
         }),
       });
       const result = await response.json();
-      if (!response.ok || !result.ok) throw new Error('submit_failed');
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error === 'captcha_invalid' ? captchaT('invalid') : tc('formError'));
+      }
       setSent(true);
-    } catch {
+    } catch (error) {
       setStatus('error');
+      setErrorMessage(error instanceof Error ? error.message : tc('formError'));
+      setCaptchaRevision((value) => value + 1);
     }
   }
 
@@ -224,6 +233,8 @@ function GrowthQualificationForm({
           options={prospectOptions}
         />
 
+        <ContactCaptcha revision={captchaRevision} disabled={status === 'loading'} />
+
         <div className="pt-1">
           <Button
             type="submit"
@@ -236,7 +247,7 @@ function GrowthQualificationForm({
             {status === 'loading' ? tc('sending') : t('growthSubmit')}
           </Button>
           <p className="mt-3 text-center text-sm leading-relaxed text-muted">{t('growthMicrocopy')}</p>
-          {status === 'error' && <p className="mt-3 text-sm text-red-400" role="alert">{tc('formError')}</p>}
+          {status === 'error' && <p className="mt-3 text-sm text-red-400" role="alert">{errorMessage}</p>}
         </div>
       </form>
 
@@ -260,6 +271,9 @@ function StandardLeadQuiz({
 }: LeadQuizProps = {}) {
   const t = useTranslations('LeadQuiz');
   const tc = useTranslations('Common');
+  const captchaT = useTranslations('ContactCaptcha');
+  const [captchaRevision, setCaptchaRevision] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const challenges = (t.raw(campaignId ? 'growthChallenges' : 'challenges') as { id: string; label: string }[]).map(
     (item) => ({ ...item, icon: challengeIcons[item.id] ?? 'bolt' }),
@@ -299,6 +313,7 @@ function StandardLeadQuiz({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            ...contactCaptchaPayload(data),
             nombre: String(data.get('nombre') || ''),
             empresa: String(data.get('negocio') || ''),
             pais: String(data.get('pais') || ''),
@@ -317,10 +332,14 @@ function StandardLeadQuiz({
           }),
         });
         const result = await response.json();
-        if (!response.ok || !result.ok) throw new Error('submit_failed');
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error === 'captcha_invalid' ? captchaT('invalid') : tc('formError'));
+        }
         setSent(true);
-      } catch {
+      } catch (error) {
         setStatus('error');
+        setErrorMessage(error instanceof Error ? error.message : tc('formError'));
+        setCaptchaRevision((value) => value + 1);
       }
       return;
     }
@@ -503,6 +522,7 @@ function StandardLeadQuiz({
             value={redes}
             onChange={setRedes}
           />
+          {campaignId && <ContactCaptcha revision={captchaRevision} disabled={status === 'loading'} />}
           <div className="flex gap-3 pt-2">
             <BackButton onClick={() => setStep(1)} />
             <Button
@@ -521,7 +541,7 @@ function StandardLeadQuiz({
             </Button>
           </div>
           {status === 'error' && (
-            <p className="text-sm text-red-400" role="alert">{tc('formError')}</p>
+            <p className="text-sm text-red-400" role="alert">{errorMessage}</p>
           )}
         </form>
       )}

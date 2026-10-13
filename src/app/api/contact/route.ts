@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { site } from '@/lib/site';
+import { verifyContactCaptcha } from '@/lib/contact-captcha';
 
 export const runtime = 'nodejs';
 
 type ContactPayload = {
+  captchaToken?: string;
+  captchaAnswer?: string;
+  contactFax?: string;
   nombre?: string;
   empresa?: string;
   pais?: string;
@@ -141,6 +145,18 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
   }
+
+  if (!lead || typeof lead !== 'object' || Array.isArray(lead)) {
+    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  }
+
+  if (asText(lead.contactFax) || !(await verifyContactCaptcha(lead.captchaToken, lead.captchaAnswer))) {
+    return NextResponse.json({ ok: false, error: 'captcha_invalid' }, { status: 400 });
+  }
+  // Keep verification fields out of emails, CRM webhooks and fallback logs.
+  delete lead.captchaToken;
+  delete lead.captchaAnswer;
+  delete lead.contactFax;
 
   const nombre = asText(lead.nombre);
   const email = asText(lead.email);
