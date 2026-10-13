@@ -38,7 +38,9 @@ export function beginGoogle(origin: string) {
   return { state, url: `https://accounts.google.com/o/oauth2/v2/auth?${params}` };
 }
 
-export async function finishGoogle(origin: string, code: string, state: string, expected: string) {
+export async function finishGoogle(origin: string, code: string, state: string, expected: string): Promise<
+  { error: 'state' | 'google' | 'cuenta' } | { session: string }
+> {
   if (!same(state, expected)) return { error: 'state' as const };
   const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
