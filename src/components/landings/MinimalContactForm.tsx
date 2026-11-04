@@ -249,7 +249,7 @@ export function MinimalContactForm({
             className="sm:col-span-2"
           />
           <div className="sm:col-span-2">
-            <ContactCaptcha revision={captchaRevision} disabled={state === 'success'} />
+            <ContactCaptcha revision={captchaRevision} />
           </div>
           <div className="sm:col-span-2">
             <Button type="submit" variant="secondary" size="md">
