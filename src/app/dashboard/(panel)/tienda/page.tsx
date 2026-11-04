@@ -1,15 +1,24 @@
 import { createOrder, createProduct } from '@/lib/crm/actions';
 import { formatDate, money } from '@/lib/crm/format';
 import { listContacts, listOrders, listProducts } from '@/lib/crm/queries';
+import { paymentReady } from '@/lib/valux/stripe';
 import { Empty, Field, PageTitle, Table, btn, fieldClass } from '@/components/dashboard/ui';
 
-export default async function StorePage() {
+export default async function StorePage({ searchParams }: { searchParams: Promise<{ error?: string; ok?: string }> }) {
+  const query = await searchParams;
   const [products, orders, contacts] = await Promise.all([listProducts(), listOrders(), listContacts({})]);
   const paid = orders.filter((order) => order.status === 'pagado').reduce((sum, order) => sum + order.amount_cents, 0);
+  const notices: Record<string, string> = {
+    pasarela: 'El pedido quedó pendiente. El cobro se abre cuando se carguen las claves de PayPal o Stripe.',
+    datos: 'El pedido quedó pendiente. Para cobrar hace falta un contacto con correo.',
+    pago: 'La pasarela no completó el cobro. El pedido sigue pendiente.',
+  };
 
   return (
     <div className="space-y-8">
       <PageTitle title="Catálogo" action={<p className="font-display text-4xl">{money(paid)}</p>} />
+      {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">El pago quedó registrado.</p> : null}
+      {query.error ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">{notices[query.error] || 'No se pudo registrar.'}</p> : null}
       <div className="grid gap-4 lg:grid-cols-[280px_minmax(0,1fr)]">
         <form action={createProduct} className="space-y-3 border border-black/10 bg-white p-4">
           <Field label="Producto">
@@ -53,15 +62,25 @@ export default async function StorePage() {
           <Field label="Monto, si cambia">
             <input className={fieldClass} name="amount" type="number" min="0" step="0.01" />
           </Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input name="received" type="checkbox" />
+            El pago ya se recibió
+          </label>
+          <p className="text-xs leading-relaxed text-black/50">
+            {paymentReady()
+              ? 'Si el pago no se recibió, se abre PayPal o Stripe.'
+              : 'Sin claves de PayPal o Stripe, un pedido sin cobro previo queda pendiente.'}
+          </p>
           <button className={btn} type="submit" disabled={products.length === 0}>Registrar pedido</button>
         </form>
         {orders.length === 0 ? <Empty title="Sin pedidos" /> : (
-          <Table head={['Producto', 'Contacto', 'Monto', 'Fecha']}>
+          <Table head={['Producto', 'Contacto', 'Monto', 'Estado', 'Fecha']}>
             {orders.map((order) => (
               <tr key={order.id} className="border-b border-black/5 last:border-0">
                 <td className="px-4 py-3">{order.product_name || '—'}</td>
                 <td className="px-4 py-3">{order.contact_name || '—'}</td>
                 <td className="px-4 py-3">{money(order.amount_cents)}</td>
+                <td className="px-4 py-3 capitalize">{order.status}</td>
                 <td className="px-4 py-3 text-black/50">{formatDate(order.created_at)}</td>
               </tr>
             ))}

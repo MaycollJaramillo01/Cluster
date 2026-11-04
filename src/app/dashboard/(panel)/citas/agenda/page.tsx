@@ -124,6 +124,7 @@ export default async function SchedulePage({
               {contacts.map((contact) => <option key={contact.id} value={contact.id}>{contact.name}</option>)}
             </select>
           </Field>
+          <p className="text-xs leading-relaxed text-black/50">Si el contacto tiene correo, recibe la invitación de calendario.</p>
           <button className={btn} type="submit">Agendar</button>
         </form>
       </div>

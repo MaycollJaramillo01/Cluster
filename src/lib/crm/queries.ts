@@ -97,6 +97,12 @@ export async function sidebarCounts(): Promise<SidebarCounts> {
         (SELECT count(*) FROM contacts WHERE created_at > now() - interval '30 days') AS last30,
         (SELECT count(*) FROM contacts WHERE membership IS NOT NULL) AS members,
         (SELECT count(*) FROM subscribers WHERE status = 'subscribed') AS subscribers,
+        (SELECT count(*) FROM lms_courses) AS courses,
+        (
+          (SELECT count(*) FROM valux_products WHERE review_status = 'pendiente')
+          + (SELECT count(*) FROM valux_posts WHERE status = 'pendiente')
+          + (SELECT count(*) FROM valux_applications WHERE status IN ('nueva', 'revision'))
+        ) AS reviews,
         (SELECT count(*) FROM circles) AS circles,
         (SELECT count(*) FROM circle_members) AS circle_members,
         (SELECT count(*) FROM community_posts WHERE status = 'pendiente') AS posts
@@ -120,6 +126,8 @@ export async function sidebarCounts(): Promise<SidebarCounts> {
       return { name: String(entry.name), count: num(entry.count) };
     }),
     subscribers: num(row?.subscribers),
+    courses: num(row?.courses),
+    reviews: num(row?.reviews),
     circles: num(row?.circles),
     circleMembers: num(row?.circle_members),
     posts: num(row?.posts),
@@ -735,7 +743,7 @@ export async function listThreads() {
 export async function listMessages(contactId: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT id, contact_id, channel, direction, body, created_at
+    SELECT id, contact_id, channel, direction, body, delivered, created_at
     FROM messages
     WHERE contact_id = ${contactId}
     ORDER BY created_at
@@ -748,6 +756,7 @@ export async function listMessages(contactId: string) {
       channel: String(entry.channel),
       direction: String(entry.direction),
       body: String(entry.body),
+      delivered: entry.delivered == null ? null : entry.delivered === true || entry.delivered === 't' || entry.delivered === 'true',
       created_at: stamp(entry.created_at),
     } satisfies Message;
   });

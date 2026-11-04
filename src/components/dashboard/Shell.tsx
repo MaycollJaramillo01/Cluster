@@ -24,6 +24,16 @@ function itemActive(item: NavItem, pathname: string, params: URLSearchParams) {
     ) && !params.get('segment') && !params.get('membership');
   }
 
+  if (path === '/dashboard/cursos' && item.match === 'exact') {
+    if (pathname === path) return true;
+    const head = pathname.startsWith(`${path}/`) ? pathname.slice(path.length + 1).split('/')[0] : '';
+    const reserved = new Set([
+      'marketplace', 'blog', 'ventas', 'revisiones', 'fichas', 'personas',
+      'clientes', 'suscripcion', 'liquidaciones', 'donaciones', 'ajustes',
+    ]);
+    return Boolean(head) && !reserved.has(head);
+  }
+
   if (pathname !== path) {
     return item.match === 'prefix' && pathname.startsWith(`${path}/`) && expectedKeys.length === 0;
   }
@@ -36,11 +46,11 @@ function itemActive(item: NavItem, pathname: string, params: URLSearchParams) {
 export function Shell({
   children,
   counts,
-  account,
+  openAccess,
 }: {
   children: ReactNode;
   counts: SidebarCounts;
-  account: string;
+  openAccess: boolean;
 }) {
   const pathname = usePathname();
   const params = useSearchParams();
@@ -75,11 +85,13 @@ export function Shell({
         <Link href="/" className="hidden shrink-0 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 hover:text-white sm:inline">
           Ver sitio
         </Link>
-        <form action={logout}>
-          <button className="shrink-0 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 hover:text-white" type="submit">
-            Salir
-          </button>
-        </form>
+        {openAccess ? null : (
+          <form action={logout}>
+            <button className="shrink-0 px-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white/60 hover:text-white" type="submit">
+              Salir
+            </button>
+          </form>
+        )}
       </header>
       <div className="flex min-h-[calc(100vh-3.5rem)] flex-col md:flex-row">
         <aside className="border-b border-black/10 bg-white md:w-72 md:shrink-0 md:border-b-0 md:border-r">
@@ -105,9 +117,6 @@ export function Shell({
               );
             })}
           </nav>
-          <p className="hidden truncate px-6 pb-8 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-black/35 md:block">
-            {account}
-          </p>
         </aside>
         <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8 lg:px-10">{children}</main>
       </div>

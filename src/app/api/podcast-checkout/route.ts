@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { resolvePodcastParticipantPlan } from '@/lib/podcast-plans';
 import { createPodcastCheckoutSession } from '@/lib/podcast-stripe';
 
 export const runtime = 'nodejs';
@@ -24,7 +25,8 @@ export async function POST(request: Request) {
   const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const allowedPath = /^\/(?:[a-z]{2}\/)?participa\/asegura-tu-participacion$/i.test(returnPath);
 
-  if (!name || !emailIsValid || !phone || !company || data.consent !== true || data.apoyo === true || !allowedPath) {
+  const plan = resolvePodcastParticipantPlan(data.participantType);
+  if (!name || !emailIsValid || !phone || !company || data.consent !== true || !plan || !allowedPath) {
     return NextResponse.json({ ok: false, error: 'invalid_checkout_request' }, { status: 400 });
   }
 

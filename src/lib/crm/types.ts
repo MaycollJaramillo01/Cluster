@@ -250,6 +250,7 @@ export type Message = {
   channel: string;
   direction: string;
   body: string;
+  delivered: boolean | null;
   created_at: string;
 };
 
@@ -260,6 +261,8 @@ export type SidebarCounts = {
   members: number;
   memberships: Membership[];
   subscribers: number;
+  courses: number;
+  reviews: number;
   circles: number;
   circleMembers: number;
   posts: number;

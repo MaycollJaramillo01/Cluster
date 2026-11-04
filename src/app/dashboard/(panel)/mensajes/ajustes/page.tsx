@@ -2,16 +2,18 @@ import { addDomain, saveBrand, verifyDomain } from '@/lib/crm/actions';
 import { getBrand, listDomains } from '@/lib/crm/queries';
 import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
-export default async function MessagingSettingsPage() {
+export default async function MessagingSettingsPage({ searchParams }: { searchParams: Promise<{ dns?: string }> }) {
+  const query = await searchParams;
   const [domains, brand] = await Promise.all([listDomains(), getBrand()]);
 
   return (
     <div className="space-y-8">
       <PageTitle title="Ajustes" />
+      {query.dns ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">Ese dominio todavía no publica {query.dns === 'auth' ? 'SPF ni DMARC' : 'registros MX'}.</p> : null}
       <section className="space-y-4">
         <h2 className="font-display text-3xl tracking-wide">Dominios</h2>
         <p className="max-w-2xl text-sm text-black/55">
-          Confirmar aquí solo marca el dominio dentro del CRM. El envío real pide los registros DNS en el proveedor de correo.
+          Confirmar consulta el DNS. El correo pide un registro MX. La autorización pide un TXT con SPF (`v=spf1`) o DMARC en `_dmarc`.
         </p>
         <form action={addDomain} className="flex max-w-md gap-2">
           <input className={fieldClass} name="domain" placeholder="cluster.marketing" required />

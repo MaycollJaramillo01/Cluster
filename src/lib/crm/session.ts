@@ -7,12 +7,16 @@ const SESSION_MS = 1000 * 60 * 60 * 24 * 14;
 
 export type DashboardSession = { email: string; name: string };
 
+export const PRIMARY_ADMIN = 'leandromatiasgonz@gmail.com';
+
+const DEFAULT_ADMINS = [PRIMARY_ADMIN];
+
 export function googleConfigured() {
   return Boolean(process.env.GOOGLE_CLIENT_ID?.trim() && process.env.GOOGLE_CLIENT_SECRET?.trim());
 }
 
 export function allowedEmails() {
-  const raw = `${process.env.DASHBOARD_ALLOWED_EMAILS || ''},${process.env.CAREERS_ADMIN_EMAILS || ''}`;
+  const raw = `${DEFAULT_ADMINS.join(',')},${process.env.DASHBOARD_ALLOWED_EMAILS || ''},${process.env.CAREERS_ADMIN_EMAILS || ''}`;
   return [...new Set(raw.split(',').map((item) => item.trim().toLowerCase()).filter(Boolean))];
 }
 
@@ -80,6 +84,13 @@ export async function clearSession() {
 
 export function sessionCookieOptions(maxAge = SESSION_MS / 1000) {
   return cookieOptions(maxAge);
+}
+
+export function issueSession(email: string, name: string) {
+  const payload = Buffer.from(
+    JSON.stringify({ email: email.trim().toLowerCase(), name, exp: Date.now() + SESSION_MS }),
+  ).toString('base64url');
+  return `${payload}.${signature(payload)}`;
 }
 
 function readSession(token: string): DashboardSession | null {

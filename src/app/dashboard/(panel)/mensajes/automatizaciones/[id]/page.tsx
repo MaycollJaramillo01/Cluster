@@ -20,6 +20,9 @@ export default async function AutomationPage({ params }: { params: Promise<{ id:
     <div className="space-y-6">
       <PageTitle title={automation.name} action={<Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href="/dashboard/mensajes/automatizaciones">Volver</Link>} />
       <p className="text-sm text-black/55">{automation.goal || 'Sin meta'} · {automation.status}</p>
+      <p className="max-w-2xl text-sm text-black/55">
+        Una automatización activa corre al crear un contacto o al importarlo. El correo y WhatsApp salen en ese momento. Una espera de minutos, horas o días sigue la próxima vez que se abre el panel.
+      </p>
       <ol className="space-y-2">
         {automation.steps.map((step, index) => (
           <li key={step.id} className="flex items-center justify-between gap-3 border border-black/10 bg-white px-4 py-3">

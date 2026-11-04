@@ -7,6 +7,7 @@ import { AnalyticsTags } from '@/components/clinicas-esteticas/AnalyticsTags';
 import { BookingWidget } from '@/components/blocks/BookingWidget';
 import { Icon } from '@/components/ui/Icon';
 import { trackEvent } from '@/lib/analytics';
+import { podcastParticipantPlanList, resolvePodcastParticipantPlan, type PodcastParticipantPlanId } from '@/lib/podcast-plans';
 import { site, whatsappLink } from '@/lib/site';
 import styles from './PodcastSite.module.css';
 
@@ -332,6 +333,7 @@ export function EditorialLanding() {
 }
 
 type EvaluationData = {
+  participantType: PodcastParticipantPlanId | '';
   businessType: string;
   businessAge: string;
   storyTypes: string[];
@@ -344,7 +346,20 @@ type EvaluationData = {
   consent: boolean;
 };
 
-const emptyEvaluation: EvaluationData = { businessType: '', businessAge: '', storyTypes: [], story: '', nombre: '', empresa: '', telefono: '', email: '', instagram: '', consent: false };
+const emptyEvaluation: EvaluationData = { participantType: '', businessType: '', businessAge: '', storyTypes: [], story: '', nombre: '', empresa: '', telefono: '', email: '', instagram: '', consent: false };
+const includedItems = ['Episodio completo', 'Producción profesional', 'Distribución multiplataforma', '5 clips publicados por Cluster'];
+
+function ParticipationPrice({ planId, size = 'card' }: { planId: PodcastParticipantPlanId; size?: 'card' | 'hero' }) {
+  const plan = resolvePodcastParticipantPlan(planId);
+  if (!plan) return null;
+  const discounted = Boolean(plan.originalDisplay);
+  return (
+    <p className={`${styles.participationPrice} ${size === 'hero' ? styles.participationPriceHero : ''} ${discounted ? styles.participationPriceSale : ''}`}>
+      {plan.originalDisplay ? <span className={styles.priceWas}>{plan.originalDisplay}</span> : null}
+      <strong>{plan.display} USD</strong>
+    </p>
+  );
+}
 
 async function createPodcastCheckout(data: LeadPayload, returnPath: string) {
   const response = await fetch('/api/podcast-checkout', {
@@ -357,18 +372,35 @@ async function createPodcastCheckout(data: LeadPayload, returnPath: string) {
   return result.url;
 }
 
+function PlanSelector({ value, onSelect }: { value: PodcastParticipantPlanId | ''; onSelect: (planId: PodcastParticipantPlanId) => void }) {
+  return (
+    <div className={styles.participantOptions} role="radiogroup" aria-label="Tipo de participación">
+      {podcastParticipantPlanList.map((plan) => (
+        <button type="button" className={styles.participantOption} data-selected={value === plan.id} role="radio" aria-checked={value === plan.id} key={plan.id} onClick={() => onSelect(plan.id)}>
+          <span className={styles.participantOptionLabel}>{plan.label}</span>
+          <span className={styles.participantOptionDetail}>{plan.detail}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function CommercialEvaluation() {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<EvaluationData>(emptyEvaluation);
   const [phase, setPhase] = useState<'form' | 'processing' | 'result' | 'success'>('form');
-  const [support, setSupport] = useState(false);
   const [error, setError] = useState('');
   const [checkoutBusy, setCheckoutBusy] = useState(false);
-
+  const selected = resolvePodcastParticipantPlan(data.participantType);
   const canContinue = useMemo(() => step === 1 ? Boolean(data.businessType && data.businessAge && data.storyTypes.length > 0) : Boolean(data.nombre && data.empresa && data.telefono && data.email && data.consent), [data, step]);
 
   function toggleStory(value: string) {
     setData((current) => ({ ...current, storyTypes: current.storyTypes.includes(value) ? current.storyTypes.filter((item) => item !== value) : [...current.storyTypes, value] }));
+  }
+
+  function selectPlan(planId: PodcastParticipantPlanId) {
+    setData((current) => ({ ...current, participantType: planId }));
+    trackEvent('commercial_plan_selected', { plan: planId });
   }
 
   async function revealPrice() {
@@ -386,10 +418,11 @@ function CommercialEvaluation() {
   }
 
   async function submitRequest() {
+    if (!selected) return;
     setError('');
     try {
-      await postLead('commercial-request', { ...data, apoyo: support, aporte: support ? '$300' : '$600' });
-      trackEvent('commercial_submit', { support });
+      await postLead('commercial-request', { ...data, aporte: selected.display });
+      trackEvent('commercial_submit', { plan: selected.id });
       setPhase('success');
     } catch {
       setError('No pudimos enviar tu solicitud. Inténtalo nuevamente o escríbenos por WhatsApp.');
@@ -397,11 +430,12 @@ function CommercialEvaluation() {
   }
 
   async function payAndSchedule() {
+    if (!selected) return;
     setError('');
     setCheckoutBusy(true);
     try {
-      const url = await createPodcastCheckout({ ...data, apoyo: false }, window.location.pathname);
-      trackEvent('commercial_checkout_start');
+      const url = await createPodcastCheckout(data, window.location.pathname);
+      trackEvent('commercial_checkout_start', { plan: selected.id, amount: selected.display });
       window.location.assign(url);
     } catch {
       setCheckoutBusy(false);
@@ -410,25 +444,42 @@ function CommercialEvaluation() {
   }
 
   if (phase === 'processing') return <div className={`${styles.evaluation} ${styles.processing}`}><div><div className={styles.processingMark} /><p className={styles.sectionLead}>Preparando tu participación...</p></div></div>;
-  if (phase === 'success') return <div className={styles.evaluation}>
-    <h3 className={styles.question}>Gracias. Recibimos tu solicitud{support ? ' de apoyo' : ''}.</h3>
-    {support ? <><p className={styles.sectionLead}>Nuestro equipo revisará tu solicitud de apoyo y se pondrá en contacto contigo.</p><div className={styles.actions}><a className={styles.buttonWhatsApp} href={whatsappLink('Hola, envié mi solicitud de apoyo para participar en Cluster Podcast.')} target="_blank" rel="noreferrer">Hablar por WhatsApp</a></div></> : <>
-      <p className={styles.sectionLead}>Tu siguiente paso es agendar y completar el pago seguro de tu entrevista.</p>
-      <div className={styles.successPayment}><p className={styles.priceLabel}>Inversión de participación</p><p className={styles.successPrice}>$600 USD</p><button className={styles.button} type="button" onClick={payAndSchedule} disabled={checkoutBusy}>{checkoutBusy ? 'Abriendo pago seguro…' : 'Quiero agendar y pagar ahora'}</button>{error && <p className={styles.error}>{error}</p>}</div>
-    </>}</div>;
+
+  if (phase === 'success' && selected) {
+    return (
+      <div className={styles.evaluation}>
+        <h3 className={styles.question}>Gracias. Recibimos tu solicitud.</h3>
+        <p className={styles.sectionLead}>Tu siguiente paso es agendar y completar el pago seguro de tu entrevista.</p>
+        <div className={styles.successPayment}>
+          <p className={styles.priceLabel}>Inversión de participación</p>
+          <ParticipationPrice planId={selected.id} size="hero" />
+          <button className={styles.button} type="button" onClick={payAndSchedule} disabled={checkoutBusy}>{checkoutBusy ? 'Abriendo pago seguro…' : 'Quiero agendar y pagar ahora'}</button>
+          {error && <p className={styles.error}>{error}</p>}
+        </div>
+      </div>
+    );
+  }
 
   if (phase === 'result') {
     return (
       <div className={styles.evaluation}>
         <div className={styles.resultGrid}>
-          <div><h3 className={styles.question}>Tu participación en Cluster Podcast</h3><ul className={styles.included}>{['Episodio completo', 'Producción profesional', 'Distribución multiplataforma', '5 clips publicados por Cluster'].map((item) => <li key={item}><Icon name="check" size={18} />{item}</li>)}</ul></div>
+          <div>
+            <h3 className={styles.question}>Tu participación en Cluster Podcast</h3>
+            <ul className={styles.included}>{includedItems.map((item) => <li key={item}><Icon name="check" size={18} />{item}</li>)}</ul>
+          </div>
           <div className={styles.pricePanel}>
-            <p className={styles.priceLabel}>Valor de participación</p>
-            <p className={`${styles.price} ${support ? styles.priceSupported : ''}`}>{support ? '$300' : '$600'}</p>
+            <p className={styles.priceLabel}>¿Cómo participas?</p>
+            <PlanSelector value={data.participantType} onSelect={selectPlan} />
+            {selected ? (
+              <>
+                <p className={styles.priceLabel}>Valor de participación</p>
+                <ParticipationPrice planId={selected.id} size="hero" />
+                {selected.originalDisplay ? <p className={styles.helper}>Tarifa para emprendedores con apoyo de Cluster.</p> : null}
+              </>
+            ) : <p className={styles.helper}>Elige una opción para ver el valor.</p>}
             {error && <p className={styles.error}>{error}</p>}
-            <button className={styles.button} type="button" onClick={submitRequest}>{support ? 'Enviar solicitud de apoyo' : 'Solicitar mi participación'}</button>
-            <label className={styles.supportChoice}><input type="checkbox" checked={support} onChange={(event) => { setSupport(event.target.checked); trackEvent('commercial_support_selected', { selected: event.target.checked }); }} /><span>No puedo cubrir el costo. Necesito ayuda de Cluster.</span></label>
-            {support && <><div className={styles.supportLine}><span>Valor</span><span>$600</span></div><div className={styles.supportLine}><span>Apoyo Cluster</span><strong>- $300</strong></div><p className={styles.helper}>Solicitud de apoyo sujeta a aprobación de Cluster.</p></>}
+            <button className={styles.button} type="button" disabled={!selected} onClick={submitRequest}>Solicitar mi participación</button>
           </div>
         </div>
       </div>
@@ -438,8 +489,31 @@ function CommercialEvaluation() {
   return (
     <div className={styles.evaluation} id="evaluacion">
       <div className={styles.progress}><span>{step} de 2</span><div className={styles.progressLine}><span style={{ width: `${step * 50}%` }} /></div></div>
-      {step === 1 && <><h3 className={styles.question}>Cuéntanos tu historia.</h3><p className={styles.legend}>¿Qué describe mejor tu empresa o proyecto?</p><div className={styles.options}>{['Negocios', 'Política', 'Medios', 'Servicios', 'Creación de contenido', 'Otro'].map((item) => <button type="button" className={styles.option} data-selected={data.businessType === item} key={item} onClick={() => setData({ ...data, businessType: item })}>{item}</button>)}</div><p className={styles.legend}>¿Cuánto tiempo llevas desarrollándolo?</p><div className={styles.options}>{['Menos de 1 año', '1-3 años', '4-7 años', '8+ años'].map((item) => <button type="button" className={styles.option} data-selected={data.businessAge === item} key={item} onClick={() => setData({ ...data, businessAge: item })}>{item}</button>)}</div><p className={styles.legend}>¿Qué te gustaría contar?</p><div className={styles.options}>{['Cómo nació mi empresa o proyecto', 'Mi trayectoria profesional', 'Una historia de superación', 'Un proyecto que quiero dar a conocer', 'Otro'].map((item) => <button type="button" className={styles.option} data-selected={data.storyTypes.includes(item)} key={item} onClick={() => toggleStory(item)}>{item}</button>)}</div><div className={inputClass}><label htmlFor="commercial-story">Cuéntanos en una frase qué hace especial tu historia</label><textarea id="commercial-story" maxLength={250} value={data.story} onChange={(event) => setData({ ...data, story: event.target.value })} /></div></>}
-      {step === 2 && <><h3 className={styles.question}>Tus datos</h3><div className={styles.evaluationFields}><div className={inputClass}><label htmlFor="commercial-name">Nombre *</label><input id="commercial-name" autoComplete="name" value={data.nombre} onChange={(event) => setData({ ...data, nombre: event.target.value })} /></div><div className={inputClass}><label htmlFor="commercial-business">Empresa o proyecto *</label><input id="commercial-business" autoComplete="organization" value={data.empresa} onChange={(event) => setData({ ...data, empresa: event.target.value })} /></div><div className={inputClass}><label htmlFor="commercial-phone">Teléfono *</label><input id="commercial-phone" type="tel" autoComplete="tel" value={data.telefono} onChange={(event) => setData({ ...data, telefono: event.target.value })} /></div><div className={inputClass}><label htmlFor="commercial-email">Email *</label><input id="commercial-email" type="email" autoComplete="email" value={data.email} onChange={(event) => setData({ ...data, email: event.target.value })} /></div><div className={inputClass}><label htmlFor="commercial-social">Instagram o red social</label><input id="commercial-social" value={data.instagram} onChange={(event) => setData({ ...data, instagram: event.target.value })} /></div></div><label className={styles.consent}><input type="checkbox" checked={data.consent} onChange={(event) => setData({ ...data, consent: event.target.checked })} /><span>Acepto que Cluster use estos datos para evaluar mi solicitud y contactarme.</span></label></>}
+      {step === 1 && (
+        <>
+          <h3 className={styles.question}>Cuéntanos tu historia.</h3>
+          <p className={styles.legend}>¿Qué describe mejor tu empresa o proyecto?</p>
+          <div className={styles.options}>{['Negocios', 'Política', 'Medios', 'Servicios', 'Creación de contenido', 'Otro'].map((item) => <button type="button" className={styles.option} data-selected={data.businessType === item} key={item} onClick={() => setData((current) => ({ ...current, businessType: item }))}>{item}</button>)}</div>
+          <p className={styles.legend}>¿Cuánto tiempo llevas desarrollándolo?</p>
+          <div className={styles.options}>{['Menos de 1 año', '1-3 años', '4-7 años', '8+ años'].map((item) => <button type="button" className={styles.option} data-selected={data.businessAge === item} key={item} onClick={() => setData((current) => ({ ...current, businessAge: item }))}>{item}</button>)}</div>
+          <p className={styles.legend}>¿Qué te gustaría contar?</p>
+          <div className={styles.options}>{['Cómo nació mi empresa o proyecto', 'Mi trayectoria profesional', 'Una historia de superación', 'Un proyecto que quiero dar a conocer', 'Otro'].map((item) => <button type="button" className={styles.option} data-selected={data.storyTypes.includes(item)} key={item} onClick={() => toggleStory(item)}>{item}</button>)}</div>
+          <div className={inputClass}><label htmlFor="commercial-story">Cuéntanos en una frase qué hace especial tu historia</label><textarea id="commercial-story" maxLength={250} value={data.story} onChange={(event) => setData((current) => ({ ...current, story: event.target.value }))} /></div>
+        </>
+      )}
+      {step === 2 && (
+        <>
+          <h3 className={styles.question}>Tus datos</h3>
+          <div className={styles.evaluationFields}>
+            <div className={inputClass}><label htmlFor="commercial-name">Nombre *</label><input id="commercial-name" autoComplete="name" value={data.nombre} onChange={(event) => setData((current) => ({ ...current, nombre: event.target.value }))} /></div>
+            <div className={inputClass}><label htmlFor="commercial-business">Empresa o proyecto *</label><input id="commercial-business" autoComplete="organization" value={data.empresa} onChange={(event) => setData((current) => ({ ...current, empresa: event.target.value }))} /></div>
+            <div className={inputClass}><label htmlFor="commercial-phone">Teléfono *</label><input id="commercial-phone" type="tel" autoComplete="tel" value={data.telefono} onChange={(event) => setData((current) => ({ ...current, telefono: event.target.value }))} /></div>
+            <div className={inputClass}><label htmlFor="commercial-email">Email *</label><input id="commercial-email" type="email" autoComplete="email" value={data.email} onChange={(event) => setData((current) => ({ ...current, email: event.target.value }))} /></div>
+            <div className={inputClass}><label htmlFor="commercial-social">Instagram o red social</label><input id="commercial-social" value={data.instagram} onChange={(event) => setData((current) => ({ ...current, instagram: event.target.value }))} /></div>
+          </div>
+          <label className={styles.consent}><input type="checkbox" checked={data.consent} onChange={(event) => setData((current) => ({ ...current, consent: event.target.checked }))} /><span>Acepto que Cluster use estos datos para evaluar mi solicitud y contactarme.</span></label>
+        </>
+      )}
       {error && <p className={styles.error}>{error}</p>}
       <div className={styles.actions}>{step > 1 && <button className={styles.buttonSecondary} type="button" onClick={() => setStep((value) => value - 1)}>Atrás</button>}<button className={styles.button} type="button" disabled={!canContinue} onClick={() => { if (step === 1) { setStep(2); trackEvent('commercial_evaluation_start', { step }); } else revealPrice(); }}>{step === 1 ? 'Continuar' : 'Ver valor de participación'}</button></div>
     </div>
@@ -469,7 +543,7 @@ export function CommercialPaymentConfirmation({ paid, returnPath, formData }: { 
     setBusy(true);
     setError('');
     try {
-      const url = await createPodcastCheckout({ ...formData, consent: true, apoyo: false }, returnPath);
+      const url = await createPodcastCheckout({ ...formData, consent: true }, returnPath);
       window.location.assign(url);
     } catch {
       setBusy(false);

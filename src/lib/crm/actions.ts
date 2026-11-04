@@ -1,10 +1,16 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { processDue, queueAutomations, startAutomations } from './automations';
 import { crm } from './db';
+import { deliverEmail, deliverSms, deliverWhatsapp, emailConfigured, smsConfigured, whatsappConfigured } from './deliver';
+import { domainHasAuth, domainHasMail } from './dns';
 import { getAutomation, getSite } from './queries';
 import { STAGES, type SiteBlock } from './types';
+import { createPaypalOrder, paypalConfigured } from '@/lib/valux/paypal';
+import { createStripeCheckout, paymentReady, stripeConfigured } from '@/lib/valux/stripe';
 
 function field(formData: FormData, key: string) {
   return String(formData.get(key) ?? '').trim();
@@ -90,6 +96,7 @@ export async function createContact(formData: FormData) {
     const idTag = await tagIdFor(tag);
     await sql`INSERT INTO contact_tags (contact_id, tag_id) VALUES (${id}, ${idTag}) ON CONFLICT DO NOTHING`;
   }
+  await startAutomations(id);
   refresh();
   redirect(`/dashboard/contactos/${id}`);
 }
@@ -192,8 +199,10 @@ export async function importContacts(formData: FormData) {
         ON CONFLICT DO NOTHING
       `;
     }
+    await queueAutomations(String((inserted[0] as { id: string }).id));
   }
   refresh();
+  await processDue(20);
   const tope = pending.length > limited.length ? '&tope=1' : '';
   redirect(`/dashboard/contactos?importados=${imported}${tope}`);
 }
@@ -326,19 +335,33 @@ export async function createBooking(formData: FormData) {
   if (Number.isNaN(start.getTime())) return;
   const end = new Date(start.getTime() + 60 * 60 * 1000);
   const sql = await crm();
+  const contactId = field(formData, 'contact_id') || null;
+  const bookingId = crypto.randomUUID();
   await sql`
     INSERT INTO bookings (id, event_id, operator_id, contact_id, title, starts_at, ends_at, status)
     VALUES (
-      ${crypto.randomUUID()},
+      ${bookingId},
       ${field(formData, 'event_id') || null},
       ${field(formData, 'operator_id') || null},
-      ${field(formData, 'contact_id') || null},
+      ${contactId},
       ${title},
       ${start.toISOString()},
       ${end.toISOString()},
       'confirmada'
     )
   `;
+  if (contactId) {
+    const people = await sql`SELECT name, email FROM contacts WHERE id = ${contactId}`;
+    const person = people[0] as { name?: string; email?: string } | undefined;
+    if (person?.email) {
+      await deliverEmail(
+        person.email,
+        `Cita: ${title}`,
+        `Hola ${person.name || ''},\n\nQuedó confirmada: ${title}.\n${date} a las ${time} (hora de Honduras).\n`,
+        { filename: 'cita.ics', content: calendarFile(bookingId, title, start, end) },
+      );
+    }
+  }
   refresh();
 }
 
@@ -372,8 +395,16 @@ export async function saveCampaign(formData: FormData) {
   const channel = field(formData, 'channel') === 'mensaje' ? 'mensaje' : 'email';
   const kind = field(formData, 'kind') === 'ab' ? 'ab' : 'regular';
   const sql = await crm();
-  const audienceRows = await sql`SELECT count(*) AS n FROM subscribers WHERE status = 'subscribed'`;
-  const audience = Number((audienceRows[0] as { n: unknown }).n || 0);
+  const previous = await sql`SELECT sent_at FROM campaigns WHERE id = ${id}`;
+  const alreadySent = Boolean((previous[0] as { sent_at?: unknown } | undefined)?.sent_at);
+  let sent = 0;
+  if (status === 'enviada' && !alreadySent) {
+    const result = await dispatchCampaign(channel, field(formData, 'subject') || name, field(formData, 'body'));
+    if (!result.ready || (result.attempted > 0 && result.sent === 0)) {
+      redirect(`/dashboard/mensajes/campanas/${id}?error=${result.ready ? 'envio' : result.reason}`);
+    }
+    sent = result.sent;
+  }
   await sql`
     UPDATE campaigns SET
       name = ${name},
@@ -382,7 +413,7 @@ export async function saveCampaign(formData: FormData) {
       subject = ${field(formData, 'subject') || null},
       body = ${field(formData, 'body') || null},
       status = ${status},
-      audience = CASE WHEN ${status} = 'enviada' THEN ${audience} ELSE audience END,
+      audience = CASE WHEN ${status} = 'enviada' AND sent_at IS NULL THEN ${sent} ELSE audience END,
       sent_at = CASE WHEN ${status} = 'enviada' AND sent_at IS NULL THEN now() ELSE sent_at END
     WHERE id = ${id}
   `;
@@ -510,6 +541,11 @@ export async function verifyDomain(formData: FormData) {
   const which = field(formData, 'which');
   if (!id) return;
   const sql = await crm();
+  const rows = await sql`SELECT domain FROM sending_domains WHERE id = ${id}`;
+  const domain = String((rows[0] as { domain?: string } | undefined)?.domain || '');
+  if (!domain) return;
+  const ok = which === 'auth' ? await domainHasAuth(domain) : await domainHasMail(domain);
+  if (!ok) redirect(`/dashboard/mensajes/ajustes?dns=${which === 'auth' ? 'auth' : 'correo'}`);
   if (which === 'auth') await sql`UPDATE sending_domains SET auth_verified = true WHERE id = ${id}`;
   else await sql`UPDATE sending_domains SET email_verified = true WHERE id = ${id}`;
   refresh();
@@ -540,11 +576,23 @@ export async function sendMessage(formData: FormData) {
   const allowed = ['whatsapp', 'email', 'sms'];
   if (!contactId || !body) return;
   const sql = await crm();
+  const channelName = allowed.includes(channel) ? channel : 'whatsapp';
+  const people = await sql`SELECT email, phone FROM contacts WHERE id = ${contactId}`;
+  const person = people[0] as { email?: string; phone?: string | null } | undefined;
+  let delivered = false;
+  if (channelName === 'email') delivered = await deliverEmail(person?.email || '', 'Mensaje de Cluster', body);
+  if (channelName === 'sms') delivered = await deliverSms(person?.phone || '', body);
+  if (channelName === 'whatsapp') delivered = await deliverWhatsapp(person?.phone || '', body);
+  const flag = delivered ? 'si' : 'no';
   await sql`
-    INSERT INTO messages (id, contact_id, channel, direction, body)
-    VALUES (${crypto.randomUUID()}, ${contactId}, ${allowed.includes(channel) ? channel : 'whatsapp'}, 'out', ${body})
+    INSERT INTO messages (id, contact_id, channel, direction, body, delivered)
+    VALUES (
+      ${crypto.randomUUID()}, ${contactId}, ${channelName}, 'out', ${body},
+      CASE WHEN ${flag} = 'si' THEN true ELSE false END
+    )
   `;
   refresh();
+  if (!delivered) redirect(`/dashboard/mensajes/bandeja?contacto=${contactId}&error=envio`);
 }
 
 export async function createCircle(formData: FormData) {
@@ -696,7 +744,15 @@ export async function publishSite(formData: FormData) {
   const status = field(formData, 'status') === 'publicado' ? 'publicado' : 'borrador';
   if (!id) return;
   const sql = await crm();
-  await sql`UPDATE sites SET status = ${status}, updated_at = now() WHERE id = ${id}`;
+  const publicPath = `/p/${id}`;
+  await sql`
+    UPDATE sites
+    SET status = ${status},
+      url = CASE WHEN ${status} = 'publicado' THEN COALESCE(NULLIF(url, ''), ${publicPath}) ELSE url END,
+      updated_at = now()
+    WHERE id = ${id}
+  `;
+  revalidatePath(`/p/${id}`);
   refresh();
 }
 
@@ -713,13 +769,72 @@ export async function createOrder(formData: FormData) {
   if (!productId) return;
   const sql = await crm();
   const amount = field(formData, 'amount') ? cents(formData, 'amount') : null;
-  const priceRows = await sql`SELECT price_cents FROM products WHERE id = ${productId}`;
-  const price = Number((priceRows[0] as { price_cents?: unknown } | undefined)?.price_cents ?? 0);
-  await sql`
-    INSERT INTO orders (id, product_id, contact_id, amount_cents, status)
-    VALUES (${crypto.randomUUID()}, ${productId}, ${field(formData, 'contact_id') || null}, ${amount ?? price}, 'pagado')
-  `;
-  refresh();
+  const priceRows = await sql`SELECT name, price_cents FROM products WHERE id = ${productId}`;
+  const product = priceRows[0] as { name?: string; price_cents?: unknown } | undefined;
+  const price = Number(product?.price_cents ?? 0);
+  const total = amount ?? price;
+  const contactId = field(formData, 'contact_id') || null;
+  const received = field(formData, 'received') === 'on';
+  const orderId = crypto.randomUUID();
+  if (total <= 0 || received) {
+    await sql`
+      INSERT INTO orders (id, product_id, contact_id, amount_cents, status)
+      VALUES (${orderId}, ${productId}, ${contactId}, ${total}, 'pagado')
+    `;
+    refresh();
+    return;
+  }
+  const people = contactId ? await sql`SELECT name, email FROM contacts WHERE id = ${contactId}` : [];
+  const person = people[0] as { name?: string; email?: string } | undefined;
+  const email = person?.email || '';
+  if (!paymentReady() || !email.includes('@')) {
+    await sql`
+      INSERT INTO orders (id, product_id, contact_id, amount_cents, status)
+      VALUES (${orderId}, ${productId}, ${contactId}, ${total}, 'pendiente')
+    `;
+    refresh();
+    redirect(`/dashboard/tienda?error=${email.includes('@') ? 'pasarela' : 'datos'}`);
+  }
+  const base = await origin();
+  try {
+    let gatewayId = '';
+    let approve = '';
+    if (paypalConfigured()) {
+      const order = await createPaypalOrder({
+        amountCents: total,
+        description: product?.name || 'Pedido',
+        returnUrl: `${base}/dashboard/tienda/retorno`,
+        cancelUrl: `${base}/dashboard/tienda?error=pago`,
+      });
+      gatewayId = order.id;
+      approve = order.approveUrl;
+    } else if (stripeConfigured()) {
+      const session = await createStripeCheckout({
+        amountCents: total,
+        description: product?.name || 'Pedido',
+        email,
+        successUrl: `${base}/dashboard/tienda/retorno?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${base}/dashboard/tienda?error=pago`,
+        metadata: { order_id: orderId },
+      });
+      gatewayId = session.id;
+      approve = session.url;
+    }
+    await sql`
+      INSERT INTO orders (id, product_id, contact_id, amount_cents, status, gateway_id)
+      VALUES (${orderId}, ${productId}, ${contactId}, ${total}, 'pendiente', ${gatewayId})
+    `;
+    refresh();
+    redirect(approve);
+  } catch (error) {
+    if (error && typeof error === 'object' && 'digest' in error) throw error;
+    await sql`
+      INSERT INTO orders (id, product_id, contact_id, amount_cents, status)
+      VALUES (${orderId}, ${productId}, ${contactId}, ${total}, 'pendiente')
+    `;
+    refresh();
+    redirect('/dashboard/tienda?error=pago');
+  }
 }
 
 export async function createOpportunity(formData: FormData) {
@@ -743,4 +858,54 @@ export async function moveOpportunity(formData: FormData) {
   const sql = await crm();
   await sql`UPDATE opportunities SET stage = ${stage} WHERE id = ${id}`;
   refresh();
+}
+
+async function origin() {
+  const h = await headers();
+  const host = h.get('x-forwarded-host') || h.get('host') || 'localhost:3000';
+  const proto = h.get('x-forwarded-proto') || 'http';
+  return `${proto}://${host}`;
+}
+
+function calendarFile(id: string, title: string, start: Date, end: Date) {
+  const stamp = (date: Date) => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  const summary = title.replace(/[\r\n]/g, ' ');
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Cluster//CRM//ES',
+    'METHOD:REQUEST',
+    'BEGIN:VEVENT',
+    `UID:${id}@cluster.marketing`,
+    `DTSTAMP:${stamp(new Date())}`,
+    `DTSTART:${stamp(start)}`,
+    `DTEND:${stamp(end)}`,
+    `SUMMARY:${summary}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+}
+
+async function dispatchCampaign(channel: string, subject: string, body: string) {
+  const sql = await crm();
+  if (channel === 'email') {
+    if (!emailConfigured()) return { ready: false, sent: 0, attempted: 0, reason: 'correo' };
+    const rows = await sql`SELECT email, name FROM subscribers WHERE status = 'subscribed' LIMIT 200`;
+    let sent = 0;
+    for (const row of rows) {
+      const entry = row as { email?: string; name?: string };
+      const ok = await deliverEmail(String(entry.email || ''), subject, `Hola ${entry.name || ''},\n\n${body}\n`);
+      if (ok) sent += 1;
+    }
+    return { ready: true, sent, attempted: rows.length, reason: '' };
+  }
+  if (!whatsappConfigured() && !smsConfigured()) return { ready: false, sent: 0, attempted: 0, reason: 'canal' };
+  const rows = await sql`SELECT phone FROM contacts WHERE phone IS NOT NULL AND phone <> '' LIMIT 200`;
+  let sent = 0;
+  for (const row of rows) {
+    const phone = String((row as { phone?: string }).phone || '');
+    const ok = whatsappConfigured() ? await deliverWhatsapp(phone, body) : await deliverSms(phone, body);
+    if (ok) sent += 1;
+  }
+  return { ready: true, sent, attempted: rows.length, reason: '' };
 }

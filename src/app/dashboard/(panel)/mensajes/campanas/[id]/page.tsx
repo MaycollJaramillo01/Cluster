@@ -4,14 +4,27 @@ import { saveCampaign } from '@/lib/crm/actions';
 import { getBrand, getCampaign, subscriberCount } from '@/lib/crm/queries';
 import { Field, PageTitle, btn, fieldClass } from '@/components/dashboard/ui';
 
-export default async function CampaignPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CampaignPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { id } = await params;
+  const query = await searchParams;
   const [campaign, brand, subscribers] = await Promise.all([getCampaign(id), getBrand(), subscriberCount()]);
   if (!campaign) notFound();
+  const errors: Record<string, string> = {
+    correo: 'Falta RESEND_API_KEY para enviar el correo.',
+    canal: 'Faltan las claves de WhatsApp o de Twilio para ese canal.',
+    envio: 'El canal respondió, pero no aceptó ningún envío.',
+  };
 
   return (
     <div className="space-y-6">
       <PageTitle title={campaign.name} action={<Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href="/dashboard/mensajes/campanas">Volver</Link>} />
+      {query.error ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">{errors[query.error] || 'No se pudo enviar.'}</p> : null}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <form action={saveCampaign} className="space-y-3 border border-black/10 bg-white p-5">
           <input type="hidden" name="id" value={campaign.id} />
@@ -39,7 +52,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
           <Field label="Asunto"><input className={fieldClass} name="subject" defaultValue={campaign.subject || ''} /></Field>
           <Field label="Mensaje"><textarea className={fieldClass} name="body" rows={6} defaultValue={campaign.body || ''} /></Field>
           <p className="text-xs text-black/45">
-            Marcar enviada toma los {subscribers} suscriptores activos como audiencia. El despacho real queda pendiente de un dominio verificado.
+            Marcar enviada manda el correo a los {subscribers} suscriptores activos, hasta 200 por vez. SMS y WhatsApp salen a los contactos con teléfono cuando esas claves están cargadas.
           </p>
           <button className={btn} type="submit">Guardar</button>
         </form>

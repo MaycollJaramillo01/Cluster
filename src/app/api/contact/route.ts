@@ -171,6 +171,19 @@ export async function POST(request: Request) {
     );
   }
 
+  try {
+    const { captureLead } = await import('@/lib/crm/leads');
+    await captureLead({
+      name: nombre,
+      email,
+      phone: telefono,
+      country: pais,
+      form: asText(lead.origen) || 'contacto',
+    });
+  } catch (error) {
+    console.error('[contact] crm:', error);
+  }
+
   const subject = lead.servicio
     ? `Contacto web · ${asText(lead.servicio)} · ${nombre}`
     : `Contacto web · ${nombre}`;

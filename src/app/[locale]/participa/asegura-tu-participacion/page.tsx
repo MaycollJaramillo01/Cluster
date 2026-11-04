@@ -7,11 +7,11 @@ type Props = { params: Promise<{ locale: string }> };
 
 export const metadata: Metadata = {
   title: { absolute: 'Asegura tu participación | Cluster Podcast' },
-  description: 'Evalúa tu historia y solicita una participación comercial en Cluster Podcast.',
+  description: 'Asegura tu entrevista comercial en Cluster Podcast. $300 USD para emprendedores y $600 USD para empresas, sociedades o multinacionales.',
   alternates: { canonical: '/participa/asegura-tu-participacion' },
   openGraph: {
     title: 'Asegura tu participación en Cluster Podcast',
-    description: 'Conoce la modalidad de participación disponible para tu historia.',
+    description: 'Entrevista paga: $300 USD para emprendedores y $600 USD para empresas, sociedades o multinacionales.',
     url: `${site.url}/participa/asegura-tu-participacion`,
     images: ['/assets/podcast/podcast-guest.webp'],
   },

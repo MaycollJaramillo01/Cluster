@@ -7,7 +7,7 @@ import { Empty, Field, Mark, PageTitle, btn, fieldClass } from '@/components/das
 export default async function InboxPage({
   searchParams,
 }: {
-  searchParams: Promise<{ contacto?: string }>;
+  searchParams: Promise<{ contacto?: string; error?: string }>;
 }) {
   const params = await searchParams;
   const threads = await listThreads();
@@ -17,6 +17,7 @@ export default async function InboxPage({
   return (
     <div className="space-y-6">
       <PageTitle title="Bandeja" />
+      {params.error === 'envio' ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">El mensaje quedó guardado, pero el canal no lo entregó. Revisa el correo del contacto o las claves de WhatsApp y Twilio.</p> : null}
       {threads.length === 0 ? <Empty title="Sin conversaciones" /> : (
         <div className="grid min-h-[560px] border border-black/10 bg-white lg:grid-cols-[300px_minmax(0,1fr)]">
           <ul className="border-b border-black/10 lg:border-b-0 lg:border-r">
@@ -43,7 +44,7 @@ export default async function InboxPage({
                   <li key={message.id} className={`max-w-md text-sm ${message.direction === 'out' ? 'ml-auto bg-ink px-3 py-2 text-white' : 'bg-paper px-3 py-2'}`}>
                     <p>{message.body}</p>
                     <p className={`mt-1 font-mono text-[10px] uppercase tracking-[0.12em] ${message.direction === 'out' ? 'text-white/50' : 'text-black/40'}`}>
-                      {message.channel} · {formatDateTime(message.created_at)}
+                      {message.channel} · {formatDateTime(message.created_at)}{message.delivered === false ? ' · no salió' : ''}
                     </p>
                   </li>
                 ))}

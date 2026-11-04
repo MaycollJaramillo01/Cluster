@@ -708,6 +708,127 @@
   background: rgba(2, 195, 154, 0.1);
 }
 
+.participantOptions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.participantOption {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 1.4rem 1.35rem 1.25rem;
+  border: 1px solid rgba(244, 246, 244, 0.2);
+  background: #0d100f;
+  color: var(--podcast-fg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.participantOption:hover,
+.participantOption[data-selected='true'] {
+  border-color: var(--podcast-green);
+  background: rgba(2, 195, 154, 0.1);
+}
+
+.participantOption[data-selected='true'] {
+  transform: translateY(-2px);
+}
+
+.participantOptionLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.45rem, 2.8vw, 2.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.participantOptionDetail {
+  color: var(--podcast-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.participantOption .participationPrice {
+  margin-top: auto;
+}
+
+.participationPrice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.7rem 0.85rem;
+  margin: 0;
+  color: var(--podcast-fg);
+  font-family: var(--font-display), sans-serif;
+  line-height: 0.9;
+}
+
+.participationPrice strong {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 500;
+  letter-spacing: -0.05em;
+}
+
+.participationPriceSale strong {
+  color: var(--podcast-green);
+}
+
+.participationPriceHero {
+  margin: 0.45rem 0 0.35rem;
+}
+
+.participationPriceHero strong {
+  font-size: clamp(4rem, 8vw, 7rem);
+}
+
+.priceWas {
+  color: rgba(166, 173, 168, 0.7);
+  font-size: clamp(1.2rem, 2.5vw, 1.85rem);
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.participationPriceHero .priceWas {
+  font-size: clamp(1.7rem, 4vw, 2.8rem);
+}
+
+.planReveal {
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--podcast-line);
+}
+
+.selectedPlanSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.5rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--podcast-line);
+  background: #0b0e0c;
+}
+
+.selectedPlanSummary span {
+  color: var(--podcast-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selectedPlanSummary .participationPrice strong {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
 .evaluationFields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -737,7 +858,7 @@
   align-items: flex-start;
   gap: 0.5rem;
   margin-top: 1.15rem;
-  color: #fff;
+  color: rgba(166, 173, 168, 0.38);
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
@@ -746,7 +867,7 @@
 
 .supportChoice:hover,
 .supportChoice:focus-within {
-  color: #fff;
+  color: rgba(166, 173, 168, 0.62);
 }
 
 .supportChoice input {
@@ -820,13 +941,40 @@
   background: #0b0e0c;
 }
 
-.pricePanel .price {
-  margin-bottom: 0.35rem;
+.pricePanel .participantOptions {
+  grid-template-columns: 1fr;
+  margin: 1rem 0 1.35rem;
+}
+
+.pricePanel .participantOption {
+  min-height: 0;
+  padding: 1rem 1.1rem;
+}
+
+.pricePanel .participantOptionLabel {
+  max-width: none;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+
+.pricePanel .participantOptionDetail {
+  font-size: 0.84rem;
+}
+
+.pricePanel .participationPrice strong {
+  font-size: clamp(1.7rem, 3vw, 2.2rem);
+}
+
+.pricePanel .participationPriceHero {
+  margin: 0.35rem 0 0.75rem;
 }
 
 .pricePanel .button {
   width: 100%;
   margin-top: 0.85rem;
+}
+
+.pricePanel .price {
+  margin-bottom: 0.35rem;
 }
 
 .successPayment {
@@ -839,7 +987,12 @@
 
 .successPayment .button {
   width: 100%;
+  margin-top: 0.85rem;
   cursor: pointer;
+}
+
+.successPayment .participationPriceHero {
+  margin: 0.45rem 0 1.15rem;
 }
 
 .successPayment .button:disabled {
@@ -1411,7 +1564,8 @@
   .steps,
   .metrics,
   .evaluationFields,
-  .options {
+  .options,
+  .participantOptions {
     grid-template-columns: 1fr;
   }
 

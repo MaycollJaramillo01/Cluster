@@ -1,3 +1,5 @@
+import { resolvePodcastParticipantPlan } from '@/lib/podcast-plans';
+
 type CheckoutData = Record<string, unknown>;
 
 export type PodcastCheckoutSession = {
@@ -46,7 +48,9 @@ export async function createPodcastCheckoutSession(data: CheckoutData, origin: s
   const email = field(data, 'email', 254).toLowerCase();
   const phone = field(data, 'telefono', 80);
   const company = field(data, 'empresa');
+  const plan = resolvePodcastParticipantPlan(data.participantType);
   const flow = 'podcast-commercial-interview';
+  if (!plan) throw new Error('invalid_plan');
 
   form.set('mode', 'payment');
   form.set('locale', 'es');
@@ -55,9 +59,9 @@ export async function createPodcastCheckoutSession(data: CheckoutData, origin: s
   form.set('phone_number_collection[enabled]', 'true');
   form.set('line_items[0][quantity]', '1');
   form.set('line_items[0][price_data][currency]', 'usd');
-  form.set('line_items[0][price_data][unit_amount]', '60000');
+  form.set('line_items[0][price_data][unit_amount]', String(plan.amount));
   form.set('line_items[0][price_data][product_data][name]', 'Entrevista comercial en Cluster Podcast');
-  form.set('line_items[0][price_data][product_data][description]', 'Entrevista de podcast con producción y distribución multiplataforma.');
+  form.set('line_items[0][price_data][product_data][description]', `${plan.label}. Entrevista de podcast con producción y distribución multiplataforma.`);
   form.set('success_url', `${origin}${returnPath}/gracias?session_id={CHECKOUT_SESSION_ID}`);
   form.set('cancel_url', `${origin}${returnPath}/gracias?payment=cancelled&session_id={CHECKOUT_SESSION_ID}`);
 
@@ -69,6 +73,8 @@ export async function createPodcastCheckoutSession(data: CheckoutData, origin: s
     telefono: phone,
     empresa: company,
     instagram: field(data, 'instagram'),
+    plan: plan.id,
+    aporte: plan.display,
     categoria: field(data, 'businessType'),
     antiguedad: field(data, 'businessAge'),
     temas: Array.isArray(data.storyTypes) ? data.storyTypes.map(String).join(', ').slice(0, 500) : '',
@@ -92,13 +98,10 @@ export async function getPodcastCheckoutSession(sessionId: string) {
 }
 
 export function isPaidPodcastSession(session: PodcastCheckoutSession | null | undefined) {
-  return Boolean(
-    session &&
-    session.payment_status === 'paid' &&
-    session.amount_total === 60000 &&
-    session.currency?.toLowerCase() === 'usd' &&
-    session.metadata?.flow === 'podcast-commercial-interview',
-  );
+  if (!session || session.payment_status !== 'paid' || session.currency?.toLowerCase() !== 'usd') return false;
+  if (session.metadata?.flow !== 'podcast-commercial-interview') return false;
+  const plan = resolvePodcastParticipantPlan(session.metadata?.plan);
+  return session.amount_total === (plan?.amount ?? 60000);
 }
 
 export function checkoutFormData(session: PodcastCheckoutSession | null | undefined) {
@@ -111,6 +114,7 @@ export function checkoutFormData(session: PodcastCheckoutSession | null | undefi
     telefono: metadata.telefono || '',
     empresa: metadata.empresa || '',
     instagram: metadata.instagram || '',
+    participantType: metadata.plan || '',
     businessType: metadata.categoria || '',
     businessAge: metadata.antiguedad || '',
     storyTypes: metadata.temas || '',

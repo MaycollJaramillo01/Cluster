@@ -8,7 +8,14 @@ export default function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // CRM interno. Vive fuera de los prefijos de idioma.
-  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+  if (
+    pathname === '/dashboard' ||
+    pathname.startsWith('/dashboard/') ||
+    pathname === '/academia' ||
+    pathname.startsWith('/academia/') ||
+    pathname === '/p' ||
+    pathname.startsWith('/p/')
+  ) {
     return NextResponse.next();
   }
   const isInternalPodcastRewrite =

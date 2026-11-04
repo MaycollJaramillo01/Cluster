@@ -38,6 +38,13 @@ export const sections: Section[] = [
     description: 'Bloques de una página: orden, texto y botón.',
   },
   {
+    id: 'cursos',
+    href: '/dashboard/cursos',
+    label: 'Academia',
+    title: 'Academia',
+    description: 'Cursos, aula, marketplace, blog, ventas, comisiones y junta.',
+  },
+  {
     id: 'tienda',
     href: '/dashboard/tienda',
     label: 'Tienda',
@@ -98,6 +105,22 @@ export function itemsFor(id: string, counts: SidebarCounts): NavItem[] {
   }
   if (id === 'editor') {
     return [{ href: '/dashboard/editor', label: 'Páginas', match: 'prefix' }];
+  }
+  if (id === 'cursos') {
+    return [
+      { href: '/dashboard/cursos', label: 'Cursos', count: counts.courses, match: 'exact' },
+      { href: '/dashboard/cursos/marketplace', label: 'Marketplace', match: 'prefix' },
+      { href: '/dashboard/cursos/blog', label: 'Blog', match: 'prefix' },
+      { href: '/dashboard/cursos/ventas', label: 'Ventas', match: 'prefix' },
+      { href: '/dashboard/cursos/revisiones', label: 'Revisiones', count: counts.reviews, match: 'prefix' },
+      { href: '/dashboard/cursos/fichas', label: 'Fichas', match: 'prefix' },
+      { href: '/dashboard/cursos/personas', label: 'Personas', match: 'prefix' },
+      { href: '/dashboard/cursos/clientes', label: 'Clientes', match: 'prefix' },
+      { href: '/dashboard/cursos/suscripcion', label: 'Suscripción', match: 'prefix' },
+      { href: '/dashboard/cursos/liquidaciones', label: 'Liquidaciones', match: 'prefix' },
+      { href: '/dashboard/cursos/donaciones', label: 'Donaciones', match: 'prefix' },
+      { href: '/dashboard/cursos/ajustes', label: 'Comisión', match: 'prefix' },
+    ];
   }
   if (id === 'tienda') {
     return [{ href: '/dashboard/tienda', label: 'Catálogo', match: 'prefix' }];

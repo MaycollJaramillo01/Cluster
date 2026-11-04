@@ -25,13 +25,16 @@ export default async function EditorPage({
       <PageTitle
         title={site.name}
         action={
-          <form action={publishSite}>
-            <input type="hidden" name="id" value={site.id} />
-            <input type="hidden" name="status" value={site.status === 'publicado' ? 'borrador' : 'publicado'} />
-            <button className={btnGhost} type="submit">
-              {site.status === 'publicado' ? 'Pasar a borrador' : 'Publicar'}
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            {site.status === 'publicado' ? <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href={`/p/${site.id}`}>Ver publicada</Link> : null}
+            <form action={publishSite}>
+              <input type="hidden" name="id" value={site.id} />
+              <input type="hidden" name="status" value={site.status === 'publicado' ? 'borrador' : 'publicado'} />
+              <button className={btnGhost} type="submit">
+                {site.status === 'publicado' ? 'Pasar a borrador' : 'Publicar'}
+              </button>
+            </form>
+          </div>
         }
       />
       <div className="flex flex-wrap gap-2">
