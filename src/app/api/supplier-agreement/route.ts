@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import { NextResponse } from 'next/server';
 import { list, put } from '@vercel/blob';
+import { captureLead } from '@/lib/crm/leads';
 import { site } from '@/lib/site';
 import {
   TOKEN_TTL_DAYS,
@@ -337,6 +338,23 @@ export async function PUT(request: Request) {
 
   await saveRecord(record);
   await sendToGhl(record, email.summary);
+  try {
+    await captureLead({
+      name: record.fullName,
+      email: record.email,
+      phone: record.phone,
+      form: 'acuerdo-proveedores',
+      automate: false,
+      details: {
+        identidad: record.idNumber,
+        ...(record.supplier ? { proveedor: record.supplier } : {}),
+        respuesta: record.decision === 'si' ? 'Sí, acepto' : 'No acepto',
+        confirmado: record.confirmedAt,
+      },
+    });
+  } catch (error) {
+    console.error('[supplier-agreement] crm:', error);
+  }
 
   const webhook =
     process.env.SUPPLIER_AGREEMENT_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;

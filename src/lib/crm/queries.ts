@@ -38,6 +38,22 @@ function text(value: unknown) {
   return value == null ? null : String(value);
 }
 
+function detailsOf(value: unknown) {
+  if (!value) return null;
+  try {
+    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    const details: Record<string, string> = {};
+    for (const [key, item] of Object.entries(parsed as Record<string, unknown>)) {
+      const entry = String(item ?? '').trim();
+      if (entry) details[key] = entry;
+    }
+    return Object.keys(details).length ? details : null;
+  } catch {
+    return null;
+  }
+}
+
 function stamp(value: unknown) {
   if (value instanceof Date) return value.toISOString();
   return value == null ? '' : String(value);
@@ -227,7 +243,7 @@ export async function listFormSubmits(formName?: string) {
   const sql = await crm();
   const name = formName?.trim() || '';
   const rows = await sql`
-    SELECT id, contact_id, form_name, name, email, phone, country, sales_experience, created_at
+    SELECT id, contact_id, form_name, name, email, phone, country, sales_experience, details, created_at
     FROM form_submits
     WHERE ${name} = '' OR form_name = ${name}
     ORDER BY created_at DESC
@@ -244,6 +260,7 @@ export async function listFormSubmits(formName?: string) {
       phone: text(entry.phone),
       country: text(entry.country),
       sales_experience: text(entry.sales_experience),
+      details: detailsOf(entry.details),
       created_at: stamp(entry.created_at),
     } satisfies FormSubmit;
   });

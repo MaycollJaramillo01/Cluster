@@ -7,6 +7,13 @@ import { AnalyticsTags } from '@/components/clinicas-esteticas/AnalyticsTags';
 import { BookingWidget } from '@/components/blocks/BookingWidget';
 import { Icon } from '@/components/ui/Icon';
 import { trackEvent } from '@/lib/analytics';
+import {
+  PODCAST_BUSINESS_CATEGORIES,
+  PODCAST_BUSINESS_STAGES,
+  PODCAST_DESCRIPTION_MAX,
+  PODCAST_OFFER_MAX,
+  podcastLogoError,
+} from '@/lib/podcast-editorial';
 import { podcastParticipantPlanList, resolvePodcastParticipantPlan, type PodcastParticipantPlanId } from '@/lib/podcast-plans';
 import { site, whatsappLink } from '@/lib/site';
 import styles from './PodcastSite.module.css';
@@ -80,6 +87,55 @@ async function postLead(kind: LeadKind, data: LeadPayload) {
   const result = await response.json().catch(() => null) as { ok?: boolean } | null;
   if (!response.ok || !result?.ok) throw new Error('submit_failed');
   return result;
+}
+
+async function postEditorialLead(data: FormData) {
+  data.set('kind', 'editorial');
+  data.set('attribution', JSON.stringify(getAttribution()));
+  data.set('path', window.location.pathname);
+  data.set('referrer', document.referrer);
+  const response = await fetch('/api/podcast-lead', { method: 'POST', body: data });
+  const result = await response.json().catch(() => null) as { ok?: boolean; error?: string } | null;
+  if (!response.ok || !result?.ok) throw new Error(result?.error || 'submit_failed');
+  return result;
+}
+
+function editorialErrorMessage(code: string) {
+  switch (code) {
+    case 'invalid_email':
+      return 'Ingresa un correo válido.';
+    case 'invalid_phone':
+      return 'Ingresa un WhatsApp válido, con código de país.';
+    case 'description_too_long':
+      return 'La descripción admite máximo 300 caracteres.';
+    case 'offer_too_long':
+      return 'La respuesta sobre productos o servicios admite máximo 300 caracteres.';
+    case 'logo_too_large':
+      return 'El logotipo debe pesar menos de 2 MB.';
+    case 'invalid_logo_type':
+      return 'El logotipo debe ser PNG, JPG o WebP.';
+    case 'consent_required':
+      return 'Necesitamos tu consentimiento para tratar los datos de la postulación.';
+    case 'missing_required_fields':
+      return 'Completa los campos obligatorios. El nombre de la empresa es necesario si ya tienes un negocio.';
+    case 'logo_storage_unavailable':
+    case 'logo_upload_failed':
+      return 'No pudimos guardar el logotipo. Inténtalo nuevamente o envía la postulación sin imagen.';
+    default:
+      return 'No pudimos enviar tu información. Inténtalo nuevamente o escríbenos por WhatsApp.';
+  }
+}
+
+function markInvalid(event: FormEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>, message = 'Completa este campo.') {
+  const field = event.currentTarget;
+  if (field.validity.valueMissing) field.setCustomValidity(message);
+  else if (field.validity.typeMismatch) field.setCustomValidity('Ingresa un correo válido.');
+  else if (field.validity.tooLong) field.setCustomValidity('El texto supera el máximo permitido.');
+  else field.setCustomValidity('Revisa este campo.');
+}
+
+function clearInvalid(event: FormEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  event.currentTarget.setCustomValidity('');
 }
 
 function PodcastChrome({ children, whatsappMessage, className = '' }: { children: ReactNode; whatsappMessage: string; className?: string }) {
@@ -224,40 +280,170 @@ function Faq({ items }: { items: string[][] }) {
 
 function EditorialForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [error, setError] = useState('');
+  const [sinEmpresa, setSinEmpresa] = useState(false);
+  const [descripcion, setDescripcion] = useState('');
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    setStatus('sending');
+    setError('');
     const data = new FormData(form);
+    const phone = String(data.get('telefono') || '');
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 8 || phoneDigits.length > 15) {
+      const phoneInput = form.elements.namedItem('telefono');
+      if (phoneInput instanceof HTMLInputElement) {
+        phoneInput.setCustomValidity('Ingresa un WhatsApp válido, con código de país.');
+        phoneInput.reportValidity();
+      }
+      return;
+    }
+    const logo = data.get('logotipo');
+    if (logo instanceof File && logo.size > 0) {
+      const problem = podcastLogoError(logo);
+      if (problem) {
+        setStatus('error');
+        setError(editorialErrorMessage(problem));
+        return;
+      }
+    }
+    setStatus('sending');
+    data.set('sinEmpresa', sinEmpresa ? 'true' : 'false');
+    data.set('consentimientoDatos', data.get('consentimientoDatos') ? 'true' : 'false');
+    data.set('aceptaOportunidades', data.get('aceptaOportunidades') ? 'true' : 'false');
     try {
-      await postLead('editorial', {
-        nombre: String(data.get('nombre') || ''),
-        empresa: String(data.get('empresa') || ''),
-        telefono: String(data.get('telefono') || ''),
-        instagram: String(data.get('instagram') || ''),
-        historia: String(data.get('historia') || ''),
-      });
+      await postEditorialLead(data);
       trackEvent('submit_editorial');
       setStatus('success');
       form.reset();
-    } catch {
+    } catch (submitError) {
       setStatus('error');
+      setError(editorialErrorMessage(submitError instanceof Error ? submitError.message : 'submit_failed'));
     }
   }
 
   if (status === 'success') {
-    return <div className={styles.form}><h3>Gracias por compartir tu historia.</h3><p className={styles.success}>Cada mes seleccionamos 2 emprendedores. Si tu historia es seleccionada, nuestro equipo se pondrá en contacto contigo.</p><a className={styles.buttonSecondary} href={site.social.youtube} target="_blank" rel="noreferrer">Ver Cluster Podcast</a></div>;
+    return <div className={styles.form}><h3>Gracias por compartir tu historia.</h3><p className={styles.success}>Cada mes seleccionamos 2 emprendedores. Si tu historia es seleccionada, nuestro equipo se pondrá en contacto contigo. También guardamos los datos de tu emprendimiento para preparar tu perfil en Cluster.</p><a className={styles.buttonSecondary} href={site.social.youtube} target="_blank" rel="noreferrer">Ver Cluster Podcast</a></div>;
   }
 
   return (
-    <form className={styles.form} onSubmit={submit} noValidate>
-      <div className={inputClass}><label htmlFor="editorial-name">Nombre *</label><input id="editorial-name" name="nombre" autoComplete="name" required /></div>
-      <div className={inputClass}><label htmlFor="editorial-business">Emprendimiento o empresa *</label><input id="editorial-business" name="empresa" autoComplete="organization" required /></div>
-      <div className={inputClass}><label htmlFor="editorial-phone">Teléfono o WhatsApp *</label><input id="editorial-phone" name="telefono" type="tel" autoComplete="tel" required /></div>
-      <div className={inputClass}><label htmlFor="editorial-social">Instagram o red social</label><input id="editorial-social" name="instagram" inputMode="url" /></div>
-      <div className={inputClass}><label htmlFor="editorial-story">Cuéntanos brevemente tu historia *</label><textarea id="editorial-story" name="historia" required maxLength={900} /></div>
-      {status === 'error' && <p className={styles.error}>No pudimos enviar tu información. Inténtalo nuevamente o escríbenos por WhatsApp.</p>}
+    <form className={styles.form} onSubmit={submit}>
+      <p className={styles.helper}>Los campos con * son obligatorios.</p>
+      <section className={styles.formBlock}>
+        <h3>Tu historia</h3>
+        <div className={inputClass}>
+          <label htmlFor="editorial-name">Nombre *</label>
+          <input id="editorial-name" name="nombre" autoComplete="name" required maxLength={120} onInvalid={markInvalid} onInput={clearInvalid} />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-email">Correo *</label>
+          <input id="editorial-email" name="email" type="email" autoComplete="email" inputMode="email" required maxLength={254} onInvalid={markInvalid} onInput={clearInvalid} />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-phone">WhatsApp *</label>
+          <input id="editorial-phone" name="telefono" type="tel" autoComplete="tel" inputMode="tel" required maxLength={40} placeholder="Código de país + número" onInvalid={markInvalid} onInput={clearInvalid} />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-story">Cuéntanos brevemente tu historia *</label>
+          <textarea id="editorial-story" name="historia" required maxLength={900} rows={5} onInvalid={markInvalid} onInput={clearInvalid} />
+        </div>
+      </section>
+
+      <section className={styles.formBlock}>
+        <h3>Tu emprendimiento</h3>
+        <p className={styles.helper}>Así conocemos tu negocio y podemos preparar tu perfil en Cluster.</p>
+        <label className={styles.choice}>
+          <input
+            type="checkbox"
+            name="sinEmpresa"
+            checked={sinEmpresa}
+            onChange={(event) => {
+              setSinEmpresa(event.target.checked);
+              const company = document.getElementById('editorial-business');
+              if (company instanceof HTMLInputElement) company.setCustomValidity('');
+            }}
+          />
+          <span>Todavía no tengo una empresa, estoy construyendo mi emprendimiento.</span>
+        </label>
+        <div className={inputClass}>
+          <label htmlFor="editorial-business">Nombre de la empresa o emprendimiento{sinEmpresa ? '' : ' *'}</label>
+          <input id="editorial-business" name="empresa" autoComplete="organization" required={!sinEmpresa} maxLength={160} onInvalid={markInvalid} onInput={clearInvalid} />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-category">Categoría o sector *</label>
+          <select id="editorial-category" name="categoria" required defaultValue="" onInvalid={markInvalid} onInput={clearInvalid}>
+            <option value="" disabled>Selecciona una categoría</option>
+            {PODCAST_BUSINESS_CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
+          </select>
+        </div>
+        <p className={styles.helper} id="editorial-location-hint">Ciudad y departamento donde opera tu emprendimiento.</p>
+        <div className={styles.fieldPair}>
+          <div className={inputClass}>
+            <label htmlFor="editorial-city">Ciudad *</label>
+            <input id="editorial-city" name="ciudad" autoComplete="address-level2" required maxLength={80} aria-describedby="editorial-location-hint" onInvalid={markInvalid} onInput={clearInvalid} />
+          </div>
+          <div className={inputClass}>
+            <label htmlFor="editorial-region">Departamento *</label>
+            <input id="editorial-region" name="departamento" autoComplete="address-level1" required maxLength={80} aria-describedby="editorial-location-hint" onInvalid={markInvalid} onInput={clearInvalid} />
+          </div>
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-description">¿A qué se dedica tu empresa? *</label>
+          <textarea
+            id="editorial-description"
+            name="descripcion"
+            required
+            maxLength={PODCAST_DESCRIPTION_MAX}
+            rows={4}
+            value={descripcion}
+            aria-describedby="editorial-description-count"
+            onChange={(event) => setDescripcion(event.target.value)}
+            onInvalid={markInvalid}
+            onInput={clearInvalid}
+          />
+          <p className={styles.counter} id="editorial-description-count" data-full={descripcion.length >= PODCAST_DESCRIPTION_MAX}>{descripcion.length}/{PODCAST_DESCRIPTION_MAX}</p>
+        </div>
+        <div className={`${inputClass} ${styles.fieldShort}`}>
+          <label htmlFor="editorial-offer">¿Qué productos o servicios ofrece? *</label>
+          <textarea id="editorial-offer" name="productos" required maxLength={PODCAST_OFFER_MAX} rows={3} placeholder="Respuesta breve" onInvalid={markInvalid} onInput={clearInvalid} />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-social">Redes sociales</label>
+          <input id="editorial-social" name="redesSociales" inputMode="url" maxLength={300} placeholder="Instagram, Facebook, TikTok u otra" />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-website">Sitio web</label>
+          <input id="editorial-website" name="sitioWeb" inputMode="url" maxLength={300} placeholder="https://" />
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-logo">Logotipo de la empresa</label>
+          <input id="editorial-logo" name="logotipo" type="file" accept="image/png,image/jpeg,image/webp" />
+          <p className={styles.helper}>Opcional. PNG, JPG o WebP, máximo 2 MB.</p>
+        </div>
+        <div className={inputClass}>
+          <label htmlFor="editorial-stage">¿En qué etapa está tu emprendimiento? *</label>
+          <select id="editorial-stage" name="etapa" required defaultValue="" onInvalid={markInvalid} onInput={clearInvalid}>
+            <option value="" disabled>Selecciona una etapa</option>
+            {PODCAST_BUSINESS_STAGES.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
+          </select>
+        </div>
+      </section>
+
+      <div className={styles.consents}>
+        <div className={styles.legal}>
+          <label className={styles.consent} htmlFor="editorial-consent">
+            <input id="editorial-consent" name="consentimientoDatos" type="checkbox" value="true" required onInvalid={(event) => markInvalid(event, 'Necesitamos tu consentimiento para tratar estos datos.')} onInput={clearInvalid} />
+            <span>Acepto el tratamiento de mis datos para evaluar mi postulación al podcast y preparar mi perfil en Cluster.</span>
+          </label>
+          <Link className={styles.privacyLink} href="/privacidad">Ver política de privacidad</Link>
+        </div>
+        <label className={styles.consent} htmlFor="editorial-opportunities">
+          <input id="editorial-opportunities" name="aceptaOportunidades" type="checkbox" value="true" />
+          <span>Quiero recibir información sobre futuras oportunidades de Cluster. Esta autorización es opcional y no afecta tu postulación.</span>
+        </label>
+      </div>
+      {error && <p className={styles.error} role="alert">{error}</p>}
       <button className={styles.button} type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Enviando...' : 'Postular mi historia'}</button>
     </form>
   );
@@ -314,7 +500,7 @@ export function EditorialLanding() {
       <section className={`${styles.section} ${styles.sectionCompact}`} id="postula">
         <div className={`${styles.shell} ${styles.formWrap}`}>
           <div>
-            <SectionHeading title="Cuéntanos tu historia." lead="La postulación es breve. Solo pedimos la información necesaria para conocer lo que quieres compartir." />
+            <SectionHeading title="Cuéntanos tu historia." lead="Cuéntanos tu historia y lo esencial de tu emprendimiento. Con eso evaluamos tu postulación y preparamos tu perfil en Cluster." />
             <Link className={styles.formAlternative} href="/participa/asegura-tu-participacion">No quiero postularme. Quiero asegurar mi participación.</Link>
           </div>
           <EditorialForm />

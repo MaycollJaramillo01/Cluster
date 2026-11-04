@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
+import { useTranslations } from 'next-intl';
+import { ContactCaptcha, contactCaptchaPayload } from '@/components/forms/ContactCaptcha';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { DualCtas } from './DualCtas';
@@ -38,9 +40,11 @@ export function MinimalContactForm({
   tracking,
   graciasPath,
 }: Props) {
+  const captchaT = useTranslations('ContactCaptcha');
   const [state, setState] = useState<'idle' | 'error' | 'success'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [started, setStarted] = useState(false);
+  const [captchaRevision, setCaptchaRevision] = useState(0);
 
   useEffect(() => {
     tracking.captureUtms();
@@ -70,7 +74,7 @@ export function MinimalContactForm({
     };
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
@@ -92,12 +96,43 @@ export function MinimalContactForm({
     }
 
     const context = buildContext();
-    const payload = { nombre, empresa, whatsapp, email, web, ...context };
+    const payload = {
+      ...contactCaptchaPayload(data),
+      nombre,
+      empresa,
+      telefono: whatsapp,
+      email,
+      website: web,
+      pais: meta.country,
+      origen: meta.vertical || 'landing',
+      attribution: context,
+    };
+
+    setState('idle');
+    setErrorMsg('');
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => null) as { ok?: boolean; error?: string } | null;
+      if (!response.ok || !result?.ok) {
+        setCaptchaRevision((value) => value + 1);
+        setState('error');
+        setErrorMsg(result?.error === 'captcha_invalid' ? captchaT('invalid') : 'No pudimos enviar tus datos. Inténtalo nuevamente.');
+        return;
+      }
+    } catch {
+      setState('error');
+      setErrorMsg('No pudimos enviar tus datos. Inténtalo nuevamente.');
+      return;
+    }
 
     try {
       sessionStorage.setItem(
         `cm_lead_${meta.vertical}`,
-        JSON.stringify({ ...payload, at: new Date().toISOString() })
+        JSON.stringify({ nombre, empresa, whatsapp, email, web, ...context, at: new Date().toISOString() })
       );
     } catch {
       /* ignore */
@@ -213,6 +248,9 @@ export function MinimalContactForm({
             placeholder="web.com o @marca"
             className="sm:col-span-2"
           />
+          <div className="sm:col-span-2">
+            <ContactCaptcha revision={captchaRevision} disabled={state === 'success'} />
+          </div>
           <div className="sm:col-span-2">
             <Button type="submit" variant="secondary" size="md">
               Enviar datos

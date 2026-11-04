@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { captureLead, leadDetails } from '@/lib/crm/leads';
 
 export const runtime = 'nodejs';
 
@@ -12,6 +13,22 @@ export async function POST(request: Request) {
     lead = await request.json();
   } catch {
     return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 });
+  }
+
+  const nombre = String(lead.nombre ?? '').trim();
+  if (nombre) {
+    try {
+      await captureLead({
+        name: nombre,
+        email: String(lead.email ?? ''),
+        phone: String(lead.telefono ?? ''),
+        city: String(lead.municipio ?? ''),
+        form: 'ruta-local',
+        details: leadDetails(lead),
+      });
+    } catch (error) {
+      console.error('[ruta-local] crm:', error);
+    }
   }
 
   const webhook = process.env.GHL_RUTA_LOCAL_WEBHOOK_URL;

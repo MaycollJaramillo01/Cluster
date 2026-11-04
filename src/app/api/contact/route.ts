@@ -172,13 +172,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { captureLead } = await import('@/lib/crm/leads');
+    const { captureLead, leadDetails } = await import('@/lib/crm/leads');
     await captureLead({
       name: nombre,
       email,
       phone: telefono,
       country: pais,
+      city: asText(lead.ciudad),
       form: asText(lead.origen) || 'contacto',
+      details: leadDetails(lead),
     });
   } catch (error) {
     console.error('[contact] crm:', error);

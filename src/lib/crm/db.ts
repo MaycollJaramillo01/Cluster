@@ -438,6 +438,7 @@ const STATEMENTS = [
     hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE form_submits ADD COLUMN IF NOT EXISTS details TEXT`,
   `ALTER TABLE messages ADD COLUMN IF NOT EXISTS delivered BOOLEAN`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS gateway_id TEXT`,
   `CREATE TABLE IF NOT EXISTS automation_runs (

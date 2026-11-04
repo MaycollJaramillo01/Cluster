@@ -15,6 +15,7 @@ import { saveApplicationAsset, saveApplicationJson } from '@/lib/careers/store';
 import { notifyApplication } from '@/lib/careers/email';
 import { emptyCrmFields } from '@/lib/careers/crm';
 import { getJob } from '@/lib/careers/jobs';
+import { captureLead } from '@/lib/crm/leads';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -214,6 +215,26 @@ export async function POST(request: Request) {
     };
 
     await saveApplicationJson(application);
+    try {
+      const filesNote = files.map((file) => `${file.originalName}: ${file.url || file.pathname}`).join('\n');
+      await captureLead({
+        name,
+        email,
+        phone: whatsapp,
+        country,
+        form: `empleo-${jobSlug}`,
+        automate: false,
+        details: {
+          puesto: job.title,
+          salarioUsd: salaryUsd,
+          ...(portfolioUrl ? { portafolio: portfolioUrl } : {}),
+          ...(linkedin ? { linkedin } : {}),
+          ...(filesNote ? { archivos: filesNote } : {}),
+        },
+      });
+    } catch (error) {
+      console.error('[careers] crm:', error);
+    }
     await notifyApplication(application);
 
     return NextResponse.json({ ok: true, id });

@@ -31,6 +31,7 @@ export type FormSubmit = {
   phone: string | null;
   country: string | null;
   sales_experience: string | null;
+  details: Record<string, string> | null;
   created_at: string;
 };
 
