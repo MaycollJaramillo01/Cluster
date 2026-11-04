@@ -15,7 +15,7 @@ const IDENTITY_FIELDS = new Set([
   'contactFax',
 ]);
 
-function detailText(value: unknown) {
+function detailText(value: unknown): string {
   if (typeof value === 'string') return value.trim();
   if (typeof value === 'boolean') return value ? 'sí' : 'no';
   if (typeof value === 'number') return String(value);
