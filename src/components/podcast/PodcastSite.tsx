@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { AnalyticsTags } from '@/components/clinicas-esteticas/AnalyticsTags';
 import { BookingWidget } from '@/components/blocks/BookingWidget';
@@ -281,8 +281,32 @@ function Faq({ items }: { items: string[][] }) {
 function EditorialForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [step, setStep] = useState<1 | 2>(1);
   const [sinEmpresa, setSinEmpresa] = useState(false);
   const [descripcion, setDescripcion] = useState('');
+
+  function showStep(next: 1 | 2) {
+    setStep(next);
+    setError('');
+    const id = next === 1 ? 'editorial-name' : 'editorial-business';
+    requestAnimationFrame(() => {
+      document.getElementById('editorial-form')?.scrollIntoView({ block: 'start' });
+      document.getElementById(id)?.focus();
+    });
+  }
+
+  function continueToBusiness(event: MouseEvent<HTMLButtonElement>) {
+    const form = event.currentTarget.form;
+    if (!form) return;
+    const phone = form.elements.namedItem('telefono');
+    if (phone instanceof HTMLInputElement) {
+      const digits = phone.value.replace(/\D/g, '');
+      const invalid = phone.value.trim().length > 0 && (digits.length < 8 || digits.length > 15);
+      phone.setCustomValidity(invalid ? 'Ingresa un WhatsApp válido, con código de país.' : '');
+    }
+    if (!form.reportValidity()) return;
+    showStep(2);
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -328,9 +352,13 @@ function EditorialForm() {
   }
 
   return (
-    <form className={styles.form} onSubmit={submit}>
+    <form className={styles.form} id="editorial-form" onSubmit={submit}>
+      <div className={styles.progress} aria-live="polite">
+        <span>Etapa {step} de 2</span>
+        <div className={styles.progressLine}><span style={{ width: `${step * 50}%` }} /></div>
+      </div>
       <p className={styles.helper}>Los campos con * son obligatorios.</p>
-      <section className={styles.formBlock}>
+      <section className={styles.formBlock} hidden={step !== 1}>
         <h3>Tu historia</h3>
         <div className={inputClass}>
           <label htmlFor="editorial-name">Nombre *</label>
@@ -350,7 +378,7 @@ function EditorialForm() {
         </div>
       </section>
 
-      <section className={styles.formBlock}>
+      <section className={styles.formBlock} hidden={step !== 2}>
         <h3>Tu emprendimiento</h3>
         <p className={styles.helper}>Así conocemos tu negocio y podemos preparar tu perfil en Cluster.</p>
         <label className={styles.choice}>
@@ -430,7 +458,7 @@ function EditorialForm() {
         </div>
       </section>
 
-      <div className={styles.consents}>
+      <div className={styles.consents} hidden={step !== 2}>
         <div className={styles.legal}>
           <label className={styles.consent} htmlFor="editorial-consent">
             <input id="editorial-consent" name="consentimientoDatos" type="checkbox" value="true" required onInvalid={(event) => markInvalid(event, 'Necesitamos tu consentimiento para tratar estos datos.')} onInput={clearInvalid} />
@@ -444,7 +472,12 @@ function EditorialForm() {
         </label>
       </div>
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <button className={styles.button} type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Enviando...' : 'Postular mi historia'}</button>
+      <div className={styles.formNav}>
+        {step === 2 && <button className={styles.buttonSecondary} type="button" onClick={() => showStep(1)}>Atrás</button>}
+        {step === 1
+          ? <button className={styles.button} type="button" onClick={continueToBusiness}>Continuar</button>
+          : <button className={styles.button} type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Enviando...' : 'Postular mi historia'}</button>}
+      </div>
     </form>
   );
 }
@@ -500,7 +533,7 @@ export function EditorialLanding() {
       <section className={`${styles.section} ${styles.sectionCompact}`} id="postula">
         <div className={`${styles.shell} ${styles.formWrap}`}>
           <div>
-            <SectionHeading title="Cuéntanos tu historia." lead="Cuéntanos tu historia y lo esencial de tu emprendimiento. Con eso evaluamos tu postulación y preparamos tu perfil en Cluster." />
+            <SectionHeading title="Cuéntanos tu historia." lead="Son dos etapas. Primero tu historia y después lo esencial de tu emprendimiento. Con eso evaluamos tu postulación y preparamos tu perfil en Cluster." />
             <Link className={styles.formAlternative} href="/participa/asegura-tu-participacion">No quiero postularme. Quiero asegurar mi participación.</Link>
           </div>
           <EditorialForm />

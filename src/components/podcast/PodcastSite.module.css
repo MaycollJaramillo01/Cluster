@@ -497,6 +497,11 @@
   border: 0;
 }
 
+.formBlock[hidden],
+.consents[hidden] {
+  display: none;
+}
+
 .formBlock + .formBlock {
   padding-top: 1.35rem;
   border-top: 1px solid var(--podcast-line);
@@ -520,6 +525,22 @@
 .form > .button,
 .form > .buttonSecondary {
   justify-self: start;
+  width: fit-content;
+  margin-top: 0.35rem;
+}
+
+.form .progress {
+  margin-bottom: 0;
+}
+
+.formNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.formNav .button,
+.formNav .buttonSecondary {
   width: fit-content;
   margin-top: 0.35rem;
 }
@@ -1671,8 +1692,14 @@
 
   .button,
   .buttonSecondary,
-  .buttonWhatsApp {
+  .buttonWhatsApp,
+  .formNav .button,
+  .formNav .buttonSecondary {
     width: 100%;
+  }
+
+  .formNav {
+    flex-direction: column;
   }
 
   .steps,
