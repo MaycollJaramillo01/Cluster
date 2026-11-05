@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState, type FormEvent, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
 import { AnalyticsTags } from '@/components/clinicas-esteticas/AnalyticsTags';
 import { BookingWidget } from '@/components/blocks/BookingWidget';
@@ -128,6 +128,7 @@ function editorialErrorMessage(code: string) {
 
 function markInvalid(event: FormEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>, message = 'Completa este campo.') {
   const field = event.currentTarget;
+  if (field.validity.customError) return;
   if (field.validity.valueMissing) field.setCustomValidity(message);
   else if (field.validity.typeMismatch) field.setCustomValidity('Ingresa un correo válido.');
   else if (field.validity.tooLong) field.setCustomValidity('El texto supera el máximo permitido.');
@@ -278,33 +279,52 @@ function Faq({ items }: { items: string[][] }) {
   return <div className={styles.faq}>{items.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div>;
 }
 
+function fieldList(root: ParentNode) {
+  return [...root.querySelectorAll('input, textarea, select')].filter((field): field is HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement => (
+    field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement
+  ));
+}
+
+function validateFields(root: ParentNode) {
+  const phone = root.querySelector('input[name="telefono"]');
+  if (phone instanceof HTMLInputElement) {
+    const digits = phone.value.replace(/\D/g, '');
+    const invalid = phone.value.trim().length > 0 && (digits.length < 8 || digits.length > 15);
+    phone.setCustomValidity(invalid ? 'Ingresa un WhatsApp válido, con código de país.' : '');
+  }
+  for (const field of fieldList(root)) {
+    if (!field.willValidate) continue;
+    if (!field.reportValidity()) return false;
+  }
+  return true;
+}
+
 function EditorialForm() {
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
   const [step, setStep] = useState<1 | 2>(1);
   const [sinEmpresa, setSinEmpresa] = useState(false);
   const [descripcion, setDescripcion] = useState('');
+  const focusStep = useRef<1 | 2 | null>(null);
+
+  useEffect(() => {
+    const next = focusStep.current;
+    if (!next) return;
+    focusStep.current = null;
+    const id = next === 1 ? 'editorial-name' : 'editorial-business';
+    document.getElementById('editorial-form')?.scrollIntoView({ block: 'start' });
+    document.getElementById(id)?.focus();
+  }, [step]);
 
   function showStep(next: 1 | 2) {
+    focusStep.current = next;
     setStep(next);
     setError('');
-    const id = next === 1 ? 'editorial-name' : 'editorial-business';
-    requestAnimationFrame(() => {
-      document.getElementById('editorial-form')?.scrollIntoView({ block: 'start' });
-      document.getElementById(id)?.focus();
-    });
   }
 
-  function continueToBusiness(event: MouseEvent<HTMLButtonElement>) {
-    const form = event.currentTarget.form;
-    if (!form) return;
-    const phone = form.elements.namedItem('telefono');
-    if (phone instanceof HTMLInputElement) {
-      const digits = phone.value.replace(/\D/g, '');
-      const invalid = phone.value.trim().length > 0 && (digits.length < 8 || digits.length > 15);
-      phone.setCustomValidity(invalid ? 'Ingresa un WhatsApp válido, con código de país.' : '');
-    }
-    if (!form.reportValidity()) return;
+  function continueToBusiness() {
+    const section = document.getElementById('editorial-step-1');
+    if (!section || !validateFields(section)) return;
     showStep(2);
   }
 
@@ -312,6 +332,13 @@ function EditorialForm() {
     event.preventDefault();
     const form = event.currentTarget;
     setError('');
+    const business = document.getElementById('editorial-step-2');
+    const story = document.getElementById('editorial-step-1');
+    if (!business || !validateFields(business)) return;
+    if (!story || !validateFields(story)) {
+      showStep(1);
+      return;
+    }
     const data = new FormData(form);
     const phone = String(data.get('telefono') || '');
     const phoneDigits = phone.replace(/\D/g, '');
@@ -352,13 +379,13 @@ function EditorialForm() {
   }
 
   return (
-    <form className={styles.form} id="editorial-form" onSubmit={submit}>
+    <form className={styles.form} id="editorial-form" onSubmit={submit} noValidate>
       <div className={styles.progress} aria-live="polite">
         <span>Etapa {step} de 2</span>
         <div className={styles.progressLine}><span style={{ width: `${step * 50}%` }} /></div>
       </div>
       <p className={styles.helper}>Los campos con * son obligatorios.</p>
-      <section className={styles.formBlock} hidden={step !== 1}>
+      <section className={styles.formBlock} id="editorial-step-1" hidden={step !== 1}>
         <h3>Tu historia</h3>
         <div className={inputClass}>
           <label htmlFor="editorial-name">Nombre *</label>
@@ -378,7 +405,7 @@ function EditorialForm() {
         </div>
       </section>
 
-      <section className={styles.formBlock} hidden={step !== 2}>
+      <section className={styles.formBlock} id="editorial-step-2" hidden={step !== 2}>
         <h3>Tu emprendimiento</h3>
         <p className={styles.helper}>Así conocemos tu negocio y podemos preparar tu perfil en Cluster.</p>
         <label className={styles.choice}>
@@ -456,9 +483,7 @@ function EditorialForm() {
             {PODCAST_BUSINESS_STAGES.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
           </select>
         </div>
-      </section>
-
-      <div className={styles.consents} hidden={step !== 2}>
+        <div className={styles.consents}>
         <div className={styles.legal}>
           <label className={styles.consent} htmlFor="editorial-consent">
             <input id="editorial-consent" name="consentimientoDatos" type="checkbox" value="true" required onInvalid={(event) => markInvalid(event, 'Necesitamos tu consentimiento para tratar estos datos.')} onInput={clearInvalid} />
@@ -471,6 +496,7 @@ function EditorialForm() {
           <span>Quiero recibir información sobre futuras oportunidades de Cluster. Esta autorización es opcional y no afecta tu postulación.</span>
         </label>
       </div>
+      </section>
       {error && <p className={styles.error} role="alert">{error}</p>}
       <div className={styles.formNav}>
         {step === 2 && <button className={styles.buttonSecondary} type="button" onClick={() => showStep(1)}>Atrás</button>}
