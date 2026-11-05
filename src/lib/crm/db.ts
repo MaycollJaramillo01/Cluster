@@ -1,4 +1,5 @@
 import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
+import { connection } from 'next/server';
 
 export type Sql = NeonQueryFunction<false, false>;
 
@@ -493,6 +494,7 @@ async function migrateResolved() {
 }
 
 export async function crm() {
+  await connection();
   await ensureSchema();
   return clientFor();
 }
