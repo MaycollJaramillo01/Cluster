@@ -4,8 +4,8 @@
 export const site = {
   name: 'Cluster Media',
   shortName: 'Cluster',
-  domain: 'https://clustermedia.com',
-  url: 'https://clustermedia.com',
+  domain: 'https://www.cluster.marketing',
+  url: 'https://www.cluster.marketing',
   email: 'info@cluster.marketing',
   phoneDisplay: '(305) 479-9896',
   whatsappNumber: '13054799896', // sin signos, para wa.me
