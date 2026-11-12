@@ -25,6 +25,7 @@ export function Footer() {
     pathname.startsWith('/acuerdo-proveedores') ||
     pathname === '/participa' ||
     pathname.startsWith('/participa/') ||
+    pathname === '/participacion' ||
     pathname === '/patrocinios'
   ) return null;
 

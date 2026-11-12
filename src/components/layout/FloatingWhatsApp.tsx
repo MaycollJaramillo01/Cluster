@@ -16,6 +16,7 @@ export function FloatingWhatsApp() {
     pathname.startsWith('/acuerdo-proveedores') ||
     pathname === '/participa' ||
     pathname.startsWith('/participa/') ||
+    pathname === '/participacion' ||
     pathname === '/patrocinios' ||
     pathname.startsWith('/postulaciones') ||
     pathname.startsWith('/carreras')

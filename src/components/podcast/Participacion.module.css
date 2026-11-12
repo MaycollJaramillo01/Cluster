@@ -1,0 +1,909 @@
+/* /participacion: private commercial proposal. Tokens, header, buttons, section
+   rhythm, FAQ and calendar frame come from PodcastSite.module.css. */
+
+.headerCta {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: var(--podcast-green);
+  color: #07120f;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.headerCta:focus-visible,
+.guests:focus-visible {
+  outline: 3px solid rgba(2, 195, 154, 0.45);
+  outline-offset: 3px;
+}
+
+/* Shared price + CTA pieces */
+
+.priceTag {
+  padding-left: 1rem;
+  border-left: 2px solid var(--podcast-green);
+}
+
+.priceEyebrow,
+.label {
+  margin: 0;
+  color: var(--podcast-green);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.priceValue {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(3.6rem, 13vw, 5.4rem);
+  line-height: 0.88;
+}
+
+.priceNote {
+  margin: 0.45rem 0 0;
+  color: var(--podcast-muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.ctaRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ctaRow svg {
+  flex: none;
+}
+
+/* Hero */
+
+.hero {
+  position: relative;
+  display: flex;
+  min-height: 100svh;
+  align-items: flex-end;
+  overflow: hidden;
+  padding-block: 104px 2.5rem;
+  isolation: isolate;
+}
+
+.heroMedia {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: #050706;
+}
+
+.heroMedia img,
+.heroVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroMedia img {
+  object-position: 90% center;
+}
+
+.heroVideo {
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+.heroVideo[data-playing='true'] {
+  opacity: 1;
+}
+
+.heroMedia::after,
+.finalMedia::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  background: linear-gradient(0deg, rgba(5, 7, 6, 0.97) 0%, rgba(5, 7, 6, 0.88) 55%, rgba(5, 7, 6, 0.6) 85%, rgba(5, 7, 6, 0.72) 100%);
+}
+
+.heroCopy {
+  max-width: 64rem;
+}
+
+.heroTitle {
+  max-width: 19ch;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.7rem, 10vw, 5rem);
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.heroLead {
+  max-width: 36rem;
+  margin: 1.1rem 0 0;
+  color: #d9dedb;
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
+  line-height: 1.55;
+}
+
+.heroDeal {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+}
+
+.heroNote {
+  margin: 1rem 0 0;
+  color: rgba(244, 246, 244, 0.62);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* 02 Qué recibe */
+
+.receive {
+  display: grid;
+  gap: 1rem;
+  margin-top: var(--podcast-content-gap);
+}
+
+.receiveCard {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid var(--podcast-line);
+  background: var(--podcast-panel);
+}
+
+.episodeFrame,
+.clip {
+  position: relative;
+  overflow: hidden;
+  background: var(--podcast-panel-2);
+}
+
+.episodeFrame {
+  aspect-ratio: 16 / 9;
+}
+
+.episodeFrame img,
+.clip img,
+.guest img {
+  object-fit: cover;
+}
+
+.episodeBadge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.7rem;
+  background: rgba(5, 7, 6, 0.8);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.episodeBadge svg {
+  color: var(--podcast-green);
+}
+
+.clips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clip {
+  aspect-ratio: 9 / 16;
+}
+
+.receiveTitle {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.4rem, 7vw, 3.6rem);
+  font-weight: 400;
+  line-height: 0.92;
+}
+
+.receiveTitle span,
+.metricInsight strong {
+  color: var(--podcast-green);
+}
+
+.receiveCard p {
+  margin: 0;
+  color: var(--podcast-muted);
+  line-height: 1.55;
+}
+
+.receiveCard p strong {
+  color: var(--podcast-fg);
+  font-weight: 600;
+}
+
+.platformList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.platformList li,
+.optionalTag {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--podcast-line);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.receiveArrow {
+  display: grid;
+  place-items: center;
+  color: var(--podcast-green);
+}
+
+.receiveArrow svg {
+  transform: rotate(90deg);
+}
+
+.receiveNote,
+.profileNote {
+  max-width: 62ch;
+  margin: 1.25rem 0 0;
+  color: var(--podcast-muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+/* 03 Qué incluye */
+
+.includeLayout {
+  display: grid;
+  gap: 2rem;
+  margin-top: var(--podcast-content-gap);
+}
+
+.includeList {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--podcast-line);
+  list-style: none;
+}
+
+.includeItem {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  padding-block: 1.35rem;
+  border-bottom: 1px solid var(--podcast-line);
+}
+
+.index {
+  color: var(--podcast-green);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+}
+
+.includeItem .index {
+  padding-top: 0.3rem;
+}
+
+.includeItem h3,
+.step h3,
+.benefit h3,
+.optional h3 {
+  margin: 0;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.includeItem h3 {
+  font-size: clamp(1.8rem, 3.4vw, 2.4rem);
+}
+
+.includeItem p {
+  margin: 0.45rem 0 0;
+  color: var(--podcast-muted);
+  line-height: 1.55;
+}
+
+.priceCard {
+  display: grid;
+  gap: 1.5rem;
+  align-content: start;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid rgba(2, 195, 154, 0.45);
+  background: linear-gradient(160deg, rgba(2, 195, 154, 0.14), var(--podcast-bg) 55%);
+}
+
+/* 04 Audiencia */
+
+.metricGrid {
+  display: grid;
+  gap: 1rem;
+  margin-top: var(--podcast-content-gap);
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 1px solid var(--podcast-line);
+  background: var(--podcast-panel);
+}
+
+.metricHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  color: var(--podcast-muted);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.metricCard .metricHead h3 {
+  margin: 0;
+  color: var(--podcast-fg);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.metricValue {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(5rem, 22vw, 9rem);
+  line-height: 0.8;
+}
+
+.metricLabel {
+  margin: 0.6rem 0 0;
+  color: #dfe4e1;
+  font-size: 1.05rem;
+}
+
+.metricStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--podcast-line);
+}
+
+.metricStats div {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+}
+
+.metricStats dd {
+  order: -1;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.9rem, 5vw, 2.4rem);
+  line-height: 1;
+}
+
+.metricStats dt {
+  color: var(--podcast-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.metricInsight {
+  margin: auto 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--podcast-line);
+  color: #dfe4e1;
+  line-height: 1.5;
+}
+
+.metricInsight strong {
+  margin-right: 0.3rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.7rem;
+  font-weight: 400;
+}
+
+/* 05 Perfil */
+
+.profile {
+  display: grid;
+  gap: 2.5rem;
+  margin-top: var(--podcast-content-gap);
+}
+
+.profileStat strong {
+  display: block;
+  color: var(--podcast-green);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(5.5rem, 24vw, 10rem);
+  font-weight: 400;
+  line-height: 0.8;
+}
+
+.profileStat p {
+  max-width: 24ch;
+  margin: 0.9rem 0 0;
+  color: #dfe4e1;
+  font-size: 1.1rem;
+  line-height: 1.45;
+}
+
+.countries {
+  display: grid;
+  gap: 1.25rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.country {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+}
+
+.country span {
+  font-weight: 600;
+}
+
+.country strong {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.1rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.country i {
+  grid-column: 1 / -1;
+  width: var(--share);
+  height: 6px;
+  background: var(--podcast-green);
+}
+
+/* 06 Invitados */
+
+.guests {
+  display: grid;
+  grid-auto-columns: 76%;
+  grid-auto-flow: column;
+  gap: 0.75rem;
+  margin: var(--podcast-content-gap) 0 0;
+  padding: 0 0 0.9rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: var(--podcast-green) transparent;
+  scrollbar-width: thin;
+  list-style: none;
+}
+
+.guest {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  scroll-snap-align: start;
+  border: 1px solid var(--podcast-line);
+  background: linear-gradient(165deg, rgba(2, 195, 154, 0.16), var(--podcast-panel) 58%);
+}
+
+.guest img {
+  transition: transform 500ms ease;
+}
+
+.guestInitials {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.9rem;
+  color: rgba(2, 195, 154, 0.22);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(6rem, 30vw, 9rem);
+  line-height: 1;
+}
+
+.guestName {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 3rem 1rem 1rem;
+  background: linear-gradient(180deg, transparent, rgba(5, 7, 6, 0.92));
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(1.7rem, 6vw, 2.2rem);
+  line-height: 0.95;
+}
+
+/* 07 Cómo funciona / 10 Beneficios */
+
+.steps,
+.benefits {
+  display: grid;
+  gap: 1px;
+  margin: var(--podcast-content-gap) 0 0;
+  padding: 0;
+  border: 1px solid var(--podcast-line);
+  background: var(--podcast-line);
+  list-style: none;
+}
+
+.step,
+.benefit {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
+  padding: clamp(1.4rem, 3vw, 2.25rem);
+  background: var(--podcast-bg);
+}
+
+.step h3,
+.benefit h3 {
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
+}
+
+.step p,
+.benefit p {
+  margin: 0;
+  color: var(--podcast-muted);
+  line-height: 1.6;
+}
+
+.sectionCta {
+  margin-top: 2rem;
+}
+
+/* 08 Inversión: the light "quote" block */
+
+.invest {
+  padding-block: clamp(4rem, 9vw, 7.5rem);
+  background: #f4f6f4;
+  color: #0a0b0b;
+  scroll-margin-top: 72px;
+}
+
+.investGrid {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.invest .label {
+  color: #00664f;
+}
+
+.investTitle {
+  max-width: 12ch;
+  margin: 1.25rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(3rem, 10vw, 6.2rem);
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.investPrice {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(5.5rem, 26vw, 11rem);
+  line-height: 0.8;
+}
+
+.investCaption {
+  margin: 0.9rem 0 0;
+  color: #3e4743;
+  font-size: 1.02rem;
+}
+
+.investAmount {
+  margin-top: 2.25rem;
+}
+
+.investList {
+  margin: 1rem 0 2rem;
+  padding: 0;
+  border-top: 1px solid rgba(10, 11, 11, 0.16);
+  list-style: none;
+}
+
+.investList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding-block: 1rem;
+  border-bottom: 1px solid rgba(10, 11, 11, 0.16);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.investList svg {
+  flex: none;
+  margin-top: 0.05rem;
+  color: #00664f;
+}
+
+.invest .onLight {
+  border-color: rgba(10, 11, 11, 0.3);
+  background: transparent;
+  color: #0a0b0b;
+}
+
+/* 09 Opcionales */
+
+.optionals {
+  display: grid;
+  gap: 1rem;
+  margin-top: var(--podcast-content-gap);
+}
+
+.optional {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border: 1px dashed rgba(244, 246, 244, 0.3);
+}
+
+.optionalTag {
+  justify-self: start;
+  color: var(--podcast-muted);
+}
+
+.optional h3 {
+  font-size: clamp(2rem, 4.5vw, 2.9rem);
+}
+
+.optional p,
+.optional li {
+  margin: 0;
+  color: var(--podcast-muted);
+  line-height: 1.6;
+}
+
+.optional ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.optionalPrice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
+  padding-block: 0.9rem;
+  border-block: 1px solid var(--podcast-line);
+}
+
+.optionalPrice strong {
+  color: var(--podcast-green);
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.6rem, 8vw, 3.6rem);
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.optionalPrice span {
+  color: #dfe4e1;
+}
+
+.optional .optionalNote {
+  font-size: 0.86rem;
+}
+
+/* 11 FAQ */
+
+.faqWrap summary {
+  position: relative;
+}
+
+.faqWrap summary::after {
+  position: absolute;
+  top: 50%;
+  right: 0.25rem;
+  color: var(--podcast-green);
+  content: '+';
+  font-family: var(--font-mono), monospace;
+  font-size: 1.4rem;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.faqWrap details[open] summary::after {
+  content: '\2212';
+}
+
+/* 12 CTA final + agenda */
+
+.finalCta {
+  position: relative;
+  display: flex;
+  min-height: 92svh;
+  align-items: flex-end;
+  overflow: hidden;
+  padding-block: 6rem 3rem;
+  border-top: 1px solid var(--podcast-line);
+  isolation: isolate;
+}
+
+.finalMedia {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.finalMedia img {
+  object-fit: cover;
+  object-position: 88% center;
+}
+
+.finalTitle {
+  max-width: 14ch;
+  margin: 0 0 2rem;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(3rem, 11vw, 6.6rem);
+  font-weight: 400;
+  line-height: 0.9;
+}
+
+.agendaFrame {
+  min-height: 720px;
+}
+
+.agendaAlt {
+  margin: 1rem 0 0;
+  color: var(--podcast-muted);
+  font-size: 0.95rem;
+}
+
+.agendaAlt a {
+  color: var(--podcast-green);
+  font-weight: 600;
+}
+
+/* WhatsApp float: hidden while the hero, final CTA or calendar is on screen. */
+
+.waToggle {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.waToggle[data-hidden='true'] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 200ms ease, transform 200ms ease, visibility 0s linear 200ms;
+}
+
+@media (orientation: landscape) {
+  .heroMedia img,
+  .finalMedia img {
+    object-position: center;
+  }
+}
+
+@media (min-width: 641px) {
+  .ctaRow {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 768px) {
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guests {
+    grid-auto-columns: calc((100% - 1.5rem) / 3);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero,
+  .finalCta {
+    align-items: center;
+  }
+
+  .heroMedia::after,
+  .finalMedia::after {
+    background:
+      linear-gradient(90deg, rgba(5, 7, 6, 0.96) 0%, rgba(5, 7, 6, 0.74) 42%, rgba(5, 7, 6, 0.12) 78%),
+      linear-gradient(0deg, rgba(5, 7, 6, 0.6) 0%, transparent 45%);
+  }
+
+  .heroDeal {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 3rem;
+  }
+
+  .receive {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.1fr);
+  }
+
+  .receiveArrow svg {
+    transform: none;
+  }
+
+  .includeLayout {
+    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+    align-items: start;
+    gap: 3rem;
+  }
+
+  .priceCard {
+    position: sticky;
+    top: 96px;
+  }
+
+  .profile {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: end;
+    gap: 4rem;
+  }
+
+  .guests {
+    grid-auto-columns: calc((100% - 2.25rem) / 4);
+  }
+
+  .steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .step,
+  .benefit {
+    min-height: 260px;
+  }
+
+  .benefits {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .investGrid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: end;
+    gap: 5rem;
+  }
+
+  .optionals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (hover: hover) {
+  .guest:hover img {
+    transform: scale(1.03);
+  }
+}

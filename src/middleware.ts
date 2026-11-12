@@ -22,6 +22,7 @@ export default function middleware(request: NextRequest) {
     request.nextUrl.searchParams.get('__podcast') === '1' &&
     (pathname === '/es/participa' ||
       pathname.startsWith('/es/participa/') ||
+      pathname === '/es/participacion' ||
       pathname === '/es/patrocinios');
 
   // The rewrite is evaluated by middleware a second time in production. Let
@@ -34,6 +35,7 @@ export default function middleware(request: NextRequest) {
   const isSpanishPodcastRoute =
     pathname === '/participa' ||
     pathname.startsWith('/participa/') ||
+    pathname === '/participacion' ||
     pathname === '/patrocinios';
 
   // These campaign URLs are intentionally unprefixed. A direct rewrite keeps

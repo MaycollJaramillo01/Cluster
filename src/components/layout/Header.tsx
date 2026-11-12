@@ -88,7 +88,7 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
-  const isPodcast = pathname === '/participa' || pathname.startsWith('/participa/') || pathname === '/patrocinios';
+  const isPodcast = pathname === '/participa' || pathname.startsWith('/participa/') || pathname === '/participacion' || pathname === '/patrocinios';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
