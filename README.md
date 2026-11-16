@@ -4,6 +4,11 @@ Website de **Cluster Media**, agencia de marketing digital para negocios
 hispanos. Construido en **Next.js 15 (App Router) + TypeScript + Tailwind CSS**
 con estilo *dark modernism*.
 
+El panel interno y la academia están en el mismo proyecto:
+
+- [README-CRM.md](README-CRM.md) — contactos, embudo, citas, mensajes y cómo llega un lead.
+- [README-LMS.md](README-LMS.md) — cursos, aula pública, cobros y liquidaciones.
+
 ## Requisitos
 
 - Node.js 18.18+ (probado en Node 22)
