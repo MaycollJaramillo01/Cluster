@@ -5,6 +5,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { FloatingWhatsApp } from '@/components/layout/FloatingWhatsApp';
+import { AnalyticsTags } from '@/components/clinicas-esteticas/AnalyticsTags';
 import { PageTransition } from '@/components/ui/PageTransition';
 import {
   JsonLd,
@@ -103,6 +104,8 @@ export default async function LocaleLayout({
         />
       </head>
       <body suppressHydrationWarning>
+        {/* GTM, GA4 y Pixel en todo el sitio público (antes solo en tres landings). */}
+        <AnalyticsTags />
         <NextIntlClientProvider messages={messages}>
           <JsonLd data={organizationSchema} />
           <JsonLd data={localBusinessSchema} />

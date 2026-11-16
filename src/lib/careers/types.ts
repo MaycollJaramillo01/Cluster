@@ -107,6 +107,7 @@ export type ApplicationPatchInput = {
 };
 
 export const MAX_PORTFOLIO_FILES = 8;
+export const CAREERS_UPLOAD_PREFIX = 'careers/uploads/';
 export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 export const MAX_TOTAL_BYTES = 60 * 1024 * 1024;
 export const MAX_TAGS = 12;

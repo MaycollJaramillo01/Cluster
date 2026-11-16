@@ -4,11 +4,13 @@ import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
+import { requireDashboard } from '@/lib/crm/session';
+import { site } from '@/lib/site';
 import { getPersonByEmail, personCanReturn, publishedCourse, getProduct, getSettings, canReadCourse } from './data';
 import { ensurePerson, grantAccess, type GrantKind } from './fulfill';
 import { payoutDueAt, periodYm, slugify } from './money';
 import { createPaypalOrder, paypalConfigured, sendPaypalPayout } from './paypal';
-import { academiaPersonId, setAcademiaPerson } from './session';
+import { academiaPersonId, loginLinkToken, setAcademiaPerson } from './session';
 import { createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { storedFile } from './upload';
@@ -160,15 +162,24 @@ export async function donate(formData: FormData) {
 }
 
 export async function enterAcademia(formData: FormData) {
+  // Solo quien abre el correo entra: antes bastaba con escribir el correo de otra persona.
   const person = await personCanReturn(field(formData, 'email'));
-  if (!person) redirect('/academia/entrar?error=1');
-  await setAcademiaPerson(person.id);
-  redirect('/academia');
+  if (person) {
+    const base = process.env.NODE_ENV === 'production' ? site.url : await origin();
+    const link = `${base}/academia/entrar/confirmar?t=${loginLinkToken(person.id)}`;
+    await sendAcademiaMail(
+      person.email,
+      'Tu enlace para entrar a la academia',
+      ['Hola,', '', 'Abre este enlace para entrar a la academia de Cluster. Vale 30 minutos:', link, '', 'Si no lo pediste, ignora este correo.'].join('\n'),
+    );
+  }
+  redirect('/academia/entrar?enviado=1');
 }
 
 export async function updateProfile(formData: FormData) {
-  const id = field(formData, 'id');
-  if (!id) return;
+  // El id sale de la sesión, nunca del formulario.
+  const id = await academiaPersonId();
+  if (!id) redirect('/academia/entrar');
   const sql = await crm();
   await sql`
     UPDATE valux_people
@@ -196,6 +207,7 @@ export async function subscribeNewsletter(formData: FormData) {
 }
 
 export async function saveSettings(formData: FormData) {
+  await requireDashboard();
   const percent = Math.max(0, Math.min(100, Math.round(Number(field(formData, 'commission')) || 0)));
   const sql = await crm();
   await sql`
@@ -207,6 +219,7 @@ export async function saveSettings(formData: FormData) {
 }
 
 export async function createPerson(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   const email = field(formData, 'email');
   const role = field(formData, 'role') || 'usuario';
@@ -226,6 +239,7 @@ export async function createPerson(formData: FormData) {
 }
 
 export async function updatePerson(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const role = field(formData, 'role');
   const allowed = ['usuario', 'suscriptor', 'asociado', 'profesor', 'junta'];
@@ -243,6 +257,7 @@ export async function updatePerson(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
+  await requireDashboard();
   const title = field(formData, 'title');
   if (!title) return;
   const direct = field(formData, 'published') === 'on' ? 'publicado' : 'pendiente';
@@ -260,6 +275,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function reviewProduct(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['publicado', 'rechazado', 'pendiente'].includes(status)) return;
@@ -298,6 +314,7 @@ async function notifyReaders(title: string, slug: string) {
 }
 
 export async function createPost(formData: FormData) {
+  await requireDashboard();
   const title = field(formData, 'title');
   if (!title) return;
   const status = field(formData, 'published') === 'on' ? 'publicado' : 'pendiente';
@@ -317,6 +334,7 @@ export async function createPost(formData: FormData) {
 }
 
 export async function updatePost(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const title = field(formData, 'title');
   if (!id || !title) return;
@@ -333,6 +351,7 @@ export async function updatePost(formData: FormData) {
 }
 
 export async function reviewPost(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['publicado', 'rechazado', 'pendiente', 'borrador'].includes(status)) return;
@@ -384,6 +403,7 @@ export async function submitApplication(formData: FormData) {
 }
 
 export async function setApplicationStatus(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['nueva', 'revision', 'aceptada', 'rechazada'].includes(status)) return;
@@ -407,6 +427,7 @@ export async function setApplicationStatus(formData: FormData) {
 }
 
 export async function setSubscriptionStatus(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['activa', 'cancelada', 'vencida'].includes(status)) return;
@@ -416,6 +437,7 @@ export async function setSubscriptionStatus(formData: FormData) {
 }
 
 export async function buildPayouts(formData: FormData) {
+  await requireDashboard();
   const period = field(formData, 'period') || periodYm();
   if (!/^\d{4}-\d{2}$/.test(period)) return;
   const sql = await crm();
@@ -441,6 +463,7 @@ export async function buildPayouts(formData: FormData) {
 }
 
 export async function markPayout(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -508,6 +531,7 @@ export async function completeLesson(formData: FormData) {
 }
 
 export async function recordSale(formData: FormData) {
+  await requireDashboard();
   const person = await getPersonByEmail(field(formData, 'email'));
   const name = person?.name || field(formData, 'name');
   const email = person?.email || field(formData, 'email');

@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { adminHasPassword, isAdminEmail, passwordMatches, saveAdminPassword } from './admins';
-import { clearSession, dashboardSession, issueSession, PRIMARY_ADMIN, SESSION_COOKIE, sessionCookieOptions } from './session';
+import { bootstrapPasswordOk, clearSession, dashboardSession, issueSession, PRIMARY_ADMIN, SESSION_COOKIE, sessionCookieOptions } from './session';
 
 export async function dashboardUnlocked() {
   return Boolean(await dashboardSession());
@@ -17,6 +17,7 @@ export async function login(formData: FormData) {
 
   if (!(await adminHasPassword(email))) {
     if (email !== PRIMARY_ADMIN) redirect('/dashboard/login?error=cuenta');
+    if (!bootstrapPasswordOk(password)) redirect('/dashboard/login?error=setup');
     await saveAdminPassword(email, password);
   } else if (!(await passwordMatches(email, password))) {
     redirect('/dashboard/login?error=clave');

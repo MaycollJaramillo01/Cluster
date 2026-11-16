@@ -8,6 +8,7 @@ const errors: Record<string, string> = {
   cuenta: 'Ese correo no es administrador.',
   clave: 'La contraseña no coincide.',
   corta: 'La contraseña necesita al menos 8 caracteres.',
+  setup: 'En la primera entrada usa la contraseña de administrador del servidor (CAREERS_ADMIN_PASSWORD).',
   google: 'Google no completó el ingreso.',
   config: 'Faltan las claves de Google.',
   lista: 'No hay correos autorizados.',
@@ -32,7 +33,7 @@ export default async function LoginPage({
           Administrador: {PRIMARY_ADMIN}
         </p>
         {firstTime ? (
-          <p className="mt-2 text-sm text-black/60">Primera entrada: elige la contraseña de esa cuenta. Después se pide siempre.</p>
+          <p className="mt-2 text-sm text-black/60">Primera entrada: usa la contraseña de administrador del servidor. Queda guardada para esa cuenta.</p>
         ) : null}
         <form action={login} className="mt-6 space-y-4">
           <label className="block">

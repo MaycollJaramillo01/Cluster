@@ -2,9 +2,10 @@
 
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
+import { upload } from '@vercel/blob/client';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
-import { MAX_FILE_BYTES, MAX_PORTFOLIO_FILES } from '@/lib/careers/types';
+import { CAREERS_UPLOAD_PREFIX, MAX_FILE_BYTES, MAX_PORTFOLIO_FILES } from '@/lib/careers/types';
 
 const inputClass =
   'w-full bg-surface px-4 py-3 text-[15px] text-fg placeholder:text-faint transition-colors focus:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]';
@@ -18,6 +19,24 @@ type ApplyModalProps = {
 function formatSize(bytes: number) {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function uploadDirect(items: { field: 'portfolio' | 'cv'; file: File }[]) {
+  try {
+    return await Promise.all(
+      items.map(async ({ field, file }) => {
+        const safe = file.name.normalize('NFKD').replace(/[^\w.-]+/g, '-').slice(0, 80) || 'archivo';
+        const blob = await upload(`${CAREERS_UPLOAD_PREFIX}${safe}`, file, {
+          access: 'private',
+          handleUploadUrl: '/api/careers/upload',
+          contentType: file.type || undefined,
+        });
+        return { field, url: blob.url, pathname: blob.pathname, name: file.name, size: file.size, type: blob.contentType };
+      }),
+    );
+  } catch {
+    return null;
+  }
 }
 
 export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: ApplyModalProps) {
@@ -66,8 +85,17 @@ export function ApplyModal({ open, onClose, jobSlug = 'editor-de-video' }: Apply
     data.set('jobSlug', jobSlug);
     data.delete('portfolio');
     data.delete('cv');
-    for (const file of portfolio) data.append('portfolio', file);
-    if (cv) data.append('cv', cv);
+    const picked = [
+      ...portfolio.map((file) => ({ field: 'portfolio' as const, file })),
+      ...(cv ? [{ field: 'cv' as const, file: cv }] : []),
+    ];
+    const uploaded = picked.length ? await uploadDirect(picked) : [];
+    if (uploaded) {
+      data.set('uploads', JSON.stringify(uploaded));
+    } else {
+      for (const file of portfolio) data.append('portfolio', file);
+      if (cv) data.append('cv', cv);
+    }
 
     const portfolioUrl = String(data.get('portfolioUrl') ?? '').trim();
     const linkedin = String(data.get('linkedin') ?? '').trim();

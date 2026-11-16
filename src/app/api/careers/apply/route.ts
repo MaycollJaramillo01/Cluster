@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import {
   ALLOWED_CV_TYPES,
   ALLOWED_PORTFOLIO_TYPES,
+  CAREERS_UPLOAD_PREFIX,
   MAX_FILE_BYTES,
   MAX_PORTFOLIO_FILES,
   MAX_TOTAL_BYTES,
@@ -60,6 +61,41 @@ function isAllowed(type: string, allowed: readonly string[]) {
   return allowed.includes(type);
 }
 
+type UploadedFile = { field: 'portfolio' | 'cv'; url: string; pathname: string; name: string; size: number; type: string };
+
+// Solo se aceptan blobs del prefijo de postulaciones en el almacenamiento de Vercel.
+function uploadedFrom(value: FormDataEntryValue | null): UploadedFile[] | null {
+  if (!value || typeof value !== 'string') return [];
+  try {
+    const list = JSON.parse(value) as unknown;
+    if (!Array.isArray(list)) return null;
+    const out: UploadedFile[] = [];
+    for (const raw of list) {
+      const item = raw as Partial<UploadedFile>;
+      const field = item.field === 'cv' ? 'cv' : item.field === 'portfolio' ? 'portfolio' : null;
+      const url = new URL(String(item.url ?? ''));
+      const pathname = String(item.pathname ?? '');
+      const allowed: readonly string[] = field === 'cv' ? ALLOWED_CV_TYPES : ALLOWED_PORTFOLIO_TYPES;
+      const size = Number(item.size);
+      if (
+        !field ||
+        url.protocol !== 'https:' ||
+        !url.hostname.endsWith('.blob.vercel-storage.com') ||
+        !pathname.startsWith(CAREERS_UPLOAD_PREFIX) ||
+        decodeURIComponent(url.pathname) !== `/${pathname}` ||
+        !allowed.includes(String(item.type)) ||
+        !Number.isFinite(size) || size <= 0 || size > MAX_FILE_BYTES
+      ) {
+        return null;
+      }
+      out.push({ field, url: url.toString(), pathname, name: String(item.name ?? 'archivo').slice(0, 160), size, type: String(item.type) });
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 async function fileFrom(entry: FormDataEntryValue | null) {
   if (!entry || typeof entry === 'string') return null;
   if (!(entry instanceof File) || entry.size === 0) return null;
@@ -114,15 +150,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'too_many_files' }, { status: 400 });
   }
 
+  const uploaded = uploadedFrom(form.get('uploads'));
+  if (!uploaded) {
+    return NextResponse.json({ ok: false, error: 'invalid_file_type' }, { status: 400 });
+  }
+  const uploadedPortfolio = uploaded.filter((item) => item.field === 'portfolio');
+  const uploadedCv = uploaded.filter((item) => item.field === 'cv');
+  if (portfolioFiles.length + uploadedPortfolio.length > MAX_PORTFOLIO_FILES || uploadedCv.length > 1) {
+    return NextResponse.json({ ok: false, error: 'too_many_files' }, { status: 400 });
+  }
+
   const cv = await fileFrom(form.get('cv'));
-  if (!portfolioFiles.length && !portfolioUrl) {
+  if (!portfolioFiles.length && !uploadedPortfolio.length && !portfolioUrl) {
     return NextResponse.json(
       { ok: false, error: 'portfolio_required' },
       { status: 400 },
     );
   }
 
-  let total = cv?.size ?? 0;
+  let total = (cv?.size ?? 0) + uploaded.reduce((sum, item) => sum + item.size, 0);
   const portfolioMeta: { file: File; mimeType: string }[] = [];
   for (const file of portfolioFiles) {
     if (file.size > MAX_FILE_BYTES) {
@@ -152,7 +198,15 @@ export async function POST(request: Request) {
   }
 
   const id = randomUUID();
-  const files: ApplicationAsset[] = [];
+  const files: ApplicationAsset[] = uploaded.map((item) => ({
+    id: randomUUID(),
+    field: item.field,
+    originalName: item.name,
+    mimeType: item.type,
+    size: item.size,
+    pathname: item.pathname,
+    url: item.url,
+  }));
 
   try {
     for (const item of portfolioMeta) {

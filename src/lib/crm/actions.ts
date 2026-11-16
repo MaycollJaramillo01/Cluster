@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { processDue, queueAutomations, startAutomations } from './automations';
 import { crm } from './db';
+import { requireDashboard } from './session';
 import { deliverEmail, deliverSms, deliverWhatsapp, emailConfigured, smsConfigured, whatsappConfigured } from './deliver';
 import { domainHasAuth, domainHasMail } from './dns';
 import { getAutomation, getSite } from './queries';
@@ -74,6 +75,7 @@ async function tagIdFor(name: string) {
 }
 
 export async function createContact(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   const email = field(formData, 'email').toLowerCase();
   if (!name || !email.includes('@')) redirect('/dashboard/contactos?error=datos');
@@ -102,6 +104,7 @@ export async function createContact(formData: FormData) {
 }
 
 export async function updateContact(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const name = field(formData, 'name');
   const email = field(formData, 'email').toLowerCase();
@@ -130,6 +133,7 @@ export async function updateContact(formData: FormData) {
 }
 
 export async function deleteContact(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -139,6 +143,7 @@ export async function deleteContact(formData: FormData) {
 }
 
 export async function addNote(formData: FormData) {
+  await requireDashboard();
   const contactId = field(formData, 'contact_id');
   const body = field(formData, 'body');
   if (!contactId || !body) return;
@@ -148,6 +153,7 @@ export async function addNote(formData: FormData) {
 }
 
 export async function deleteNote(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -156,6 +162,7 @@ export async function deleteNote(formData: FormData) {
 }
 
 export async function tagContacts(formData: FormData) {
+  await requireDashboard();
   const ids = field(formData, 'ids').split(',').map((item) => item.trim()).filter(Boolean);
   const tag = field(formData, 'tag');
   if (!ids.length || !tag) return;
@@ -168,6 +175,7 @@ export async function tagContacts(formData: FormData) {
 }
 
 export async function importContacts(formData: FormData) {
+  await requireDashboard();
   const rows = parseCsv(await csvText(formData));
   if (!rows.length) redirect('/dashboard/contactos?error=csv');
   const named = columnMap(rows[0]);
@@ -243,6 +251,7 @@ function cellAt(cells: string[], index: number) {
 }
 
 export async function createProperty(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   const format = field(formData, 'format') || 'Texto';
   if (!name) return;
@@ -256,6 +265,7 @@ export async function createProperty(formData: FormData) {
 }
 
 export async function createMembership(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const sql = await crm();
@@ -264,6 +274,7 @@ export async function createMembership(formData: FormData) {
 }
 
 export async function createTag(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   await tagIdFor(name);
@@ -271,6 +282,7 @@ export async function createTag(formData: FormData) {
 }
 
 export async function createEvent(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const duration = Number(field(formData, 'duration'));
@@ -283,6 +295,7 @@ export async function createEvent(formData: FormData) {
 }
 
 export async function deleteEvent(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -291,6 +304,7 @@ export async function deleteEvent(formData: FormData) {
 }
 
 export async function createOperator(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const sql = await crm();
@@ -299,6 +313,7 @@ export async function createOperator(formData: FormData) {
 }
 
 export async function deleteOperator(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -307,6 +322,7 @@ export async function deleteOperator(formData: FormData) {
 }
 
 export async function createService(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const duration = Number(field(formData, 'duration')) || 30;
@@ -319,6 +335,7 @@ export async function createService(formData: FormData) {
 }
 
 export async function deleteService(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -327,6 +344,7 @@ export async function deleteService(formData: FormData) {
 }
 
 export async function createBooking(formData: FormData) {
+  await requireDashboard();
   const title = field(formData, 'title');
   const date = field(formData, 'date');
   const time = field(formData, 'time') || '09:00';
@@ -366,6 +384,7 @@ export async function createBooking(formData: FormData) {
 }
 
 export async function cancelBooking(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -374,6 +393,7 @@ export async function cancelBooking(formData: FormData) {
 }
 
 export async function createCampaign(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name') || 'Campaña sin nombre';
   const channel = field(formData, 'channel') === 'mensaje' ? 'mensaje' : 'email';
   const kind = field(formData, 'kind') === 'ab' ? 'ab' : 'regular';
@@ -388,6 +408,7 @@ export async function createCampaign(formData: FormData) {
 }
 
 export async function saveCampaign(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const name = field(formData, 'name');
   if (!id || !name) return;
@@ -421,6 +442,7 @@ export async function saveCampaign(formData: FormData) {
 }
 
 export async function deleteCampaign(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -430,6 +452,7 @@ export async function deleteCampaign(formData: FormData) {
 }
 
 export async function createAutomation(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const id = crypto.randomUUID();
@@ -440,6 +463,7 @@ export async function createAutomation(formData: FormData) {
 }
 
 export async function addAutomationStep(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const detail = field(formData, 'detail');
   const kind = field(formData, 'kind');
@@ -457,6 +481,7 @@ export async function addAutomationStep(formData: FormData) {
 }
 
 export async function deleteAutomationStep(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const stepId = field(formData, 'step_id');
   const automation = await getAutomation(id);
@@ -468,6 +493,7 @@ export async function deleteAutomationStep(formData: FormData) {
 }
 
 export async function deleteAutomation(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -477,6 +503,7 @@ export async function deleteAutomation(formData: FormData) {
 }
 
 export async function createSubscriber(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   const email = field(formData, 'email').toLowerCase();
   if (!name || !email.includes('@')) return;
@@ -490,6 +517,7 @@ export async function createSubscriber(formData: FormData) {
 }
 
 export async function unsubscribe(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -498,6 +526,7 @@ export async function unsubscribe(formData: FormData) {
 }
 
 export async function createTemplate(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const sql = await crm();
@@ -509,6 +538,7 @@ export async function createTemplate(formData: FormData) {
 }
 
 export async function deleteTemplate(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -517,6 +547,7 @@ export async function deleteTemplate(formData: FormData) {
 }
 
 export async function toggleSystemEmail(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -525,6 +556,7 @@ export async function toggleSystemEmail(formData: FormData) {
 }
 
 export async function addDomain(formData: FormData) {
+  await requireDashboard();
   const domain = field(formData, 'domain').toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
   if (!domain.includes('.')) return;
   const sql = await crm();
@@ -537,6 +569,7 @@ export async function addDomain(formData: FormData) {
 }
 
 export async function verifyDomain(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const which = field(formData, 'which');
   if (!id) return;
@@ -552,6 +585,7 @@ export async function verifyDomain(formData: FormData) {
 }
 
 export async function saveBrand(formData: FormData) {
+  await requireDashboard();
   const company = field(formData, 'company_name');
   const address = field(formData, 'address');
   const sender = field(formData, 'sender_name');
@@ -570,6 +604,7 @@ export async function saveBrand(formData: FormData) {
 }
 
 export async function sendMessage(formData: FormData) {
+  await requireDashboard();
   const contactId = field(formData, 'contact_id');
   const body = field(formData, 'body');
   const channel = field(formData, 'channel');
@@ -596,6 +631,7 @@ export async function sendMessage(formData: FormData) {
 }
 
 export async function createCircle(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const sql = await crm();
@@ -619,6 +655,7 @@ export async function createCircle(formData: FormData) {
 }
 
 export async function addCircleMember(formData: FormData) {
+  await requireDashboard();
   const circleId = field(formData, 'circle_id');
   const contactId = field(formData, 'contact_id');
   if (!circleId || !contactId) return;
@@ -632,6 +669,7 @@ export async function addCircleMember(formData: FormData) {
 }
 
 export async function createPost(formData: FormData) {
+  await requireDashboard();
   const author = field(formData, 'author');
   const body = field(formData, 'body');
   const kind = field(formData, 'kind') || 'muro';
@@ -649,6 +687,7 @@ export async function createPost(formData: FormData) {
 }
 
 export async function moderatePost(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['publicado', 'rechazado', 'pendiente'].includes(status)) return;
@@ -658,6 +697,7 @@ export async function moderatePost(formData: FormData) {
 }
 
 export async function saveCommunitySettings(formData: FormData) {
+  await requireDashboard();
   const slug = slugify(field(formData, 'url_slug') || 'community');
   const sql = await crm();
   await sql`
@@ -668,6 +708,7 @@ export async function saveCommunitySettings(formData: FormData) {
 }
 
 export async function createSite(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const kind = field(formData, 'kind') === 'embudo' ? 'embudo' : 'sitio';
@@ -682,6 +723,7 @@ export async function createSite(formData: FormData) {
 }
 
 export async function deleteSite(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -690,6 +732,7 @@ export async function deleteSite(formData: FormData) {
 }
 
 export async function addBlock(formData: FormData) {
+  await requireDashboard();
   const siteId = field(formData, 'site_id');
   const type = field(formData, 'type');
   const text = field(formData, 'text');
@@ -712,6 +755,7 @@ export async function addBlock(formData: FormData) {
 }
 
 export async function moveBlock(formData: FormData) {
+  await requireDashboard();
   const siteId = field(formData, 'site_id');
   const blockId = field(formData, 'block_id');
   const site = await getSite(siteId);
@@ -729,6 +773,7 @@ export async function moveBlock(formData: FormData) {
 }
 
 export async function deleteBlock(formData: FormData) {
+  await requireDashboard();
   const siteId = field(formData, 'site_id');
   const blockId = field(formData, 'block_id');
   const site = await getSite(siteId);
@@ -740,6 +785,7 @@ export async function deleteBlock(formData: FormData) {
 }
 
 export async function publishSite(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const status = field(formData, 'status') === 'publicado' ? 'publicado' : 'borrador';
   if (!id) return;
@@ -757,6 +803,7 @@ export async function publishSite(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
+  await requireDashboard();
   const name = field(formData, 'name');
   if (!name) return;
   const sql = await crm();
@@ -765,6 +812,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function createOrder(formData: FormData) {
+  await requireDashboard();
   const productId = field(formData, 'product_id');
   if (!productId) return;
   const sql = await crm();
@@ -838,6 +886,7 @@ export async function createOrder(formData: FormData) {
 }
 
 export async function createOpportunity(formData: FormData) {
+  await requireDashboard();
   const contactId = field(formData, 'contact_id');
   const title = field(formData, 'title');
   const stage = field(formData, 'stage');
@@ -852,6 +901,7 @@ export async function createOpportunity(formData: FormData) {
 }
 
 export async function moveOpportunity(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
   const stage = field(formData, 'stage');
   if (!id || !STAGES.some((item) => item.id === stage)) return;

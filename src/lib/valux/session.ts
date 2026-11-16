@@ -1,19 +1,59 @@
+import { createHmac, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
+import { signingSecret } from '@/lib/crm/session';
 
 export const ACADEMIA_COOKIE = 'cluster_academia';
+const LINK_MS = 30 * 60 * 1000;
+
+export const academiaCookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 60 * 60 * 24 * 90,
+  secure: process.env.NODE_ENV === 'production',
+};
+
+function sign(value: string) {
+  return createHmac('sha256', signingSecret()).update(`academia:${value}`).digest('base64url');
+}
+
+function verified(value: string, sig: string) {
+  const a = Buffer.from(sig);
+  const b = Buffer.from(sign(value));
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+// La cookie lleva el id firmado: sin firma, conocer un id bastaría para entrar como otra persona.
+export function academiaCookieValue(id: string) {
+  return `${id}.${sign(id)}`;
+}
 
 export async function academiaPersonId() {
   const jar = await cookies();
-  return jar.get(ACADEMIA_COOKIE)?.value || '';
+  const raw = jar.get(ACADEMIA_COOKIE)?.value || '';
+  const cut = raw.lastIndexOf('.');
+  if (cut < 1) return '';
+  const id = raw.slice(0, cut);
+  return verified(id, raw.slice(cut + 1)) ? id : '';
 }
 
 export async function setAcademiaPerson(id: string) {
   const jar = await cookies();
-  jar.set(ACADEMIA_COOKIE, id, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 90,
-    secure: process.env.NODE_ENV === 'production',
-  });
+  jar.set(ACADEMIA_COOKIE, academiaCookieValue(id), academiaCookieOptions);
+}
+
+export function loginLinkToken(id: string) {
+  const payload = Buffer.from(JSON.stringify({ id, exp: Date.now() + LINK_MS })).toString('base64url');
+  return `${payload}.${sign(`link:${payload}`)}`;
+}
+
+export function readLoginLinkToken(token: string) {
+  const [payload, sig] = token.split('.');
+  if (!payload || !sig || !verified(`link:${payload}`, sig)) return '';
+  try {
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { id?: string; exp?: number };
+    return data.id && typeof data.exp === 'number' && data.exp > Date.now() ? data.id : '';
+  } catch {
+    return '';
+  }
 }

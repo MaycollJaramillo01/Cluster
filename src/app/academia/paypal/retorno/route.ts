@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getIntent } from '@/lib/valux/data';
 import { alreadyPaid, grantAccess } from '@/lib/valux/fulfill';
 import { capturePaypalOrder } from '@/lib/valux/paypal';
-import { ACADEMIA_COOKIE } from '@/lib/valux/session';
+import { ACADEMIA_COOKIE, academiaCookieOptions, academiaCookieValue } from '@/lib/valux/session';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -29,13 +29,7 @@ export async function GET(request: Request) {
     });
     const response = NextResponse.redirect(new URL(result.path, url.origin));
     if (result.personId) {
-      response.cookies.set(ACADEMIA_COOKIE, result.personId, {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 60 * 60 * 24 * 90,
-        secure: process.env.NODE_ENV === 'production',
-      });
+      response.cookies.set(ACADEMIA_COOKIE, academiaCookieValue(result.personId), academiaCookieOptions);
     }
     return response;
   } catch {

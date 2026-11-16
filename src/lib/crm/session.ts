@@ -1,5 +1,6 @@
-import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export const SESSION_COOKIE = 'cluster_dashboard';
 export const STATE_COOKIE = 'cluster_oauth_state';
@@ -108,7 +109,7 @@ function readSession(token: string): DashboardSession | null {
 }
 
 function signature(value: string) {
-  const secret = process.env.CAREERS_AUTH_SECRET || process.env.DASHBOARD_AUTH_SECRET || 'cluster-dashboard';
+  const secret = signingSecret();
   return createHmac('sha256', secret).update(value).digest('base64url');
 }
 
@@ -127,4 +128,35 @@ function cookieOptions(maxAge: number) {
     path: '/dashboard',
     maxAge,
   };
+}
+
+// Secreto compartido por las cookies del panel, de /postulaciones y de la academia.
+// El repo es público: nunca un valor por defecto en producción.
+export function signingSecret() {
+  const secret = (
+    process.env.CAREERS_AUTH_SECRET ||
+    process.env.DASHBOARD_AUTH_SECRET ||
+    process.env.CAREERS_ADMIN_PASSWORD ||
+    ''
+  ).trim();
+  if (secret) return secret;
+  if (process.env.NODE_ENV === 'production') throw new Error('Falta CAREERS_AUTH_SECRET');
+  return 'cluster-dev-only-secret';
+}
+
+// La primera clave de una cuenta de dueño solo se acepta si es la clave de
+// administrador del servidor: sin esto, quien llegue primero se queda con la cuenta.
+export function bootstrapPasswordOk(password: string) {
+  const setup = (process.env.CAREERS_ADMIN_PASSWORD || '').trim();
+  if (!setup) return process.env.NODE_ENV !== 'production';
+  const digest = (value: string) => createHash('sha256').update(value).digest();
+  return timingSafeEqual(digest(password), digest(setup));
+}
+
+// Toda server action del panel la llama primero: el redirect del layout no
+// protege los POST directos a una acción.
+export async function requireDashboard() {
+  const session = await dashboardSession();
+  if (!session) redirect('/dashboard/login');
+  return session;
 }

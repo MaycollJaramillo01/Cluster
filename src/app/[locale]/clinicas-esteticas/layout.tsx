@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { AnalyticsTags } from '@/components/clinicas-esteticas/AnalyticsTags';
 import './print.css';
 
 export default function ClinicasEsteticasLayout({
@@ -9,7 +8,6 @@ export default function ClinicasEsteticasLayout({
 }) {
   return (
     <>
-      <AnalyticsTags />
       {children}
     </>
   );

@@ -6,6 +6,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { list, put } from '@vercel/blob';
 import type { PublicUser, UserRole, UserStatus } from './types';
+import { bootstrapPasswordOk, signingSecret } from '@/lib/crm/session';
 
 const scrypt = promisify(scryptCb);
 
@@ -102,11 +103,7 @@ function safeEqual(a: string, b: string) {
 }
 
 function sessionSecret() {
-  return (
-    process.env.CAREERS_AUTH_SECRET ||
-    process.env.CAREERS_ADMIN_PASSWORD ||
-    'cluster-careers-session-v2'
-  ).trim();
+  return signingSecret();
 }
 
 function toPublic(user: AdminRecord): PublicUser {
@@ -256,9 +253,10 @@ export async function registerUser(input: { email: string; password: string; nam
     return { ok: false as const, error: 'already_registered' };
   }
 
+  const owner = isOwnerEmail(email);
+  if (owner && !bootstrapPasswordOk(input.password)) return { ok: false as const, error: 'invalid_login' };
   const hashed = await hashPassword(input.password);
   const now = new Date().toISOString();
-  const owner = isOwnerEmail(email);
   const user: AdminRecord = {
     email,
     name,
@@ -287,6 +285,7 @@ export async function setupUserPassword(email: string, password: string, name = 
   const file = await readAuthFile();
   const existing = findUser(file, normalized);
   if (existing?.hash) return { ok: false as const, error: 'already_setup' };
+  if (!bootstrapPasswordOk(password)) return { ok: false as const, error: 'invalid_login' };
 
   const hashed = await hashPassword(password);
   const now = new Date().toISOString();
