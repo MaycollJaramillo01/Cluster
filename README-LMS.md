@@ -86,7 +86,20 @@ La sesión del alumno es la cookie `cluster_academia`: el id de `valux_people`, 
 2. Si PayPal no está y sí hay `STRIPE_SECRET_KEY`, el checkout es de Stripe y vuelve por `/academia/stripe/retorno`.
 3. Si no hay ninguna de las dos, el formulario vuelve con `?error=pasarela` y no entrega nada.
 
-La suscripción se cobra por meses (1 a 12) al precio de `valux_settings`. La donación es un monto mensual por hasta 24 meses.
+La suscripción con precio es **recurrente**: cada mes, al precio de `valux_settings`. En PayPal se crea un plan mensual por precio (se guarda en `crm_meta`) y una suscripción `I-…`; en Stripe, un checkout en modo `subscription` (`sub_…`). El id queda en `valux_subscriptions.gateway_id`. La donación sigue siendo un monto mensual pagado de una vez por hasta 24 meses.
+
+El alumno ve su suscripción en `/academia/suscripcion` y puede cancelar la renovación: queda en `no_renueva` y conserva el acceso hasta el vencimiento. Cancelar desde el panel la corta ya, también en la pasarela.
+
+## Webhooks
+
+El retorno del navegador no basta: si el alumno cierra la pestaña o el mes se renueva, solo avisa el webhook. Los dos llaman a las mismas funciones de `fulfill.ts` y son idempotentes por id de pasarela.
+
+| Pasarela | URL | Eventos |
+| --- | --- | --- |
+| Stripe | `/api/academia/stripe` | `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted` |
+| PayPal | `/api/academia/paypal` | `CHECKOUT.ORDER.APPROVED`, `BILLING.SUBSCRIPTION.ACTIVATED`, `PAYMENT.SALE.COMPLETED`, `BILLING.SUBSCRIPTION.CANCELLED`, `BILLING.SUBSCRIPTION.SUSPENDED`, `BILLING.SUBSCRIPTION.EXPIRED` |
+
+Cada cobro mensual es una venta `suscripcion` sin vendedor y mueve el vencimiento.
 
 ## Qué pasa cuando el pago cierra
 
@@ -94,10 +107,10 @@ La suscripción se cobra por meses (1 a 12) al precio de `valux_settings`. La do
 
 1. Si ese id de orden ya está en `valux_sales` o `valux_donations`, no crea otra fila.
 2. Una donación solo se anota como `pagada`. No crea persona ni inscripción.
-3. En lo demás, crea la persona si el correo no existe. Una suscripción le pone rol `suscriptor` si todavía era `usuario`.
+3. En lo demás, crea la persona si el correo no existe. La compra ya no cambia el rol: `suscriptor` queda para dar acceso a mano.
 4. Parte el monto con `splitCents`: la comisión configurada se queda Cluster (`fee_cents`) y el resto es del profesor del curso o del creador del producto (`seller_cents`). Sin creador, todo el monto queda como comisión. El periodo de la venta es `YYYY-MM` en hora de Tegucigalpa.
 5. Si es un curso y esa persona no estaba inscrita, inserta `lms_enrollments`.
-6. Si es suscripción, inserta un periodo `activa` que vence a los N meses.
+6. Si es suscripción sin pasarela (precio 0 o venta a mano), inserta un periodo `activa` que vence a los N meses. Las de pasarela pasan por `activateSubscription`.
 7. Manda el correo “Tu acceso en la academia” si Resend está configurado.
 
 ## Quién puede leer
@@ -146,5 +159,7 @@ src/lib/valux/stripe.ts        Checkout de Stripe
 | Las del CRM (`DATABASE_URL`, conector Neon, etc.) | La academia usa la misma base. Ver [README-CRM.md](README-CRM.md) |
 | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` | Cobrar y liquidar. Si están, PayPal gana sobre Stripe |
 | `STRIPE_SECRET_KEY` | Cobrar cuando PayPal no está |
+| `STRIPE_WEBHOOK_SECRET` | Firma del webhook de Stripe (`whsec_…`) |
+| `PAYPAL_WEBHOOK_ID` | Id del webhook creado en PayPal; sin él se rechazan sus avisos |
 | `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` | Correo de acceso |
 | `BLOB_READ_WRITE_TOKEN` | Portadas y archivos subidos |

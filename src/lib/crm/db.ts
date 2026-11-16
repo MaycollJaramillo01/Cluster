@@ -442,6 +442,8 @@ const STATEMENTS = [
   `ALTER TABLE form_submits ADD COLUMN IF NOT EXISTS details TEXT`,
   `ALTER TABLE messages ADD COLUMN IF NOT EXISTS delivered BOOLEAN`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS gateway_id TEXT`,
+  `ALTER TABLE valux_subscriptions ADD COLUMN IF NOT EXISTS gateway_id TEXT`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS valux_subscriptions_gateway_idx ON valux_subscriptions (gateway_id)`,
   `CREATE TABLE IF NOT EXISTS automation_runs (
     automation_id TEXT NOT NULL,
     contact_id TEXT NOT NULL,

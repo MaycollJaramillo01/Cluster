@@ -1,5 +1,8 @@
 import { headers } from 'next/headers';
 import { crm } from '@/lib/crm/db';
+import { getIntent } from './data';
+import { paypalOrderPaid, paypalSubscriptionPayments, readPaypalSubscription } from './paypal';
+import { readStripeCheckout, readStripeSubscription } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { periodYm, splitCents } from './money';
 
@@ -80,13 +83,16 @@ export async function grantAccess(input: {
     const monthly = Math.max(0, Math.round(input.monthlyCents || 0));
     const total = monthly * months;
     if (total <= 0) throw new Error('La donación no tiene monto');
-    await sql`
+    const gift = await sql`
       INSERT INTO valux_donations (id, monthly_cents, months, total_cents, status, paypal_order_id, payer_email, payer_name, paid_at)
       VALUES (
         ${crypto.randomUUID()}, ${monthly}, ${months}, ${total}, 'pagada',
         ${input.paypalOrderId || null}, ${email}, ${name}, now()
       )
+      ON CONFLICT (paypal_order_id) DO NOTHING
+      RETURNING id
     `;
+    if (!gift.length) return { personId: '', path: '/academia/apoyar?ok=1' };
     await notifyAccess(email, name, '/academia/apoyar?ok=1');
     return { personId: '', path: '/academia/apoyar?ok=1' };
   }
@@ -113,18 +119,22 @@ export async function grantAccess(input: {
     amount = config.subscriptionCents * months;
   }
 
-  const personId = await ensurePerson(email, name, input.kind === 'suscripcion' ? 'suscriptor' : 'usuario');
+  const personId = await ensurePerson(email, name);
   const split = sellerId ? splitCents(amount, config.commission) : { amount, fee: amount, seller: 0 };
   let fresh = false;
   if (split.amount > 0) {
-    await sql`
+    const sale = await sql`
       INSERT INTO valux_sales (
         id, kind, buyer_id, seller_id, course_id, product_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym
       ) VALUES (
         ${crypto.randomUUID()}, ${input.kind}, ${personId}, ${sellerId}, ${courseId}, ${productId},
         ${split.amount}, ${split.fee}, ${split.seller}, ${input.paypalOrderId || null}, ${periodYm()}
       )
+      ON CONFLICT (paypal_order_id) DO NOTHING
+      RETURNING id
     `;
+    // Otro pedido con la misma orden ya entregó el acceso.
+    if (!sale.length) return { personId, path: await destination(input.kind, input.itemId) };
     fresh = true;
   }
 
@@ -176,4 +186,136 @@ async function destination(kind: GrantKind, itemId?: string | null) {
   if (kind === 'producto' && itemId) return `/academia/marketplace/${itemId}?ok=1`;
   if (kind === 'suscripcion') return '/academia/suscripcion?ok=1';
   return '/academia/apoyar?ok=1';
+}
+
+type Intent = NonNullable<Awaited<ReturnType<typeof getIntent>>>;
+
+function grantFromIntent(intent: Intent, orderId: string) {
+  return grantAccess({
+    kind: intent.kind,
+    itemId: intent.itemId || null,
+    name: intent.name,
+    email: intent.email,
+    months: intent.months,
+    monthlyCents: intent.kind === 'donacion' ? Math.round(intent.amountCents / Math.max(1, intent.months)) : undefined,
+    paypalOrderId: orderId,
+  });
+}
+
+export type Fulfilled = { personId: string; path: string } | null;
+
+// Retorno del navegador y webhook llaman lo mismo; todo es idempotente por id de pasarela.
+export async function fulfillStripeSession(sessionId: string): Promise<Fulfilled> {
+  const intent = await getIntent(sessionId);
+  if (!intent) return null;
+  const session = await readStripeCheckout(sessionId);
+  if (!session.paid || session.amountCents + 1 < intent.amountCents) return null;
+  if (!session.subscriptionId) return grantFromIntent(intent, sessionId);
+
+  const subscription = await readStripeSubscription(session.subscriptionId).catch(() => null);
+  const personId = await activateSubscription({
+    gatewayId: session.subscriptionId,
+    email: intent.email,
+    name: intent.name,
+    periodEnd: subscription?.periodEnd ?? null,
+  });
+  if (session.invoiceId) {
+    await recordSubscriptionPayment({
+      gatewayId: session.subscriptionId,
+      paymentId: session.invoiceId,
+      amountCents: session.amountCents,
+    });
+  }
+  return { personId, path: '/academia/suscripcion?ok=1' };
+}
+
+export async function fulfillPaypalOrder(orderId: string): Promise<Fulfilled> {
+  const intent = await getIntent(orderId);
+  if (!intent) return null;
+  if (!(await alreadyPaid(orderId))) {
+    const order = await paypalOrderPaid(orderId);
+    if (!order.paid || order.amountCents + 1 < intent.amountCents) return null;
+  }
+  return grantFromIntent(intent, orderId);
+}
+
+export async function fulfillPaypalSubscription(subscriptionId: string): Promise<Fulfilled> {
+  const intent = await getIntent(subscriptionId);
+  if (!intent) return null;
+  const subscription = await readPaypalSubscription(subscriptionId);
+  if (!['ACTIVE', 'APPROVED'].includes(subscription.status)) return null;
+  const personId = await activateSubscription({
+    gatewayId: subscriptionId,
+    email: intent.email,
+    name: intent.name,
+    periodEnd: subscription.periodEnd,
+  });
+  const payments = await paypalSubscriptionPayments(subscriptionId).catch(() => []);
+  for (const payment of payments) {
+    await recordSubscriptionPayment({ gatewayId: subscriptionId, paymentId: payment.id, amountCents: payment.amountCents });
+  }
+  return { personId, path: '/academia/suscripcion?ok=1' };
+}
+
+function monthFromNow() {
+  const end = new Date();
+  end.setMonth(end.getMonth() + 1);
+  return end;
+}
+
+// Alta o renovación de una suscripción de pasarela. El vencimiento solo avanza.
+export async function activateSubscription(input: { gatewayId: string; email: string; name: string; periodEnd: Date | null }) {
+  const sql = await crm();
+  const personId = await ensurePerson(input.email, input.name);
+  const end = input.periodEnd && input.periodEnd.getTime() > Date.now() ? input.periodEnd : monthFromNow();
+  const rows = await sql`
+    INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, gateway_id)
+    VALUES (${crypto.randomUUID()}, ${personId}, 'activa', ${end.toISOString()}, ${input.gatewayId}, ${input.gatewayId})
+    ON CONFLICT (gateway_id) DO UPDATE SET
+      current_period_end = GREATEST(valux_subscriptions.current_period_end, EXCLUDED.current_period_end),
+      status = CASE WHEN valux_subscriptions.status = 'vencida' THEN 'activa' ELSE valux_subscriptions.status END
+    RETURNING (xmax = 0) AS inserted
+  `;
+  if ((rows[0] as { inserted?: boolean } | undefined)?.inserted) {
+    await notifyAccess(input.email.trim().toLowerCase(), input.name.trim(), '/academia/suscripcion?ok=1');
+  }
+  return personId;
+}
+
+// Cada cobro mensual: una venta (sin vendedor, todo es comisión) y, si llega, el nuevo vencimiento.
+export async function recordSubscriptionPayment(input: {
+  gatewayId: string;
+  paymentId: string;
+  amountCents: number;
+  periodEnd?: Date | null;
+}) {
+  const sql = await crm();
+  const rows = await sql`SELECT person_id FROM valux_subscriptions WHERE gateway_id = ${input.gatewayId}`;
+  const personId = (rows[0] as { person_id?: string } | undefined)?.person_id;
+  if (!personId) return false;
+  if (input.periodEnd) {
+    await sql`
+      UPDATE valux_subscriptions SET
+        current_period_end = GREATEST(current_period_end, ${input.periodEnd.toISOString()}::timestamptz),
+        status = CASE WHEN status = 'vencida' THEN 'activa' ELSE status END
+      WHERE gateway_id = ${input.gatewayId}
+    `;
+  }
+  if (input.amountCents > 0) {
+    await sql`
+      INSERT INTO valux_sales (id, kind, buyer_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym)
+      VALUES (
+        ${crypto.randomUUID()}, 'suscripcion', ${personId}, ${input.amountCents}, ${input.amountCents}, 0,
+        ${input.paymentId}, ${periodYm()}
+      )
+      ON CONFLICT (paypal_order_id) DO NOTHING
+    `;
+  }
+  return true;
+}
+
+// no_renueva: ya pagó el mes en curso y lo conserva. vencida: la pasarela cerró la suscripción.
+export async function setSubscriptionEnded(gatewayId: string, status: 'no_renueva' | 'vencida') {
+  const sql = await crm();
+  await sql`UPDATE valux_subscriptions SET status = ${status} WHERE gateway_id = ${gatewayId} AND status <> 'cancelada'`;
 }

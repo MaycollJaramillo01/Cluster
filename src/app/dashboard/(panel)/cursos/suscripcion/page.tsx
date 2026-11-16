@@ -21,12 +21,12 @@ export default async function SuscripcionAdmin() {
           <article key={item.id} className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white px-4 py-3">
             <div>
               <p className="font-medium">{item.name}</p>
-              <p className="text-xs text-black/45">{item.email} · {item.status} · vence {item.current_period_end ? formatDate(item.current_period_end) : '—'} · {money(settings.subscription_cents)}</p>
+              <p className="text-xs text-black/45">{item.email} · {item.status === 'no_renueva' ? 'no renueva' : item.status} · vence {item.current_period_end ? formatDate(item.current_period_end) : '—'} · {money(settings.subscription_cents)}</p>
             </div>
             <form action={setSubscriptionStatus} className="flex gap-2">
               <input type="hidden" name="id" value={item.id} />
-              <input type="hidden" name="status" value={item.status === 'activa' ? 'cancelada' : 'activa'} />
-              <button className={btnTiny} type="submit">{item.status === 'activa' ? 'Cancelar' : 'Activar'}</button>
+              <input type="hidden" name="status" value={['activa', 'no_renueva'].includes(item.status) ? 'cancelada' : 'activa'} />
+              <button className={btnTiny} type="submit">{['activa', 'no_renueva'].includes(item.status) ? 'Cancelar' : 'Activar'}</button>
             </form>
           </article>
         ))}

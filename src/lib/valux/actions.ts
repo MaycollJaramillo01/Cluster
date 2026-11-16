@@ -6,12 +6,12 @@ import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
 import { requireDashboard } from '@/lib/crm/session';
 import { site } from '@/lib/site';
-import { getPersonByEmail, personCanReturn, publishedCourse, getProduct, getSettings, canReadCourse } from './data';
+import { getPersonByEmail, personCanReturn, personSubscription, publishedCourse, getProduct, getSettings, canReadCourse } from './data';
 import { ensurePerson, grantAccess, type GrantKind } from './fulfill';
 import { payoutDueAt, periodYm, slugify } from './money';
-import { createPaypalOrder, paypalConfigured, sendPaypalPayout } from './paypal';
+import { cancelPaypalSubscription, createPaypalOrder, createPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
 import { academiaPersonId, loginLinkToken, setAcademiaPerson } from './session';
-import { createStripeCheckout, stripeConfigured } from './stripe';
+import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { storedFile } from './upload';
 
@@ -59,8 +59,16 @@ async function checkout(input: {
   try {
     const base = await origin();
     const sql = await crm();
+    const recurring = input.kind === 'suscripcion';
     if (paypalConfigured()) {
-      const order = await createPaypalOrder({
+      const order = recurring
+        ? await createPaypalSubscription({
+            amountCents: input.amountCents,
+            email: input.email,
+            returnUrl: `${base}/academia/paypal/retorno`,
+            cancelUrl: `${base}/academia/paypal/cancelado`,
+          })
+        : await createPaypalOrder({
         amountCents: input.amountCents,
         description: input.description,
         returnUrl: `${base}/academia/paypal/retorno`,
@@ -81,6 +89,7 @@ async function checkout(input: {
       email: input.email,
       successUrl: `${base}/academia/stripe/retorno?session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${base}/academia/paypal/cancelado`,
+      recurring,
       metadata: {
         kind: input.kind,
         item_id: input.itemId || '',
@@ -134,16 +143,41 @@ export async function buyProduct(formData: FormData) {
 
 export async function buySubscription(formData: FormData) {
   const settings = await getSettings();
-  const months = Math.max(1, Math.min(12, Number(field(formData, 'months')) || 1));
+  // Cobro mensual recurrente; sin precio, un mes sin cobro.
   await checkout({
     kind: 'suscripcion',
     name: field(formData, 'name'),
     email: field(formData, 'email'),
-    amountCents: settings.subscription_cents * months,
-    months,
-    description: 'Suscripción de la academia',
+    amountCents: settings.subscription_cents,
+    months: 1,
+    description: 'Suscripción mensual de la academia',
     failPath: '/academia/suscripcion',
   });
+}
+
+async function stopRenewal(gatewayId: string, immediately: boolean) {
+  if (!gatewayId) return;
+  if (gatewayId.startsWith('I-')) {
+    if (paypalConfigured()) await cancelPaypalSubscription(gatewayId);
+  } else if (gatewayId.startsWith('sub_')) {
+    if (stripeConfigured()) await cancelStripeSubscription(gatewayId, !immediately);
+  }
+}
+
+export async function cancelMySubscription() {
+  const personId = await academiaPersonId();
+  if (!personId) redirect('/academia/entrar');
+  const current = await personSubscription(personId);
+  if (!current || current.status !== 'activa') redirect('/academia/suscripcion');
+  try {
+    await stopRenewal(current.gateway_id, false);
+  } catch {
+    redirect('/academia/suscripcion?error=cancelar');
+  }
+  const sql = await crm();
+  await sql`UPDATE valux_subscriptions SET status = 'no_renueva' WHERE id = ${current.id}`;
+  refresh();
+  redirect('/academia/suscripcion?cancelada=1');
 }
 
 export async function donate(formData: FormData) {
@@ -432,6 +466,12 @@ export async function setSubscriptionStatus(formData: FormData) {
   const status = field(formData, 'status');
   if (!id || !['activa', 'cancelada', 'vencida'].includes(status)) return;
   const sql = await crm();
+  if (status === 'cancelada') {
+    // Cancelar en el panel corta el acceso y el cobro en la pasarela.
+    const rows = await sql`SELECT gateway_id FROM valux_subscriptions WHERE id = ${id}`;
+    const gatewayId = (rows[0] as { gateway_id?: string } | undefined)?.gateway_id || '';
+    await stopRenewal(gatewayId, true).catch((error) => console.error('[academia] cancelar suscripción:', error));
+  }
   await sql`UPDATE valux_subscriptions SET status = ${status} WHERE id = ${id}`;
   refresh();
 }

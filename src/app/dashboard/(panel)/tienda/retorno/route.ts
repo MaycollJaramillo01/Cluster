@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { crm } from '@/lib/crm/db';
-import { capturePaypalOrder } from '@/lib/valux/paypal';
+import { paypalOrderPaid } from '@/lib/valux/paypal';
 import { readStripeCheckout } from '@/lib/valux/stripe';
 
 export async function GET(request: Request) {
@@ -15,8 +15,8 @@ export async function GET(request: Request) {
       const session = await readStripeCheckout(sessionId);
       if (!session.paid) return NextResponse.redirect(new URL('/dashboard/tienda?error=pago', url.origin));
     } else {
-      const captured = await capturePaypalOrder(token);
-      if (captured.status !== 'COMPLETED') return NextResponse.redirect(new URL('/dashboard/tienda?error=pago', url.origin));
+      const captured = await paypalOrderPaid(token);
+      if (!captured.paid) return NextResponse.redirect(new URL('/dashboard/tienda?error=pago', url.origin));
     }
     const sql = await crm();
     await sql`UPDATE orders SET status = 'pagado' WHERE gateway_id = ${gatewayId}`;

@@ -1,37 +1,19 @@
 import { NextResponse } from 'next/server';
-import { getIntent } from '@/lib/valux/data';
-import { alreadyPaid, grantAccess } from '@/lib/valux/fulfill';
-import { capturePaypalOrder } from '@/lib/valux/paypal';
-import { ACADEMIA_COOKIE, academiaCookieOptions, academiaCookieValue } from '@/lib/valux/session';
+import { fulfillPaypalOrder, fulfillPaypalSubscription } from '@/lib/valux/fulfill';
+import { academiaLanding } from '@/lib/valux/landing';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
+  // Una suscripción vuelve con subscription_id; un pago único, con token (id de la orden).
+  const subscriptionId = url.searchParams.get('subscription_id') || '';
   const token = url.searchParams.get('token') || '';
-  const intent = token ? await getIntent(token) : null;
-  if (!intent) return NextResponse.redirect(new URL('/academia?error=pago', url.origin));
-
   try {
-    const paid = await alreadyPaid(token);
-    if (!paid) {
-      const captured = await capturePaypalOrder(token);
-      if (captured.status !== 'COMPLETED' || captured.amountCents + 1 < intent.amountCents) {
-        return NextResponse.redirect(new URL('/academia?error=pago', url.origin));
-      }
-    }
-    const result = await grantAccess({
-      kind: intent.kind,
-      itemId: intent.itemId || null,
-      name: intent.name,
-      email: intent.email,
-      months: intent.months,
-      monthlyCents: intent.kind === 'donacion' ? Math.round(intent.amountCents / Math.max(1, intent.months)) : undefined,
-      paypalOrderId: token,
-    });
-    const response = NextResponse.redirect(new URL(result.path, url.origin));
-    if (result.personId) {
-      response.cookies.set(ACADEMIA_COOKIE, academiaCookieValue(result.personId), academiaCookieOptions);
-    }
-    return response;
+    const result = subscriptionId
+      ? await fulfillPaypalSubscription(subscriptionId)
+      : token
+        ? await fulfillPaypalOrder(token)
+        : null;
+    return academiaLanding(result, url.origin);
   } catch {
     return NextResponse.redirect(new URL('/academia?error=pago', url.origin));
   }

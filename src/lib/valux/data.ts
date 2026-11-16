@@ -433,7 +433,7 @@ async function seatActive(personId: string, role: string) {
   const now = Date.now();
   return rows.some((row) => {
     const entry = row as Record<string, unknown>;
-    return text(entry.status) === 'activa' && new Date(text(entry.current_period_end)).getTime() > now;
+    return ['activa', 'no_renueva'].includes(text(entry.status)) && new Date(text(entry.current_period_end)).getTime() > now;
   });
 }
 
@@ -507,6 +507,23 @@ export async function personCanReturn(email: string) {
   const entry = rows[0] as Record<string, unknown> | undefined;
   const known = num(entry?.enrolled) + num(entry?.sales) + num(entry?.subs) > 0 || person.role !== 'usuario';
   return known ? person : null;
+}
+
+export async function personSubscription(personId: string) {
+  const sql = await crm();
+  const rows = await sql`
+    SELECT id, status, current_period_end, gateway_id FROM valux_subscriptions
+    WHERE person_id = ${personId} AND status IN ('activa', 'no_renueva') AND current_period_end > now()
+    ORDER BY current_period_end DESC LIMIT 1
+  `;
+  const entry = rows[0] as Record<string, unknown> | undefined;
+  if (!entry) return null;
+  return {
+    id: text(entry.id),
+    status: text(entry.status),
+    current_period_end: text(entry.current_period_end),
+    gateway_id: text(entry.gateway_id),
+  };
 }
 
 export async function getIntent(orderId: string) {
