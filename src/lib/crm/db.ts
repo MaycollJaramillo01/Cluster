@@ -443,6 +443,17 @@ const STATEMENTS = [
   `ALTER TABLE messages ADD COLUMN IF NOT EXISTS delivered BOOLEAN`,
   `ALTER TABLE orders ADD COLUMN IF NOT EXISTS gateway_id TEXT`,
   `ALTER TABLE valux_subscriptions ADD COLUMN IF NOT EXISTS gateway_id TEXT`,
+  `CREATE TABLE IF NOT EXISTS campaign_sends (
+    id TEXT PRIMARY KEY,
+    campaign_id TEXT NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    channel TEXT NOT NULL,
+    recipient TEXT NOT NULL,
+    name TEXT,
+    status TEXT NOT NULL DEFAULT 'pendiente',
+    sent_at TIMESTAMPTZ,
+    UNIQUE (campaign_id, recipient)
+  )`,
+  `CREATE INDEX IF NOT EXISTS campaign_sends_pending_idx ON campaign_sends (status) WHERE status IN ('pendiente', 'enviando')`,
   `CREATE UNIQUE INDEX IF NOT EXISTS valux_subscriptions_gateway_idx ON valux_subscriptions (gateway_id)`,
   `CREATE TABLE IF NOT EXISTS automation_runs (
     automation_id TEXT NOT NULL,

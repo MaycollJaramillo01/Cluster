@@ -120,14 +120,19 @@ export async function processDue(limit = 20) {
     ORDER BY run_at
     LIMIT ${limit}
   `;
+  if (!jobs.length) return 0;
   const flows = await activeFlows();
+  let ran = 0;
   for (const job of jobs) {
     const entry = job as { id?: string; automation_id?: string; contact_id?: string; step_index?: unknown };
     if (!entry.id) continue;
-    await sql`UPDATE automation_jobs SET done_at = now() WHERE id = ${entry.id} AND done_at IS NULL`;
+    const taken = await sql`UPDATE automation_jobs SET done_at = now() WHERE id = ${entry.id} AND done_at IS NULL RETURNING id`;
+    if (!taken.length) continue;
+    ran += 1;
     const flow = flows.find((item) => item.id === entry.automation_id);
     const contact = entry.contact_id ? await person(entry.contact_id) : null;
     if (!flow || !contact) continue;
     await walk(flow, contact, Number(entry.step_index) || 0);
   }
+  return ran;
 }

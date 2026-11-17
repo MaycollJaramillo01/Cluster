@@ -84,6 +84,24 @@ La navegación está en `src/components/dashboard/nav.ts`. Leer es `src/lib/crm/
 
 Si el canal no está listo, la acción no envía y deja el motivo. El código de envío está en `src/lib/crm/deliver.ts`.
 
+## Tarea programada
+
+`/api/cron/crm` corre cada 5 minutos (`vercel.json`). Necesita `CRON_SECRET`: Vercel lo manda como `Authorization: Bearer …` y sin él la ruta responde 401. Ejecuta los pasos de automatización vencidos y manda campañas en lotes. Abrir el panel también ejecuta los pasos vencidos; cada paso se toma una sola vez.
+
+**Campañas.** Al enviar, toda la audiencia entra a `campaign_sends` (`pendiente` → `enviado` o `fallido`) y el panel manda el primer lote. El resto sale con la tarea programada. Si el primer lote falla completo, la campaña vuelve con `?error=envio` y no queda encolada. Cada correo lleva un enlace de baja firmado y las cabeceras `List-Unsubscribe` / `List-Unsubscribe-Post`. La baja es `/api/crm/baja`: el enlace muestra un botón y el POST da de baja.
+
+## Canales de entrada
+
+Las respuestas llegan a la bandeja como mensajes `in`. El contacto se busca por los últimos 8 dígitos del teléfono o por el correo. Si no existe se crea; por teléfono lleva un correo `<número>@whatsapp.invalid` o `@sms.invalid`, porque `contacts` exige correo.
+
+| Canal | URL del webhook | Variables |
+| --- | --- | --- |
+| WhatsApp (Meta Cloud API) | `/api/crm/whatsapp` | `WHATSAPP_VERIFY_TOKEN` (verificación) y `WHATSAPP_APP_SECRET` (firma) |
+| SMS (Twilio) | `/api/crm/sms` | `TWILIO_AUTH_TOKEN` (firma) |
+| Correo (Resend inbound) | `/api/crm/correo` | `RESEND_INBOUND_WEBHOOK_SECRET` (`whsec_…`) |
+
+Sin la variable de firma, la ruta rechaza todo.
+
 ## Archivos
 
 ```
@@ -98,6 +116,8 @@ src/lib/crm/leads.ts         Formularios del sitio
 src/lib/crm/queries.ts       Lecturas
 src/lib/crm/actions.ts       Altas, ediciones y borrados
 src/lib/crm/automations.ts   Flujos y trabajos
+src/lib/crm/campaigns.ts     Cola de campañas y enlace de baja
+src/lib/crm/inbound.ts       Mensajes entrantes
 src/lib/crm/deliver.ts       Resend, Twilio, WhatsApp
 src/lib/crm/types.ts         Etapas del embudo y tipos del panel
 ```
@@ -114,5 +134,8 @@ src/lib/crm/types.ts         Etapas del embudo y tipos del panel
 | `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` | Correo |
 | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID` | WhatsApp |
 | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | SMS |
+| `CRON_SECRET` | Tarea programada |
+| `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET` | WhatsApp entrante |
+| `RESEND_INBOUND_WEBHOOK_SECRET` | Correo entrante |
 
 El resto del ejemplo está en `.env.example`.

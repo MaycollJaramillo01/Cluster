@@ -19,6 +19,7 @@ export async function deliverEmail(
   subject: string,
   text: string,
   attachment?: { filename: string; content: string },
+  headers?: Record<string, string>,
 ) {
   const key = process.env.RESEND_API_KEY?.trim();
   const email = to.trim().toLowerCase();
@@ -32,6 +33,7 @@ export async function deliverEmail(
         to: email,
         subject,
         text,
+        headers,
         attachments: attachment
           ? [{ filename: attachment.filename, content: Buffer.from(attachment.content).toString('base64') }]
           : undefined,

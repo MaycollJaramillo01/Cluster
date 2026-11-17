@@ -1,12 +1,13 @@
 'use server';
 
+import { processCampaignSends, queueCampaign } from './campaigns';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { processDue, queueAutomations, startAutomations } from './automations';
 import { crm } from './db';
 import { requireDashboard } from './session';
-import { deliverEmail, deliverSms, deliverWhatsapp, emailConfigured, smsConfigured, whatsappConfigured } from './deliver';
+import { deliverEmail, deliverSms, deliverWhatsapp } from './deliver';
 import { domainHasAuth, domainHasMail } from './dns';
 import { getAutomation, getSite } from './queries';
 import { STAGES, type SiteBlock } from './types';
@@ -420,11 +421,16 @@ export async function saveCampaign(formData: FormData) {
   const alreadySent = Boolean((previous[0] as { sent_at?: unknown } | undefined)?.sent_at);
   let sent = 0;
   if (status === 'enviada' && !alreadySent) {
-    const result = await dispatchCampaign(channel, field(formData, 'subject') || name, field(formData, 'body'));
-    if (!result.ready || (result.attempted > 0 && result.sent === 0)) {
-      redirect(`/dashboard/mensajes/campanas/${id}?error=${result.ready ? 'envio' : result.reason}`);
+    // El lote lee asunto y cuerpo de la fila: se guardan antes de encolar.
+    await sql`UPDATE campaigns SET subject = ${field(formData, 'subject') || name}, body = ${field(formData, 'body') || null} WHERE id = ${id}`;
+    const queued = await queueCampaign(id, channel);
+    if (!queued.ready) redirect(`/dashboard/mensajes/campanas/${id}?error=${queued.reason}`);
+    const first = await processCampaignSends(40, id);
+    if (queued.queued > 0 && first.sent === 0) {
+      await sql`DELETE FROM campaign_sends WHERE campaign_id = ${id}`;
+      redirect(`/dashboard/mensajes/campanas/${id}?error=envio`);
     }
-    sent = result.sent;
+    sent = queued.queued;
   }
   await sql`
     UPDATE campaigns SET
@@ -936,26 +942,3 @@ function calendarFile(id: string, title: string, start: Date, end: Date) {
   ].join('\r\n');
 }
 
-async function dispatchCampaign(channel: string, subject: string, body: string) {
-  const sql = await crm();
-  if (channel === 'email') {
-    if (!emailConfigured()) return { ready: false, sent: 0, attempted: 0, reason: 'correo' };
-    const rows = await sql`SELECT email, name FROM subscribers WHERE status = 'subscribed' LIMIT 200`;
-    let sent = 0;
-    for (const row of rows) {
-      const entry = row as { email?: string; name?: string };
-      const ok = await deliverEmail(String(entry.email || ''), subject, `Hola ${entry.name || ''},\n\n${body}\n`);
-      if (ok) sent += 1;
-    }
-    return { ready: true, sent, attempted: rows.length, reason: '' };
-  }
-  if (!whatsappConfigured() && !smsConfigured()) return { ready: false, sent: 0, attempted: 0, reason: 'canal' };
-  const rows = await sql`SELECT phone FROM contacts WHERE phone IS NOT NULL AND phone <> '' LIMIT 200`;
-  let sent = 0;
-  for (const row of rows) {
-    const phone = String((row as { phone?: string }).phone || '');
-    const ok = whatsappConfigured() ? await deliverWhatsapp(phone, body) : await deliverSms(phone, body);
-    if (ok) sent += 1;
-  }
-  return { ready: true, sent, attempted: rows.length, reason: '' };
-}
