@@ -186,7 +186,12 @@ export async function updateCourseMeta(formData: FormData) {
     SET cover_url = ${cover},
       teacher_id = ${field(formData, 'teacher_id') || null},
       description = ${field(formData, 'description')},
-      price_cents = ${cents(formData, 'price')}
+      price_cents = ${cents(formData, 'price')},
+      plan_level = ${Math.max(0, Math.min(3, Math.round(Number(field(formData, 'plan_level')) || 0)))},
+      bump_course_id = ${field(formData, 'bump_course_id') || null},
+      bump_cents = ${cents(formData, 'bump_price')},
+      upsell_course_id = ${field(formData, 'upsell_course_id') || null},
+      upsell_cents = ${cents(formData, 'upsell_price')}
     WHERE id = ${id}
   `;
   refresh();

@@ -34,6 +34,8 @@ export async function createStripeCheckout(input: {
   recurring?: boolean;
   // Por defecto la moneda de la academia.
   currency?: string;
+  // Segunda línea del mismo pago (order bump).
+  extra?: { description: string; amountCents: number };
 }) {
   const body = new URLSearchParams();
   body.set('mode', input.recurring ? 'subscription' : 'payment');
@@ -45,6 +47,12 @@ export async function createStripeCheckout(input: {
   body.set('line_items[0][price_data][unit_amount]', String(input.amountCents));
   body.set('line_items[0][price_data][product_data][name]', input.description.slice(0, 120));
   if (input.recurring) body.set('line_items[0][price_data][recurring][interval]', 'month');
+  if (input.extra && !input.recurring) {
+    body.set('line_items[1][quantity]', '1');
+    body.set('line_items[1][price_data][currency]', input.currency || CURRENCY.toLowerCase());
+    body.set('line_items[1][price_data][unit_amount]', String(input.extra.amountCents));
+    body.set('line_items[1][price_data][product_data][name]', input.extra.description.slice(0, 120));
+  }
   for (const [key, value] of Object.entries(input.metadata)) {
     body.set(`metadata[${key}]`, value);
     if (input.recurring) body.set(`subscription_data[metadata][${key}]`, value);
@@ -91,6 +99,42 @@ export async function cancelStripeSubscription(id: string, atPeriodEnd: boolean)
   } else {
     await stripeApi(path, { method: 'DELETE' });
   }
+}
+
+function stripeRef(value: unknown) {
+  if (typeof value === 'string') return value;
+  if (value && typeof value === 'object' && 'id' in value) return String((value as { id?: unknown }).id || '');
+  return '';
+}
+
+// De un cargo reembolsado o disputado a lo que guardamos: la sesión de Checkout (pago único)
+// o la factura y la suscripción (membresía).
+export async function stripePaymentRefs(paymentIntent: string, invoiceId = '') {
+  const refs: string[] = [];
+  let invoice = invoiceId;
+  if (paymentIntent) {
+    const sessions = await stripeApi<{ data?: { id: string }[] }>(
+      `checkout/sessions?payment_intent=${encodeURIComponent(paymentIntent)}&limit=1`,
+    );
+    refs.push(...(sessions.data || []).map((session) => session.id));
+    if (!invoice) {
+      // API nueva: el cargo ya no trae la factura; se busca por el pago.
+      const payments = await stripeApi<{ data?: { invoice?: unknown }[] }>(
+        `invoice_payments?payment[type]=payment_intent&payment[payment_intent]=${encodeURIComponent(paymentIntent)}&limit=1`,
+      ).catch(() => ({ data: [] }));
+      invoice = stripeRef(payments.data?.[0]?.invoice);
+    }
+  }
+  let subscriptionId = '';
+  if (invoice) {
+    refs.push(invoice);
+    const data = await stripeApi<{ subscription?: unknown; parent?: { subscription_details?: { subscription?: unknown } } }>(
+      `invoices/${encodeURIComponent(invoice)}`,
+    );
+    subscriptionId = stripeRef(data.subscription) || stripeRef(data.parent?.subscription_details?.subscription);
+    if (subscriptionId) refs.push(subscriptionId);
+  }
+  return { refs, subscriptionId };
 }
 
 export type StripeEvent = { id: string; type: string; data: { object: Record<string, unknown> } };

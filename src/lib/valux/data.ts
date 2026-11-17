@@ -175,7 +175,7 @@ function mapPost(row: Record<string, unknown>) {
 export async function listSales() {
   const sql = await crm();
   const rows = await sql`
-    SELECT s.id, s.kind, s.amount_cents, s.fee_cents, s.seller_cents, s.period_ym, s.created_at,
+    SELECT s.id, s.kind, s.amount_cents, s.fee_cents, s.seller_cents, s.period_ym, s.created_at, s.refunded_at, s.refund_reason,
       b.name AS buyer_name, v.name AS seller_name, c.title AS course_title, p.title AS product_title
     FROM valux_sales s
     LEFT JOIN valux_people b ON b.id = s.buyer_id
@@ -198,6 +198,8 @@ export async function listSales() {
       buyer_name: text(entry.buyer_name),
       seller_name: text(entry.seller_name),
       item_title: text(entry.course_title) || text(entry.product_title) || 'Suscripción',
+      refunded_at: text(entry.refunded_at),
+      refund_reason: text(entry.refund_reason),
     };
   });
 }
@@ -232,9 +234,10 @@ export async function listApplications() {
 export async function listSubscriptions() {
   const sql = await crm();
   const rows = await sql`
-    SELECT s.id, s.status, s.current_period_end, s.created_at, p.name, p.email
+    SELECT s.id, s.status, s.current_period_end, s.created_at, p.name, p.email, pl.name AS plan_name, pl.price_cents
     FROM valux_subscriptions s
     JOIN valux_people p ON p.id = s.person_id
+    LEFT JOIN valux_plans pl ON pl.id = s.plan_id
     ORDER BY s.created_at DESC
   `;
   return rows.map((row) => {
@@ -246,6 +249,8 @@ export async function listSubscriptions() {
       created_at: text(entry.created_at),
       name: text(entry.name),
       email: text(entry.email),
+      plan_name: text(entry.plan_name),
+      price_cents: num(entry.price_cents),
     };
   });
 }
@@ -331,9 +336,13 @@ export async function publishedCourse(slug: string) {
   const sql = await crm();
   const rows = await sql`
     SELECT c.id, c.slug, c.title, c.description, c.price_cents, c.cover_url, c.teacher_id, c.published, v.name AS teacher_name,
-      (SELECT count(*) FROM lms_enrollments e WHERE e.course_id = c.id) AS students
+      (SELECT count(*) FROM lms_enrollments e WHERE e.course_id = c.id) AS students,
+      c.bump_cents, b.id AS bump_id, b.title AS bump_title,
+      c.upsell_cents, u.id AS upsell_id, u.slug AS upsell_slug, u.title AS upsell_title
     FROM lms_courses c
     LEFT JOIN valux_people v ON v.id = c.teacher_id
+    LEFT JOIN lms_courses b ON b.id = c.bump_course_id AND b.published AND b.id <> c.id
+    LEFT JOIN lms_courses u ON u.id = c.upsell_course_id AND u.published AND u.id <> c.id
     WHERE c.slug = ${slug}
   `;
   const entry = rows[0] as Record<string, unknown> | undefined;
@@ -356,6 +365,13 @@ export async function publishedCourse(slug: string) {
     teacher_id: text(entry.teacher_id),
     teacher_name: text(entry.teacher_name),
     students: num(entry.students),
+    // Solo se ofrecen si el curso destino está publicado y tiene precio de oferta.
+    bump: text(entry.bump_id) && num(entry.bump_cents) > 0
+      ? { id: text(entry.bump_id), title: text(entry.bump_title), cents: num(entry.bump_cents) }
+      : null,
+    upsell: text(entry.upsell_id) && num(entry.upsell_cents) > 0
+      ? { id: text(entry.upsell_id), slug: text(entry.upsell_slug), title: text(entry.upsell_title), cents: num(entry.upsell_cents) }
+      : null,
     sections: sections.map((row) => {
       const section = row as Record<string, unknown>;
       return { id: text(section.id), title: text(section.title) };
@@ -423,33 +439,43 @@ export async function publishedLesson(courseSlug: string, lessonSlug: string) {
   };
 }
 
-async function seatActive(personId: string, role: string) {
-  if (role === 'junta') return true;
-  if (role === 'suscriptor') return true;
+// Nivel de membresía vigente: 0 sin plan. Suscripciones viejas sin plan conservan todo (99).
+async function planLevel(personId: string, role: string) {
+  if (role === 'junta' || role === 'suscriptor') return 99;
   const sql = await crm();
   const rows = await sql`
-    SELECT status, current_period_end FROM valux_subscriptions WHERE person_id = ${personId}
+    SELECT s.status, s.current_period_end, COALESCE(p.level, 99) AS level
+    FROM valux_subscriptions s LEFT JOIN valux_plans p ON p.id = s.plan_id
+    WHERE s.person_id = ${personId}
   `;
-  if (role === 'asociado' && rows.length === 0) return true;
+  if (role === 'asociado' && rows.length === 0) return 99;
   const now = Date.now();
-  return rows.some((row) => {
+  return rows.reduce((best: number, row) => {
     const entry = row as Record<string, unknown>;
-    return ['activa', 'no_renueva'].includes(text(entry.status)) && new Date(text(entry.current_period_end)).getTime() > now;
-  });
+    const live = ['activa', 'no_renueva'].includes(text(entry.status)) && new Date(text(entry.current_period_end)).getTime() > now;
+    return live ? Math.max(best, num(entry.level)) : best;
+  }, 0);
 }
 
+export async function ownsCourse(personId: string, courseId: string) {
+  if (!personId || !courseId) return false;
+  const sql = await crm();
+  const rows = await sql`SELECT id FROM lms_enrollments WHERE course_id = ${courseId} AND person_id = ${personId}`;
+  return rows.length > 0;
+}
+
+// Lo comprado queda para siempre; la membresía solo abre los cursos de su nivel mientras esté vigente.
 export async function canReadCourse(personId: string, course: { id: string; price_cents: number; teacher_id: string }) {
   if (course.price_cents <= 0) return true;
   const person = await getPerson(personId);
   if (!person || !person.is_active) return false;
   if (person.role === 'junta') return true;
   if (person.role === 'profesor' && person.id === course.teacher_id) return true;
-  if (await seatActive(person.id, person.role)) return true;
+  if (await ownsCourse(person.id, course.id)) return true;
   const sql = await crm();
-  const rows = await sql`
-    SELECT id FROM lms_enrollments WHERE course_id = ${course.id} AND person_id = ${person.id}
-  `;
-  return rows.length > 0;
+  const rows = await sql`SELECT plan_level FROM lms_courses WHERE id = ${course.id}`;
+  const needed = num((rows[0] as { plan_level?: unknown } | undefined)?.plan_level);
+  return needed > 0 && (await planLevel(person.id, person.role)) >= needed;
 }
 
 export async function canReadProduct(personId: string, product: { id: string; price_cents: number; creator_id: string }) {
@@ -457,12 +483,39 @@ export async function canReadProduct(personId: string, product: { id: string; pr
   const person = await getPerson(personId);
   if (!person || !person.is_active) return false;
   if (person.role === 'junta' || person.id === product.creator_id) return true;
-  if (await seatActive(person.id, person.role)) return true;
+  if ((await planLevel(person.id, person.role)) > 0) return true;
   const sql = await crm();
   const rows = await sql`
-    SELECT id FROM valux_sales WHERE buyer_id = ${person.id} AND product_id = ${product.id}
+    SELECT id FROM valux_sales WHERE buyer_id = ${person.id} AND product_id = ${product.id} AND refunded_at IS NULL
   `;
   return rows.length > 0;
+}
+
+export type ValuxPlan = { id: string; name: string; level: number; price_cents: number; benefits: string[]; active: boolean };
+
+function mapPlan(row: Record<string, unknown>): ValuxPlan {
+  return {
+    id: text(row.id),
+    name: text(row.name),
+    level: num(row.level),
+    price_cents: num(row.price_cents),
+    benefits: text(row.benefits).split('\n').map((line) => line.trim()).filter(Boolean),
+    active: bool(row.active),
+  };
+}
+
+export async function listPlans(onlyActive = false) {
+  const sql = await crm();
+  const rows = await sql`SELECT id, name, level, price_cents, benefits, active FROM valux_plans ORDER BY level`;
+  const plans = rows.map((row) => mapPlan(row as Record<string, unknown>));
+  return onlyActive ? plans.filter((plan) => plan.active) : plans;
+}
+
+export async function getPlan(id: string) {
+  if (!id) return null;
+  const sql = await crm();
+  const rows = await sql`SELECT id, name, level, price_cents, benefits, active FROM valux_plans WHERE id = ${id}`;
+  return rows[0] ? mapPlan(rows[0] as Record<string, unknown>) : null;
 }
 
 export async function myCourses(personId: string) {
@@ -495,27 +548,13 @@ export async function myCourses(personId: string) {
   });
 }
 
-export async function personCanReturn(email: string) {
-  const person = await getPersonByEmail(email);
-  if (!person) return null;
-  const sql = await crm();
-  const rows = await sql`
-    SELECT
-      (SELECT count(*) FROM lms_enrollments WHERE person_id = ${person.id}) AS enrolled,
-      (SELECT count(*) FROM valux_sales WHERE buyer_id = ${person.id}) AS sales,
-      (SELECT count(*) FROM valux_subscriptions WHERE person_id = ${person.id}) AS subs
-  `;
-  const entry = rows[0] as Record<string, unknown> | undefined;
-  const known = num(entry?.enrolled) + num(entry?.sales) + num(entry?.subs) > 0 || person.role !== 'usuario';
-  return known ? person : null;
-}
-
 export async function personSubscription(personId: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT id, status, current_period_end, gateway_id FROM valux_subscriptions
-    WHERE person_id = ${personId} AND status IN ('activa', 'no_renueva') AND current_period_end > now()
-    ORDER BY current_period_end DESC LIMIT 1
+    SELECT s.id, s.status, s.current_period_end, s.gateway_id, p.name AS plan_name
+    FROM valux_subscriptions s LEFT JOIN valux_plans p ON p.id = s.plan_id
+    WHERE s.person_id = ${personId} AND s.status IN ('activa', 'no_renueva') AND s.current_period_end > now()
+    ORDER BY s.current_period_end DESC LIMIT 1
   `;
   const entry = rows[0] as Record<string, unknown> | undefined;
   if (!entry) return null;
@@ -524,13 +563,14 @@ export async function personSubscription(personId: string) {
     status: text(entry.status),
     current_period_end: text(entry.current_period_end),
     gateway_id: text(entry.gateway_id),
+    plan_name: text(entry.plan_name),
   };
 }
 
 export async function getIntent(orderId: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT kind, item_id, buyer_name, buyer_email, amount_cents, months
+    SELECT kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents
     FROM valux_intents WHERE paypal_order_id = ${orderId}
   `;
   const entry = rows[0] as Record<string, unknown> | undefined;
@@ -542,5 +582,7 @@ export async function getIntent(orderId: string) {
     email: text(entry.buyer_email),
     amountCents: num(entry.amount_cents),
     months: num(entry.months) || 1,
+    bumpItemId: text(entry.bump_item_id),
+    bumpCents: num(entry.bump_cents),
   };
 }

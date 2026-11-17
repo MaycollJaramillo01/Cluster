@@ -1,8 +1,8 @@
-import { recordSale } from '@/lib/valux/actions';
+import { recordSale, refundSale } from '@/lib/valux/actions';
 import { academyMoney as money } from '@/lib/valux/money';
 import { listCourses } from '@/lib/crm/lms';
 import { listPeople, listProducts, listSales } from '@/lib/valux/data';
-import { Field, PageTitle, btn, fieldClass } from '@/components/dashboard/ui';
+import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
 export default async function VentasPage() {
   const [sales, people, courses, products] = await Promise.all([listSales(), listPeople(), listCourses(), listProducts('publicado')]);
@@ -48,11 +48,12 @@ export default async function VentasPage() {
               <th className="px-4 py-3 font-medium">Comisión</th>
               <th className="px-4 py-3 font-medium">Vendedor</th>
               <th className="px-4 py-3 font-medium">Periodo</th>
+              <th className="px-4 py-3 font-medium">Estado</th>
             </tr>
           </thead>
           <tbody>
             {sales.map((sale) => (
-              <tr key={sale.id} className="border-b border-black/5">
+              <tr key={sale.id} className={`border-b border-black/5 ${sale.refunded_at ? 'text-black/40 line-through decoration-black/20' : ''}`}>
                 <td className="px-4 py-3">{sale.item_title}<span className="ml-2 font-mono text-[10px] uppercase text-black/35">{sale.kind}</span></td>
                 <td className="px-4 py-3">{sale.buyer_name}</td>
                 <td className="px-4 py-3">{sale.seller_name || '—'}</td>
@@ -60,6 +61,17 @@ export default async function VentasPage() {
                 <td className="px-4 py-3">{money(sale.fee_cents)}</td>
                 <td className="px-4 py-3">{money(sale.seller_cents)}</td>
                 <td className="px-4 py-3">{sale.period_ym}</td>
+                <td className="px-4 py-3 no-underline">
+                  {sale.refunded_at ? (
+                    <span className="font-mono text-[10px] uppercase">{sale.refund_reason === 'disputa' ? 'Disputa' : 'Reembolsada'}</span>
+                  ) : (
+                    // Quita el acceso. El dinero se devuelve en Stripe (eso también avisa solo) o por banco.
+                    <form action={refundSale}>
+                      <input type="hidden" name="id" value={sale.id} />
+                      <button className={btnTiny} type="submit">Reembolsar</button>
+                    </form>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

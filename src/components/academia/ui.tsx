@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { academyMoney } from '@/lib/valux/money';
 
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-4 py-10 ${className}`}>{children}</div>;
@@ -53,12 +54,15 @@ export function Checkout({
   label,
   note,
   pay,
+  bump,
 }: {
   action: (formData: FormData) => Promise<void>;
   hidden?: Record<string, string>;
   label: string;
   note?: string;
   pay?: PayOptions;
+  // Oferta opcional en el mismo pago: la casilla empieza sin marcar.
+  bump?: { title: string; cents: number } | null;
 }) {
   return (
     <form action={action} className="space-y-3">
@@ -73,6 +77,15 @@ export function Checkout({
         <span className="mb-1 block text-xs text-black/45">Correo</span>
         <input name="email" type="email" required className="w-full border border-black/15 px-3 py-2.5 text-sm outline-none focus:border-ink" />
       </label>
+      {bump ? (
+        <label className="flex items-start gap-3 border border-dashed border-brand bg-brand/5 p-3 text-sm">
+          <input type="checkbox" name="bump" value="1" className="mt-1" />
+          <span>
+            <span className="block font-medium">Agrega {bump.title} por {academyMoney(bump.cents)}</span>
+            <span className="block text-xs text-black/55">Opcional. Se suma a este mismo pago.</span>
+          </span>
+        </label>
+      ) : null}
       <PayMethod options={pay} />
       <button className="w-full bg-brand px-4 py-3 text-sm font-medium text-ink" type="submit">{label}</button>
       {note ? <p className="text-center text-xs text-black/45">{note}</p> : null}

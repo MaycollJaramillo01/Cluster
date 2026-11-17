@@ -47,14 +47,16 @@ Todo cuelga de `/dashboard/cursos`.
 | Fichas | Solicitudes de alta (`valux_applications`), con estado `nueva` hasta que alguien las mueve |
 | Personas | Usuarios de `valux_people` |
 | Clientes | Quienes ya tienen una venta |
-| Suscripción | Periodos en `valux_subscriptions` |
+| Membresías | Los 3 planes (`valux_plans`: nombre, precio, beneficios, a la venta) y los periodos de `valux_subscriptions` |
 | Liquidaciones | Lo que se le debe a cada creador por mes (`valux_payouts`) |
 | Donaciones | Aportes en `valux_donations` |
-| Comisión | `valux_settings`: comisión **30 %** y suscripción **USD 20** al nacer la base y datos bancarios para transferencia |
+| Comisión | `valux_settings`: comisión **30 %** y datos bancarios para transferencia |
 
 Roles que usa el código: `usuario`, `suscriptor`, `asociado`, `profesor`, `junta`. Una persona inactiva (`is_active = false`) no lee cursos ni productos de pago.
 
-`recordSale`, en el panel, otorga un curso, un producto o una suscripción sin pasar por la pasarela. Sirve para cargar una venta a mano.
+`recordSale`, en el panel, otorga un curso, un producto o una suscripción sin pasar por la pasarela. Sirve para cargar una venta a mano. Una suscripción cargada así no tiene plan y abre todo, como las suscripciones viejas.
+
+En la ficha de cada curso se elige desde qué plan queda incluido (o ninguno: solo se compra), el order bump y el upsell, cada uno con su precio de oferta.
 
 ## Lo que ve el alumno
 
@@ -68,15 +70,26 @@ Rutas en `src/app/academia/`.
 | `/academia/mis-cursos` | Cursos de la persona con sesión |
 | `/academia/marketplace` | Productos ya publicados |
 | `/academia/blog` | Posts publicados |
-| `/academia/entrar` | Volver a entrar con el correo |
+| `/academia/entrar` | Entrar con el correo, o crear cuenta (`?modo=registro`) con nombre, WhatsApp y correo |
+| `/academia/entrar/codigo` | Escribir el código de 6 dígitos |
+| `/academia/entrar/confirmar` | Destino del enlace del correo: un botón lo gasta |
 | `/academia/perfil` | Nombre, bio, nicho, redes y PayPal para cobrar |
-| `/academia/suscripcion` | Comprar meses de suscripción |
+| `/academia/suscripcion` | Elegir uno de los 3 planes de membresía |
 | `/academia/apoyar` | Donación |
 | `/academia/ficha` | Formulario largo de alta |
 
 La sesión del alumno es la cookie `cluster_academia`: el id de `valux_people`, HttpOnly, 90 días, path `/`. No es la cookie del CRM.
 
-**Volver a entrar** (`enterAcademia`) no crea cuentas. El correo tiene que existir y, además, tener una inscripción, una venta, una suscripción, o un rol distinto de `usuario`. Si no, la pantalla responde error.
+**Entrar y registrarse** (`enterAcademia`, `src/lib/valux/login.ts`) no usan contraseña. Cada pedido guarda una fila en `academia_logins` con el hash de un código de 6 dígitos y de un enlace, y los manda por correo:
+
+- vencen a los **15 minutos** y sirven **una sola vez**;
+- el código acepta **5 intentos**; al quinto fallo muere;
+- máximo **5 pedidos por correo y por hora**; un pedido nuevo anula los anteriores;
+- la pantalla responde lo mismo exista o no el correo. A un correo sin cuenta solo le llega código si viene del registro, con nombre y WhatsApp;
+- la persona se crea, o recibe su WhatsApp en `valux_people.phone`, recién cuando el código o el enlace se confirman;
+- el enlace abre `/academia/entrar/confirmar`, que no lo gasta: lo gasta el botón (POST). Así los antivirus de correo, que solo hacen GET, no lo queman.
+
+La prueba `scripts/check-academia.ts` recorre esto, los planes y los reembolsos contra la base de `.env.local`, y borra lo que crea.
 
 **Curso gratis** (precio 0): `checkout` llama a `grantAccess` en el momento, deja la cookie y entra al curso. No pide pasarela.
 
@@ -88,9 +101,13 @@ La sesión del alumno es la cookie `cluster_academia`: el id de `valux_people`, 
 2. **Transferencia:** aparece cuando el panel tiene datos bancarios (Comisión → Datos para transferencia). Crea una fila en `valux_transfers` con referencia `CL-XXXXXXXX`, vence a las 72 horas y le manda al comprador los datos por correo. En `/academia/transferencia/<referencia>` ve las instrucciones y puede subir el comprobante (privado, solo se abre desde el panel). **No da acceso**: finanzas aprueba en `/dashboard/cursos/transferencias` después de ver el depósito en el banco y anota el número de operación. Aprobar llama a `grantAccess` con el id `tr_<referencia>`, así un doble clic no crea dos ventas. La tarea programada vence las pendientes; una vencida todavía se puede aprobar.
 
 Con los dos métodos disponibles, el formulario pregunta cuál usar.
+
+**Order bump:** si el curso tiene uno, el checkout muestra una casilla **sin marcar** con otro curso a precio de oferta. El precio sale de la base, nunca del navegador. Va en el mismo pago (segunda línea en Stripe o el total de la transferencia) y crea una segunda venta con id `<pago>:bump`.
+
+**Upsell:** al volver del pago (`?ok=1`), quien ya tiene el curso y no tiene el ofrecido ve la oferta. Pide marcar "Autorizo un cargo nuevo" y abre **otro** pago: no reutiliza la tarjeta.
 3. Si no hay ninguna de las dos, el formulario vuelve con `?error=pasarela` y no entrega nada.
 
-La suscripción con precio es **recurrente**: cada mes, al precio de `valux_settings`. Con tarjeta es un checkout de Stripe en modo `subscription` (`sub_…`). Por transferencia se paga un mes por vez. Las suscripciones `I-…` de PayPal que ya existan se siguen renovando y cancelando. El id queda en `valux_subscriptions.gateway_id`. La donación sigue siendo un monto mensual pagado de una vez por hasta 24 meses.
+La membresía con precio es **recurrente**: cada mes, al precio de su plan (`valux_plans`). El plan queda en `valux_subscriptions.plan_id`. Con tarjeta es un checkout de Stripe en modo `subscription` (`sub_…`). Por transferencia se paga un mes por vez. Las suscripciones `I-…` de PayPal que ya existan se siguen renovando y cancelando. El id queda en `valux_subscriptions.gateway_id`. La donación sigue siendo un monto mensual pagado de una vez por hasta 24 meses.
 
 El alumno ve su suscripción en `/academia/suscripcion` y puede cancelar la renovación: queda en `no_renueva` y conserva el acceso hasta el vencimiento. Cancelar desde el panel la corta ya, también en la pasarela.
 
@@ -100,10 +117,20 @@ El retorno del navegador no basta: si el alumno cierra la pestaña o el mes se r
 
 | Pasarela | URL | Eventos |
 | --- | --- | --- |
-| Stripe | `/api/academia/stripe` | `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted` |
+| Stripe | `/api/academia/stripe` | `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created` |
 | PayPal | `/api/academia/paypal` | `CHECKOUT.ORDER.APPROVED`, `BILLING.SUBSCRIPTION.ACTIVATED`, `PAYMENT.SALE.COMPLETED`, `BILLING.SUBSCRIPTION.CANCELLED`, `BILLING.SUBSCRIPTION.SUSPENDED`, `BILLING.SUBSCRIPTION.EXPIRED` |
 
 Cada cobro mensual es una venta `suscripcion` sin vendedor y mueve el vencimiento.
+
+**Reembolsos y disputas** (`revokeSales` en `fulfill.ts`):
+
+- Un reembolso **total** (`charge.refunded`) o una disputa abierta (`charge.dispute.created`) busca en Stripe la sesión o la factura de ese cargo.
+- Marca la venta y su bump con `refunded_at`.
+- Borra la inscripción, salvo que otra venta vigente pague el mismo curso.
+- Corta la membresía en el acto, también en Stripe.
+- La venta deja de contar en las liquidaciones.
+- Un reembolso parcial no quita nada. En Ventas, el botón **Reembolsar** hace lo mismo a mano, por ejemplo para una transferencia devuelta.
+- Si una disputa se gana, el acceso se devuelve con una venta a mano.
 
 ## Qué pasa cuando el pago cierra
 
@@ -125,10 +152,10 @@ Un curso de precio 0 lo lee cualquiera. Uno de pago lo lee si la persona está a
 
 - rol `junta`;
 - rol `profesor` y es el `teacher_id` de ese curso;
-- suscripción vigente, o rol `suscriptor` (el rol solo ya abre el asiento), o rol `asociado` sin filas de suscripción;
-- tiene inscripción de ese curso.
+- tiene inscripción de ese curso (comprado: queda aunque la membresía termine);
+- membresía vigente cuyo plan tiene nivel igual o mayor al `plan_level` del curso (`0` = ningún plan). Rol `suscriptor`, rol `asociado` sin filas de suscripción y las suscripciones sin plan cuentan como el nivel más alto.
 
-Un producto de precio 0 es público. Uno de pago lo abre la junta, su creador, el mismo asiento de suscripción, o una venta de ese producto para esa persona.
+Un producto de precio 0 es público. Uno de pago lo abre la junta, su creador, cualquier membresía vigente, o una venta no reembolsada de ese producto para esa persona.
 
 Completar una lección (`completeLesson`) exige sesión, curso publicado y permiso de lectura. Guarda `completed_at` en `lms_progress` de esa persona. No pisa una fecha que ya existía. La nota numérica la carga el equipo desde el panel, no el alumno.
 
@@ -136,7 +163,7 @@ El catálogo público no muestra el cuerpo de la lección: título, sección y d
 
 ## Liquidaciones
 
-`buildPayouts` junta, por creador y por mes, los `seller_cents` de `valux_sales` que todavía no están en un pago. El vencimiento queda el día 10 del mes siguiente. Cada par creador + periodo es único.
+`buildPayouts` junta, por creador y por mes, los `seller_cents` de `valux_sales` no reembolsadas que todavía no están en un pago. El vencimiento queda el día 10 del mes siguiente. Cada par creador + periodo es único.
 
 `markPayout` lo pasa a `transferida`. Si la persona tiene `paypal_email` y PayPal está configurado, intenta el envío con `sendPaypalPayout`. Si PayPal lo rechaza, la fila sigue pendiente y guarda la nota “PayPal no aceptó el envío.”
 
@@ -151,6 +178,7 @@ src/lib/valux/data.ts          Catálogo público y permisos de lectura
 src/lib/valux/actions.ts       Checkout, entrar, perfil, revisión, liquidar
 src/lib/valux/fulfill.ts       Crear persona, venta, inscripción y correo
 src/lib/valux/session.ts       Cookie del alumno
+src/lib/valux/login.ts         Código y enlace de un solo uso
 src/lib/valux/money.ts         Comisión, periodo y slugs
 src/lib/valux/paypal.ts        Payouts y suscripciones PayPal viejas
 src/lib/valux/transfers.ts     Órdenes por transferencia

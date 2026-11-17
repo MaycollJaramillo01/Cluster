@@ -80,18 +80,23 @@ export async function createTransfer(input: {
   email: string;
   amountCents: number;
   months?: number;
+  // amountCents ya incluye el bump.
+  bump?: { itemId: string; cents: number; title: string } | null;
 }) {
   const sql = await crm();
+  const description = input.bump ? `${input.description} + ${input.bump.title}` : input.description;
   const expires = new Date(Date.now() + TRANSFER_HOURS * 60 * 60 * 1000);
   let reference = '';
   for (let attempt = 0; attempt < 5 && !reference; attempt += 1) {
     const candidate = newReference();
     const rows = await sql`
       INSERT INTO valux_transfers (
-        id, reference, kind, item_id, description, buyer_name, buyer_email, amount_cents, months, expires_at
+        id, reference, kind, item_id, description, buyer_name, buyer_email, amount_cents, months, expires_at,
+        bump_item_id, bump_cents
       ) VALUES (
-        ${crypto.randomUUID()}, ${candidate}, ${input.kind}, ${input.itemId || null}, ${input.description.slice(0, 160)},
-        ${input.name.trim()}, ${input.email.trim().toLowerCase()}, ${input.amountCents}, ${input.months || 1}, ${expires.toISOString()}
+        ${crypto.randomUUID()}, ${candidate}, ${input.kind}, ${input.itemId || null}, ${description.slice(0, 160)},
+        ${input.name.trim()}, ${input.email.trim().toLowerCase()}, ${input.amountCents}, ${input.months || 1}, ${expires.toISOString()},
+        ${input.bump?.itemId || null}, ${input.bump?.cents || 0}
       )
       ON CONFLICT (reference) DO NOTHING
       RETURNING reference

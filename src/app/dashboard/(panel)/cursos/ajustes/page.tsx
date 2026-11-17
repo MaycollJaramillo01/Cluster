@@ -13,9 +13,6 @@ export default async function ComisionPage() {
         <Field label="Comisión %">
           <input className={fieldClass} name="commission" type="number" min="0" max="100" defaultValue={settings.commission_percent} />
         </Field>
-        <Field label="Suscripción mensual USD">
-          <input className={fieldClass} name="subscription" type="number" min="0" step="0.01" defaultValue={(settings.subscription_cents / 100).toFixed(2)} />
-        </Field>
         <Field label="Datos para transferencia (banco, cuenta, titular)">
           <textarea className={fieldClass} name="bank" rows={4} defaultValue={settings.bank_details} placeholder={'Banco Atlántida\nCuenta de ahorro 0000000000\nA nombre de Cluster Media'} />
         </Field>

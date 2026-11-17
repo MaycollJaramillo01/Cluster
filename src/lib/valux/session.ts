@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import { signingSecret } from '@/lib/crm/session';
 
 export const ACADEMIA_COOKIE = 'cluster_academia';
-const LINK_MS = 30 * 60 * 1000;
 
 export const academiaCookieOptions = {
   httpOnly: true,
@@ -40,20 +39,4 @@ export async function academiaPersonId() {
 export async function setAcademiaPerson(id: string) {
   const jar = await cookies();
   jar.set(ACADEMIA_COOKIE, academiaCookieValue(id), academiaCookieOptions);
-}
-
-export function loginLinkToken(id: string) {
-  const payload = Buffer.from(JSON.stringify({ id, exp: Date.now() + LINK_MS })).toString('base64url');
-  return `${payload}.${sign(`link:${payload}`)}`;
-}
-
-export function readLoginLinkToken(token: string) {
-  const [payload, sig] = token.split('.');
-  if (!payload || !sig || !verified(`link:${payload}`, sig)) return '';
-  try {
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as { id?: string; exp?: number };
-    return data.id && typeof data.exp === 'number' && data.exp > Date.now() ? data.id : '';
-  } catch {
-    return '';
-  }
 }

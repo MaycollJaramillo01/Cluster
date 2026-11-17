@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { fulfillStripeSession, recordSubscriptionPayment, setSubscriptionEnded } from '@/lib/valux/fulfill';
-import { verifyStripeEvent } from '@/lib/valux/stripe';
+import { fulfillStripeSession, recordSubscriptionPayment, revokeSales, setSubscriptionEnded } from '@/lib/valux/fulfill';
+import { cancelStripeSubscription, stripePaymentRefs, verifyStripeEvent } from '@/lib/valux/stripe';
 
 export const runtime = 'nodejs';
 
@@ -8,6 +8,13 @@ function ref(value: unknown) {
   if (typeof value === 'string') return value;
   if (value && typeof value === 'object' && 'id' in value) return String((value as { id?: unknown }).id || '');
   return '';
+}
+
+// Reembolso total o disputa abierta: se quita el acceso y la membresía deja de cobrarse.
+async function revokeCharge(paymentIntent: string, invoice: string, reason: string) {
+  const { refs, subscriptionId } = await stripePaymentRefs(paymentIntent, invoice);
+  await revokeSales(refs, reason);
+  if (subscriptionId) await cancelStripeSubscription(subscriptionId, false).catch(() => undefined);
 }
 
 // Webhook de Stripe: entrega aunque el alumno cierre la pestaña y lleva las renovaciones.
@@ -43,6 +50,13 @@ export async function POST(request: Request) {
         break;
       case 'customer.subscription.deleted':
         await setSubscriptionEnded(ref(item.id), 'vencida');
+        break;
+      case 'charge.refunded':
+        // ponytail: un reembolso parcial no quita acceso; se decide a mano desde Ventas.
+        if (item.refunded) await revokeCharge(ref(item.payment_intent), ref(item.invoice), 'reembolso');
+        break;
+      case 'charge.dispute.created':
+        await revokeCharge(ref(item.payment_intent), '', 'disputa');
         break;
     }
   } catch (error) {

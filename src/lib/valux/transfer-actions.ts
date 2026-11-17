@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
 import { requireDashboard } from '@/lib/crm/session';
-import { grantAccess } from './fulfill';
+import { grantAccess, grantBump } from './fulfill';
 import { RECEIPT_TYPES, getTransfer, storeReceipt } from './transfers';
 
 function field(formData: FormData, key: string) {
@@ -50,10 +50,20 @@ export async function approveTransfer(formData: FormData) {
   const taken = await sql`
     UPDATE valux_transfers SET status = 'aprobada', bank_ref = ${bankRef}, reviewed_at = now()
     WHERE id = ${id} AND status IN ('pendiente', 'vencida')
-    RETURNING reference, kind, item_id, buyer_name, buyer_email, amount_cents, months
+    RETURNING reference, kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents
   `;
   const row = taken[0] as
-    | { reference: string; kind: string; item_id: string | null; buyer_name: string; buyer_email: string; amount_cents: number; months: number }
+    | {
+        reference: string;
+        kind: string;
+        item_id: string | null;
+        buyer_name: string;
+        buyer_email: string;
+        amount_cents: number;
+        months: number;
+        bump_item_id: string | null;
+        bump_cents: number;
+      }
     | undefined;
   if (!row) redirect('/dashboard/cursos/transferencias');
   try {
@@ -64,8 +74,16 @@ export async function approveTransfer(formData: FormData) {
       email: row.buyer_email,
       months: Number(row.months) || 1,
       monthlyCents: row.kind === 'donacion' ? Math.round(Number(row.amount_cents) / Math.max(1, Number(row.months) || 1)) : undefined,
+      amountCents: row.kind === 'donacion' ? undefined : Number(row.amount_cents) - (Number(row.bump_cents) || 0),
       // Mismo id para cualquier reintento: grantAccess no crea una segunda venta.
       paypalOrderId: `tr_${row.reference}`,
+    });
+    await grantBump({
+      bumpItemId: row.bump_item_id || '',
+      bumpCents: Number(row.bump_cents) || 0,
+      name: row.buyer_name,
+      email: row.buyer_email,
+      orderId: `tr_${row.reference}`,
     });
   } catch (error) {
     console.error('[academia] aprobar transferencia:', error);

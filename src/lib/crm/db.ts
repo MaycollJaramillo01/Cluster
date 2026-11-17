@@ -488,6 +488,49 @@ const STATEMENTS = [
     run_at TIMESTAMPTZ NOT NULL,
     done_at TIMESTAMPTZ
   )`,
+  // Academia: registro con WhatsApp y acceso por código o enlace de un solo uso.
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS phone TEXT`,
+  `CREATE TABLE IF NOT EXISTS academia_logins (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    name TEXT,
+    phone TEXT,
+    code_hash TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS academia_logins_email_idx ON academia_logins (email, created_at DESC)`,
+  // Membresías: cada plan tiene un nivel; un curso entra en los planes con nivel igual o mayor al suyo.
+  `CREATE TABLE IF NOT EXISTS valux_plans (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    level INTEGER NOT NULL UNIQUE,
+    price_cents INTEGER NOT NULL DEFAULT 0,
+    benefits TEXT NOT NULL DEFAULT '',
+    active BOOLEAN NOT NULL DEFAULT true
+  )`,
+  `INSERT INTO valux_plans (id, name, level, price_cents, benefits) VALUES
+    ('esencial', 'Esencial', 1, 800, 'Cursos incluidos en el plan Esencial\nNuevas clases cada mes'),
+    ('pro', 'Pro', 2, 2000, 'Todo lo de Esencial\nCursos del plan Pro\nMarketplace de recursos'),
+    ('premium', 'Premium', 3, 4900, 'Todo lo de Pro\nTodo el catálogo de cursos\nComunidad privada')
+    ON CONFLICT (id) DO NOTHING`,
+  `ALTER TABLE valux_subscriptions ADD COLUMN IF NOT EXISTS plan_id TEXT`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS plan_level INTEGER NOT NULL DEFAULT 1`,
+  // Order bump (casilla en el checkout) y upsell (oferta después de pagar).
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS bump_course_id TEXT`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS bump_cents INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS upsell_course_id TEXT`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS upsell_cents INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE valux_intents ADD COLUMN IF NOT EXISTS bump_item_id TEXT`,
+  `ALTER TABLE valux_intents ADD COLUMN IF NOT EXISTS bump_cents INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE valux_transfers ADD COLUMN IF NOT EXISTS bump_item_id TEXT`,
+  `ALTER TABLE valux_transfers ADD COLUMN IF NOT EXISTS bump_cents INTEGER NOT NULL DEFAULT 0`,
+  // Reembolsos y disputas: la venta queda marcada y deja de dar acceso.
+  `ALTER TABLE valux_sales ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMPTZ`,
+  `ALTER TABLE valux_sales ADD COLUMN IF NOT EXISTS refund_reason TEXT`,
 ];
 
 let client: Sql | null = null;

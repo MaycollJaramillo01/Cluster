@@ -6,12 +6,13 @@ import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
 import { requireDashboard } from '@/lib/crm/session';
 import { site } from '@/lib/site';
-import { getPersonByEmail, personCanReturn, personSubscription, publishedCourse, getProduct, getSettings, canReadCourse } from './data';
-import { ensurePerson, grantAccess, type GrantKind } from './fulfill';
+import { getPersonByEmail, getPerson, getPlan, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
+import { ensurePerson, grantAccess, revokeSales, type GrantKind } from './fulfill';
 import { payoutDueAt, periodYm, slugify } from './money';
 import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
 import { bankDetails, createTransfer } from './transfers';
-import { academiaPersonId, loginLinkToken, setAcademiaPerson } from './session';
+import { academiaPersonId, setAcademiaPerson } from './session';
+import { cleanPhone, startLogin, verifyLoginCode, verifyLoginLink } from './login';
 import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { storedFile } from './upload';
@@ -49,9 +50,13 @@ async function checkout(input: {
   description: string;
   failPath: string;
   method?: string;
+  // Order bump: otro curso en el mismo pago, con precio calculado aquí, nunca desde el navegador.
+  bump?: { itemId: string; cents: number; title: string } | null;
 }) {
   if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
-  if (input.amountCents <= 0) {
+  const bump = input.bump && input.bump.cents > 0 ? input.bump : null;
+  const total = input.amountCents + (bump?.cents || 0);
+  if (total <= 0) {
     const result = await grantAccess(input);
     if (result.personId) await setAcademiaPerson(result.personId);
     refresh();
@@ -61,7 +66,7 @@ async function checkout(input: {
     if (!(await bankDetails())) redirect(`${input.failPath}?error=pasarela`);
     let reference = '';
     try {
-      reference = await createTransfer(input);
+      reference = await createTransfer({ ...input, amountCents: total, bump });
     } catch (error) {
       console.error('[academia] transferencia:', error);
       redirect(`${input.failPath}?error=pago`);
@@ -75,6 +80,7 @@ async function checkout(input: {
     const recurring = input.kind === 'suscripcion';
     const session = await createStripeCheckout({
       amountCents: input.amountCents,
+      extra: bump ? { description: bump.title, amountCents: bump.cents } : undefined,
       description: input.description,
       email: input.email,
       successUrl: `${base}/academia/stripe/retorno?session_id={CHECKOUT_SESSION_ID}`,
@@ -90,10 +96,12 @@ async function checkout(input: {
       },
     });
     await sql`
-      INSERT INTO valux_intents (id, paypal_order_id, kind, item_id, buyer_name, buyer_email, amount_cents, months)
-      VALUES (
+      INSERT INTO valux_intents (
+        id, paypal_order_id, kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents
+      ) VALUES (
         ${crypto.randomUUID()}, ${session.id}, ${input.kind}, ${input.itemId || null},
-        ${input.name}, ${input.email.toLowerCase()}, ${input.amountCents}, ${input.months || 1}
+        ${input.name}, ${input.email.toLowerCase()}, ${total}, ${input.months || 1},
+        ${bump?.itemId || null}, ${bump?.cents || 0}
       )
     `;
     redirect(session.url);
@@ -115,6 +123,30 @@ export async function buyCourse(formData: FormData) {
     description: course.title,
     method: field(formData, 'metodo'),
     failPath: `/academia/${course.slug}`,
+    // La casilla llega sin marcar; solo cuenta si la persona la marcó.
+    bump: field(formData, 'bump') === '1' && course.bump ? { itemId: course.bump.id, cents: course.bump.cents, title: course.bump.title } : null,
+  });
+}
+
+// Oferta después de pagar: pago nuevo, con casilla de autorización explícita. No reutiliza la tarjeta.
+export async function buyUpsell(formData: FormData) {
+  const course = await publishedCourse(field(formData, 'slug'));
+  const personId = await academiaPersonId();
+  if (!course?.upsell || !personId) redirect('/academia');
+  const back = `/academia/${course.slug}`;
+  if (!(await ownsCourse(personId, course.id))) redirect(back);
+  if (field(formData, 'acepto') !== '1') redirect(`${back}?ok=1&error=acepto`);
+  const person = await getPerson(personId);
+  if (!person) redirect('/academia/entrar');
+  await checkout({
+    kind: 'curso',
+    itemId: course.upsell.id,
+    name: person.name,
+    email: person.email,
+    amountCents: course.upsell.cents,
+    description: `${course.upsell.title} (oferta)`,
+    method: field(formData, 'metodo'),
+    failPath: back,
   });
 }
 
@@ -134,15 +166,17 @@ export async function buyProduct(formData: FormData) {
 }
 
 export async function buySubscription(formData: FormData) {
-  const settings = await getSettings();
+  const plan = await getPlan(field(formData, 'plan'));
+  if (!plan?.active) redirect('/academia/suscripcion?error=plan');
   // Cobro mensual recurrente; sin precio, un mes sin cobro.
   await checkout({
     kind: 'suscripcion',
+    itemId: plan.id,
     name: field(formData, 'name'),
     email: field(formData, 'email'),
-    amountCents: settings.subscription_cents,
+    amountCents: plan.price_cents,
     months: 1,
-    description: 'Suscripción mensual de la academia',
+    description: `Membresía ${plan.name} (mensual)`,
     method: field(formData, 'metodo'),
     failPath: '/academia/suscripcion',
   });
@@ -189,19 +223,34 @@ export async function donate(formData: FormData) {
   });
 }
 
+// Registro y entrada usan lo mismo: un código o enlace por correo, de un solo uso.
 export async function enterAcademia(formData: FormData) {
-  // Solo quien abre el correo entra: antes bastaba con escribir el correo de otra persona.
-  const person = await personCanReturn(field(formData, 'email'));
-  if (person) {
-    const base = process.env.NODE_ENV === 'production' ? site.url : await origin();
-    const link = `${base}/academia/entrar/confirmar?t=${loginLinkToken(person.id)}`;
-    await sendAcademiaMail(
-      person.email,
-      'Tu enlace para entrar a la academia',
-      ['Hola,', '', 'Abre este enlace para entrar a la academia de Cluster. Vale 30 minutos:', link, '', 'Si no lo pediste, ignora este correo.'].join('\n'),
-    );
-  }
-  redirect('/academia/entrar?enviado=1');
+  const register = field(formData, 'modo') === 'registro';
+  const email = field(formData, 'email');
+  const name = field(formData, 'name');
+  const phone = cleanPhone(field(formData, 'phone'));
+  if (!email.includes('@')) redirect(`/academia/entrar?error=datos${register ? '&modo=registro' : ''}`);
+  if (register && (!name || !phone)) redirect('/academia/entrar?modo=registro&error=datos');
+  // El enlace del correo sale del dominio fijo: un Host falso no puede desviarlo.
+  const base = process.env.NODE_ENV === 'production' ? site.url : await origin();
+  const id = await startLogin({ email, name, phone, register, base });
+  redirect(`/academia/entrar/codigo?l=${id}`);
+}
+
+export async function confirmLoginCode(formData: FormData) {
+  const id = field(formData, 'l');
+  const personId = await verifyLoginCode(id, field(formData, 'code').replace(/\s/g, ''));
+  if (!personId) redirect(`/academia/entrar/codigo?l=${encodeURIComponent(id)}&error=1`);
+  await setAcademiaPerson(personId);
+  redirect('/academia/mis-cursos');
+}
+
+// El enlace se gasta con un clic en un botón: los escáneres de correo solo hacen GET.
+export async function confirmLoginLink(formData: FormData) {
+  const personId = await verifyLoginLink(field(formData, 't'));
+  if (!personId) redirect('/academia/entrar?error=enlace');
+  await setAcademiaPerson(personId);
+  redirect('/academia/mis-cursos');
 }
 
 export async function updateProfile(formData: FormData) {
@@ -238,11 +287,7 @@ export async function saveSettings(formData: FormData) {
   await requireDashboard();
   const percent = Math.max(0, Math.min(100, Math.round(Number(field(formData, 'commission')) || 0)));
   const sql = await crm();
-  await sql`
-    UPDATE valux_settings
-    SET commission_percent = ${percent}, subscription_cents = ${cents(field(formData, 'subscription'))}
-    WHERE id = 'valux'
-  `;
+  await sql`UPDATE valux_settings SET commission_percent = ${percent} WHERE id = 'valux'`;
   // El formulario de suscripción no trae los datos bancarios: solo se tocan si vienen.
   if (formData.has('bank')) {
     await sql`UPDATE valux_settings SET bank_details = ${field(formData, 'bank') || null} WHERE id = 'valux'`;
@@ -482,7 +527,7 @@ export async function buildPayouts(formData: FormData) {
   const rows = await sql`
     SELECT seller_id, COALESCE(sum(seller_cents), 0) AS due
     FROM valux_sales
-    WHERE period_ym = ${period} AND seller_id IS NOT NULL
+    WHERE period_ym = ${period} AND seller_id IS NOT NULL AND refunded_at IS NULL
     GROUP BY seller_id
   `;
   const dueAt = payoutDueAt(period).toISOString();
@@ -584,5 +629,35 @@ export async function recordSale(formData: FormData) {
   });
   refresh();
   if (kind === 'suscripcion') redirect('/dashboard/cursos/suscripcion');
+  redirect('/dashboard/cursos/ventas');
+}
+
+export async function savePlan(formData: FormData) {
+  await requireDashboard();
+  const id = field(formData, 'id');
+  const name = field(formData, 'name');
+  if (!id || !name) return;
+  const sql = await crm();
+  await sql`
+    UPDATE valux_plans SET
+      name = ${name},
+      price_cents = ${cents(field(formData, 'price'))},
+      benefits = ${field(formData, 'benefits')},
+      active = ${field(formData, 'active') === '1'}
+    WHERE id = ${id}
+  `;
+  refresh();
+}
+
+// Reembolso hecho fuera de Stripe (transferencia) o decidido a mano: quita el acceso de esa venta.
+export async function refundSale(formData: FormData) {
+  await requireDashboard();
+  const id = field(formData, 'id');
+  if (!id) return;
+  const sql = await crm();
+  const rows = await sql`SELECT paypal_order_id FROM valux_sales WHERE id = ${id}`;
+  const ref = (rows[0] as { paypal_order_id?: string | null } | undefined)?.paypal_order_id || '';
+  await revokeSales([id, ref], 'manual');
+  refresh();
   redirect('/dashboard/cursos/ventas');
 }

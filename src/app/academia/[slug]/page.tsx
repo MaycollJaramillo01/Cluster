@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Checkout, Cover, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { Checkout, Cover, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
 import { academyMoney as money } from '@/lib/valux/money';
-import { buyCourse } from '@/lib/valux/actions';
-import { publishedCourse } from '@/lib/valux/data';
+import { buyCourse, buyUpsell } from '@/lib/valux/actions';
+import { ownsCourse, publishedCourse } from '@/lib/valux/data';
+import { academiaPersonId } from '@/lib/valux/session';
 import { paymentOptions } from '@/lib/valux/transfers';
 
 export default async function CourseCatalogPage({
@@ -18,6 +19,11 @@ export default async function CourseCatalogPage({
   const course = await publishedCourse(slug);
   if (!course) notFound();
   const pay = await paymentOptions();
+  const personId = await academiaPersonId();
+  // La oferta postcompra solo aparece a quien ya tiene este curso y aún no tiene el ofrecido.
+  const upsell = query.ok && course.upsell && (await ownsCourse(personId, course.id)) && !(await ownsCourse(personId, course.upsell.id))
+    ? course.upsell
+    : null;
   const minutes = course.lessons.reduce((sum, lesson) => sum + (lesson.duration_min || 0), 0);
   const lessonCount = course.lessons.length;
   const loose = course.lessons.filter((lesson) => !lesson.section_id);
@@ -48,7 +54,24 @@ export default async function CourseCatalogPage({
         </section>
 
         {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo. Abre la primera clase del temario.</p> : null}
-        {query.error ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">{payNote(query.error)}</p> : null}
+        {upsell ? (
+          <form action={buyUpsell} className="space-y-3 border-2 border-brand bg-white p-5">
+            <input type="hidden" name="slug" value={course.slug} />
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">Oferta para ti</p>
+            <p className="text-lg font-medium">Suma {upsell.title} por {money(upsell.cents)}</p>
+            <label className="flex items-start gap-3 text-sm">
+              <input type="checkbox" name="acepto" value="1" required className="mt-1" />
+              <span>Autorizo un cargo nuevo de {money(upsell.cents)} por {upsell.title}. No se usa mi pago anterior: lo confirmo en la pantalla de pago.</span>
+            </label>
+            {query.error === 'acepto' ? <p className="text-sm">Marca la casilla para continuar.</p> : null}
+            <PayMethod options={pay} />
+            <div className="flex flex-wrap gap-3">
+              <button className="bg-brand px-4 py-2.5 text-sm font-medium text-ink" type="submit">Sí, agregarlo</button>
+              <Link href={`/academia/${course.slug}`} className="px-4 py-2.5 text-sm text-black/55 underline">No, gracias</Link>
+            </div>
+          </form>
+        ) : null}
+        {query.error && query.error !== 'acepto' ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">{payNote(query.error)}</p> : null}
 
         <section className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
@@ -100,7 +123,8 @@ export default async function CourseCatalogPage({
               hidden={{ slug: course.slug }}
               label={course.price_cents > 0 ? 'Inscribirme ahora' : 'Empezar gratis'}
               note={course.price_cents > 0 ? payHint(pay) : 'Acceso inmediato a las clases'}
-              pay={course.price_cents > 0 ? pay : undefined}
+              pay={course.price_cents > 0 || course.bump ? pay : undefined}
+              bump={course.bump}
             />
           )}
         </div>

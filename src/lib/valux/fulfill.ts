@@ -60,6 +60,8 @@ export async function grantAccess(input: {
   months?: number;
   monthlyCents?: number;
   paypalOrderId?: string | null;
+  // Precio ya cobrado (oferta de bump o upsell, plan por transferencia). Sin él, el precio de la base.
+  amountCents?: number;
 }) {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
@@ -116,8 +118,10 @@ export async function grantAccess(input: {
     sellerId = product.creator_id || null;
     productId = product.id;
   } else {
-    amount = config.subscriptionCents * months;
+    const plan = await planPrice(input.itemId);
+    amount = (plan ?? config.subscriptionCents) * months;
   }
+  if (input.amountCents !== undefined) amount = Math.max(0, Math.round(input.amountCents));
 
   const personId = await ensurePerson(email, name);
   const split = sellerId ? splitCents(amount, config.commission) : { amount, fee: amount, seller: 0 };
@@ -153,8 +157,11 @@ export async function grantAccess(input: {
 
   if (input.kind === 'suscripcion') {
     await sql`
-      INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id)
-      VALUES (${crypto.randomUUID()}, ${personId}, 'activa', now() + ${`${months} months`}::interval, ${input.paypalOrderId || null})
+      INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, plan_id)
+      VALUES (
+        ${crypto.randomUUID()}, ${personId}, 'activa', now() + ${`${months} months`}::interval,
+        ${input.paypalOrderId || null}, ${input.itemId || null}
+      )
     `;
     fresh = true;
   }
@@ -162,6 +169,14 @@ export async function grantAccess(input: {
   const path = await destination(input.kind, input.itemId);
   if (fresh) await notifyAccess(email, name, path);
   return { personId, path };
+}
+
+async function planPrice(planId?: string | null) {
+  if (!planId) return null;
+  const sql = await crm();
+  const rows = await sql`SELECT price_cents FROM valux_plans WHERE id = ${planId}`;
+  const row = rows[0] as { price_cents?: unknown } | undefined;
+  return row ? Number(row.price_cents) || 0 : null;
 }
 
 async function notifyAccess(email: string, name: string, path: string) {
@@ -190,15 +205,32 @@ async function destination(kind: GrantKind, itemId?: string | null) {
 
 type Intent = NonNullable<Awaited<ReturnType<typeof getIntent>>>;
 
-function grantFromIntent(intent: Intent, orderId: string) {
-  return grantAccess({
+async function grantFromIntent(intent: Intent, orderId: string) {
+  const donation = intent.kind === 'donacion';
+  const result = await grantAccess({
     kind: intent.kind,
     itemId: intent.itemId || null,
     name: intent.name,
     email: intent.email,
     months: intent.months,
-    monthlyCents: intent.kind === 'donacion' ? Math.round(intent.amountCents / Math.max(1, intent.months)) : undefined,
+    monthlyCents: donation ? Math.round(intent.amountCents / Math.max(1, intent.months)) : undefined,
+    amountCents: donation ? undefined : intent.amountCents - intent.bumpCents,
     paypalOrderId: orderId,
+  });
+  await grantBump({ ...intent, orderId });
+  return result;
+}
+
+// El bump va en el mismo pago pero es otra venta: su id es el del pago con ":bump".
+export async function grantBump(input: { bumpItemId: string; bumpCents: number; name: string; email: string; orderId: string }) {
+  if (!input.bumpItemId || input.bumpCents <= 0) return;
+  await grantAccess({
+    kind: 'curso',
+    itemId: input.bumpItemId,
+    name: input.name,
+    email: input.email,
+    amountCents: input.bumpCents,
+    paypalOrderId: `${input.orderId}:bump`,
   });
 }
 
@@ -217,6 +249,7 @@ export async function fulfillStripeSession(sessionId: string): Promise<Fulfilled
     gatewayId: session.subscriptionId,
     email: intent.email,
     name: intent.name,
+    planId: intent.itemId,
     periodEnd: subscription?.periodEnd ?? null,
   });
   if (session.invoiceId) {
@@ -248,6 +281,7 @@ export async function fulfillPaypalSubscription(subscriptionId: string): Promise
     gatewayId: subscriptionId,
     email: intent.email,
     name: intent.name,
+    planId: intent.itemId,
     periodEnd: subscription.periodEnd,
   });
   const payments = await paypalSubscriptionPayments(subscriptionId).catch(() => []);
@@ -264,13 +298,19 @@ function monthFromNow() {
 }
 
 // Alta o renovación de una suscripción de pasarela. El vencimiento solo avanza.
-export async function activateSubscription(input: { gatewayId: string; email: string; name: string; periodEnd: Date | null }) {
+export async function activateSubscription(input: {
+  gatewayId: string;
+  email: string;
+  name: string;
+  planId?: string;
+  periodEnd: Date | null;
+}) {
   const sql = await crm();
   const personId = await ensurePerson(input.email, input.name);
   const end = input.periodEnd && input.periodEnd.getTime() > Date.now() ? input.periodEnd : monthFromNow();
   const rows = await sql`
-    INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, gateway_id)
-    VALUES (${crypto.randomUUID()}, ${personId}, 'activa', ${end.toISOString()}, ${input.gatewayId}, ${input.gatewayId})
+    INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, gateway_id, plan_id)
+    VALUES (${crypto.randomUUID()}, ${personId}, 'activa', ${end.toISOString()}, ${input.gatewayId}, ${input.gatewayId}, ${input.planId || null})
     ON CONFLICT (gateway_id) DO UPDATE SET
       current_period_end = GREATEST(valux_subscriptions.current_period_end, EXCLUDED.current_period_end),
       status = CASE WHEN valux_subscriptions.status = 'vencida' THEN 'activa' ELSE valux_subscriptions.status END
@@ -318,4 +358,36 @@ export async function recordSubscriptionPayment(input: {
 export async function setSubscriptionEnded(gatewayId: string, status: 'no_renueva' | 'vencida') {
   const sql = await crm();
   await sql`UPDATE valux_subscriptions SET status = ${status} WHERE gateway_id = ${gatewayId} AND status <> 'cancelada'`;
+}
+
+// Reembolso o disputa: la venta deja de contar (ni acceso ni comisión) y la suscripción se corta ya.
+// refs: id de la venta o id de pago tal como se guardó (sesión de Stripe, factura, tr_<ref>).
+export async function revokeSales(refs: string[], reason: string) {
+  const sql = await crm();
+  let revoked = 0;
+  for (const ref of refs.filter(Boolean)) {
+    const sales = await sql`
+      UPDATE valux_sales SET refunded_at = now(), refund_reason = ${reason}
+      WHERE (id = ${ref} OR paypal_order_id IN (${ref}, ${`${ref}:bump`})) AND refunded_at IS NULL
+      RETURNING buyer_id, course_id
+    `;
+    for (const sale of sales as { buyer_id: string | null; course_id: string | null }[]) {
+      revoked += 1;
+      if (!sale.course_id || !sale.buyer_id) continue;
+      // Si pagó el mismo curso en otra venta vigente, lo conserva.
+      await sql`
+        DELETE FROM lms_enrollments e
+        WHERE e.course_id = ${sale.course_id} AND e.person_id = ${sale.buyer_id}
+          AND NOT EXISTS (
+            SELECT 1 FROM valux_sales s
+            WHERE s.buyer_id = e.person_id AND s.course_id = e.course_id AND s.refunded_at IS NULL
+          )
+      `;
+    }
+    await sql`
+      UPDATE valux_subscriptions SET status = 'cancelada', current_period_end = LEAST(current_period_end, now())
+      WHERE paypal_order_id = ${ref} OR gateway_id = ${ref}
+    `;
+  }
+  return revoked;
 }

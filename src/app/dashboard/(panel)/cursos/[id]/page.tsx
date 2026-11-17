@@ -13,16 +13,23 @@ import {
   toggleCourse,
   updateCourseMeta,
 } from '@/lib/crm/lms-actions';
-import { getCourse } from '@/lib/crm/lms';
+import { getCourse, listCourses } from '@/lib/crm/lms';
 import { academyMoney as money } from '@/lib/valux/money';
 import { listContacts } from '@/lib/crm/queries';
-import { listPeople } from '@/lib/valux/data';
+import { listPeople, listPlans } from '@/lib/valux/data';
 import { Field, PageTitle, btn, btnGhost, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [detail, contacts, people] = await Promise.all([getCourse(id), listContacts({}), listPeople()]);
+  const [detail, contacts, people, courses, plans] = await Promise.all([
+    getCourse(id),
+    listContacts({}),
+    listPeople(),
+    listCourses(),
+    listPlans(),
+  ]);
   if (!detail) notFound();
+  const others = courses.filter((item) => item.id !== id);
   const { course, sections, lessons, enrollments, progress } = detail;
   const enrolledContacts = new Set(enrollments.map((item) => item.contact_id).filter(Boolean));
   const enrolledPeople = new Set(enrollments.map((item) => item.person_id).filter(Boolean));
@@ -68,6 +75,31 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <option value="">Sin profesor</option>
             {people.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}
           </select>
+        </Field>
+        <Field label="Incluido en membresía">
+          <select className={fieldClass} name="plan_level" defaultValue={String(detail.course.plan_level)}>
+            <option value="0">Ninguna: solo se compra</option>
+            {plans.map((plan) => <option key={plan.id} value={plan.level}>Desde {plan.name}</option>)}
+          </select>
+        </Field>
+        <div />
+        <Field label="Order bump: curso ofrecido en el checkout">
+          <select className={fieldClass} name="bump_course_id" defaultValue={detail.course.bump_course_id || ''}>
+            <option value="">Sin bump</option>
+            {others.map((item) => <option key={item.id} value={item.id}>{item.title}{item.published ? '' : ' (borrador)'}</option>)}
+          </select>
+        </Field>
+        <Field label="Precio del bump USD">
+          <input className={fieldClass} name="bump_price" type="number" min="0" step="0.01" defaultValue={(detail.course.bump_cents / 100).toFixed(2)} />
+        </Field>
+        <Field label="Upsell: oferta después de pagar">
+          <select className={fieldClass} name="upsell_course_id" defaultValue={detail.course.upsell_course_id || ''}>
+            <option value="">Sin upsell</option>
+            {others.map((item) => <option key={item.id} value={item.id}>{item.title}{item.published ? '' : ' (borrador)'}</option>)}
+          </select>
+        </Field>
+        <Field label="Precio del upsell USD">
+          <input className={fieldClass} name="upsell_price" type="number" min="0" step="0.01" defaultValue={(detail.course.upsell_cents / 100).toFixed(2)} />
         </Field>
         <button className={btn} type="submit">Guardar ficha</button>
       </form>
