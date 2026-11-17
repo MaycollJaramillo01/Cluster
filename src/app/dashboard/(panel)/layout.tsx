@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { processDue } from '@/lib/crm/automations';
-import { dashboardUnlocked } from '@/lib/crm/access';
+import { dashboardSession } from '@/lib/crm/session';
 import { sidebarCounts } from '@/lib/crm/queries';
 import { Setup, safeDbError } from '@/components/dashboard/Setup';
 import { Shell } from '@/components/dashboard/Shell';
@@ -9,7 +9,8 @@ import { Shell } from '@/components/dashboard/Shell';
 export const dynamic = 'force-dynamic';
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  if (!(await dashboardUnlocked())) redirect('/dashboard/login');
+  const session = await dashboardSession();
+  if (!session) redirect('/dashboard/login');
 
   try {
     const counts = await sidebarCounts();
@@ -20,7 +21,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     }
     return (
       <Suspense fallback={<p className="p-8 font-mono text-xs uppercase tracking-[0.16em] text-black/40">Cargando</p>}>
-        <Shell counts={counts} openAccess={false}>
+        <Shell counts={counts} openAccess={false} role={session.role}>
           {children}
         </Shell>
       </Suspense>

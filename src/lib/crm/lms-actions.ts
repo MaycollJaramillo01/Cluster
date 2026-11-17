@@ -70,7 +70,7 @@ async function uniqueLessonSlug(courseId: string, title: string) {
 }
 
 export async function createCourse(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const title = field(formData, 'title');
   const description = field(formData, 'description');
   if (!title || !description) return;
@@ -100,7 +100,7 @@ export async function createCourse(formData: FormData) {
 }
 
 export async function toggleCourse(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -109,7 +109,7 @@ export async function toggleCourse(formData: FormData) {
 }
 
 export async function deleteCourse(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -120,7 +120,7 @@ export async function deleteCourse(formData: FormData) {
 }
 
 export async function createLesson(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
   if (!courseId || !title) return;
@@ -143,7 +143,7 @@ export async function createLesson(formData: FormData) {
 }
 
 export async function updateLesson(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
@@ -157,7 +157,8 @@ export async function updateLesson(formData: FormData) {
       video_url = ${field(formData, 'video_url') || null},
       section_id = ${field(formData, 'section_id') || null},
       points = ${points},
-      duration_min = ${positive(field(formData, 'duration_min'))}
+      duration_min = ${positive(field(formData, 'duration_min'))},
+      mission = ${String(formData.get('mission') ?? '')}
     WHERE id = ${id} AND course_id = ${courseId}
   `;
   refresh();
@@ -165,7 +166,7 @@ export async function updateLesson(formData: FormData) {
 }
 
 export async function deleteLesson(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   if (!id) return;
@@ -176,7 +177,7 @@ export async function deleteLesson(formData: FormData) {
 }
 
 export async function updateCourseMeta(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -198,7 +199,7 @@ export async function updateCourseMeta(formData: FormData) {
 }
 
 export async function createSection(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
   if (!courseId || !title) return;
@@ -213,7 +214,7 @@ export async function createSection(formData: FormData) {
 }
 
 export async function deleteSection(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -223,7 +224,7 @@ export async function deleteSection(formData: FormData) {
 }
 
 export async function createResource(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const lessonId = field(formData, 'lesson_id');
   const title = field(formData, 'title');
   const kind = field(formData, 'kind') || 'enlace';
@@ -242,7 +243,7 @@ export async function createResource(formData: FormData) {
 }
 
 export async function deleteResource(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -251,7 +252,7 @@ export async function deleteResource(formData: FormData) {
 }
 
 export async function enrollPerson(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const courseId = field(formData, 'course_id');
   const personId = field(formData, 'person_id');
   if (!courseId || !personId) return;
@@ -269,7 +270,7 @@ export async function enrollPerson(formData: FormData) {
 }
 
 export async function enrollContact(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const courseId = field(formData, 'course_id');
   const contactId = field(formData, 'contact_id');
   if (!courseId || !contactId) return;
@@ -283,7 +284,7 @@ export async function enrollContact(formData: FormData) {
 }
 
 export async function removeEnrollment(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -292,7 +293,7 @@ export async function removeEnrollment(formData: FormData) {
 }
 
 export async function saveFinalGrade(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -305,7 +306,7 @@ export async function saveFinalGrade(formData: FormData) {
 }
 
 export async function saveLessonScore(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const contactId = field(formData, 'contact_id');
   const personId = field(formData, 'person_id');
   const lessonId = field(formData, 'lesson_id');

@@ -531,6 +531,30 @@ const STATEMENTS = [
   // Reembolsos y disputas: la venta queda marcada y deja de dar acceso.
   `ALTER TABLE valux_sales ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMPTZ`,
   `ALTER TABLE valux_sales ADD COLUMN IF NOT EXISTS refund_reason TEXT`,
+  // Misiones: texto de la misión en la lección y un evento único de XP por persona y lección.
+  `ALTER TABLE lms_lessons ADD COLUMN IF NOT EXISTS mission TEXT NOT NULL DEFAULT ''`,
+  `CREATE TABLE IF NOT EXISTS lms_xp (
+    person_id TEXT NOT NULL,
+    lesson_id TEXT NOT NULL REFERENCES lms_lessons(id) ON DELETE CASCADE,
+    xp INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (person_id, lesson_id)
+  )`,
+  // Equipo del panel: roles y segundo factor (TOTP). Las claves siguen en crm_admins.
+  `CREATE TABLE IF NOT EXISTS crm_staff (
+    email TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    role TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE TABLE IF NOT EXISTS crm_mfa (
+    email TEXT PRIMARY KEY,
+    secret TEXT,
+    pending TEXT,
+    last_step BIGINT NOT NULL DEFAULT 0,
+    fails INTEGER NOT NULL DEFAULT 0,
+    locked_until TIMESTAMPTZ
+  )`,
 ];
 
 let client: Sql | null = null;

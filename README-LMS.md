@@ -157,7 +157,25 @@ Un curso de precio 0 lo lee cualquiera. Uno de pago lo lee si la persona está a
 
 Un producto de precio 0 es público. Uno de pago lo abre la junta, su creador, cualquier membresía vigente, o una venta no reembolsada de ese producto para esa persona.
 
-Completar una lección (`completeLesson`) exige sesión, curso publicado y permiso de lectura. Guarda `completed_at` en `lms_progress` de esa persona. No pisa una fecha que ya existía. La nota numérica la carga el equipo desde el panel, no el alumno.
+Completar una lección (`completeLesson`) exige sesión, curso publicado, permiso de lectura y que la clase esté desbloqueada. Guarda `completed_at` en `lms_progress` de esa persona. No pisa una fecha que ya existía. La nota numérica la carga el equipo desde el panel, no el alumno.
+
+**Desbloqueo** (`lessonAccess`):
+- Una clase se abre cuando la anterior está completada.
+- El orden es el del temario: secciones en su orden y al final las clases sueltas.
+- La junta y el profesor del curso ven todo.
+
+**Misiones** (`src/lib/valux/mission.ts`): en la ficha de la lección, el campo Misión acepta dos formatos.
+
+- **Quiz:** un bloque por pregunta separado por una línea en blanco. La pregunta va en la primera línea y cada opción empieza con `-`. La correcta empieza con `*`.
+- **Checklist:** una casilla por línea, `[ ] texto`.
+
+Cómo funciona:
+- El panel avisa si el texto tiene errores. Mientras tanto, la clase se completa sin misión.
+- Con misión, la clase solo se completa aprobándola (`submitMission`): todas las respuestas correctas o todas las casillas marcadas.
+- La corrección es en el servidor; el navegador nunca recibe la respuesta.
+- Al aprobar, se acreditan los XP de la lección una sola vez: `lms_xp` tiene llave (persona, lección).
+- El nivel es `XP / 100 + 1` y se muestra en Mis cursos.
+- La checklist no prueba resultados reales; para evidencia (ingresos, entregas) sigue la nota manual del equipo.
 
 El catálogo público no muestra el cuerpo de la lección: título, sección y duración. El texto, el video y los recursos salen en la página de la lección.
 

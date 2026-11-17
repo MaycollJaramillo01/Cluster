@@ -6,7 +6,8 @@ import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
 import { requireDashboard } from '@/lib/crm/session';
 import { site } from '@/lib/site';
-import { getPersonByEmail, getPerson, getPlan, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
+import { getPersonByEmail, getPerson, getPlan, lessonAccess, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
+import { gradeMission, parseMission } from './mission';
 import { ensurePerson, grantAccess, revokeSales, type GrantKind } from './fulfill';
 import { payoutDueAt, periodYm, slugify } from './money';
 import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
@@ -284,7 +285,7 @@ export async function subscribeNewsletter(formData: FormData) {
 }
 
 export async function saveSettings(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const percent = Math.max(0, Math.min(100, Math.round(Number(field(formData, 'commission')) || 0)));
   const sql = await crm();
   await sql`UPDATE valux_settings SET commission_percent = ${percent} WHERE id = 'valux'`;
@@ -296,7 +297,7 @@ export async function saveSettings(formData: FormData) {
 }
 
 export async function createPerson(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const name = field(formData, 'name');
   const email = field(formData, 'email');
   const role = field(formData, 'role') || 'usuario';
@@ -316,7 +317,7 @@ export async function createPerson(formData: FormData) {
 }
 
 export async function updatePerson(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const role = field(formData, 'role');
   const allowed = ['usuario', 'suscriptor', 'asociado', 'profesor', 'junta'];
@@ -334,7 +335,7 @@ export async function updatePerson(formData: FormData) {
 }
 
 export async function createProduct(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const title = field(formData, 'title');
   if (!title) return;
   const direct = field(formData, 'published') === 'on' ? 'publicado' : 'pendiente';
@@ -352,7 +353,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function reviewProduct(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['publicado', 'rechazado', 'pendiente'].includes(status)) return;
@@ -391,7 +392,7 @@ async function notifyReaders(title: string, slug: string) {
 }
 
 export async function createPost(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const title = field(formData, 'title');
   if (!title) return;
   const status = field(formData, 'published') === 'on' ? 'publicado' : 'pendiente';
@@ -411,7 +412,7 @@ export async function createPost(formData: FormData) {
 }
 
 export async function updatePost(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const title = field(formData, 'title');
   if (!id || !title) return;
@@ -428,7 +429,7 @@ export async function updatePost(formData: FormData) {
 }
 
 export async function reviewPost(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['publicado', 'rechazado', 'pendiente', 'borrador'].includes(status)) return;
@@ -480,7 +481,7 @@ export async function submitApplication(formData: FormData) {
 }
 
 export async function setApplicationStatus(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['nueva', 'revision', 'aceptada', 'rechazada'].includes(status)) return;
@@ -504,7 +505,7 @@ export async function setApplicationStatus(formData: FormData) {
 }
 
 export async function setSubscriptionStatus(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const id = field(formData, 'id');
   const status = field(formData, 'status');
   if (!id || !['activa', 'cancelada', 'vencida'].includes(status)) return;
@@ -520,7 +521,7 @@ export async function setSubscriptionStatus(formData: FormData) {
 }
 
 export async function buildPayouts(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const period = field(formData, 'period') || periodYm();
   if (!/^\d{4}-\d{2}$/.test(period)) return;
   const sql = await crm();
@@ -546,7 +547,7 @@ export async function buildPayouts(formData: FormData) {
 }
 
 export async function markPayout(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
@@ -581,40 +582,79 @@ export async function markPayout(formData: FormData) {
   refresh();
 }
 
-export async function completeLesson(formData: FormData) {
-  const personId = await academiaPersonId();
-  const lessonId = field(formData, 'lesson_id');
-  const nextUrl = field(formData, 'next') || '/academia';
-  if (!personId || !lessonId) redirect('/academia/entrar');
+// Contexto de una clase para quien la quiere completar: permiso, desbloqueo y misión.
+async function lessonContext(lessonId: string, personId: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT c.id, c.price_cents, c.teacher_id, c.published
-    FROM lms_lessons l
-    JOIN lms_courses c ON c.id = l.course_id
+    SELECT l.slug AS lesson_slug, l.points, l.mission, c.slug AS course_slug
+    FROM lms_lessons l JOIN lms_courses c ON c.id = l.course_id
     WHERE l.id = ${lessonId}
   `;
-  const course = rows[0] as { id?: string; price_cents?: unknown; teacher_id?: string | null; published?: unknown } | undefined;
-  const published = course?.published === true || course?.published === 't' || course?.published === 'true';
-  if (!course?.id || !published) return;
-  const open = await canReadCourse(personId, {
-    id: course.id,
-    price_cents: Number(course.price_cents) || 0,
-    teacher_id: course.teacher_id || '',
-  });
-  if (!open) redirect(nextUrl);
-  const when = new Date().toISOString();
+  const row = rows[0] as { lesson_slug: string; points: unknown; mission: string | null; course_slug: string } | undefined;
+  if (!row) return null;
+  const course = await publishedCourse(row.course_slug);
+  if (!course) return null;
+  const url = `/academia/${course.slug}/${row.lesson_slug}`;
+  const open = await canReadCourse(personId, course);
+  const access = await lessonAccess(personId, course);
+  const index = access.order.findIndex((lesson) => lesson.id === lessonId);
+  const next = access.order[index + 1];
+  return {
+    url,
+    nextUrl: next ? `/academia/${course.slug}/${next.slug}` : `/academia/${course.slug}`,
+    allowed: open && access.unlocked.has(lessonId),
+    done: access.done.has(lessonId),
+    points: Math.max(0, Number(row.points) || 0),
+    mission: parseMission(row.mission || '').mission,
+  };
+}
+
+async function markComplete(personId: string, lessonId: string) {
+  const sql = await crm();
   await sql`
     INSERT INTO lms_progress (id, person_id, lesson_id, completed_at)
-    VALUES (${crypto.randomUUID()}, ${personId}, ${lessonId}, ${when})
+    VALUES (${crypto.randomUUID()}, ${personId}, ${lessonId}, now())
     ON CONFLICT (person_id, lesson_id) WHERE person_id IS NOT NULL DO UPDATE SET
       completed_at = COALESCE(lms_progress.completed_at, EXCLUDED.completed_at)
   `;
+}
+
+export async function completeLesson(formData: FormData) {
+  const personId = await academiaPersonId();
+  const lessonId = field(formData, 'lesson_id');
+  if (!personId || !lessonId) redirect('/academia/entrar');
+  const lesson = await lessonContext(lessonId, personId);
+  if (!lesson) redirect('/academia');
+  if (!lesson.allowed) redirect(lesson.url);
+  // Con misión, solo aprobarla completa la clase.
+  if (lesson.mission && !lesson.done) redirect(`${lesson.url}?mision=pendiente`);
+  await markComplete(personId, lessonId);
   refresh();
-  redirect(nextUrl);
+  redirect(lesson.nextUrl);
+}
+
+export async function submitMission(formData: FormData) {
+  const personId = await academiaPersonId();
+  const lessonId = field(formData, 'lesson_id');
+  if (!personId || !lessonId) redirect('/academia/entrar');
+  const lesson = await lessonContext(lessonId, personId);
+  if (!lesson?.mission) redirect(lesson?.url || '/academia');
+  if (!lesson.allowed) redirect(lesson.url);
+  const result = gradeMission(lesson.mission, (key) => field(formData, key));
+  if (!result.passed) redirect(`${lesson.url}?mision=${result.correct}-${result.total}`);
+  await markComplete(personId, lessonId);
+  // Evento único: la llave (persona, clase) impide sumar XP dos veces.
+  const sql = await crm();
+  await sql`
+    INSERT INTO lms_xp (person_id, lesson_id, xp) VALUES (${personId}, ${lessonId}, ${lesson.points})
+    ON CONFLICT (person_id, lesson_id) DO NOTHING
+  `;
+  refresh();
+  redirect(`${lesson.url}?mision=ok`);
 }
 
 export async function recordSale(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const person = await getPersonByEmail(field(formData, 'email'));
   const name = person?.name || field(formData, 'name');
   const email = person?.email || field(formData, 'email');
@@ -633,7 +673,7 @@ export async function recordSale(formData: FormData) {
 }
 
 export async function savePlan(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const id = field(formData, 'id');
   const name = field(formData, 'name');
   if (!id || !name) return;
@@ -651,7 +691,7 @@ export async function savePlan(formData: FormData) {
 
 // Reembolso hecho fuera de Stripe (transferencia) o decidido a mano: quita el acceso de esa venta.
 export async function refundSale(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();

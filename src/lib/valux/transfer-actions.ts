@@ -41,7 +41,7 @@ export async function attachReceipt(formData: FormData) {
 
 // Finanzas aprueba solo después de ver el movimiento en el banco; el número de operación queda anotado.
 export async function approveTransfer(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const id = field(formData, 'id');
   const bankRef = field(formData, 'bank_ref');
   if (!id) return;
@@ -95,7 +95,7 @@ export async function approveTransfer(formData: FormData) {
 }
 
 export async function rejectTransfer(formData: FormData) {
-  await requireDashboard();
+  await requireDashboard('finanzas');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();

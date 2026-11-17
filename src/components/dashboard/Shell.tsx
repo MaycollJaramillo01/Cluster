@@ -6,7 +6,8 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { logout } from '@/lib/crm/access';
 import type { SidebarCounts } from '@/lib/crm/types';
-import { itemsFor, sectionFor, sections, type NavItem } from './nav';
+import { allowedHref, itemsFor, sectionFor, sectionsFor, type NavItem } from './nav';
+import type { StaffRole } from '@/lib/crm/roles';
 
 function itemActive(item: NavItem, pathname: string, params: URLSearchParams) {
   const [path, query = ''] = item.href.split('#')[0].split('?');
@@ -47,15 +48,18 @@ export function Shell({
   children,
   counts,
   openAccess,
+  role,
 }: {
   children: ReactNode;
   counts: SidebarCounts;
   openAccess: boolean;
+  role: StaffRole;
 }) {
   const pathname = usePathname();
   const params = useSearchParams();
   const section = sectionFor(pathname);
-  const items = itemsFor(section.id, counts);
+  const items = itemsFor(section.id, counts).filter((item) => allowedHref(role, item.href));
+  const visible = sectionsFor(role, counts);
 
   return (
     <div className="min-h-screen bg-paper text-ink">
@@ -68,7 +72,7 @@ export function Shell({
           </span>
         </Link>
         <nav className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto" aria-label="Secciones">
-          {sections.map((item) => {
+          {visible.map((item) => {
             const active = item.id === section.id;
             return (
               <Link

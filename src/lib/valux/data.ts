@@ -406,7 +406,7 @@ export async function publishedLesson(courseSlug: string, lessonSlug: string) {
   if (!course) return null;
   const sql = await crm();
   const rows = await sql`
-    SELECT id, slug, title, content, video_url, points, duration_min
+    SELECT id, slug, title, content, video_url, points, duration_min, mission
     FROM lms_lessons
     WHERE course_id = ${course.id} AND slug = ${lessonSlug}
   `;
@@ -425,6 +425,7 @@ export async function publishedLesson(courseSlug: string, lessonSlug: string) {
       video_url: text(entry.video_url),
       points: num(entry.points),
       duration_min: entry.duration_min == null ? null : num(entry.duration_min),
+      mission: text(entry.mission),
       resources: resources.map((row) => {
         const resource = row as Record<string, unknown>;
         return {
@@ -585,4 +586,33 @@ export async function getIntent(orderId: string) {
     bumpItemId: text(entry.bump_item_id),
     bumpCents: num(entry.bump_cents),
   };
+}
+
+// Orden del temario: secciones en su orden y al final las clases sueltas. Es el orden de desbloqueo.
+export function lessonOrder<T extends { id: string; section_id: string }>(sections: { id: string }[], lessons: T[]) {
+  const known = new Set(sections.map((section) => section.id));
+  return [
+    ...sections.flatMap((section) => lessons.filter((lesson) => lesson.section_id === section.id)),
+    ...lessons.filter((lesson) => !lesson.section_id || !known.has(lesson.section_id)),
+  ];
+}
+
+// Una clase se abre cuando la anterior está completada. La junta y el profesor del curso ven todo.
+export async function lessonAccess<L extends { id: string; section_id: string }>(
+  personId: string,
+  course: { id: string; teacher_id: string; sections: { id: string }[]; lessons: L[] },
+) {
+  const order = lessonOrder(course.sections, course.lessons);
+  const done = new Set(personId ? await completedLessonIds(personId, course.id) : []);
+  const person = personId ? await getPerson(personId) : null;
+  const free = person?.role === 'junta' || (person?.role === 'profesor' && person.id === course.teacher_id);
+  const unlocked = new Set(order.filter((lesson, index) => free || index === 0 || done.has(order[index - 1].id)).map((lesson) => lesson.id));
+  return { order, done, unlocked };
+}
+
+export async function personXp(personId: string) {
+  if (!personId) return 0;
+  const sql = await crm();
+  const rows = await sql`SELECT COALESCE(sum(xp), 0) AS xp FROM lms_xp WHERE person_id = ${personId}`;
+  return num((rows[0] as { xp?: unknown } | undefined)?.xp);
 }

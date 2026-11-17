@@ -1,15 +1,18 @@
 import Link from 'next/link';
 import { Cover, Page } from '@/components/academia/ui';
-import { myCourses } from '@/lib/valux/data';
+import { myCourses, personXp } from '@/lib/valux/data';
+import { levelFor } from '@/lib/valux/mission';
 import { academiaPersonId } from '@/lib/valux/session';
 
 export default async function MyCoursesPage() {
   const personId = await academiaPersonId();
   const courses = await myCourses(personId);
+  const xp = await personXp(personId);
 
   return (
     <Page>
       <h1 className="font-display text-5xl tracking-wide">Mis cursos</h1>
+      {personId ? <p className="mt-2 font-mono text-xs uppercase tracking-[0.16em] text-black/55">Nivel {levelFor(xp)} · {xp} XP</p> : null}
       {!personId ? (
         <p className="mt-4 text-sm text-black/60">
           Entra con el correo de tu compra para ver lo que ya tienes. <Link className="underline" href="/academia/entrar">Entrar</Link>

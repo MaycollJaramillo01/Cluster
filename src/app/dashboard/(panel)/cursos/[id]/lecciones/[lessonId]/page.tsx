@@ -2,12 +2,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createResource, deleteLesson, deleteResource, updateLesson } from '@/lib/crm/lms-actions';
 import { getCourse, getLesson } from '@/lib/crm/lms';
+import { parseMission } from '@/lib/valux/mission';
 import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string; lessonId: string }> }) {
   const { id, lessonId } = await params;
   const [lesson, detail] = await Promise.all([getLesson(id, lessonId), getCourse(id)]);
   if (!lesson || !detail) notFound();
+  const mission = parseMission(lesson.mission);
 
   return (
     <div className="space-y-6">
@@ -28,7 +30,25 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         <Field label="Contenido"><textarea className={fieldClass} name="content" rows={8} defaultValue={lesson.content} /></Field>
         <Field label="Video"><input className={fieldClass} name="video_url" defaultValue={lesson.video_url || ''} placeholder="https://" /></Field>
         <Field label="Minutos"><input className={fieldClass} name="duration_min" type="number" min="1" defaultValue={lesson.duration_min ?? ''} /></Field>
-        <Field label="Puntos"><input className={fieldClass} name="points" type="number" min="1" defaultValue={lesson.points} /></Field>
+        <Field label="XP al aprobar la misión"><input className={fieldClass} name="points" type="number" min="1" defaultValue={lesson.points} /></Field>
+        <Field label="Misión (opcional)">
+          <textarea
+            className={`${fieldClass} font-mono text-xs`}
+            name="mission"
+            rows={8}
+            defaultValue={lesson.mission}
+            placeholder={'Quiz: un bloque por pregunta, * marca la correcta\n¿Qué mide el CTR?\n- Ventas\n* Clics sobre impresiones\n- Seguidores\n\nChecklist: una casilla por línea\n[ ] Publiqué el anuncio'}
+          />
+        </Field>
+        {mission.errors.length ? (
+          <ul className="border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-800">
+            {mission.errors.map((error) => <li key={error}>{error} Mientras tanto la clase se completa sin misión.</li>)}
+          </ul>
+        ) : mission.mission ? (
+          <p className="text-xs text-black/55">
+            {mission.mission.kind === 'quiz' ? `Quiz de ${mission.mission.questions.length} preguntas` : `Checklist de ${mission.mission.items.length} casillas`}: para completar la clase hay que aprobarla.
+          </p>
+        ) : null}
         <button className={btn} type="submit">Guardar lección</button>
       </form>
       <section className="max-w-2xl space-y-3">

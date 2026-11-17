@@ -47,6 +47,7 @@ export type LmsLesson = {
   duration_min: number | null;
   section_id: string | null;
   sort_order: number;
+  mission: string;
 };
 
 export type LmsEnrollment = {
@@ -191,7 +192,7 @@ export async function getCourse(id: string) {
 export async function getLesson(courseId: string, lessonId: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT id, course_id, slug, title, content, video_url, points, duration_min, section_id, sort_order
+    SELECT id, course_id, slug, title, content, video_url, points, duration_min, section_id, sort_order, mission
     FROM lms_lessons
     WHERE id = ${lessonId} AND course_id = ${courseId}
   `;
@@ -230,6 +231,7 @@ function mapLesson(entry: Record<string, unknown>): LmsLesson {
     duration_min: entry.duration_min == null ? null : num(entry.duration_min),
     section_id: entry.section_id == null ? null : text(entry.section_id),
     sort_order: num(entry.sort_order),
+    mission: text(entry.mission),
   };
 }
 

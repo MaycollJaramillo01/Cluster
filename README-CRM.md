@@ -10,12 +10,38 @@ Un **contacto** (`contacts`) es una persona del negocio: escribió un formulario
 
 La sesión es la cookie `cluster_dashboard`: HttpOnly, path `/dashboard`, 14 días, firmada con HMAC. El secreto es `CAREERS_AUTH_SECRET` o, si no está, `DASHBOARD_AUTH_SECRET`.
 
-Puede entrar un correo que esté en la lista de `src/lib/crm/session.ts`: el administrador principal del código, más los de `DASHBOARD_ALLOWED_EMAILS` y `CAREERS_ADMIN_EMAILS`.
+**Quién entra y con qué rol** (`src/lib/crm/roles.ts`):
 
-Hay dos caminos:
+| Rol | Ve |
+| --- | --- |
+| Superadmin | Todo, incluido **Equipo** (`/dashboard/equipo`) |
+| Admin de contenido | Academia: cursos, lecciones, misiones, marketplace, blog, revisiones, fichas, personas |
+| Finanzas | Academia: ventas, transferencias, comprobantes, clientes, membresías, liquidaciones, donaciones, comisión |
+| Profesor | Solo `/dashboard/profesor`: sus cursos, sus alumnos (nombre, avance, XP) y sus ventas y liquidaciones |
 
-1. **Correo y clave.** La clave tiene al menos 8 caracteres y se guarda en `crm_admins` con scrypt. La primera vez solo el administrador principal puede crear la clave. Después, cada correo de la lista entra con la suya.
-2. **Google.** Hace falta `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`. El retorno es `/dashboard/auth/callback`. Solo pasa un correo verificado que ya esté en la lista.
+- Los correos de la lista del servidor (`PRIMARY_ADMIN` en `session.ts`, `DASHBOARD_ALLOWED_EMAILS`, `CAREERS_ADMIN_EMAILS`) son superadmin fijos.
+- El resto del equipo vive en `crm_staff`. Un superadmin lo da de alta en Equipo con una clave inicial de 12 caracteres o más.
+- El profesor ve los cursos donde la persona de la academia con su mismo correo es el profesor asignado.
+
+**Permisos en el servidor, no en los botones:**
+- Cada server action llama a `requireDashboard(área)`. Sin área, la acción es del CRM y solo la puede usar un superadmin.
+- El middleware redirige las páginas fuera del rol, también en la navegación interna.
+- El rol se vuelve a leer de la base en cada pedido. Si cambia, la sesión deja de valer y hay que volver a entrar.
+
+**Entrar son dos pasos:**
+
+1. **Correo y clave, o Google.**
+   - La clave tiene al menos 8 caracteres y se guarda en `crm_admins` con scrypt. La primera vez solo el administrador principal puede crear la suya, con `CAREERS_ADMIN_PASSWORD`.
+   - Google necesita `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`, con retorno en `/dashboard/auth/callback`. Solo pasa un correo verificado que sea del equipo.
+2. **Código TOTP de 6 dígitos (MFA, obligatorio para todos)** en `/dashboard/login/mfa`.
+   - La primera vez muestra la clave para cargarla en una app de códigos (Google Authenticator, 1Password, Authy).
+   - El paso dura 10 minutos (cookie `cluster_mfa`).
+   - Un código usado no se acepta otra vez. 5 códigos malos bloquean 15 minutos (`crm_mfa`).
+   - Las sesiones de antes del segundo factor ya no sirven.
+   - Si alguien pierde el celular, un superadmin lo reinicia en Equipo.
+   - Si el único superadmin pierde el suyo: `DELETE FROM crm_mfa WHERE email = '<correo>'` en la base.
+
+`scripts/check-misiones-equipo.ts` prueba los roles, el TOTP, las misiones y el XP.
 
 Cada vez que se abre el panel se corren las automatizaciones vencidas. Si la base no responde, se muestra la pantalla de configuración.
 

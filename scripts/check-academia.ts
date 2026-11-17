@@ -1,3 +1,5 @@
+export {};
+
 // Prueba del acceso de un solo uso, planes y reembolsos contra la base de .env.local.
 // Uso: npx tsx --env-file=.env.local scripts/check-academia.ts
 // Crea filas con un prefijo único y las borra al final. El correo se intercepta: nada sale a Resend.

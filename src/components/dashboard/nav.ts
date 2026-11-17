@@ -1,4 +1,5 @@
 import type { SidebarCounts } from '@/lib/crm/types';
+import { areaForPath, canDo, type StaffRole } from '@/lib/crm/roles';
 
 export type NavItem = {
   href: string;
@@ -86,7 +87,36 @@ export const sections: Section[] = [
     title: 'Embudo',
     description: 'Oportunidades, del primer mensaje al cierre.',
   },
+  {
+    id: 'profesor',
+    href: '/dashboard/profesor',
+    label: 'Mis cursos',
+    title: 'Mis cursos',
+    description: 'Tus cursos, tus alumnos y tus ventas.',
+  },
+  {
+    id: 'equipo',
+    href: '/dashboard/equipo',
+    label: 'Equipo',
+    title: 'Equipo',
+    description: 'Quién entra al panel, con qué rol y su segundo factor.',
+  },
 ];
+
+export function allowedHref(role: StaffRole, href: string) {
+  const area = areaForPath(href.split('?')[0]);
+  return !area || canDo(role, area);
+}
+
+// Secciones que el rol puede ver; cada una apunta a su primera página permitida.
+export function sectionsFor(role: StaffRole, counts: SidebarCounts) {
+  return sections.flatMap((section) => {
+    if (section.id === 'profesor' && role !== 'profesor') return [];
+    if (allowedHref(role, section.href)) return [section];
+    const first = itemsFor(section.id, counts).find((item) => allowedHref(role, item.href));
+    return first ? [{ ...section, href: first.href }] : [];
+  });
+}
 
 export function itemsFor(id: string, counts: SidebarCounts): NavItem[] {
   if (id === 'inicio') {
@@ -122,6 +152,12 @@ export function itemsFor(id: string, counts: SidebarCounts): NavItem[] {
       { href: '/dashboard/cursos/donaciones', label: 'Donaciones', match: 'prefix' },
       { href: '/dashboard/cursos/ajustes', label: 'Comisión', match: 'prefix' },
     ];
+  }
+  if (id === 'profesor') {
+    return [{ href: '/dashboard/profesor', label: 'Resumen', match: 'prefix' }];
+  }
+  if (id === 'equipo') {
+    return [{ href: '/dashboard/equipo', label: 'Personas del equipo', match: 'prefix' }];
   }
   if (id === 'tienda') {
     return [{ href: '/dashboard/tienda', label: 'Catálogo', match: 'prefix' }];

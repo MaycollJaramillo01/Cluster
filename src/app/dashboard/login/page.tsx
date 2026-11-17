@@ -5,7 +5,7 @@ import { dashboardUnlocked, login } from '@/lib/crm/access';
 import { googleConfigured, PRIMARY_ADMIN } from '@/lib/crm/session';
 
 const errors: Record<string, string> = {
-  cuenta: 'Ese correo no es administrador.',
+  cuenta: 'Ese correo no es parte del equipo.',
   clave: 'La contraseña no coincide.',
   corta: 'La contraseña necesita al menos 8 caracteres.',
   setup: 'En la primera entrada usa la contraseña de administrador del servidor (CAREERS_ADMIN_PASSWORD).',
@@ -13,6 +13,7 @@ const errors: Record<string, string> = {
   config: 'Faltan las claves de Google.',
   lista: 'No hay correos autorizados.',
   state: 'La sesión de Google venció. Intenta de nuevo.',
+  vencido: 'Pasaron más de 10 minutos. Vuelve a entrar.',
 };
 
 export default async function LoginPage({
