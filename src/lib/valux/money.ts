@@ -1,3 +1,10 @@
+// La academia cobra en dólares (decisión del cliente, 2026-11-17). Montos en centavos.
+export const CURRENCY = 'USD';
+
+export function academyMoney(cents: number) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: CURRENCY }).format((Number(cents) || 0) / 100);
+}
+
 export function splitCents(amountCents: number, commissionPercent: number) {
   const amount = Math.max(0, Math.round(amountCents));
   const rate = Math.min(100, Math.max(0, commissionPercent)) / 100;

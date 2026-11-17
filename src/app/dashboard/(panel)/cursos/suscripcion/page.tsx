@@ -1,5 +1,6 @@
 import { saveSettings, setSubscriptionStatus } from '@/lib/valux/actions';
-import { formatDate, money } from '@/lib/crm/format';
+import { formatDate } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { getSettings, listSubscriptions } from '@/lib/valux/data';
 import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 

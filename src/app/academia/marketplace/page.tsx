@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Cover, Page } from '@/components/academia/ui';
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { listProducts } from '@/lib/valux/data';
 
 export default async function MarketplacePage() {

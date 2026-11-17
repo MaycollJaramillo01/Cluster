@@ -26,7 +26,7 @@ export type ValuxPerson = {
   portfolio_url: string;
 };
 
-export type ValuxSettings = { commission_percent: number; subscription_cents: number };
+export type ValuxSettings = { commission_percent: number; subscription_cents: number; bank_details: string };
 
 function mapPerson(row: Record<string, unknown>): ValuxPerson {
   return {
@@ -45,11 +45,12 @@ function mapPerson(row: Record<string, unknown>): ValuxPerson {
 
 export async function getSettings(): Promise<ValuxSettings> {
   const sql = await crm();
-  const rows = await sql`SELECT commission_percent, subscription_cents FROM valux_settings WHERE id = 'valux'`;
+  const rows = await sql`SELECT commission_percent, subscription_cents, bank_details FROM valux_settings WHERE id = 'valux'`;
   const row = rows[0] as Record<string, unknown> | undefined;
   return {
     commission_percent: num(row?.commission_percent) || 30,
     subscription_cents: num(row?.subscription_cents) || 2000,
+    bank_details: text(row?.bank_details),
   };
 }
 

@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Checkout, Cover, durationLabel, payNote } from '@/components/academia/ui';
-import { money } from '@/lib/crm/format';
+import { Checkout, Cover, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse } from '@/lib/valux/actions';
 import { publishedCourse } from '@/lib/valux/data';
-import { paymentReady } from '@/lib/valux/stripe';
+import { paymentOptions } from '@/lib/valux/transfers';
 
 export default async function CourseCatalogPage({
   params,
@@ -17,6 +17,7 @@ export default async function CourseCatalogPage({
   const query = await searchParams;
   const course = await publishedCourse(slug);
   if (!course) notFound();
+  const pay = await paymentOptions();
   const minutes = course.lessons.reduce((sum, lesson) => sum + (lesson.duration_min || 0), 0);
   const lessonCount = course.lessons.length;
   const loose = course.lessons.filter((lesson) => !lesson.section_id);
@@ -91,14 +92,15 @@ export default async function CourseCatalogPage({
         <Cover url={course.cover_url} title={course.title} />
         <div className="space-y-4 p-4">
           <p className="font-display text-5xl tracking-wide">{course.price_cents > 0 ? money(course.price_cents) : 'Gratis'}</p>
-          {course.price_cents > 0 && !paymentReady() ? (
+          {course.price_cents > 0 && !payReady(pay) ? (
             <p className="text-sm leading-relaxed text-black/70">{payNote('pasarela')}</p>
           ) : (
             <Checkout
               action={buyCourse}
               hidden={{ slug: course.slug }}
               label={course.price_cents > 0 ? 'Inscribirme ahora' : 'Empezar gratis'}
-              note={course.price_cents > 0 ? 'El pago se abre en PayPal o Stripe.' : 'Acceso inmediato a las clases'}
+              note={course.price_cents > 0 ? payHint(pay) : 'Acceso inmediato a las clases'}
+              pay={course.price_cents > 0 ? pay : undefined}
             />
           )}
         </div>

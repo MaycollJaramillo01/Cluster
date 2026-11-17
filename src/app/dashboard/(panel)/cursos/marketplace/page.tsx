@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { createProduct, reviewProduct } from '@/lib/valux/actions';
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { listPeople, listProducts } from '@/lib/valux/data';
 import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 

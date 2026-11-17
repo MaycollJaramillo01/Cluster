@@ -864,6 +864,7 @@ export async function createOrder(formData: FormData) {
       approve = order.approveUrl;
     } else if (stripeConfigured()) {
       const session = await createStripeCheckout({
+        currency: 'usd',
         amountCents: total,
         description: product?.name || 'Pedido',
         email,

@@ -14,10 +14,37 @@ export function Cover({ url, title }: { url: string; title: string }) {
 }
 
 export function payNote(code?: string) {
-  if (code === 'pasarela') return 'El cobro queda listo cuando se carguen las claves de PayPal o Stripe.';
+  if (code === 'pasarela') return 'El cobro queda listo cuando se cargue la clave de Stripe o los datos para transferencia.';
   if (code === 'datos') return 'Faltan el nombre y el correo.';
   if (code) return 'No se pudo completar el pago.';
   return '';
+}
+
+export type PayOptions = { card: boolean; transfer: boolean };
+
+// Tarjeta (Stripe) o transferencia. Con un solo método disponible no se pregunta.
+export function PayMethod({ options }: { options?: PayOptions }) {
+  if (!options) return null;
+  if (options.card && options.transfer) {
+    return (
+      <fieldset className="space-y-2 text-sm">
+        <legend className="mb-1 text-xs text-black/45">Forma de pago</legend>
+        <label className="flex items-center gap-2"><input type="radio" name="metodo" value="tarjeta" defaultChecked /> Tarjeta</label>
+        <label className="flex items-center gap-2"><input type="radio" name="metodo" value="transferencia" /> Transferencia bancaria</label>
+      </fieldset>
+    );
+  }
+  return <input type="hidden" name="metodo" value={options.card ? 'tarjeta' : 'transferencia'} />;
+}
+
+export function payReady(options: PayOptions) {
+  return options.card || options.transfer;
+}
+
+export function payHint(options: PayOptions) {
+  if (options.card && options.transfer) return 'Pagás con tarjeta o por transferencia.';
+  if (options.card) return 'Pagás con tarjeta.';
+  return 'Pagás por transferencia; el acceso llega al confirmar el depósito.';
 }
 
 export function Checkout({
@@ -25,11 +52,13 @@ export function Checkout({
   hidden,
   label,
   note,
+  pay,
 }: {
   action: (formData: FormData) => Promise<void>;
   hidden?: Record<string, string>;
   label: string;
   note?: string;
+  pay?: PayOptions;
 }) {
   return (
     <form action={action} className="space-y-3">
@@ -44,6 +73,7 @@ export function Checkout({
         <span className="mb-1 block text-xs text-black/45">Correo</span>
         <input name="email" type="email" required className="w-full border border-black/15 px-3 py-2.5 text-sm outline-none focus:border-ink" />
       </label>
+      <PayMethod options={pay} />
       <button className="w-full bg-brand px-4 py-3 text-sm font-medium text-ink" type="submit">{label}</button>
       {note ? <p className="text-center text-xs text-black/45">{note}</p> : null}
     </form>

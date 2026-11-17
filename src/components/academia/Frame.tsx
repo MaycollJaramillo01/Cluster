@@ -10,7 +10,7 @@ const links = [
   ['/academia/blog', 'Blog'],
 ];
 
-const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos']);
+const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos', 'transferencia']);
 
 function classroomPath(path: string) {
   const parts = path.split('/').filter(Boolean);

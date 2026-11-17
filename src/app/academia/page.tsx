@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Cover, durationLabel, payNote } from '@/components/academia/ui';
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { publishedCourses } from '@/lib/valux/data';
 
 export default async function AcademiaHome({ searchParams }: { searchParams: Promise<{ error?: string; q?: string }> }) {

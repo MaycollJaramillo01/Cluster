@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'crypto';
+import { CURRENCY } from './money';
 import { paypalConfigured } from './paypal';
 
 export function stripeConfigured() {
@@ -31,6 +32,8 @@ export async function createStripeCheckout(input: {
   metadata: Record<string, string>;
   // Suscripción: cobro mensual que Stripe repite solo.
   recurring?: boolean;
+  // Por defecto la moneda de la academia.
+  currency?: string;
 }) {
   const body = new URLSearchParams();
   body.set('mode', input.recurring ? 'subscription' : 'payment');
@@ -38,7 +41,7 @@ export async function createStripeCheckout(input: {
   body.set('success_url', input.successUrl);
   body.set('cancel_url', input.cancelUrl);
   body.set('line_items[0][quantity]', '1');
-  body.set('line_items[0][price_data][currency]', 'usd');
+  body.set('line_items[0][price_data][currency]', input.currency || CURRENCY.toLowerCase());
   body.set('line_items[0][price_data][unit_amount]', String(input.amountCents));
   body.set('line_items[0][price_data][product_data][name]', input.description.slice(0, 120));
   if (input.recurring) body.set('line_items[0][price_data][recurring][interval]', 'month');

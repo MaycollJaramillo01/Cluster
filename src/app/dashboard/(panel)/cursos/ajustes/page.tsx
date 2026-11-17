@@ -8,13 +8,16 @@ export default async function ComisionPage() {
   return (
     <div className="space-y-4">
       <PageTitle title="Comisión" />
-      <p className="max-w-xl text-sm text-black/60">De cada curso o producto vendido, este porcentaje se queda en la academia. El resto queda para el profesor o el creador y entra en la liquidación del mes.</p>
+      <p className="max-w-xl text-sm text-black/60">De cada curso o producto vendido, este porcentaje se queda en la academia. El resto queda para el profesor o el creador y entra en la liquidación del mes. Sin datos bancarios, la transferencia no aparece como forma de pago.</p>
       <form action={saveSettings} className="flex flex-wrap items-end gap-3 border border-black/10 bg-white p-4">
         <Field label="Comisión %">
           <input className={fieldClass} name="commission" type="number" min="0" max="100" defaultValue={settings.commission_percent} />
         </Field>
         <Field label="Suscripción mensual USD">
           <input className={fieldClass} name="subscription" type="number" min="0" step="0.01" defaultValue={(settings.subscription_cents / 100).toFixed(2)} />
+        </Field>
+        <Field label="Datos para transferencia (banco, cuenta, titular)">
+          <textarea className={fieldClass} name="bank" rows={4} defaultValue={settings.bank_details} placeholder={'Banco Atlántida\nCuenta de ahorro 0000000000\nA nombre de Cluster Media'} />
         </Field>
         <button className={btn} type="submit">Guardar</button>
       </form>

@@ -29,7 +29,7 @@ function itemActive(item: NavItem, pathname: string, params: URLSearchParams) {
     const head = pathname.startsWith(`${path}/`) ? pathname.slice(path.length + 1).split('/')[0] : '';
     const reserved = new Set([
       'marketplace', 'blog', 'ventas', 'revisiones', 'fichas', 'personas',
-      'clientes', 'suscripcion', 'liquidaciones', 'donaciones', 'ajustes',
+      'clientes', 'suscripcion', 'liquidaciones', 'donaciones', 'ajustes', 'transferencias',
     ]);
     return Boolean(head) && !reserved.has(head);
   }

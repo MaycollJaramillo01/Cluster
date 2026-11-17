@@ -1,5 +1,6 @@
 import { buildPayouts, markPayout } from '@/lib/valux/actions';
-import { formatDate, money } from '@/lib/crm/format';
+import { formatDate } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { periodYm } from '@/lib/valux/money';
 import { paypalConfigured } from '@/lib/valux/paypal';
 import { listPayouts } from '@/lib/valux/data';

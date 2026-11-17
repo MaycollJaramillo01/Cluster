@@ -1,4 +1,4 @@
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { listClients } from '@/lib/valux/data';
 import { PageTitle } from '@/components/dashboard/ui';
 

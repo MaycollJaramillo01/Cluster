@@ -50,7 +50,7 @@ Todo cuelga de `/dashboard/cursos`.
 | Suscripción | Periodos en `valux_subscriptions` |
 | Liquidaciones | Lo que se le debe a cada creador por mes (`valux_payouts`) |
 | Donaciones | Aportes en `valux_donations` |
-| Comisión | `valux_settings`: comisión **30 %** y suscripción **USD 20** al nacer la base |
+| Comisión | `valux_settings`: comisión **30 %** y suscripción **USD 20** al nacer la base y datos bancarios para transferencia |
 
 Roles que usa el código: `usuario`, `suscriptor`, `asociado`, `profesor`, `junta`. Una persona inactiva (`is_active = false`) no lee cursos ni productos de pago.
 
@@ -80,13 +80,17 @@ La sesión del alumno es la cookie `cluster_academia`: el id de `valux_people`, 
 
 **Curso gratis** (precio 0): `checkout` llama a `grantAccess` en el momento, deja la cookie y entra al curso. No pide pasarela.
 
-**Curso, producto, suscripción o donación con precio:** hace falta PayPal o Stripe.
+**Moneda:** la academia cobra en **dólares (USD)**. Los montos se guardan en centavos (`CURRENCY` y `academyMoney` en `src/lib/valux/money.ts`).
 
-1. Si hay `PAYPAL_CLIENT_ID` y `PAYPAL_CLIENT_SECRET`, se usa PayPal (`PAYPAL_MODE=sandbox` o el modo live). Se guarda un intento en `valux_intents` y el alumno aprueba en PayPal. El retorno es `/academia/paypal/retorno`. Cancelar cae en `/academia/paypal/cancelado`.
-2. Si PayPal no está y sí hay `STRIPE_SECRET_KEY`, el checkout es de Stripe y vuelve por `/academia/stripe/retorno`.
+**Curso, producto, suscripción o donación con precio:** hace falta Stripe o datos para transferencia. PayPal ya no cobra en la academia; solo queda para liquidar a creadores y para suscripciones viejas.
+
+1. **Tarjeta:** con `STRIPE_SECRET_KEY`, el checkout es de Stripe en USD y vuelve por `/academia/stripe/retorno`. Se guarda un intento en `valux_intents`.
+2. **Transferencia:** aparece cuando el panel tiene datos bancarios (Comisión → Datos para transferencia). Crea una fila en `valux_transfers` con referencia `CL-XXXXXXXX`, vence a las 72 horas y le manda al comprador los datos por correo. En `/academia/transferencia/<referencia>` ve las instrucciones y puede subir el comprobante (privado, solo se abre desde el panel). **No da acceso**: finanzas aprueba en `/dashboard/cursos/transferencias` después de ver el depósito en el banco y anota el número de operación. Aprobar llama a `grantAccess` con el id `tr_<referencia>`, así un doble clic no crea dos ventas. La tarea programada vence las pendientes; una vencida todavía se puede aprobar.
+
+Con los dos métodos disponibles, el formulario pregunta cuál usar.
 3. Si no hay ninguna de las dos, el formulario vuelve con `?error=pasarela` y no entrega nada.
 
-La suscripción con precio es **recurrente**: cada mes, al precio de `valux_settings`. En PayPal se crea un plan mensual por precio (se guarda en `crm_meta`) y una suscripción `I-…`; en Stripe, un checkout en modo `subscription` (`sub_…`). El id queda en `valux_subscriptions.gateway_id`. La donación sigue siendo un monto mensual pagado de una vez por hasta 24 meses.
+La suscripción con precio es **recurrente**: cada mes, al precio de `valux_settings`. Con tarjeta es un checkout de Stripe en modo `subscription` (`sub_…`). Por transferencia se paga un mes por vez. Las suscripciones `I-…` de PayPal que ya existan se siguen renovando y cancelando. El id queda en `valux_subscriptions.gateway_id`. La donación sigue siendo un monto mensual pagado de una vez por hasta 24 meses.
 
 El alumno ve su suscripción en `/academia/suscripcion` y puede cancelar la renovación: queda en `no_renueva` y conserva el acceso hasta el vencimiento. Cancelar desde el panel la corta ya, también en la pasarela.
 
@@ -148,7 +152,9 @@ src/lib/valux/actions.ts       Checkout, entrar, perfil, revisión, liquidar
 src/lib/valux/fulfill.ts       Crear persona, venta, inscripción y correo
 src/lib/valux/session.ts       Cookie del alumno
 src/lib/valux/money.ts         Comisión, periodo y slugs
-src/lib/valux/paypal.ts        Órdenes y payouts
+src/lib/valux/paypal.ts        Payouts y suscripciones PayPal viejas
+src/lib/valux/transfers.ts     Órdenes por transferencia
+src/lib/valux/transfer-actions.ts  Comprobante, aprobar y rechazar
 src/lib/valux/stripe.ts        Checkout de Stripe
 ```
 
@@ -157,8 +163,8 @@ src/lib/valux/stripe.ts        Checkout de Stripe
 | Variable | Para qué |
 | --- | --- |
 | Las del CRM (`DATABASE_URL`, conector Neon, etc.) | La academia usa la misma base. Ver [README-CRM.md](README-CRM.md) |
-| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` | Cobrar y liquidar. Si están, PayPal gana sobre Stripe |
-| `STRIPE_SECRET_KEY` | Cobrar cuando PayPal no está |
+| `STRIPE_SECRET_KEY` | Cobrar con tarjeta |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` | Liquidar a creadores y suscripciones PayPal viejas |
 | `STRIPE_WEBHOOK_SECRET` | Firma del webhook de Stripe (`whsec_…`) |
 | `PAYPAL_WEBHOOK_ID` | Id del webhook creado en PayPal; sin él se rechazan sus avisos |
 | `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` | Correo de acceso |

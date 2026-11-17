@@ -1,5 +1,5 @@
 import { recordSale } from '@/lib/valux/actions';
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { listCourses } from '@/lib/crm/lms';
 import { listPeople, listProducts, listSales } from '@/lib/valux/data';
 import { Field, PageTitle, btn, fieldClass } from '@/components/dashboard/ui';
@@ -10,7 +10,7 @@ export default async function VentasPage() {
   return (
     <div className="space-y-6">
       <PageTitle title="Ventas" />
-      <p className="max-w-2xl text-sm text-black/60">Cada venta parte el monto: la comisión de la academia y el resto para quien creó el curso o el producto. Con PayPal configurado, el catálogo público cobra ahí. Desde aquí también puedes anotar un pago ya recibido.</p>
+      <p className="max-w-2xl text-sm text-black/60">Cada venta parte el monto: la comisión de la academia y el resto para quien creó el curso o el producto. El catálogo cobra con tarjeta (Stripe) o por transferencia; las transferencias se aprueban en Transferencias. Desde aquí también puedes anotar un pago ya recibido.</p>
       <form action={recordSale} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <Field label="Nombre"><input className={fieldClass} name="name" required /></Field>
         <Field label="Correo"><input className={fieldClass} name="email" type="email" required /></Field>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { createCourse } from '@/lib/crm/lms-actions';
 import { listCourses } from '@/lib/crm/lms';
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { Empty, Field, PageTitle, btn, fieldClass } from '@/components/dashboard/ui';
 
 export default async function CoursesPage() {

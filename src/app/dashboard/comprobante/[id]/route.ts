@@ -1,0 +1,24 @@
+import { NextResponse } from 'next/server';
+import { dashboardSession } from '@/lib/crm/session';
+import { getTransferById, readReceipt } from '@/lib/valux/transfers';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+// Comprobantes privados: solo con sesión del panel.
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+  if (!(await dashboardSession())) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const { id } = await context.params;
+  const transfer = await getTransferById(id);
+  if (!transfer?.receipt_url) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  const file = await readReceipt(transfer.receipt_url);
+  if (!file) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+  return new NextResponse(file.body, {
+    headers: {
+      'Content-Type': file.type,
+      'Content-Disposition': `inline; filename="${transfer.reference}"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}

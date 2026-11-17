@@ -14,7 +14,7 @@ import {
   updateCourseMeta,
 } from '@/lib/crm/lms-actions';
 import { getCourse } from '@/lib/crm/lms';
-import { money } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { listContacts } from '@/lib/crm/queries';
 import { listPeople } from '@/lib/valux/data';
 import { Field, PageTitle, btn, btnGhost, btnTiny, fieldClass } from '@/components/dashboard/ui';

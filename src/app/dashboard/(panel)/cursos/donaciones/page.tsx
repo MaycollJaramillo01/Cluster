@@ -1,4 +1,5 @@
-import { money, formatDate } from '@/lib/crm/format';
+import { formatDate } from '@/lib/crm/format';
+import { academyMoney as money } from '@/lib/valux/money';
 import { listDonations } from '@/lib/valux/data';
 import { PageTitle } from '@/components/dashboard/ui';
 

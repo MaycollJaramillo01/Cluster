@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { processDue } from '@/lib/crm/automations';
 import { processCampaignSends } from '@/lib/crm/campaigns';
+import { expireTransfers } from '@/lib/valux/transfers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -19,9 +20,10 @@ function authorized(request: Request) {
 export async function GET(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const started = Date.now();
-  const result = { automations: 0, sent: 0, failed: 0 };
+  const result = { automations: 0, sent: 0, failed: 0, expired: 0 };
   try {
     result.automations = await processDue(200);
+    result.expired = await expireTransfers();
     // Lotes de campañas hasta acercarse al límite de la función.
     while (Date.now() - started < 240_000) {
       const batch = await processCampaignSends(80);

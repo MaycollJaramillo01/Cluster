@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Checkout, Cover, payNote } from '@/components/academia/ui';
-import { money } from '@/lib/crm/format';
+import { Checkout, Cover, payHint, payNote, payReady } from '@/components/academia/ui';
+import { academyMoney as money } from '@/lib/valux/money';
 import { buyProduct } from '@/lib/valux/actions';
 import { academiaPersonId } from '@/lib/valux/session';
 import { canReadProduct, getProduct } from '@/lib/valux/data';
-import { paymentReady } from '@/lib/valux/stripe';
+import { paymentOptions } from '@/lib/valux/transfers';
 
 export default async function ProductPage({
   params,
@@ -18,6 +18,7 @@ export default async function ProductPage({
   const query = await searchParams;
   const product = await getProduct(id);
   if (!product || product.review_status !== 'publicado') notFound();
+  const pay = await paymentOptions();
   const open = await canReadProduct(await academiaPersonId(), product);
 
   return (
@@ -35,14 +36,15 @@ export default async function ProductPage({
         <Cover url={product.cover_url} title={product.title} />
         <div className="space-y-4 p-4">
           <p className="font-display text-5xl tracking-wide">{product.price_cents > 0 ? money(product.price_cents) : 'Gratis'}</p>
-          {product.price_cents > 0 && !paymentReady() ? (
+          {product.price_cents > 0 && !payReady(pay) ? (
             <p className="text-sm leading-relaxed text-black/70">{payNote('pasarela')}</p>
           ) : (
             <Checkout
               action={buyProduct}
               hidden={{ id: product.id }}
               label={product.price_cents > 0 ? 'Comprar ahora' : 'Obtener'}
-              note={product.price_cents > 0 ? 'El pago se abre en PayPal o Stripe.' : 'Acceso inmediato'}
+              note={product.price_cents > 0 ? payHint(pay) : 'Acceso inmediato'}
+              pay={product.price_cents > 0 ? pay : undefined}
             />
           )}
         </div>

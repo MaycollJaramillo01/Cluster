@@ -9,7 +9,8 @@ import { site } from '@/lib/site';
 import { getPersonByEmail, personCanReturn, personSubscription, publishedCourse, getProduct, getSettings, canReadCourse } from './data';
 import { ensurePerson, grantAccess, type GrantKind } from './fulfill';
 import { payoutDueAt, periodYm, slugify } from './money';
-import { cancelPaypalSubscription, createPaypalOrder, createPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
+import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
+import { bankDetails, createTransfer } from './transfers';
 import { academiaPersonId, loginLinkToken, setAcademiaPerson } from './session';
 import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
@@ -47,6 +48,7 @@ async function checkout(input: {
   monthlyCents?: number;
   description: string;
   failPath: string;
+  method?: string;
 }) {
   if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
   if (input.amountCents <= 0) {
@@ -55,34 +57,22 @@ async function checkout(input: {
     refresh();
     redirect(result.path);
   }
-  if (!paypalConfigured() && !stripeConfigured()) redirect(`${input.failPath}?error=pasarela`);
+  if (input.method === 'transferencia') {
+    if (!(await bankDetails())) redirect(`${input.failPath}?error=pasarela`);
+    let reference = '';
+    try {
+      reference = await createTransfer(input);
+    } catch (error) {
+      console.error('[academia] transferencia:', error);
+      redirect(`${input.failPath}?error=pago`);
+    }
+    redirect(`/academia/transferencia/${reference}`);
+  }
+  if (!stripeConfigured()) redirect(`${input.failPath}?error=pasarela`);
   try {
     const base = await origin();
     const sql = await crm();
     const recurring = input.kind === 'suscripcion';
-    if (paypalConfigured()) {
-      const order = recurring
-        ? await createPaypalSubscription({
-            amountCents: input.amountCents,
-            email: input.email,
-            returnUrl: `${base}/academia/paypal/retorno`,
-            cancelUrl: `${base}/academia/paypal/cancelado`,
-          })
-        : await createPaypalOrder({
-        amountCents: input.amountCents,
-        description: input.description,
-        returnUrl: `${base}/academia/paypal/retorno`,
-        cancelUrl: `${base}/academia/paypal/cancelado`,
-      });
-      await sql`
-        INSERT INTO valux_intents (id, paypal_order_id, kind, item_id, buyer_name, buyer_email, amount_cents, months)
-        VALUES (
-          ${crypto.randomUUID()}, ${order.id}, ${input.kind}, ${input.itemId || null},
-          ${input.name}, ${input.email.toLowerCase()}, ${input.amountCents}, ${input.months || 1}
-        )
-      `;
-      redirect(order.approveUrl);
-    }
     const session = await createStripeCheckout({
       amountCents: input.amountCents,
       description: input.description,
@@ -123,6 +113,7 @@ export async function buyCourse(formData: FormData) {
     email: field(formData, 'email'),
     amountCents: course.price_cents,
     description: course.title,
+    method: field(formData, 'metodo'),
     failPath: `/academia/${course.slug}`,
   });
 }
@@ -137,6 +128,7 @@ export async function buyProduct(formData: FormData) {
     email: field(formData, 'email'),
     amountCents: product.price_cents,
     description: product.title,
+    method: field(formData, 'metodo'),
     failPath: `/academia/marketplace/${product.id}`,
   });
 }
@@ -151,6 +143,7 @@ export async function buySubscription(formData: FormData) {
     amountCents: settings.subscription_cents,
     months: 1,
     description: 'Suscripción mensual de la academia',
+    method: field(formData, 'metodo'),
     failPath: '/academia/suscripcion',
   });
 }
@@ -191,6 +184,7 @@ export async function donate(formData: FormData) {
     monthlyCents: monthly,
     months,
     description: 'Donación a la academia',
+    method: field(formData, 'metodo'),
     failPath: '/academia/apoyar',
   });
 }
@@ -249,6 +243,10 @@ export async function saveSettings(formData: FormData) {
     SET commission_percent = ${percent}, subscription_cents = ${cents(field(formData, 'subscription'))}
     WHERE id = 'valux'
   `;
+  // El formulario de suscripción no trae los datos bancarios: solo se tocan si vienen.
+  if (formData.has('bank')) {
+    await sql`UPDATE valux_settings SET bank_details = ${field(formData, 'bank') || null} WHERE id = 'valux'`;
+  }
   refresh();
 }
 
