@@ -1,20 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { adminHasPassword } from '@/lib/crm/admins';
-import { dashboardUnlocked, login } from '@/lib/crm/access';
+import { dashboardUnlocked } from '@/lib/crm/access';
 import { googleConfigured, PRIMARY_ADMIN } from '@/lib/crm/session';
-
-const errors: Record<string, string> = {
-  cuenta: 'Ese correo no es parte del equipo.',
-  clave: 'La contraseña no coincide.',
-  corta: 'La contraseña necesita al menos 8 caracteres.',
-  setup: 'En la primera entrada usa la contraseña de administrador del servidor (CAREERS_ADMIN_PASSWORD).',
-  google: 'Google no completó el ingreso.',
-  config: 'Faltan las claves de Google.',
-  lista: 'No hay correos autorizados.',
-  state: 'La sesión de Google venció. Intenta de nuevo.',
-  vencido: 'Pasaron más de 10 minutos. Vuelve a entrar.',
-};
+import { LoginForm } from '@/components/dashboard/LoginForm';
 
 export default async function LoginPage({
   searchParams,
@@ -26,35 +15,35 @@ export default async function LoginPage({
   const firstTime = !(await adminHasPassword(PRIMARY_ADMIN));
 
   return (
-    <main className="grid min-h-screen place-items-center bg-ink px-4 text-white">
-      <div className="w-full max-w-sm bg-paper p-8 text-ink">
-        <p className="font-brand text-xs font-extrabold uppercase tracking-[0.22em]">Cluster</p>
-        <h1 className="mt-3 font-display text-6xl tracking-wide">CRM</h1>
-        <p className="mt-3 text-sm text-black/60">
-          Administrador: {PRIMARY_ADMIN}
+    <main className="flex min-h-screen items-center justify-center bg-ink px-4 py-12 text-white">
+      <div className="w-full max-w-md">
+        <p className="font-brand text-sm font-extrabold uppercase tracking-[0.22em]">Cluster</p>
+        <div className="mt-6 bg-paper p-6 text-ink sm:p-8">
+          <h1 className="font-display text-5xl tracking-wide">Entra al panel</h1>
+          <p className="mt-2 text-base text-black/65">Para el equipo y los profesores de la academia.</p>
+          {firstTime ? (
+            <p className="mt-5 border border-black/15 bg-white px-4 py-3 text-sm text-black/70">
+              Primera entrada del administrador: usa la contraseña del servidor. Queda guardada para esa cuenta.
+            </p>
+          ) : null}
+          <div className="mt-8">
+            <LoginForm initialError={params.error || ''} />
+          </div>
+          {googleConfigured() ? (
+            <>
+              <div className="my-6 flex items-center gap-3 text-sm text-black/45">
+                <span className="h-px flex-1 bg-black/10" />o<span className="h-px flex-1 bg-black/10" />
+              </div>
+              <Link href="/dashboard/auth/google" className="flex h-12 w-full items-center justify-center border border-black/20 bg-white text-base transition-colors duration-150 hover:border-ink">
+                Entrar con Google
+              </Link>
+            </>
+          ) : null}
+          <p className="mt-6 text-sm text-black/55">Después te pedimos el código de 6 dígitos de tu app de autenticación.</p>
+        </div>
+        <p className="mt-6 text-sm text-white/60">
+          ¿Eres alumno? <Link href="/academia/entrar" className="text-white underline underline-offset-2">Entra a la academia</Link>
         </p>
-        {firstTime ? (
-          <p className="mt-2 text-sm text-black/60">Primera entrada: usa la contraseña de administrador del servidor. Queda guardada para esa cuenta.</p>
-        ) : null}
-        <form action={login} className="mt-6 space-y-4">
-          <label className="block">
-            <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">Correo</span>
-            <input className="w-full border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand" name="email" type="email" required autoFocus defaultValue={PRIMARY_ADMIN} />
-          </label>
-          <label className="block">
-            <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">Contraseña</span>
-            <input className="w-full border border-black/15 px-3 py-2 text-sm outline-none focus:border-brand" name="password" type="password" required minLength={8} />
-          </label>
-          {params.error ? <p className="text-sm">{errors[params.error] || 'No se pudo entrar.'}</p> : null}
-          <button className="w-full bg-brand px-4 py-2 text-sm font-medium text-ink" type="submit">
-            Entrar
-          </button>
-        </form>
-        {googleConfigured() ? (
-          <Link className="mt-4 block border border-black/15 px-4 py-2 text-center text-sm" href="/dashboard/auth/google">
-            Entrar con Google
-          </Link>
-        ) : null}
       </div>
     </main>
   );
