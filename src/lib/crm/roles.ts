@@ -1,7 +1,8 @@
 // Roles del panel. Sin dependencias de Node: lo usa también el middleware.
 
 export type StaffRole = 'superadmin' | 'contenido' | 'finanzas' | 'profesor';
-export type Area = 'crm' | 'contenido' | 'finanzas' | 'profesor';
+// curso: editar un curso concreto (contenido, o el profesor dueño, que se verifica en la acción).
+export type Area = 'crm' | 'contenido' | 'finanzas' | 'profesor' | 'curso';
 
 export const STAFF_ROLES: { id: StaffRole; label: string; detail: string }[] = [
   { id: 'superadmin', label: 'Superadmin', detail: 'Todo el panel, el equipo y los ajustes.' },
@@ -16,6 +17,7 @@ export function isStaffRole(value: string): value is StaffRole {
 
 // El superadmin entra a todo; los demás solo a su área.
 export function canDo(role: StaffRole, area: Area) {
+  if (area === 'curso') return role === 'superadmin' || role === 'contenido' || role === 'profesor';
   return role === 'superadmin' || role === area;
 }
 
@@ -27,8 +29,15 @@ const FINANCE = [
   '/dashboard/cursos/liquidaciones',
   '/dashboard/cursos/donaciones',
   '/dashboard/cursos/ajustes',
+  '/dashboard/cursos/analitica',
   '/dashboard/comprobante',
 ];
+
+// Subpáginas de /dashboard/cursos que no son un curso.
+const SECTIONS = new Set([
+  'ajustes', 'analitica', 'blog', 'clientes', 'donaciones', 'fichas', 'liquidaciones', 'marketplace',
+  'personas', 'retos', 'revisiones', 'suscripcion', 'transferencias', 'ventas',
+]);
 
 function under(pathname: string, base: string) {
   return pathname === base || pathname.startsWith(`${base}/`);
@@ -39,6 +48,8 @@ export function areaForPath(pathname: string): Area | null {
   if (under(pathname, '/dashboard/login') || under(pathname, '/dashboard/auth')) return null;
   if (under(pathname, '/dashboard/profesor')) return 'profesor';
   if (FINANCE.some((base) => under(pathname, base))) return 'finanzas';
+  const course = pathname.match(/^\/dashboard\/cursos\/([^/]+)/);
+  if (course && !SECTIONS.has(course[1])) return 'curso';
   if (under(pathname, '/dashboard/cursos')) return 'contenido';
   return 'crm';
 }

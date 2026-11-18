@@ -24,6 +24,11 @@ export type ValuxPerson = {
   niche: string;
   instagram_url: string;
   portfolio_url: string;
+  source: string;
+  utm: string;
+  stage: string;
+  consent_email: boolean;
+  consent_whatsapp: boolean;
 };
 
 export type ValuxSettings = { commission_percent: number; subscription_cents: number; bank_details: string };
@@ -40,6 +45,11 @@ function mapPerson(row: Record<string, unknown>): ValuxPerson {
     niche: text(row.niche),
     instagram_url: text(row.instagram_url),
     portfolio_url: text(row.portfolio_url),
+    source: text(row.source),
+    utm: text(row.utm),
+    stage: text(row.stage) || 'nuevo',
+    consent_email: bool(row.consent_email),
+    consent_whatsapp: bool(row.consent_whatsapp),
   };
 }
 
@@ -57,7 +67,8 @@ export async function getSettings(): Promise<ValuxSettings> {
 export async function listPeople() {
   const sql = await crm();
   const rows = await sql`
-    SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url
+    SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url,
+      source, utm, stage, consent_email, consent_whatsapp
     FROM valux_people
     ORDER BY name
   `;
@@ -68,7 +79,8 @@ export async function getPerson(id: string) {
   if (!id) return null;
   const sql = await crm();
   const rows = await sql`
-    SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url
+    SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url,
+      source, utm, stage, consent_email, consent_whatsapp
     FROM valux_people WHERE id = ${id}
   `;
   return rows[0] ? mapPerson(rows[0] as Record<string, unknown>) : null;
@@ -77,7 +89,8 @@ export async function getPerson(id: string) {
 export async function getPersonByEmail(email: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url
+    SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url,
+      source, utm, stage, consent_email, consent_whatsapp
     FROM valux_people WHERE email = ${email.trim().toLowerCase()}
   `;
   return rows[0] ? mapPerson(rows[0] as Record<string, unknown>) : null;
@@ -281,7 +294,7 @@ export async function listDonations() {
 export async function listPayouts() {
   const sql = await crm();
   const rows = await sql`
-    SELECT y.id, y.period_ym, y.amount_cents, y.status, y.due_at, y.transferred_at, y.notes, p.name, p.paypal_email
+    SELECT y.id, y.period_ym, y.amount_cents, y.status, y.due_at, y.transferred_at, y.notes, y.detail, p.name, p.paypal_email
     FROM valux_payouts y
     JOIN valux_people p ON p.id = y.seller_id
     ORDER BY y.period_ym DESC, p.name
@@ -296,8 +309,45 @@ export async function listPayouts() {
       due_at: text(entry.due_at),
       transferred_at: text(entry.transferred_at),
       notes: text(entry.notes),
+      detail: text(entry.detail),
       name: text(entry.name),
       paypal_email: text(entry.paypal_email),
+    };
+  });
+}
+
+export type ValuxContract = {
+  id: string;
+  name: string;
+  email: string;
+  kind: 'general' | 'porcentaje' | 'honorario';
+  percent: number | null;
+  fee_cents: number;
+  refund: 'descontar' | 'academia';
+  terms: string;
+};
+
+// Profesores y creadores con su contrato vigente.
+export async function listContracts(): Promise<ValuxContract[]> {
+  const sql = await crm();
+  const rows = await sql`
+    SELECT id, name, email, contract_kind, contract_percent, contract_fee_cents, contract_refund, contract_terms
+    FROM valux_people
+    WHERE role IN ('profesor', 'asociado') OR contract_kind <> 'general'
+    ORDER BY name
+  `;
+  return rows.map((row) => {
+    const entry = row as Record<string, unknown>;
+    const kind = text(entry.contract_kind);
+    return {
+      id: text(entry.id),
+      name: text(entry.name),
+      email: text(entry.email),
+      kind: kind === 'porcentaje' || kind === 'honorario' ? kind : 'general',
+      percent: entry.contract_percent == null ? null : num(entry.contract_percent),
+      fee_cents: num(entry.contract_fee_cents),
+      refund: text(entry.contract_refund) === 'academia' ? 'academia' : 'descontar',
+      terms: text(entry.contract_terms),
     };
   });
 }
@@ -613,6 +663,10 @@ export async function lessonAccess<L extends { id: string; section_id: string }>
 export async function personXp(personId: string) {
   if (!personId) return 0;
   const sql = await crm();
-  const rows = await sql`SELECT COALESCE(sum(xp), 0) AS xp FROM lms_xp WHERE person_id = ${personId}`;
+  // XP de misiones más los bonos de retos reclamados.
+  const rows = await sql`
+    SELECT (SELECT COALESCE(sum(xp), 0) FROM lms_xp WHERE person_id = ${personId})
+      + (SELECT COALESCE(sum(xp), 0) FROM lms_challenge_claims WHERE person_id = ${personId}) AS xp
+  `;
   return num((rows[0] as { xp?: unknown } | undefined)?.xp);
 }

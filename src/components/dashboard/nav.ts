@@ -141,6 +141,8 @@ export function itemsFor(id: string, counts: SidebarCounts): NavItem[] {
       { href: '/dashboard/cursos', label: 'Cursos', count: counts.courses, match: 'exact' },
       { href: '/dashboard/cursos/marketplace', label: 'Marketplace', match: 'prefix' },
       { href: '/dashboard/cursos/blog', label: 'Blog', match: 'prefix' },
+      { href: '/dashboard/cursos/retos', label: 'Retos', match: 'prefix' },
+      { href: '/dashboard/cursos/analitica', label: 'Analítica', match: 'prefix' },
       { href: '/dashboard/cursos/ventas', label: 'Ventas', match: 'prefix' },
       { href: '/dashboard/cursos/transferencias', label: 'Transferencias', match: 'prefix' },
       { href: '/dashboard/cursos/revisiones', label: 'Revisiones', count: counts.reviews, match: 'prefix' },

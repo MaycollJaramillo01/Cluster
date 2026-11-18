@@ -555,6 +555,61 @@ const STATEMENTS = [
     fails INTEGER NOT NULL DEFAULT 0,
     locked_until TIMESTAMPTZ
   )`,
+  // Contratos de profesor: general (comisión global), porcentaje propio u honorario fijo mensual.
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_kind TEXT NOT NULL DEFAULT 'general'`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_percent INTEGER`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_fee_cents INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_terms TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_refund TEXT NOT NULL DEFAULT 'descontar'`,
+  `ALTER TABLE valux_payouts ADD COLUMN IF NOT EXISTS detail TEXT`,
+  // Revisión editorial: el profesor pide revisión y contenido publica.
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS review_requested_at TIMESTAMPTZ`,
+  // Lead: fuente, UTM, consentimientos y etapa del embudo.
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS source TEXT`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS utm TEXT`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS consent_email BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS consent_whatsapp BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS consent_at TIMESTAMPTZ`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS stage TEXT NOT NULL DEFAULT 'nuevo'`,
+  `ALTER TABLE academia_logins ADD COLUMN IF NOT EXISTS lead TEXT`,
+  // Eventos de analítica, deduplicados por id.
+  `CREATE TABLE IF NOT EXISTS academia_events (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    person_id TEXT,
+    email TEXT,
+    data TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS academia_events_name_idx ON academia_events (name, created_at)`,
+  // Cada evento de Stripe se registra una vez por su id.
+  `CREATE TABLE IF NOT EXISTS stripe_events (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    processed_at TIMESTAMPTZ,
+    error TEXT
+  )`,
+  // Retos: meta medible con XP de bonificación, reclamable una vez.
+  `CREATE TABLE IF NOT EXISTS lms_challenges (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    kind TEXT NOT NULL,
+    target INTEGER NOT NULL,
+    course_id TEXT,
+    bonus_xp INTEGER NOT NULL DEFAULT 0,
+    ends_at TIMESTAMPTZ,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE TABLE IF NOT EXISTS lms_challenge_claims (
+    challenge_id TEXT NOT NULL REFERENCES lms_challenges(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL,
+    xp INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (challenge_id, person_id)
+  )`,
 ];
 
 let client: Sql | null = null;

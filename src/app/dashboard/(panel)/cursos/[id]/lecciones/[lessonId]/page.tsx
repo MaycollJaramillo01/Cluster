@@ -2,11 +2,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createResource, deleteLesson, deleteResource, updateLesson } from '@/lib/crm/lms-actions';
 import { getCourse, getLesson } from '@/lib/crm/lms';
+import { requireCourseEditor } from '@/lib/crm/course-access';
 import { parseMission } from '@/lib/valux/mission';
 import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
 export default async function LessonPage({ params }: { params: Promise<{ id: string; lessonId: string }> }) {
   const { id, lessonId } = await params;
+  await requireCourseEditor(id);
   const [lesson, detail] = await Promise.all([getLesson(id, lessonId), getCourse(id)]);
   if (!lesson || !detail) notFound();
   const mission = parseMission(lesson.mission);

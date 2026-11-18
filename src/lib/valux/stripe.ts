@@ -62,6 +62,23 @@ export async function createStripeCheckout(input: {
   return { id: data.id, url: data.url };
 }
 
+// Sesiones de checkout pagadas desde un momento (segundos Unix), para la conciliación.
+export async function listPaidStripeSessions(since: number) {
+  const ids: string[] = [];
+  let after = '';
+  // ponytail: tope de 10 páginas (1 000 sesiones en 48 h); subirlo si el volumen crece.
+  for (let page = 0; page < 10; page += 1) {
+    const data = await stripeApi<{ data?: { id: string; payment_status?: string }[]; has_more?: boolean }>(
+      `checkout/sessions?status=complete&limit=100&created[gte]=${since}${after ? `&starting_after=${encodeURIComponent(after)}` : ''}`,
+    );
+    const rows = data.data || [];
+    ids.push(...rows.filter((row) => row.payment_status === 'paid').map((row) => row.id));
+    if (!data.has_more || !rows.length) break;
+    after = rows[rows.length - 1].id;
+  }
+  return ids;
+}
+
 export async function readStripeCheckout(sessionId: string) {
   const data = await stripeApi<{
     payment_status?: string;

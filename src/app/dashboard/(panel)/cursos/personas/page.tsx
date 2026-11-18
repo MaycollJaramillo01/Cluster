@@ -30,6 +30,10 @@ export default async function PersonasPage() {
             <div>
               <p className="font-medium">{person.name}</p>
               <p className="text-xs text-black/45">{person.email}</p>
+              <p className="text-xs text-black/45">
+                {person.stage} · {person.source || 'sin fuente'}{person.utm ? ` · ${person.utm}` : ''}
+                {` · WhatsApp ${person.consent_whatsapp ? 'sí' : 'no'} · correo ${person.consent_email ? 'sí' : 'no'}`}
+              </p>
             </div>
             <select className={fieldClass} name="role" defaultValue={person.role}>
               {roles.map((role) => <option key={role} value={role}>{role}</option>)}

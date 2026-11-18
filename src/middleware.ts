@@ -40,6 +40,36 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
+  // Primer contacto de la academia: guarda fuente y UTM para el registro (no se pisa con visitas posteriores).
+  if ((pathname === '/academia' || pathname.startsWith('/academia/')) && !request.cookies.get('cluster_lead')) {
+    const params = request.nextUrl.searchParams;
+    const utm = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
+      .map((key) => [key, (params.get(key) || '').slice(0, 80)] as const)
+      .filter(([, value]) => value);
+    const referrer = request.headers.get('referer') || '';
+    let external = '';
+    try {
+      if (referrer && !referrer.startsWith(request.nextUrl.origin)) external = new URL(referrer).hostname;
+    } catch {
+      external = '';
+    }
+    if (utm.length || external) {
+      const response = NextResponse.next();
+      const lead = {
+        source: utm.find(([key]) => key === 'utm_source')?.[1] || external || 'directo',
+        utm: new URLSearchParams(utm as [string, string][]).toString(),
+      };
+      response.cookies.set('cluster_lead', JSON.stringify(lead), {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/academia',
+        maxAge: 60 * 60 * 24 * 90,
+      });
+      return response;
+    }
+  }
+
   // CRM interno. Vive fuera de los prefijos de idioma.
   if (
     pathname === '/dashboard' ||

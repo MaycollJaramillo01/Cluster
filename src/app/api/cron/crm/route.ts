@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'crypto';
 import { processDue } from '@/lib/crm/automations';
 import { processCampaignSends } from '@/lib/crm/campaigns';
 import { expireTransfers } from '@/lib/valux/transfers';
+import { nightlyReconcile } from '@/lib/valux/reconcile';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,10 +21,15 @@ function authorized(request: Request) {
 export async function GET(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const started = Date.now();
-  const result = { automations: 0, sent: 0, failed: 0, expired: 0 };
+  const result: Record<string, unknown> & { automations: number; sent: number; failed: number; expired: number } = { automations: 0, sent: 0, failed: 0, expired: 0 };
   try {
     result.automations = await processDue(200);
     result.expired = await expireTransfers();
+    // La conciliación falla sola: no detiene las campañas.
+    result.reconcile = await nightlyReconcile().catch((error) => {
+      console.error('[cron] conciliación:', error);
+      return 'failed';
+    });
     // Lotes de campañas hasta acercarse al límite de la función.
     while (Date.now() - started < 240_000) {
       const batch = await processCampaignSends(80);

@@ -51,7 +51,7 @@ export default async function CoursesPage() {
                     <td className="px-4 py-3">
                       <Link href={`/dashboard/cursos/${course.id}`} className="font-medium hover:text-brand">{course.title}</Link>
                     </td>
-                    <td className="px-4 py-3">{course.published ? 'Publicado' : 'Borrador'}</td>
+                    <td className="px-4 py-3">{course.published ? 'Publicado' : course.review_requested_at ? 'Revisión pendiente' : 'Borrador'}</td>
                     <td className="px-4 py-3">{course.lessons}</td>
                     <td className="px-4 py-3">{course.students}</td>
                     <td className="px-4 py-3">{money(course.price_cents)}</td>

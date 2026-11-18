@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { storedFile } from '@/lib/valux/upload';
 import { crm } from './db';
+import { requireCourseEditor } from './course-access';
 import { requireDashboard } from './session';
 
 function field(formData: FormData, key: string) {
@@ -43,6 +44,22 @@ function slugify(value: string) {
 
 function refresh() {
   revalidatePath('/dashboard', 'layout');
+}
+
+async function lessonCourse(lessonId: string) {
+  const sql = await crm();
+  const rows = await sql`SELECT course_id FROM lms_lessons WHERE id = ${lessonId}`;
+  return String((rows[0] as { course_id?: string } | undefined)?.course_id || '');
+}
+
+// El profesor pide revisión; contenido la ve en la lista de cursos y publica.
+export async function requestReview(formData: FormData) {
+  const courseId = field(formData, 'course_id');
+  if (!courseId) return;
+  await requireCourseEditor(courseId);
+  const sql = await crm();
+  await sql`UPDATE lms_courses SET review_requested_at = now() WHERE id = ${courseId}`;
+  refresh();
 }
 
 async function uniqueCourseSlug(title: string) {
@@ -104,7 +121,7 @@ export async function toggleCourse(formData: FormData) {
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
-  await sql`UPDATE lms_courses SET published = NOT published WHERE id = ${id}`;
+  await sql`UPDATE lms_courses SET published = NOT published, review_requested_at = NULL WHERE id = ${id}`;
   refresh();
 }
 
@@ -120,10 +137,10 @@ export async function deleteCourse(formData: FormData) {
 }
 
 export async function createLesson(formData: FormData) {
-  await requireDashboard('contenido');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
   if (!courseId || !title) return;
+  await requireCourseEditor(courseId);
   const sql = await crm();
   const orderRows = await sql`
     SELECT COALESCE(max(sort_order), 0) AS n FROM lms_lessons WHERE course_id = ${courseId}
@@ -143,11 +160,11 @@ export async function createLesson(formData: FormData) {
 }
 
 export async function updateLesson(formData: FormData) {
-  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
   if (!id || !courseId || !title) return;
+  await requireCourseEditor(courseId);
   const sql = await crm();
   const points = positive(field(formData, 'points')) || 10;
   await sql`
@@ -166,12 +183,12 @@ export async function updateLesson(formData: FormData) {
 }
 
 export async function deleteLesson(formData: FormData) {
-  await requireDashboard('contenido');
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
-  if (!id) return;
+  if (!id || !courseId) return;
+  await requireCourseEditor(courseId);
   const sql = await crm();
-  await sql`DELETE FROM lms_lessons WHERE id = ${id}`;
+  await sql`DELETE FROM lms_lessons WHERE id = ${id} AND course_id = ${courseId}`;
   refresh();
   if (courseId) redirect(`/dashboard/cursos/${courseId}`);
 }
@@ -199,10 +216,10 @@ export async function updateCourseMeta(formData: FormData) {
 }
 
 export async function createSection(formData: FormData) {
-  await requireDashboard('contenido');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
   if (!courseId || !title) return;
+  await requireCourseEditor(courseId);
   const sql = await crm();
   const orderRows = await sql`SELECT COALESCE(max(sort_order), 0) AS n FROM lms_sections WHERE course_id = ${courseId}`;
   const next = Number((orderRows[0] as { n?: unknown } | undefined)?.n || 0) + 1;
@@ -214,21 +231,22 @@ export async function createSection(formData: FormData) {
 }
 
 export async function deleteSection(formData: FormData) {
-  await requireDashboard('contenido');
   const id = field(formData, 'id');
-  if (!id) return;
+  const courseId = field(formData, 'course_id');
+  if (!id || !courseId) return;
+  await requireCourseEditor(courseId);
   const sql = await crm();
-  await sql`UPDATE lms_lessons SET section_id = NULL WHERE section_id = ${id}`;
-  await sql`DELETE FROM lms_sections WHERE id = ${id}`;
+  const gone = await sql`DELETE FROM lms_sections WHERE id = ${id} AND course_id = ${courseId} RETURNING id`;
+  if (gone.length) await sql`UPDATE lms_lessons SET section_id = NULL WHERE section_id = ${id}`;
   refresh();
 }
 
 export async function createResource(formData: FormData) {
-  await requireDashboard('contenido');
   const lessonId = field(formData, 'lesson_id');
   const title = field(formData, 'title');
   const kind = field(formData, 'kind') || 'enlace';
   if (!lessonId || !title) return;
+  await requireCourseEditor(await lessonCourse(lessonId));
   const allowed = ['video', 'pdf', 'imagen', 'enlace', 'texto'];
   const sql = await crm();
   const url = await storedFile(formData, 'file', 'url');
@@ -243,11 +261,51 @@ export async function createResource(formData: FormData) {
 }
 
 export async function deleteResource(formData: FormData) {
+  const id = field(formData, 'id');
+  if (!id) return;
+  const sql = await crm();
+  const owner = await sql`SELECT lesson_id FROM lms_resources WHERE id = ${id}`;
+  await requireCourseEditor(await lessonCourse(String((owner[0] as { lesson_id?: string } | undefined)?.lesson_id || '')));
+  await sql`DELETE FROM lms_resources WHERE id = ${id}`;
+  refresh();
+}
+
+export async function saveChallenge(formData: FormData) {
+  await requireDashboard('contenido');
+  const title = field(formData, 'title');
+  const raw = field(formData, 'kind');
+  const kind = raw === 'misiones' || raw === 'curso' ? raw : 'xp';
+  const courseId = field(formData, 'course_id') || null;
+  const target = kind === 'curso' ? 1 : positive(field(formData, 'target'));
+  if (!title || !target || (kind === 'curso' && !courseId)) redirect('/dashboard/cursos/retos?error=datos');
+  const endsRaw = field(formData, 'ends_at');
+  const ends = endsRaw ? new Date(`${endsRaw}T23:59:59-06:00`).toISOString() : null;
+  const bonus = positive(field(formData, 'bonus_xp')) || 0;
+  const id = field(formData, 'id');
+  const sql = await crm();
+  if (id) {
+    await sql`
+      UPDATE lms_challenges SET title = ${title}, description = ${field(formData, 'description')}, kind = ${kind},
+        target = ${target}, course_id = ${courseId}, bonus_xp = ${bonus}, ends_at = ${ends},
+        active = ${field(formData, 'active') === '1'}
+      WHERE id = ${id}
+    `;
+  } else {
+    await sql`
+      INSERT INTO lms_challenges (id, title, description, kind, target, course_id, bonus_xp, ends_at)
+      VALUES (${crypto.randomUUID()}, ${title}, ${field(formData, 'description')}, ${kind}, ${target}, ${courseId}, ${bonus}, ${ends})
+    `;
+  }
+  refresh();
+  redirect('/dashboard/cursos/retos');
+}
+
+export async function deleteChallenge(formData: FormData) {
   await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
-  await sql`DELETE FROM lms_resources WHERE id = ${id}`;
+  await sql`DELETE FROM lms_challenges WHERE id = ${id}`;
   refresh();
 }
 
@@ -306,11 +364,11 @@ export async function saveFinalGrade(formData: FormData) {
 }
 
 export async function saveLessonScore(formData: FormData) {
-  await requireDashboard('contenido');
   const contactId = field(formData, 'contact_id');
   const personId = field(formData, 'person_id');
   const lessonId = field(formData, 'lesson_id');
   if (!lessonId || (!contactId && !personId)) return;
+  await requireCourseEditor(await lessonCourse(lessonId));
   const score = grade(field(formData, 'score'));
   const when = score == null ? null : new Date().toISOString();
   const sql = await crm();

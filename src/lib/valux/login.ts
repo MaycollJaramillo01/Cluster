@@ -3,6 +3,7 @@ import { crm } from '@/lib/crm/db';
 import { signingSecret } from '@/lib/crm/session';
 import { getPersonByEmail } from './data';
 import { ensurePerson } from './fulfill';
+import { saveLead, trackEvent, type Lead } from './events';
 import { sendAcademiaMail } from './mail';
 
 const LOGIN_MINUTES = 15;
@@ -26,7 +27,7 @@ export function cleanPhone(raw: string) {
 }
 
 // Siempre devuelve un id: la pantalla del código es igual exista o no el correo (sin enumeración).
-export async function startLogin(input: { email: string; name?: string; phone?: string; register: boolean; base: string }) {
+export async function startLogin(input: { email: string; name?: string; phone?: string; register: boolean; base: string; lead?: Lead }) {
   const id = crypto.randomUUID();
   const email = input.email.trim().toLowerCase();
   if (!email.includes('@')) return id;
@@ -45,10 +46,10 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
   // Un código nuevo anula los anteriores.
   await sql`UPDATE academia_logins SET expires_at = now() WHERE email = ${email} AND used_at IS NULL AND expires_at > now()`;
   await sql`
-    INSERT INTO academia_logins (id, email, name, phone, code_hash, token_hash, expires_at)
+    INSERT INTO academia_logins (id, email, name, phone, code_hash, token_hash, expires_at, lead)
     VALUES (
       ${id}, ${email}, ${name || null}, ${phone || null}, ${hash(`${id}:${code}`)}, ${hash(token)},
-      now() + ${`${LOGIN_MINUTES} minutes`}::interval
+      now() + ${`${LOGIN_MINUTES} minutes`}::interval, ${input.lead ? JSON.stringify(input.lead) : null}
     )
   `;
   await sendAcademiaMail(
@@ -68,12 +69,21 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
   return id;
 }
 
-async function finish(row: { email: string; name: string | null; phone: string | null }) {
+async function finish(row: { email: string; name: string | null; phone: string | null; lead: string | null }) {
+  const sql = await crm();
+  const known = (await sql`SELECT id FROM valux_people WHERE email = ${row.email}`).length > 0;
   const personId = await ensurePerson(row.email, row.name || row.email.split('@')[0]);
   if (row.phone) {
-    const sql = await crm();
     await sql`UPDATE valux_people SET phone = COALESCE(NULLIF(phone, ''), ${row.phone}) WHERE id = ${personId}`;
   }
+  if (row.lead) {
+    try {
+      await saveLead(personId, JSON.parse(row.lead) as Lead);
+    } catch {
+      // Un lead mal formado no impide entrar.
+    }
+  }
+  if (!known) await trackEvent('lead_created', { id: `lead_created:${personId}`, personId, email: row.email });
   return personId;
 }
 
@@ -84,9 +94,9 @@ export async function verifyLoginCode(id: string, code: string) {
   const rows = await sql`
     UPDATE academia_logins SET attempts = attempts + 1
     WHERE id = ${id} AND used_at IS NULL AND expires_at > now() AND attempts < ${MAX_ATTEMPTS}
-    RETURNING code_hash, email, name, phone
+    RETURNING code_hash, email, name, phone, lead
   `;
-  const row = rows[0] as { code_hash: string; email: string; name: string | null; phone: string | null } | undefined;
+  const row = rows[0] as { code_hash: string; email: string; name: string | null; phone: string | null; lead: string | null } | undefined;
   if (!row || !sameHash(row.code_hash, hash(`${id}:${code}`))) return '';
   const claimed = await sql`UPDATE academia_logins SET used_at = now() WHERE id = ${id} AND used_at IS NULL RETURNING id`;
   return claimed.length ? finish(row) : '';
@@ -98,8 +108,8 @@ export async function verifyLoginLink(token: string) {
   const rows = await sql`
     UPDATE academia_logins SET used_at = now()
     WHERE token_hash = ${hash(token)} AND used_at IS NULL AND expires_at > now()
-    RETURNING email, name, phone
+    RETURNING email, name, phone, lead
   `;
-  const row = rows[0] as { email: string; name: string | null; phone: string | null } | undefined;
+  const row = rows[0] as { email: string; name: string | null; phone: string | null; lead: string | null } | undefined;
   return row ? finish(row) : '';
 }

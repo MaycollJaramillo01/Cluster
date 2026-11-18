@@ -1,6 +1,6 @@
 'use server';
 
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
@@ -8,14 +8,16 @@ import { requireDashboard } from '@/lib/crm/session';
 import { site } from '@/lib/site';
 import { getPersonByEmail, getPerson, getPlan, lessonAccess, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
 import { gradeMission, parseMission } from './mission';
-import { ensurePerson, grantAccess, revokeSales, type GrantKind } from './fulfill';
-import { payoutDueAt, periodYm, slugify } from './money';
+import { challengeProgress, getChallenge } from './challenges';
+import { computePayouts, ensurePerson, grantAccess, revokeSales, type GrantKind } from './fulfill';
+import { periodYm, slugify } from './money';
 import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
 import { bankDetails, createTransfer } from './transfers';
 import { academiaPersonId, setAcademiaPerson } from './session';
 import { cleanPhone, startLogin, verifyLoginCode, verifyLoginLink } from './login';
 import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
+import { advanceStage, trackEvent, type Lead } from './events';
 import { storedFile } from './upload';
 
 function field(formData: FormData, key: string) {
@@ -57,6 +59,9 @@ async function checkout(input: {
   if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
   const bump = input.bump && input.bump.cents > 0 ? input.bump : null;
   const total = input.amountCents + (bump?.cents || 0);
+  await trackEvent('checkout_started', { email: input.email, data: { kind: input.kind, item: input.itemId || null, cents: total, method: input.method || 'tarjeta' } });
+  if (bump) await trackEvent('bump_accepted', { email: input.email, data: { item: bump.itemId, cents: bump.cents } });
+  await advanceStage({ email: input.email }, 'checkout');
   if (total <= 0) {
     const result = await grantAccess(input);
     if (result.personId) await setAcademiaPerson(result.personId);
@@ -234,7 +239,23 @@ export async function enterAcademia(formData: FormData) {
   if (register && (!name || !phone)) redirect('/academia/entrar?modo=registro&error=datos');
   // El enlace del correo sale del dominio fijo: un Host falso no puede desviarlo.
   const base = process.env.NODE_ENV === 'production' ? site.url : await origin();
-  const id = await startLogin({ email, name, phone, register, base });
+  // Consentimientos: casillas sin marcar por defecto; solo cuentan si la persona las marcó.
+  let lead: Lead | undefined;
+  if (register) {
+    let first: { source?: string; utm?: string } = {};
+    try {
+      first = JSON.parse((await cookies()).get('cluster_lead')?.value || '{}');
+    } catch {
+      first = {};
+    }
+    lead = {
+      source: String(first.source || 'directo').slice(0, 80),
+      utm: String(first.utm || '').slice(0, 400),
+      consentEmail: field(formData, 'consent_email') === '1',
+      consentWhatsapp: field(formData, 'consent_whatsapp') === '1',
+    };
+  }
+  const id = await startLogin({ email, name, phone, register, base, lead });
   redirect(`/academia/entrar/codigo?l=${id}`);
 }
 
@@ -524,25 +545,27 @@ export async function buildPayouts(formData: FormData) {
   await requireDashboard('finanzas');
   const period = field(formData, 'period') || periodYm();
   if (!/^\d{4}-\d{2}$/.test(period)) return;
+  await computePayouts(period);
+  refresh();
+}
+
+export async function saveContract(formData: FormData) {
+  await requireDashboard('finanzas');
+  const id = field(formData, 'id');
+  const raw = field(formData, 'kind');
+  const kind = raw === 'porcentaje' || raw === 'honorario' ? raw : 'general';
+  if (!id) return;
+  const percentRaw = Number(field(formData, 'percent'));
+  const percent = kind === 'porcentaje' && Number.isFinite(percentRaw) ? Math.max(0, Math.min(100, Math.round(percentRaw))) : null;
+  const fee = kind === 'honorario' ? cents(field(formData, 'fee')) : 0;
+  const refund = field(formData, 'refund') === 'academia' ? 'academia' : 'descontar';
   const sql = await crm();
-  const rows = await sql`
-    SELECT seller_id, COALESCE(sum(seller_cents), 0) AS due
-    FROM valux_sales
-    WHERE period_ym = ${period} AND seller_id IS NOT NULL AND refunded_at IS NULL
-    GROUP BY seller_id
+  await sql`
+    UPDATE valux_people
+    SET contract_kind = ${kind}, contract_percent = ${percent}, contract_fee_cents = ${fee},
+      contract_refund = ${refund}, contract_terms = ${field(formData, 'terms')}
+    WHERE id = ${id}
   `;
-  const dueAt = payoutDueAt(period).toISOString();
-  for (const row of rows) {
-    const entry = row as { seller_id?: string; due?: unknown };
-    if (!entry.seller_id) continue;
-    const amount = Number(entry.due) || 0;
-    await sql`
-      INSERT INTO valux_payouts (id, seller_id, period_ym, amount_cents, status, due_at)
-      VALUES (${crypto.randomUUID()}, ${entry.seller_id}, ${period}, ${amount}, 'pendiente', ${dueAt})
-      ON CONFLICT (seller_id, period_ym) DO UPDATE SET
-        amount_cents = CASE WHEN valux_payouts.status = 'pendiente' THEN EXCLUDED.amount_cents ELSE valux_payouts.amount_cents END
-    `;
-  }
   refresh();
 }
 
@@ -617,6 +640,7 @@ async function markComplete(personId: string, lessonId: string) {
     ON CONFLICT (person_id, lesson_id) WHERE person_id IS NOT NULL DO UPDATE SET
       completed_at = COALESCE(lms_progress.completed_at, EXCLUDED.completed_at)
   `;
+  await trackEvent('lesson_completed', { id: `lesson_completed:${personId}:${lessonId}`, personId, data: { lesson: lessonId } });
 }
 
 export async function completeLesson(formData: FormData) {
@@ -641,6 +665,7 @@ export async function submitMission(formData: FormData) {
   if (!lesson?.mission) redirect(lesson?.url || '/academia');
   if (!lesson.allowed) redirect(lesson.url);
   const result = gradeMission(lesson.mission, (key) => field(formData, key));
+  await trackEvent('mission_submitted', { personId, data: { lesson: lessonId, correct: result.correct, total: result.total } });
   if (!result.passed) redirect(`${lesson.url}?mision=${result.correct}-${result.total}`);
   await markComplete(personId, lessonId);
   // Evento único: la llave (persona, clase) impide sumar XP dos veces.
@@ -649,8 +674,32 @@ export async function submitMission(formData: FormData) {
     INSERT INTO lms_xp (person_id, lesson_id, xp) VALUES (${personId}, ${lessonId}, ${lesson.points})
     ON CONFLICT (person_id, lesson_id) DO NOTHING
   `;
+  await trackEvent('mission_validated', { id: `mission_validated:${personId}:${lessonId}`, personId, data: { lesson: lessonId, xp: lesson.points } });
   refresh();
   redirect(`${lesson.url}?mision=ok`);
+}
+
+// El reto se verifica en el servidor y el bono entra una sola vez (llave reto + persona).
+export async function claimChallenge(formData: FormData) {
+  const personId = await academiaPersonId();
+  if (!personId) redirect('/academia/entrar');
+  const challenge = await getChallenge(field(formData, 'id'));
+  const open = challenge && challenge.active && (!challenge.ends_at || new Date(challenge.ends_at).getTime() > Date.now());
+  if (!challenge || !open) redirect('/academia/retos?error=cerrado');
+  const progress = await challengeProgress(personId, challenge);
+  if (!progress.met) redirect('/academia/retos?error=falta');
+  const sql = await crm();
+  const claimed = await sql`
+    INSERT INTO lms_challenge_claims (challenge_id, person_id, xp)
+    VALUES (${challenge.id}, ${personId}, ${challenge.bonus_xp})
+    ON CONFLICT (challenge_id, person_id) DO NOTHING
+    RETURNING xp
+  `;
+  if (claimed.length) {
+    await trackEvent('reward_unlocked', { id: `reward_unlocked:${challenge.id}:${personId}`, personId, data: { challenge: challenge.id, xp: challenge.bonus_xp } });
+  }
+  refresh();
+  redirect('/academia/retos?ok=1');
 }
 
 export async function recordSale(formData: FormData) {
@@ -660,9 +709,13 @@ export async function recordSale(formData: FormData) {
   const email = person?.email || field(formData, 'email');
   const kind = field(formData, 'kind') as GrantKind;
   if (!['curso', 'producto', 'suscripcion'].includes(kind)) return;
+  // Una membresía manual siempre lleva plan: sin plan el nivel de acceso no estaría definido.
+  const plan = kind === 'suscripcion' ? await getPlan(field(formData, 'plan_id')) : null;
+  if (kind === 'suscripcion' && !plan) redirect('/dashboard/cursos/ventas?error=plan');
+  const itemId = kind === 'producto' ? field(formData, 'product_id') : kind === 'curso' ? field(formData, 'course_id') : plan?.id;
   await grantAccess({
     kind,
-    itemId: (kind === 'producto' ? field(formData, 'product_id') : field(formData, 'course_id')) || null,
+    itemId: itemId || null,
     name,
     email,
     months: Number(field(formData, 'months')) || 1,

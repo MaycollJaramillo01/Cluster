@@ -17,6 +17,7 @@ export type LmsCourseRow = {
   bump_cents: number;
   upsell_course_id: string | null;
   upsell_cents: number;
+  review_requested_at: string | null;
 };
 
 export type LmsSection = {
@@ -101,6 +102,7 @@ function mapCourse(row: Record<string, unknown>): LmsCourseRow {
     bump_cents: num(row.bump_cents),
     upsell_course_id: row.upsell_course_id ? text(row.upsell_course_id) : null,
     upsell_cents: num(row.upsell_cents),
+    review_requested_at: row.review_requested_at ? text(row.review_requested_at) : null,
   };
 }
 

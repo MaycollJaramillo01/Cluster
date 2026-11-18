@@ -15,9 +15,9 @@ La sesión es la cookie `cluster_dashboard`: HttpOnly, path `/dashboard`, 14 dí
 | Rol | Ve |
 | --- | --- |
 | Superadmin | Todo, incluido **Equipo** (`/dashboard/equipo`) |
-| Admin de contenido | Academia: cursos, lecciones, misiones, marketplace, blog, revisiones, fichas, personas |
-| Finanzas | Academia: ventas, transferencias, comprobantes, clientes, membresías, liquidaciones, donaciones, comisión |
-| Profesor | Solo `/dashboard/profesor`: sus cursos, sus alumnos (nombre, avance, XP) y sus ventas y liquidaciones |
+| Admin de contenido | Academia: cursos, lecciones, misiones, retos, marketplace, blog, revisiones, fichas, personas |
+| Finanzas | Academia: ventas, transferencias, comprobantes, clientes, membresías, liquidaciones y contratos, donaciones, comisión, analítica |
+| Profesor | `/dashboard/profesor` (sus cursos, alumnos, ventas y liquidaciones) y el temario de sus propios cursos, con «Pedir revisión» |
 
 - Los correos de la lista del servidor (`PRIMARY_ADMIN` en `session.ts`, `DASHBOARD_ALLOWED_EMAILS`, `CAREERS_ADMIN_EMAILS`) son superadmin fijos.
 - El resto del equipo vive en `crm_staff`. Un superadmin lo da de alta en Equipo con una clave inicial de 12 caracteres o más.
@@ -112,7 +112,7 @@ Si el canal no está listo, la acción no envía y deja el motivo. El código de
 
 ## Tarea programada
 
-`/api/cron/crm` corre cada 5 minutos (`vercel.json`). Necesita `CRON_SECRET`: Vercel lo manda como `Authorization: Bearer …` y sin él la ruta responde 401. Ejecuta los pasos de automatización vencidos y manda campañas en lotes. Abrir el panel también ejecuta los pasos vencidos; cada paso se toma una sola vez.
+`/api/cron/crm` corre cada 5 minutos (`vercel.json`). Necesita `CRON_SECRET`: Vercel lo manda como `Authorization: Bearer …` y sin él la ruta responde 401. Ejecuta los pasos de automatización vencidos, vence transferencias, corre una vez al día la conciliación de la academia (ver README-LMS) y manda campañas en lotes. Abrir el panel también ejecuta los pasos vencidos; cada paso se toma una sola vez.
 
 **Campañas.** Al enviar, toda la audiencia entra a `campaign_sends` (`pendiente` → `enviado` o `fallido`) y el panel manda el primer lote. El resto sale con la tarea programada. Si el primer lote falla completo, la campaña vuelve con `?error=envio` y no queda encolada. Cada correo lleva un enlace de baja firmado y las cabeceras `List-Unsubscribe` / `List-Unsubscribe-Post`. La baja es `/api/crm/baja`: el enlace muestra un botón y el POST da de baja.
 

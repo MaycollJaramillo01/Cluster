@@ -8,6 +8,7 @@ import {
   enrollContact,
   enrollPerson,
   removeEnrollment,
+  requestReview,
   saveFinalGrade,
   saveLessonScore,
   toggleCourse,
@@ -17,16 +18,20 @@ import { getCourse, listCourses } from '@/lib/crm/lms';
 import { academyMoney as money } from '@/lib/valux/money';
 import { listContacts } from '@/lib/crm/queries';
 import { listPeople, listPlans } from '@/lib/valux/data';
+import { requireCourseEditor } from '@/lib/crm/course-access';
+import { formatDate } from '@/lib/crm/format';
 import { Field, PageTitle, btn, btnGhost, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  // El profesor dueño edita el temario y pide revisión; publicar, precio y alumnos quedan para contenido.
+  const { teacher } = await requireCourseEditor(id);
   const [detail, contacts, people, courses, plans] = await Promise.all([
     getCourse(id),
-    listContacts({}),
-    listPeople(),
-    listCourses(),
-    listPlans(),
+    teacher ? Promise.resolve([]) : listContacts({}),
+    teacher ? Promise.resolve([]) : listPeople(),
+    teacher ? Promise.resolve([]) : listCourses(),
+    teacher ? Promise.resolve([]) : listPlans(),
   ]);
   if (!detail) notFound();
   const others = courses.filter((item) => item.id !== id);
@@ -44,14 +49,21 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         action={
           <span className="flex gap-3">
             {course.published ? <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href={`/academia/${course.slug}`}>Ver en el catálogo</Link> : null}
-            <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href="/dashboard/cursos">Volver</Link>
+            <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href={teacher ? '/dashboard/profesor' : '/dashboard/cursos'}>Volver</Link>
           </span>
         }
       />
       <div className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white p-4">
         <p className="text-sm text-black/60">
           {course.published ? 'Publicado' : 'Borrador'} · {lessons.length} lecciones · {enrollments.length} alumnos · {money(course.price_cents)}
+          {course.review_requested_at ? ` · revisión pedida el ${formatDate(course.review_requested_at)}` : ''}
         </p>
+        {teacher ? (
+          <form action={requestReview}>
+            <input type="hidden" name="course_id" value={course.id} />
+            <button className={btnGhost} type="submit">{course.review_requested_at ? 'Volver a pedir revisión' : 'Pedir revisión para publicar'}</button>
+          </form>
+        ) : (
         <div className="flex gap-2">
           <form action={toggleCourse}>
             <input type="hidden" name="id" value={course.id} />
@@ -62,8 +74,10 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <button className={btnTiny} type="submit">Eliminar curso</button>
           </form>
         </div>
+        )}
       </div>
 
+      {teacher ? null : (
       <form action={updateCourseMeta} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <input type="hidden" name="id" value={course.id} />
         <Field label="Descripción"><textarea className={fieldClass} name="description" rows={3} defaultValue={course.description} /></Field>
@@ -103,6 +117,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         </Field>
         <button className={btn} type="submit">Guardar ficha</button>
       </form>
+      )}
 
       <section className="space-y-4">
         <h2 className="font-display text-3xl tracking-wide">Secciones</h2>
@@ -111,6 +126,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <p className="text-sm">{section.title}</p>
             <form action={deleteSection}>
               <input type="hidden" name="id" value={section.id} />
+              <input type="hidden" name="course_id" value={course.id} />
               <button className={btnTiny} type="submit">Quitar</button>
             </form>
           </div>
@@ -151,6 +167,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
 
       <section className="space-y-4">
         <h2 className="font-display text-3xl tracking-wide">Alumnos</h2>
+        {teacher ? null : (
         <div className="grid gap-3 md:grid-cols-2">
           <form action={enrollContact} className="flex flex-wrap items-end gap-2 border border-black/10 bg-white p-4">
             <input type="hidden" name="course_id" value={course.id} />
@@ -177,6 +194,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             <button className={btn} type="submit" disabled={availablePeople.length === 0}>Inscribir</button>
           </form>
         </div>
+        )}
         {enrollments.length === 0 ? <p className="text-sm text-black/50">Nadie está inscrito.</p> : enrollments.map((enrollment) => {
           const mine = progress.filter((item) =>
             (enrollment.person_id && item.person_id === enrollment.person_id) ||
@@ -189,7 +207,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
               <div className="flex flex-wrap items-baseline justify-between gap-3">
                 <div>
                   <p className="font-medium">{enrollment.contact_name}</p>
-                  <p className="text-xs text-black/45">{enrollment.email}</p>
+                  {teacher ? null : <p className="text-xs text-black/45">{enrollment.email}</p>}
                 </div>
                 <p className="font-mono text-xs text-black/50">Progreso {pct}%{enrollment.final_grade != null ? ` · ${enrollment.final_grade}/100` : ''}</p>
               </div>
@@ -208,6 +226,8 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                   </form>
                 );
               })}
+              {teacher ? null : (
+              <>
               <form action={saveFinalGrade} className="grid gap-3 md:grid-cols-[120px_1fr_auto]">
                 <input type="hidden" name="id" value={enrollment.id} />
                 <Field label="Nota final"><input className={fieldClass} name="final_grade" type="number" min="0" max="100" defaultValue={enrollment.final_grade ?? ''} /></Field>
@@ -218,6 +238,8 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 <input type="hidden" name="id" value={enrollment.id} />
                 <button className={btnTiny} type="submit">Quitar alumno</button>
               </form>
+              </>
+              )}
             </article>
           );
         })}

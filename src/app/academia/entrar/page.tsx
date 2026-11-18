@@ -23,6 +23,14 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
           <>
             <input name="name" required autoComplete="name" placeholder="Nombre" className={input} />
             <input name="phone" type="tel" required autoComplete="tel" placeholder="WhatsApp, ej. +504 9999 9999" className={input} />
+            <label className="flex items-start gap-2 text-sm text-black/70">
+              <input name="consent_whatsapp" type="checkbox" value="1" className="mt-1" />
+              Acepto recibir mensajes de la academia por WhatsApp.
+            </label>
+            <label className="flex items-start gap-2 text-sm text-black/70">
+              <input name="consent_email" type="checkbox" value="1" className="mt-1" />
+              Acepto recibir novedades y ofertas por correo.
+            </label>
           </>
         ) : null}
         <input name="email" type="email" required autoComplete="email" placeholder="Correo" className={input} />

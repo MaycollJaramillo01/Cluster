@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { crm } from '@/lib/crm/db';
 import { fulfillStripeSession, recordSubscriptionPayment, revokeSales, setSubscriptionEnded } from '@/lib/valux/fulfill';
 import { cancelStripeSubscription, stripePaymentRefs, verifyStripeEvent } from '@/lib/valux/stripe';
 
@@ -23,6 +24,12 @@ export async function POST(request: Request) {
   const event = verifyStripeEvent(raw, request.headers.get('stripe-signature') || '');
   if (!event) return NextResponse.json({ error: 'invalid_signature' }, { status: 400 });
   const item = event.data.object;
+
+  // Registro por id: un evento ya procesado (reintento o reenvío de Stripe) no se vuelve a aplicar.
+  const sql = await crm();
+  await sql`INSERT INTO stripe_events (id, type) VALUES (${event.id}, ${event.type}) ON CONFLICT (id) DO NOTHING`;
+  const seen = await sql`SELECT processed_at FROM stripe_events WHERE id = ${event.id}`;
+  if ((seen[0] as { processed_at?: unknown } | undefined)?.processed_at) return NextResponse.json({ received: true, duplicate: true });
 
   try {
     switch (event.type) {
@@ -62,7 +69,9 @@ export async function POST(request: Request) {
   } catch (error) {
     // 500 hace que Stripe reintente.
     console.error('[academia] stripe webhook:', event.type, error);
+    await sql`UPDATE stripe_events SET error = ${String(error instanceof Error ? error.message : error).slice(0, 500)} WHERE id = ${event.id}`;
     return NextResponse.json({ error: 'failed' }, { status: 500 });
   }
+  await sql`UPDATE stripe_events SET processed_at = now(), error = NULL WHERE id = ${event.id}`;
   return NextResponse.json({ received: true });
 }

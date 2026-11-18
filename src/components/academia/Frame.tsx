@@ -8,9 +8,10 @@ const links = [
   ['/academia', 'Cursos'],
   ['/academia/marketplace', 'Marketplace'],
   ['/academia/blog', 'Blog'],
+  ['/academia/retos', 'Retos'],
 ];
 
-const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos', 'transferencia']);
+const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos', 'transferencia', 'recibos', 'retos']);
 
 function classroomPath(path: string) {
   const parts = path.split('/').filter(Boolean);
@@ -48,6 +49,7 @@ export function Frame({ children }: { children: ReactNode }) {
           <Link href="/academia/apoyar" className="hover:text-ink">Apoyar</Link>
           <Link href="/academia/ficha" className="hover:text-ink">Ficha de asociado</Link>
           <Link href="/academia/perfil" className="hover:text-ink">Perfil</Link>
+          <Link href="/academia/recibos" className="hover:text-ink">Recibos</Link>
           <Link href="/dashboard/cursos" className="hover:text-ink">Panel</Link>
         </div>
       </footer>
