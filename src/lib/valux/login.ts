@@ -14,6 +14,15 @@ function hash(value: string) {
   return createHmac('sha256', signingSecret()).update(`login:${value}`).digest('hex');
 }
 
+// Solo en local sin Resend: el código no sale por correo, así que la pantalla lo muestra.
+const localMail = () => process.env.NODE_ENV === 'development' && !process.env.RESEND_API_KEY?.trim();
+const g = globalThis as { __devLoginCodes?: Map<string, string> };
+const devCodes = (g.__devLoginCodes ??= new Map());
+
+export function devLoginCode(id: string) {
+  return localMail() ? devCodes.get(id) || '' : '';
+}
+
 function sameHash(a: string, b: string) {
   const left = Buffer.from(a);
   const right = Buffer.from(b);
@@ -52,6 +61,7 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
       now() + ${`${LOGIN_MINUTES} minutes`}::interval, ${input.lead ? JSON.stringify(input.lead) : null}
     )
   `;
+  if (localMail()) devCodes.set(id, code);
   await sendAcademiaMail(
     email,
     `Tu código para entrar: ${code}`,

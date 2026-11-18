@@ -77,6 +77,9 @@ const navItems: NavItem[] = [
   { labelKey: 'contact', href: '/contacto', wideOnly: true },
 ];
 
+const loginClass =
+  'inline-flex items-center bg-surface px-5 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.16em] text-fg transition-colors hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:[--tw-ring-color:var(--accent)]';
+
 export function Header() {
   const t = useTranslations('Nav');
   const tc = useTranslations('Common');
@@ -187,6 +190,10 @@ export function Header() {
           >
             <Icon name="whatsapp" size={18} />
           </a>
+          {/* La academia vive fuera de las rutas con idioma: enlace normal, sin prefijo. */}
+          <a href="/academia/entrar" className={loginClass}>
+            {tc('login')}
+          </a>
           <Button href={site.calendarUrl} size="sm" iconRight="arrow-right">
             {tc('scheduleCall')}
           </Button>
@@ -270,6 +277,9 @@ export function Header() {
             <Button href={site.calendarUrl} icon="calendar">
               {tc('scheduleCall')}
             </Button>
+            <a href="/academia/entrar" className={`${loginClass} justify-center py-3.5`}>
+              {tc('login')}
+            </a>
             <Button
               href={whatsappLink(tc('whatsappDefaultMessage'))}
               external

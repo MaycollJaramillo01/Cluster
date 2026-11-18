@@ -45,6 +45,11 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
           <>¿Primera vez? <Link href="/academia/entrar?modo=registro" className="underline">Crear cuenta</Link></>
         )}
       </p>
+      {register ? null : (
+        <p className="pt-4 text-sm text-black/60">
+          ¿Eres profesor o del equipo? <Link href="/dashboard/login" className="underline">Entra al panel</Link>
+        </p>
+      )}
     </div>
   );
 }

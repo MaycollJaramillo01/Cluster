@@ -69,7 +69,7 @@ export default async function ProfesorPage() {
         const lessons = Number(course.lessons) || 0;
         return (
           <section key={course.id} className="space-y-2">
-            <h2 className="text-xl font-medium">{course.title} <span className="text-sm font-normal text-black/45">· {course.published ? 'publicado' : 'borrador'} · {lessons} clases · {mine.length} alumnos</span> <Link className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-brand" href={`/dashboard/cursos/${course.id}`}>Editar temario</Link></h2>
+            <h2 className="text-xl font-medium">{course.title} <span className="text-sm font-normal text-black/45">· {course.published ? 'publicado' : 'borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</span> <Link className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-brand" href={`/dashboard/cursos/${course.id}`}>Editar temario</Link></h2>
             {mine.length === 0 ? <p className="text-sm text-black/50">Sin alumnos todavía.</p> : (
               <table className="w-full border border-black/10 bg-white text-left text-sm">
                 <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Alumno</th><th className="px-4 py-2 font-medium">Desde</th><th className="px-4 py-2 font-medium">Avance</th><th className="px-4 py-2 font-medium">XP</th></tr></thead>

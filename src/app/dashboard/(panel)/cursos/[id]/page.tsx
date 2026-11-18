@@ -55,7 +55,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       />
       <div className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white p-4">
         <p className="text-sm text-black/60">
-          {course.published ? 'Publicado' : 'Borrador'} · {lessons.length} lecciones · {enrollments.length} alumnos · {money(course.price_cents)}
+          {course.published ? 'Publicado' : 'Borrador'} · {lessons.length} {lessons.length === 1 ? 'lección' : 'lecciones'} · {enrollments.length} {enrollments.length === 1 ? 'alumno' : 'alumnos'} · {money(course.price_cents)}
           {course.review_requested_at ? ` · revisión pedida el ${formatDate(course.review_requested_at)}` : ''}
         </p>
         {teacher ? (
