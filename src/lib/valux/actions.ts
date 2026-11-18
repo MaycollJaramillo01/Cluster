@@ -672,7 +672,7 @@ async function lessonContext(lessonId: string, personId: string) {
   const next = access.order[index + 1];
   return {
     url,
-    nextUrl: next ? `/academia/${course.slug}/${next.slug}` : `/academia/${course.slug}`,
+    nextUrl: next ? `/academia/${course.slug}/${next.slug}` : `/academia/${course.slug}?terminado=1`,
     allowed: open && access.unlocked.has(lessonId),
     done: access.done.has(lessonId),
     points: Math.max(0, Number(row.points) || 0),

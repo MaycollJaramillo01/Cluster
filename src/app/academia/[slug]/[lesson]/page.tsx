@@ -6,6 +6,7 @@ import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/va
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
 import { trackEvent } from '@/lib/valux/events';
 import { lessonEmbed } from '@/lib/valux/video';
+import { LessonMark } from '@/components/academia/ui';
 
 function missionNote(code: string | undefined, xp: number) {
   if (!code) return '';
@@ -63,15 +64,18 @@ export default async function LessonPlayer({
           <Link href={`/academia/${slug}`} className="truncate hover:text-brand">{detail.course.title}</Link>
           <span className="shrink-0 text-white/50">{index + 1} / {lessons.length}</span>
         </header>
-        <div className="bg-black">
-          {open && video ? (
-            <iframe className="aspect-video w-full" src={video} title={detail.lesson.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
-          ) : (
-            <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-white/70">
-              {open ? 'Esta clase no tiene video. El contenido está debajo.' : locked ? 'Completa la clase anterior para abrir esta.' : 'Esta clase es de un curso de pago.'}
-            </div>
-          )}
-        </div>
+        {/* Una clase de solo texto no muestra un recuadro de video vacío: el contenido arranca arriba. */}
+        {open && !video ? null : (
+          <div className="bg-black">
+            {open ? (
+              <iframe className="aspect-video w-full" src={video} title={detail.lesson.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+            ) : (
+              <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-white/70">
+                {locked ? 'Completa la clase anterior para abrir esta.' : 'Esta clase es de un curso de pago.'}
+              </div>
+            )}
+          </div>
+        )}
         <div className="bg-paper px-4 py-6 text-ink md:px-8">
           <h1 className="text-2xl font-medium">{detail.lesson.title}</h1>
           {open ? (
@@ -160,7 +164,10 @@ export default async function LessonPlayer({
                         href={`/academia/${slug}/${item.slug}`}
                         className={`flex items-start justify-between gap-3 px-4 py-3 text-sm ${current ? 'bg-white/10 text-brand' : 'text-white/80 hover:bg-white/5'}`}
                       >
-                        <span>{done.has(item.id) ? '✓ ' : canRead && !access.unlocked.has(item.id) ? '🔒 ' : ''}{item.title}</span>
+                        <span className="flex items-start gap-2">
+                          <span className="mt-0.5 flex"><LessonMark done={done.has(item.id)} locked={canRead && !access.unlocked.has(item.id)} /></span>
+                          <span>{item.title}</span>
+                        </span>
                         {item.duration_min ? <span className="shrink-0 text-xs text-white/40">{item.duration_min} min</span> : null}
                       </Link>
                     </li>

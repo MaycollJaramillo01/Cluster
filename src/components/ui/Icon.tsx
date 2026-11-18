@@ -35,7 +35,8 @@ export type IconName =
   | 'link'
   | 'clock'
   | 'video'
-  | 'star';
+  | 'star'
+  | 'lock';
 
 const paths: Record<IconName, React.ReactNode> = {
   sparkles: (
@@ -162,6 +163,12 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   star: <path d="M12 3.2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 15.6 6.2 18.1l.9-5.4L3.2 8.9l5.4-.8L12 3.2z" />,
+  lock: (
+    <>
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 018 0v4" />
+    </>
+  ),
 };
 
 type IconProps = SVGProps<SVGSVGElement> & {

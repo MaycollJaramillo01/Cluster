@@ -1,5 +1,16 @@
 import type { ReactNode } from 'react';
+import { Icon } from '@/components/ui/Icon';
 import { academyMoney } from '@/lib/valux/money';
+
+// Estado de una clase en el temario. Ocupa siempre el mismo ancho para que los títulos queden alineados.
+export function LessonMark({ done, locked }: { done: boolean; locked: boolean }) {
+  return (
+    <span className="inline-flex w-3.5 shrink-0 justify-center">
+      {done ? <Icon name="check" size={14} strokeWidth={2.25} /> : locked ? <Icon name="lock" size={14} className="opacity-50" /> : null}
+      {done || locked ? <span className="sr-only">{done ? 'Completada:' : 'Bloqueada:'}</span> : null}
+    </span>
+  );
+}
 
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-4 py-10 ${className}`}>{children}</div>;

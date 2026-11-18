@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Checkout, Cover, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { Checkout, Cover, LessonMark, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
 import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse, buyUpsell } from '@/lib/valux/actions';
-import { ownsCourse, publishedCourse } from '@/lib/valux/data';
+import { canReadCourse, lessonAccess, ownsCourse, publishedCourse } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
 import { paymentOptions } from '@/lib/valux/transfers';
 import { advanceStage } from '@/lib/valux/events';
@@ -13,7 +13,7 @@ export default async function CourseCatalogPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ok?: string; error?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; terminado?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
@@ -29,6 +29,15 @@ export default async function CourseCatalogPage({
     : null;
   const minutes = course.lessons.reduce((sum, lesson) => sum + (lesson.duration_min || 0), 0);
   const lessonCount = course.lessons.length;
+  // Inscrito, o con acceso a un curso de pago por membresía o rol: ve su avance en vez del checkout.
+  const enrolled = await ownsCourse(personId, course.id);
+  const hasAccess = Boolean(personId) && (enrolled || (course.price_cents > 0 && (await canReadCourse(personId, course))));
+  const access = hasAccess ? await lessonAccess(personId, course) : null;
+  const doneCount = access ? access.order.filter((lesson) => access.done.has(lesson.id)).length : 0;
+  const nextLesson = access?.order.find((lesson) => !access.done.has(lesson.id));
+  const finished = Boolean(access) && lessonCount > 0 && !nextLesson;
+  const pct = lessonCount ? Math.round((doneCount / lessonCount) * 100) : 0;
+  const lessonUrl = (lesson: { slug: string }) => `/academia/${course.slug}/${lesson.slug}`;
   const loose = course.lessons.filter((lesson) => !lesson.section_id);
   const groups = [
     ...course.sections.map((section) => ({
@@ -57,6 +66,11 @@ export default async function CourseCatalogPage({
         </section>
 
         {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo. Abre la primera clase del temario.</p> : null}
+        {query.terminado && finished ? (
+          <p className="border border-brand/40 bg-white px-4 py-3 text-sm">
+            Terminaste el curso: completaste {lessonCount === 1 ? 'la clase' : `las ${lessonCount} clases`}.
+          </p>
+        ) : null}
         {upsell ? (
           <form action={buyUpsell} className="space-y-3 border-2 border-brand bg-white p-5">
             <input type="hidden" name="slug" value={course.slug} />
@@ -95,8 +109,12 @@ export default async function CourseCatalogPage({
                 <ol className="border-t border-black/10">
                   {group.lessons.map((lesson, index) => (
                     <li key={lesson.id} className="border-b border-black/5 last:border-0">
-                      <Link href={`/academia/${course.slug}/${lesson.slug}`} className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-black/[0.02]">
-                        <span><span className="mr-3 font-mono text-[10px] text-black/35">{index + 1}</span>{lesson.title}</span>
+                      <Link href={lessonUrl(lesson)} className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-black/[0.02]">
+                        <span className="flex items-center gap-2">
+                          <span className="mr-1 font-mono text-[10px] text-black/35">{index + 1}</span>
+                          {access ? <LessonMark done={access.done.has(lesson.id)} locked={!access.unlocked.has(lesson.id)} /> : null}
+                          <span>{lesson.title}</span>
+                        </span>
                         {lesson.duration_min ? <span className="shrink-0 text-xs text-black/40">{lesson.duration_min} min</span> : null}
                       </Link>
                     </li>
@@ -116,6 +134,30 @@ export default async function CourseCatalogPage({
 
       <aside className="border border-black/10 bg-white lg:sticky lg:top-6">
         <Cover url={course.cover_url} title={course.title} />
+        {access ? (
+          <div className="space-y-4 p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">
+              {finished ? 'Curso terminado' : enrolled ? 'Tu progreso' : 'Tienes acceso a este curso'}
+            </p>
+            <div>
+              <div className="h-1 bg-black/10" aria-hidden="true"><span className="block h-1 bg-brand" style={{ width: `${pct}%` }} /></div>
+              <p className="mt-2 text-sm text-black/60">{pct}% · {doneCount} de {lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
+            </div>
+            {finished ? (
+              <>
+                <Link href="/academia" className="block w-full bg-brand px-4 py-3 text-center text-sm font-medium text-ink">Ver más cursos</Link>
+                <Link href={lessonUrl(access.order[0])} className="block text-center text-sm text-black/55 underline">Repasar desde la primera clase</Link>
+              </>
+            ) : nextLesson ? (
+              <>
+                <Link href={lessonUrl(nextLesson)} className="block w-full bg-brand px-4 py-3 text-center text-sm font-medium text-ink">
+                  {doneCount ? 'Continuar' : 'Empezar el curso'}
+                </Link>
+                <p className="text-sm text-black/55">{doneCount ? 'Sigue' : 'Primera clase'}: {nextLesson.title}</p>
+              </>
+            ) : null}
+          </div>
+        ) : (
         <div className="space-y-4 p-4">
           <p className="font-display text-5xl tracking-wide">{course.price_cents > 0 ? money(course.price_cents) : 'Gratis'}</p>
           {course.price_cents > 0 && !payReady(pay) ? (
@@ -132,6 +174,7 @@ export default async function CourseCatalogPage({
             />
           )}
         </div>
+        )}
       </aside>
     </div>
   );
