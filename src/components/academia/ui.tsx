@@ -12,6 +12,50 @@ export function LessonMark({ done, locked }: { done: boolean; locked: boolean })
   );
 }
 
+const LIST = /^([-*•]|\d+[.)])\s+(.*)/;
+
+function inline(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) =>
+    part.length > 4 && part.startsWith('**') && part.endsWith('**') ? <strong key={index} className="font-semibold">{part.slice(2, -2)}</strong> : part,
+  );
+}
+
+// Texto de la clase: cada línea es un párrafo; "## título", listas con "- " o "1." y **negrita**.
+// Una línea corta sin punto final justo antes de una lista hace de subtítulo. Todo se pinta como texto, nunca HTML.
+export function LessonText({ text }: { text: string }) {
+  const lines = text.replace(/\r/g, '').split('\n').map((line) => line.trim());
+  const blocks: ReactNode[] = [];
+  let list: { ordered: boolean; start: number; items: string[] } | null = null;
+  const flush = () => {
+    if (!list) return;
+    const items = list.items.map((item, index) => <li key={index} className="pl-1">{inline(item)}</li>);
+    blocks.push(list.ordered
+      ? <ol key={blocks.length} start={list.start} className="list-decimal space-y-2 pl-6 marker:text-black/45">{items}</ol>
+      : <ul key={blocks.length} className="list-disc space-y-2 pl-6 marker:text-black/35">{items}</ul>);
+    list = null;
+  };
+  lines.forEach((line, index) => {
+    const item = line.match(LIST);
+    if (item) {
+      const ordered = /^\d/.test(line);
+      if (list && list.ordered !== ordered) flush();
+      // Una lista numerada cortada por un párrafo sigue con su número ("2.", "3.").
+      list ??= { ordered, start: parseInt(line, 10) || 1, items: [] };
+      list.items.push(item[2]);
+      return;
+    }
+    flush();
+    if (!line) return;
+    const heading = line.match(/^#{1,3}\s+(.*)/);
+    const label = !heading && line.length <= 60 && !/[.:;,!?)]$/.test(line) && LIST.test(lines[index + 1] || '');
+    blocks.push(heading || label
+      ? <h2 key={blocks.length} className="pt-3 font-sans text-lg font-semibold normal-case leading-snug tracking-normal">{inline(heading ? heading[1] : line)}</h2>
+      : <p key={blocks.length}>{inline(line)}</p>);
+  });
+  flush();
+  return <div className="max-w-[68ch] space-y-4 text-base leading-relaxed text-ink">{blocks}</div>;
+}
+
 export function Page({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`mx-auto w-full max-w-6xl px-4 py-10 ${className}`}>{children}</div>;
 }

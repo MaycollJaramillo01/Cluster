@@ -673,6 +673,8 @@ async function lessonContext(lessonId: string, personId: string) {
   return {
     url,
     nextUrl: next ? `/academia/${course.slug}/${next.slug}` : `/academia/${course.slug}?terminado=1`,
+    courseId: course.id,
+    free: course.price_cents <= 0,
     allowed: open && access.unlocked.has(lessonId),
     done: access.done.has(lessonId),
     points: Math.max(0, Number(row.points) || 0),
@@ -680,8 +682,17 @@ async function lessonContext(lessonId: string, personId: string) {
   };
 }
 
-async function markComplete(personId: string, lessonId: string) {
+async function markComplete(personId: string, lessonId: string, course: { courseId: string; free: boolean }) {
   const sql = await crm();
+  // Curso gratis: quien avanza queda inscrito aunque no haya pulsado "Empezar gratis",
+  // así su profesor lo ve y la ficha del curso muestra su avance. Sin venta, correo ni etapa de comprador.
+  if (course.free) {
+    await sql`
+      INSERT INTO lms_enrollments (id, course_id, person_id)
+      VALUES (${crypto.randomUUID()}, ${course.courseId}, ${personId})
+      ON CONFLICT (course_id, person_id) WHERE person_id IS NOT NULL DO NOTHING
+    `;
+  }
   await sql`
     INSERT INTO lms_progress (id, person_id, lesson_id, completed_at)
     VALUES (${crypto.randomUUID()}, ${personId}, ${lessonId}, now())
@@ -699,8 +710,8 @@ export async function completeLesson(formData: FormData) {
   if (!lesson) redirect('/academia');
   if (!lesson.allowed) redirect(lesson.url);
   // Con misión, solo aprobarla completa la clase.
-  if (lesson.mission && !lesson.done) redirect(`${lesson.url}?mision=pendiente`);
-  await markComplete(personId, lessonId);
+  if (lesson.mission && !lesson.done) redirect(`${lesson.url}?mision=pendiente#mision`);
+  await markComplete(personId, lessonId, lesson);
   refresh();
   redirect(lesson.nextUrl);
 }
@@ -714,8 +725,15 @@ export async function submitMission(formData: FormData) {
   if (!lesson.allowed) redirect(lesson.url);
   const result = gradeMission(lesson.mission, (key) => field(formData, key));
   await trackEvent('mission_submitted', { personId, data: { lesson: lessonId, correct: result.correct, total: result.total } });
-  if (!result.passed) redirect(`${lesson.url}?mision=${result.correct}-${result.total}`);
-  await markComplete(personId, lessonId);
+  if (!result.passed) {
+    // Lo que marcó vuelve a la página para no hacerle responder todo de nuevo.
+    const mission = lesson.mission;
+    const picks = mission.kind === 'quiz'
+      ? mission.questions.map((_, index) => field(formData, `q${index}`)).join('.')
+      : mission.items.map((_, index) => (field(formData, `item${index}`) === '1' ? '1' : '0')).join('.');
+    redirect(`${lesson.url}?mision=${result.correct}-${result.total}&r=${encodeURIComponent(picks)}#mision`);
+  }
+  await markComplete(personId, lessonId, lesson);
   // Evento único: la llave (persona, clase) impide sumar XP dos veces.
   const sql = await crm();
   await sql`
@@ -724,7 +742,7 @@ export async function submitMission(formData: FormData) {
   `;
   await trackEvent('mission_validated', { id: `mission_validated:${personId}:${lessonId}`, personId, data: { lesson: lessonId, xp: lesson.points } });
   refresh();
-  redirect(`${lesson.url}?mision=ok`);
+  redirect(`${lesson.url}?mision=ok#mision`);
 }
 
 // El reto se verifica en el servidor y el bono entra una sola vez (llave reto + persona).
