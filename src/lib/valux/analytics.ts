@@ -60,6 +60,48 @@ export async function academyAnalytics(filter: AnalyticsFilter) {
     FROM per JOIN totals ON totals.course_id = per.course_id
   `) as Record<string, unknown>[];
 
+  // Activación D1: compras de curso del rango cuyo comprador completó una clase de ese curso en 24 h.
+  const [activation] = (await sql`
+    SELECT count(*) AS buyers,
+      count(*) FILTER (WHERE EXISTS (
+        SELECT 1 FROM lms_progress p JOIN lms_lessons l ON l.id = p.lesson_id
+        WHERE p.person_id = s.buyer_id AND l.course_id = s.course_id
+          AND p.completed_at BETWEEN s.created_at AND s.created_at + interval '24 hours'
+      )) AS active
+    FROM valux_sales s
+    WHERE s.course_id IS NOT NULL AND s.refunded_at IS NULL AND s.buyer_id IS NOT NULL
+      AND s.created_at BETWEEN ${from} AND ${to}
+      AND (${course} = '' OR s.course_id = ${course})
+  `) as Record<string, unknown>[];
+
+  // Retención mes a mes (6 meses que terminan en el mes de "hasta"): de quienes tenían membresía
+  // vigente al empezar el mes, cuántos la seguían teniendo al empezar el siguiente (o hoy).
+  const retention = (await sql`
+    WITH months AS (
+      SELECT m AS start, m + interval '1 month' AS next
+      FROM generate_series(
+        date_trunc('month', ${to}::timestamptz AT TIME ZONE 'America/Tegucigalpa') - interval '5 months',
+        date_trunc('month', ${to}::timestamptz AT TIME ZONE 'America/Tegucigalpa'),
+        interval '1 month'
+      ) AS m
+    ), base AS (
+      SELECT DISTINCT mo.start, mo.next, s.person_id
+      FROM months mo JOIN valux_subscriptions s
+        ON s.created_at <= (mo.start AT TIME ZONE 'America/Tegucigalpa')
+        AND s.current_period_end > (mo.start AT TIME ZONE 'America/Tegucigalpa')
+    )
+    SELECT to_char(mo.start, 'YYYY-MM') AS month,
+      count(b.person_id) AS members,
+      count(b.person_id) FILTER (WHERE EXISTS (
+        SELECT 1 FROM valux_subscriptions s
+        WHERE s.person_id = b.person_id
+          AND s.created_at <= LEAST(mo.next AT TIME ZONE 'America/Tegucigalpa', now())
+          AND s.current_period_end > LEAST(mo.next AT TIME ZONE 'America/Tegucigalpa', now())
+      )) AS kept
+    FROM months mo LEFT JOIN base b ON b.start = mo.start
+    GROUP BY mo.start ORDER BY mo.start
+  `) as Record<string, unknown>[];
+
   const plans = (await sql`
     SELECT COALESCE(pl.name, 'Sin plan') AS plan, count(*) AS active, COALESCE(sum(pl.price_cents), 0) AS mrr
     FROM valux_subscriptions s LEFT JOIN valux_plans pl ON pl.id = s.plan_id
@@ -101,6 +143,15 @@ export async function academyAnalytics(filter: AnalyticsFilter) {
     started,
     finished: n(completion?.finished),
     completion: started ? n(completion?.finished) / started : null,
+    activationBuyers: n(activation?.buyers),
+    activationActive: n(activation?.active),
+    activation: n(activation?.buyers) ? n(activation?.active) / n(activation?.buyers) : null,
+    retention: retention.map((row) => ({
+      month: String(row.month),
+      members: n(row.members),
+      kept: n(row.kept),
+      rate: n(row.members) ? n(row.kept) / n(row.members) : null,
+    })),
     plans: plans.map((row) => ({ plan: String(row.plan), active: n(row.active), mrr: n(row.mrr) })),
     mrr: plans.reduce((sum, row) => sum + n(row.mrr), 0),
     newSubscriptions: n(subs?.started),

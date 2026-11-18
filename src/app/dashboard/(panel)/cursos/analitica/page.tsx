@@ -60,12 +60,21 @@ export default async function AnaliticaPage({ searchParams }: { searchParams: Pr
         <Stat label="Bumps aceptados" value={String(data.bumps)} />
         <Stat label="Alumnos activos" value={String(data.activeStudents)} note="completaron una clase en el rango" />
         <Stat label="Finalización" value={pct(data.completion)} note={`${data.finished} de ${data.started} que empezaron`} />
+        <Stat label="Activación D1" value={pct(data.activation)} note={`${data.activationActive} de ${data.activationBuyers} compras con una clase en 24 h`} />
       </section>
 
       <section className="grid gap-3 md:grid-cols-2">
         <div className="space-y-2 border border-black/10 bg-white p-4">
           <h2 className="font-medium">Membresías vigentes · MRR {money(data.mrr)}</h2>
           <p className="text-xs text-black/45">{data.newSubscriptions} nuevas en el rango. El MRR usa el precio actual de cada plan.</p>
+          <p className="pt-2 text-xs text-black/45">Retención: de quienes tenían membresía al empezar el mes, cuántos la siguen al empezar el siguiente.</p>
+          <ul className="text-sm">
+            {data.retention.map((row) => (
+              <li key={row.month} className="flex justify-between border-b border-black/5 py-1">
+                <span>{row.month}</span><span className="font-mono">{row.kept}/{row.members} · {pct(row.rate)}</span>
+              </li>
+            ))}
+          </ul>
           {data.plans.length === 0 ? <p className="text-sm text-black/50">Sin membresías vigentes.</p> : (
             <ul className="text-sm">
               {data.plans.map((row) => (

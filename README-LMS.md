@@ -208,13 +208,15 @@ Los dos primeros se pueden limitar a un curso. Cada reto tiene bono de XP y fech
 - `source` y `utm`, solo la primera vez;
 - `consent_whatsapp` y `consent_email`, con `consent_at`.
 
-**Etapa** (`valux_people.stage`): `nuevo` → `checkout` (empezó un pago) → `comprador` → `miembro`. Solo avanza. La conciliación nocturna pone `inactivo` y cualquier avance posterior la saca de ahí. La etapa `interesado` existe pero el código todavía no la asigna.
+**Etapa** (`valux_people.stage`): `nuevo` → `interesado` (abrió la ficha de un curso con sesión) → `checkout` (empezó un pago) → `comprador` → `miembro`. Solo avanza. La conciliación nocturna pone `inactivo` y cualquier avance posterior la saca de ahí.
 
 **Eventos** (`academia_events`, con `trackEvent` en `src/lib/valux/events.ts`): los eventos que pueden repetirse llevan un id fijo, y un reintento no duplica. Si guardar un evento falla, no rompe el cobro ni la clase. Se registran:
 - `lead_created`;
-- `checkout_started`, `bump_accepted`, `purchase_completed`;
-- `lesson_completed`, `mission_submitted`, `mission_validated`, `reward_unlocked`;
-- `subscription_started`, `refund_issued`.
+- `checkout_started`, `bump_accepted`, `payment_succeeded` (cada cobro, también los mensuales), `purchase_completed`;
+- `lesson_started` (primera vez que abre una clase desbloqueada), `lesson_completed`, `mission_submitted`, `mission_validated`, `reward_unlocked`;
+- `subscription_started`, `subscription_renewed` (cada cobro de membresía después del primero), `subscription_canceled` (una vez por membresía: el alumno, el panel, la pasarela o un reembolso), `refund_issued`.
+
+Las renovaciones se reconocen por un `payment_succeeded` anterior de la misma suscripción. Las membresías que ya existían antes de este cambio cuentan su primer cobro posterior como alta, no como renovación.
 
 **Analítica** (`/dashboard/cursos/analitica`, `src/lib/valux/analytics.ts`): por defecto muestra los últimos 30 días. Se filtra por fechas y por curso.
 
@@ -227,6 +229,8 @@ Los dos primeros se pueden limitar a un curso. Cada reto tiene bono de XP y fech
 | Bumps aceptados | Eventos `bump_accepted` |
 | Alumnos activos | Completaron al menos una clase en el rango |
 | Finalización | De quienes empezaron un curso, cuántos lo terminaron entero |
+| Activación D1 | Compras de curso del rango cuyo comprador completó una clase de ese curso en las primeras 24 h |
+| Retención | Por mes (los 6 que terminan en «hasta»): de quienes tenían membresía vigente al empezar el mes, cuántos la seguían teniendo al empezar el siguiente, o hoy si el mes no terminó |
 | Membresías y MRR | Membresías vigentes por plan; el MRR usa el precio actual del plan |
 | Leads | Personas nuevas por etapa y por fuente |
 
@@ -247,7 +251,7 @@ Los dos primeros se pueden limitar a un curso. Cada reto tiene bono de XP y fech
 
 **ventas vigentes del mes + honorario del contrato − reembolsos del mes sobre meses ya transferidos**
 
-El resultado de cada parte queda en `valux_payouts.detail`. Si el saldo da negativo, la liquidación queda en 0 con la nota; ese saldo no pasa al mes siguiente. Las liquidaciones pendientes se recalculan y las transferidas no se tocan. El vencimiento es el día 10 del mes siguiente. Cada par creador + periodo es único.
+El resultado de cada parte queda en `valux_payouts.detail`. Si el saldo da negativo, la liquidación queda en 0 con estado `sin saldo` y el resto se guarda en `carry_cents`. Al calcular el mes siguiente se descuenta, y si tampoco alcanza sigue pasando. Recalcular un mes viejo no corrige los meses calculados después: hay que recalcularlos en orden. Las liquidaciones pendientes se recalculan y las transferidas no se tocan. El vencimiento es el día 10 del mes siguiente. Cada par creador + periodo es único.
 
 `markPayout` lo pasa a `transferida`. Si la persona tiene `paypal_email` y PayPal está configurado, intenta el envío con `sendPaypalPayout`. Si PayPal lo rechaza, la fila sigue pendiente y guarda la nota “PayPal no aceptó el envío.”
 

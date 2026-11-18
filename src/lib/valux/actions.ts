@@ -9,7 +9,7 @@ import { site } from '@/lib/site';
 import { getPersonByEmail, getPerson, getPlan, lessonAccess, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
 import { gradeMission, parseMission } from './mission';
 import { challengeProgress, getChallenge } from './challenges';
-import { computePayouts, ensurePerson, grantAccess, revokeSales, type GrantKind } from './fulfill';
+import { computePayouts, ensurePerson, grantAccess, revokeSales, subscriptionCanceled, type GrantKind } from './fulfill';
 import { periodYm, slugify } from './money';
 import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
 import { bankDetails, createTransfer } from './transfers';
@@ -209,6 +209,7 @@ export async function cancelMySubscription() {
   }
   const sql = await crm();
   await sql`UPDATE valux_subscriptions SET status = 'no_renueva' WHERE id = ${current.id}`;
+  await subscriptionCanceled(current.id, personId, 'alumno');
   refresh();
   redirect('/academia/suscripcion?cancelada=1');
 }
@@ -537,7 +538,10 @@ export async function setSubscriptionStatus(formData: FormData) {
     const gatewayId = (rows[0] as { gateway_id?: string } | undefined)?.gateway_id || '';
     await stopRenewal(gatewayId, true).catch((error) => console.error('[academia] cancelar suscripción:', error));
   }
-  await sql`UPDATE valux_subscriptions SET status = ${status} WHERE id = ${id}`;
+  const changed = await sql`UPDATE valux_subscriptions SET status = ${status} WHERE id = ${id} RETURNING person_id`;
+  if (status !== 'activa' && changed.length) {
+    await subscriptionCanceled(id, String((changed[0] as { person_id?: string }).person_id || ''), 'panel');
+  }
   refresh();
 }
 

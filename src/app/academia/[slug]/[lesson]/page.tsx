@@ -4,6 +4,7 @@ import { academiaPersonId } from '@/lib/valux/session';
 import { completeLesson, submitMission } from '@/lib/valux/actions';
 import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/valux/data';
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
+import { trackEvent } from '@/lib/valux/events';
 
 function embed(url: string) {
   if (url.includes('youtu.be/')) return `https://www.youtube.com/embed/${url.split('youtu.be/')[1]?.split('?')[0]}`;
@@ -37,6 +38,9 @@ export default async function LessonPlayer({
   const done = access.done;
   const locked = canRead && !access.unlocked.has(detail.lesson.id);
   const open = canRead && !locked;
+  if (open && personId) {
+    await trackEvent('lesson_started', { id: `lesson_started:${personId}:${detail.lesson.id}`, personId, data: { lesson: detail.lesson.id, course: detail.course.id } });
+  }
   const mission = parseMission(detail.lesson.mission).mission;
   const shown = mission ? publicMission(mission) : null;
   const xp = mision === 'ok' ? await personXp(personId) : 0;

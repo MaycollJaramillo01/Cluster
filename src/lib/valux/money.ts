@@ -16,6 +16,11 @@ export function periodYm(date = new Date()) {
   return date.toLocaleDateString('en-CA', { timeZone: 'America/Tegucigalpa' }).slice(0, 7);
 }
 
+export function previousYm(period: string) {
+  const [year, month] = period.split('-').map(Number);
+  return month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, '0')}`;
+}
+
 export function payoutDueAt(period: string) {
   const [year, month] = period.split('-').map(Number);
   return new Date(year, month, 10, 23, 59, 59);

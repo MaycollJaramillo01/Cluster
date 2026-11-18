@@ -4,7 +4,7 @@ import { getIntent } from './data';
 import { paypalOrderPaid, paypalSubscriptionPayments, readPaypalSubscription } from './paypal';
 import { readStripeCheckout, readStripeSubscription } from './stripe';
 import { sendAcademiaMail } from './mail';
-import { academyMoney, payoutDueAt, periodYm, splitCents } from './money';
+import { academyMoney, payoutDueAt, periodYm, previousYm, splitCents } from './money';
 import { advanceStage, trackEvent } from './events';
 
 export type GrantKind = 'curso' | 'producto' | 'suscripcion' | 'donacion';
@@ -141,6 +141,12 @@ export async function grantAccess(input: {
     // Otro pedido con la misma orden ya entregó el acceso.
     if (!sale.length) return { personId, path: await destination(input.kind, input.itemId) };
     fresh = true;
+    await trackEvent('payment_succeeded', {
+      id: input.paypalOrderId ? `payment_succeeded:${input.paypalOrderId}` : undefined,
+      personId,
+      email,
+      data: { kind: input.kind, item: input.itemId || null, cents: split.amount },
+    });
   }
 
   if (courseId) {
@@ -354,14 +360,25 @@ export async function recordSubscriptionPayment(input: {
     `;
   }
   if (input.amountCents > 0) {
-    await sql`
+    const sale = await sql`
       INSERT INTO valux_sales (id, kind, buyer_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym)
       VALUES (
         ${crypto.randomUUID()}, 'suscripcion', ${personId}, ${input.amountCents}, ${input.amountCents}, 0,
         ${input.paymentId}, ${periodYm()}
       )
       ON CONFLICT (paypal_order_id) DO NOTHING
+      RETURNING id
     `;
+    if (sale.length) {
+      // El primer cobro de la membresía es el alta; los siguientes son renovaciones.
+      const before = await sql`
+        SELECT 1 FROM academia_events WHERE name = 'payment_succeeded' AND data::jsonb ->> 'gateway' = ${input.gatewayId} LIMIT 1
+      `;
+      await trackEvent('payment_succeeded', { id: `payment_succeeded:${input.paymentId}`, personId, data: { kind: 'suscripcion', gateway: input.gatewayId, cents: input.amountCents } });
+      if (before.length) {
+        await trackEvent('subscription_renewed', { id: `subscription_renewed:${input.paymentId}`, personId, data: { gateway: input.gatewayId, cents: input.amountCents } });
+      }
+    }
   }
   return true;
 }
@@ -369,11 +386,17 @@ export async function recordSubscriptionPayment(input: {
 // no_renueva: ya pagó el mes en curso y lo conserva. vencida: la pasarela cerró la suscripción.
 export async function setSubscriptionEnded(gatewayId: string, status: 'no_renueva' | 'vencida') {
   const sql = await crm();
-  await sql`UPDATE valux_subscriptions SET status = ${status} WHERE gateway_id = ${gatewayId} AND status <> 'cancelada'`;
+  const ended = await sql`
+    UPDATE valux_subscriptions SET status = ${status} WHERE gateway_id = ${gatewayId} AND status <> 'cancelada' RETURNING id, person_id
+  `;
+  for (const row of ended as { id: string; person_id: string }[]) await subscriptionCanceled(row.id, row.person_id, status);
 }
 
-// Reembolso o disputa: la venta deja de contar (ni acceso ni comisión) y la suscripción se corta ya.
-// refs: id de la venta o id de pago tal como se guardó (sesión de Stripe, factura, tr_<ref>).
+// Un aviso por membresía: no_renueva y vencida de la misma suscripción cuentan como una cancelación.
+export async function subscriptionCanceled(subscriptionId: string, personId: string | null, reason: string) {
+  await trackEvent('subscription_canceled', { id: `subscription_canceled:${subscriptionId}`, personId, data: { reason } });
+}
+
 // Comisión que se queda la academia según el contrato del vendedor.
 // honorario: cobra un fijo mensual en la liquidación, así que la venta entera queda en la academia.
 export async function sellerCommission(sellerId: string, fallback: number) {
@@ -389,7 +412,9 @@ export async function sellerCommission(sellerId: string, fallback: number) {
 export async function computePayouts(period: string) {
   const sql = await crm();
   // Por vendedor: ventas vigentes del mes, honorario fijo del contrato y, si el contrato lo dice,
-  // el descuento de reembolsos de este mes sobre ventas de meses que ya se le pagaron.
+  // el descuento de reembolsos de este mes sobre ventas de meses que ya se le pagaron,
+  // más el saldo negativo que dejó el mes anterior.
+  const previous = previousYm(period);
   const rows = await sql`
     SELECT p.id AS seller_id, p.contract_kind, p.contract_fee_cents, p.contract_refund,
       COALESCE((SELECT sum(s.seller_cents) FROM valux_sales s
@@ -397,43 +422,54 @@ export async function computePayouts(period: string) {
       COALESCE((SELECT sum(s.seller_cents) FROM valux_sales s
         JOIN valux_payouts y ON y.seller_id = s.seller_id AND y.period_ym = s.period_ym AND y.status = 'transferida'
         WHERE s.seller_id = p.id AND s.period_ym < ${period}
-          AND to_char(s.refunded_at AT TIME ZONE 'America/Tegucigalpa', 'YYYY-MM') = ${period}), 0) AS clawback
+          AND to_char(s.refunded_at AT TIME ZONE 'America/Tegucigalpa', 'YYYY-MM') = ${period}), 0) AS clawback,
+      COALESCE((SELECT y.carry_cents FROM valux_payouts y WHERE y.seller_id = p.id AND y.period_ym = ${previous}), 0) AS carry
     FROM valux_people p
     WHERE p.contract_kind = 'honorario'
       OR EXISTS (SELECT 1 FROM valux_sales s WHERE s.seller_id = p.id AND s.period_ym = ${period})
       OR EXISTS (SELECT 1 FROM valux_sales s WHERE s.seller_id = p.id
         AND to_char(s.refunded_at AT TIME ZONE 'America/Tegucigalpa', 'YYYY-MM') = ${period})
+      OR EXISTS (SELECT 1 FROM valux_payouts y WHERE y.seller_id = p.id AND y.period_ym = ${previous} AND y.carry_cents < 0)
   `;
   const dueAt = payoutDueAt(period).toISOString();
   for (const row of rows) {
-    const entry = row as { seller_id: string; contract_kind: string; contract_fee_cents: unknown; contract_refund: string; sales: unknown; clawback: unknown };
+    const entry = row as { seller_id: string; contract_kind: string; contract_fee_cents: unknown; contract_refund: string; sales: unknown; clawback: unknown; carry: unknown };
     const sales = Number(entry.sales) || 0;
     const fee = entry.contract_kind === 'honorario' ? Number(entry.contract_fee_cents) || 0 : 0;
     const clawback = entry.contract_refund === 'academia' ? 0 : Number(entry.clawback) || 0;
-    const total = sales + fee - clawback;
-    // ponytail: un saldo negativo no se arrastra al mes siguiente; queda anotado en el detalle.
+    const carryIn = Math.min(0, Number(entry.carry) || 0);
+    const total = sales + fee - clawback + carryIn;
+    // Lo que no alcanza a cubrirse este mes pasa como saldo negativo al siguiente.
+    // ponytail: recalcular un mes viejo no corrige los meses ya calculados después; se recalculan en orden.
     const amount = Math.max(0, total);
+    const carry = Math.min(0, total);
     const detail = [
       `ventas ${academyMoney(sales)}`,
       fee ? `honorario ${academyMoney(fee)}` : '',
       clawback ? `reembolsos -${academyMoney(clawback)}` : '',
-      total < 0 ? `saldo negativo ${academyMoney(total)}` : '',
+      carryIn ? `saldo del mes anterior ${academyMoney(carryIn)}` : '',
+      carry ? `pasa al mes siguiente ${academyMoney(carry)}` : '',
     ].filter(Boolean).join(' · ');
-    if (!amount) {
-      // Sin saldo: solo corrige una liquidación pendiente que ya existía.
-      await sql`UPDATE valux_payouts SET amount_cents = 0, detail = ${detail} WHERE seller_id = ${entry.seller_id} AND period_ym = ${period} AND status = 'pendiente'`;
+    if (!amount && !carry) {
+      // Sin saldo: solo corrige una liquidación abierta que ya existía.
+      await sql`UPDATE valux_payouts SET amount_cents = 0, carry_cents = 0, detail = ${detail}, status = 'sin saldo' WHERE seller_id = ${entry.seller_id} AND period_ym = ${period} AND status IN ('pendiente', 'sin saldo')`;
       continue;
     }
+    const status = amount ? 'pendiente' : 'sin saldo';
     await sql`
-      INSERT INTO valux_payouts (id, seller_id, period_ym, amount_cents, status, due_at, detail)
-      VALUES (${crypto.randomUUID()}, ${entry.seller_id}, ${period}, ${amount}, 'pendiente', ${dueAt}, ${detail})
+      INSERT INTO valux_payouts (id, seller_id, period_ym, amount_cents, status, due_at, detail, carry_cents)
+      VALUES (${crypto.randomUUID()}, ${entry.seller_id}, ${period}, ${amount}, ${status}, ${dueAt}, ${detail}, ${carry})
       ON CONFLICT (seller_id, period_ym) DO UPDATE SET
-        amount_cents = CASE WHEN valux_payouts.status = 'pendiente' THEN EXCLUDED.amount_cents ELSE valux_payouts.amount_cents END,
-        detail = CASE WHEN valux_payouts.status = 'pendiente' THEN EXCLUDED.detail ELSE valux_payouts.detail END
+        amount_cents = CASE WHEN valux_payouts.status IN ('pendiente', 'sin saldo') THEN EXCLUDED.amount_cents ELSE valux_payouts.amount_cents END,
+        detail = CASE WHEN valux_payouts.status IN ('pendiente', 'sin saldo') THEN EXCLUDED.detail ELSE valux_payouts.detail END,
+        carry_cents = CASE WHEN valux_payouts.status IN ('pendiente', 'sin saldo') THEN EXCLUDED.carry_cents ELSE valux_payouts.carry_cents END,
+        status = CASE WHEN valux_payouts.status IN ('pendiente', 'sin saldo') THEN EXCLUDED.status ELSE valux_payouts.status END
     `;
   }
 }
 
+// Reembolso o disputa: la venta deja de contar (ni acceso ni comisión) y la suscripción se corta ya.
+// refs: id de la venta o id de pago tal como se guardó (sesión de Stripe, factura, tr_<ref>).
 export async function revokeSales(refs: string[], reason: string) {
   const sql = await crm();
   let revoked = 0;
@@ -457,10 +493,12 @@ export async function revokeSales(refs: string[], reason: string) {
           )
       `;
     }
-    await sql`
+    const cut = await sql`
       UPDATE valux_subscriptions SET status = 'cancelada', current_period_end = LEAST(current_period_end, now())
-      WHERE paypal_order_id = ${ref} OR gateway_id = ${ref}
+      WHERE (paypal_order_id = ${ref} OR gateway_id = ${ref}) AND status <> 'cancelada'
+      RETURNING id, person_id
     `;
+    for (const row of cut as { id: string; person_id: string }[]) await subscriptionCanceled(row.id, row.person_id, reason);
   }
   return revoked;
 }

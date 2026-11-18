@@ -562,6 +562,8 @@ const STATEMENTS = [
   `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_terms TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS contract_refund TEXT NOT NULL DEFAULT 'descontar'`,
   `ALTER TABLE valux_payouts ADD COLUMN IF NOT EXISTS detail TEXT`,
+  // Saldo negativo (reembolsos mayores que lo ganado) que se descuenta el mes siguiente.
+  `ALTER TABLE valux_payouts ADD COLUMN IF NOT EXISTS carry_cents INTEGER NOT NULL DEFAULT 0`,
   // Revisión editorial: el profesor pide revisión y contenido publica.
   `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS review_requested_at TIMESTAMPTZ`,
   // Lead: fuente, UTM, consentimientos y etapa del embudo.

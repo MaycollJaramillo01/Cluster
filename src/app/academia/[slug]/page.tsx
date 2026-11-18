@@ -6,6 +6,7 @@ import { buyCourse, buyUpsell } from '@/lib/valux/actions';
 import { ownsCourse, publishedCourse } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
 import { paymentOptions } from '@/lib/valux/transfers';
+import { advanceStage } from '@/lib/valux/events';
 
 export default async function CourseCatalogPage({
   params,
@@ -20,6 +21,8 @@ export default async function CourseCatalogPage({
   if (!course) notFound();
   const pay = await paymentOptions();
   const personId = await academiaPersonId();
+  // Registrado que mira la ficha de un curso: pasa de nuevo a interesado (nunca retrocede).
+  if (personId) await advanceStage({ personId }, 'interesado');
   // La oferta postcompra solo aparece a quien ya tiene este curso y aún no tiene el ofrecido.
   const upsell = query.ok && course.upsell && (await ownsCourse(personId, course.id)) && !(await ownsCourse(personId, course.upsell.id))
     ? course.upsell
