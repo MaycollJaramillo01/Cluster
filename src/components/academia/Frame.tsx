@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { leaveAcademia } from '@/lib/valux/actions';
 
 const links = [
   ['/academia', 'Cursos'],
@@ -18,7 +19,8 @@ function classroomPath(path: string) {
   return parts[0] === 'academia' && parts.length >= 3 && !reserved.has(parts[1]);
 }
 
-export function Frame({ children }: { children: ReactNode }) {
+// name: nombre de la persona con sesión, o null si no entró.
+export function Frame({ children, name }: { children: ReactNode; name: string | null }) {
   const path = usePathname();
   if (classroomPath(path)) return <div className="min-h-screen bg-ink">{children}</div>;
 
@@ -38,7 +40,18 @@ export function Frame({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-3 text-sm sm:gap-4">
             <Link href="/academia/mis-cursos" className="text-black/70 hover:text-ink">Mis cursos</Link>
-            <Link href="/academia/entrar" className="bg-ink px-3 py-2 text-white">Entrar</Link>
+            {name ? (
+              <>
+                <Link href="/academia/perfil" aria-label={`Perfil de ${name}`} className="hidden max-w-[10rem] truncate text-black/70 hover:text-ink sm:inline">
+                  {name}
+                </Link>
+                <form action={leaveAcademia}>
+                  <button type="submit" className="border border-black/15 px-3 py-2 hover:border-ink">Salir</button>
+                </form>
+              </>
+            ) : (
+              <Link href="/academia/entrar" className="bg-ink px-3 py-2 text-white">Entrar</Link>
+            )}
           </div>
         </div>
       </header>

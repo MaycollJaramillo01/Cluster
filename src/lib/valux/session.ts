@@ -40,3 +40,8 @@ export async function setAcademiaPerson(id: string) {
   const jar = await cookies();
   jar.set(ACADEMIA_COOKIE, academiaCookieValue(id), academiaCookieOptions);
 }
+
+export async function clearAcademiaPerson() {
+  const jar = await cookies();
+  jar.delete(ACADEMIA_COOKIE);
+}

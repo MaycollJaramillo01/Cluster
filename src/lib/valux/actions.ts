@@ -14,7 +14,7 @@ import { computePayouts, ensurePerson, grantAccess, revokeSales, subscriptionCan
 import { periodYm, slugify } from './money';
 import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
 import { bankDetails, createTransfer } from './transfers';
-import { academiaPersonId, setAcademiaPerson } from './session';
+import { academiaPersonId, clearAcademiaPerson, setAcademiaPerson } from './session';
 import { cleanPhone, startLogin, verifyLoginCode, verifyLoginLink } from './login';
 import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
@@ -287,6 +287,11 @@ export async function confirmLoginLink(formData: FormData) {
   if (!personId) redirect('/academia/entrar?error=enlace');
   await setAcademiaPerson(personId);
   redirect('/academia/mis-cursos');
+}
+
+export async function leaveAcademia() {
+  await clearAcademiaPerson();
+  redirect('/academia');
 }
 
 export async function updateProfile(formData: FormData) {
