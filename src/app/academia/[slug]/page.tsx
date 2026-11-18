@@ -128,6 +128,7 @@ export default async function CourseCatalogPage({
               note={course.price_cents > 0 ? payHint(pay) : 'Acceso inmediato a las clases'}
               pay={course.price_cents > 0 || course.bump ? pay : undefined}
               bump={course.bump}
+              coupon={course.price_cents > 0}
             />
           )}
         </div>

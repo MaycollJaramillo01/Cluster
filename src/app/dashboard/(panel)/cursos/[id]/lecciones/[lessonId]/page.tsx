@@ -30,7 +30,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           </select>
         </Field>
         <Field label="Contenido"><textarea className={fieldClass} name="content" rows={8} defaultValue={lesson.content} /></Field>
-        <Field label="Video"><input className={fieldClass} name="video_url" defaultValue={lesson.video_url || ''} placeholder="https://" /></Field>
+        <Field label="Video"><input className={fieldClass} name="video_url" defaultValue={lesson.video_url || ''} placeholder="bunny:<id del video> o https://" /></Field>
         <Field label="Minutos"><input className={fieldClass} name="duration_min" type="number" min="1" defaultValue={lesson.duration_min ?? ''} /></Field>
         <Field label="XP al aprobar la misión"><input className={fieldClass} name="points" type="number" min="1" defaultValue={lesson.points} /></Field>
         <Field label="Misión (opcional)">

@@ -59,7 +59,8 @@ export async function POST(request: Request) {
         break;
     }
   } catch (error) {
-    console.error('[academia] paypal webhook:', event.event_type, error);
+    const { alertTeam } = await import('@/lib/valux/alerts');
+    await alertTeam(`webhook de PayPal (${event.event_type})`, error);
     return NextResponse.json({ error: 'failed' }, { status: 500 });
   }
   return NextResponse.json({ received: true });

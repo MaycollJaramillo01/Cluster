@@ -20,6 +20,14 @@ export default async function PerfilPage() {
         <label className="block text-sm">Instagram<input name="instagram_url" defaultValue={person.instagram_url} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
         <label className="block text-sm">Portafolio<input name="portfolio_url" defaultValue={person.portfolio_url} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
         <label className="block text-sm">PayPal para liquidaciones<input name="paypal_email" defaultValue={person.paypal_email} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
+        <label className="flex items-start gap-2 text-sm">
+          <input name="reminders" type="checkbox" value="1" defaultChecked={!person.reminders_off} className="mt-1" />
+          Recordatorios por correo cuando dejo un curso sin avanzar
+        </label>
+        <label className="flex items-start gap-2 text-sm">
+          <input name="consent_email" type="checkbox" value="1" defaultChecked={person.consent_email} className="mt-1" />
+          Novedades y ofertas por correo
+        </label>
         <button className="bg-brand px-4 py-2 text-sm font-medium text-ink" type="submit">Guardar</button>
       </form>
     </div>

@@ -612,6 +612,30 @@ const STATEMENTS = [
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (challenge_id, person_id)
   )`,
+  // Cupones: porcentaje o monto fijo, para un curso o para todos, con tope de usos y vencimiento.
+  `CREATE TABLE IF NOT EXISTS valux_coupons (
+    code TEXT PRIMARY KEY,
+    percent INTEGER NOT NULL DEFAULT 0,
+    amount_cents INTEGER NOT NULL DEFAULT 0,
+    course_id TEXT,
+    max_uses INTEGER,
+    uses INTEGER NOT NULL DEFAULT 0,
+    expires_at TIMESTAMPTZ,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `ALTER TABLE valux_intents ADD COLUMN IF NOT EXISTS coupon_code TEXT`,
+  `ALTER TABLE valux_transfers ADD COLUMN IF NOT EXISTS coupon_code TEXT`,
+  `ALTER TABLE valux_sales ADD COLUMN IF NOT EXISTS coupon_code TEXT`,
+  `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS reminders_off BOOLEAN NOT NULL DEFAULT false`,
+  // Correos de seguimiento ya enviados (abandono, recordatorio, vencimiento, cobro fallido).
+  `CREATE TABLE IF NOT EXISTS academia_followups (
+    key TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS academia_followups_email_idx ON academia_followups (email, kind, sent_at)`,
 ];
 
 let client: Sql | null = null;

@@ -42,6 +42,7 @@ Todo cuelga de `/dashboard/cursos`.
 | Cursos | Temario, precio, portada y publicación. Un curso con revisión pedida por su profesor dice «Revisión pendiente» |
 | Retos | Metas con XP de bonificación (`lms_challenges`) |
 | Analítica | KPIs con filtro de fechas y curso (solo finanzas y superadmin) |
+| Cupones | Códigos de descuento para cursos (`valux_coupons`, solo finanzas y superadmin) |
 | Marketplace | Productos digitales (`valux_products`). Nacen en revisión `pendiente` |
 | Blog | Posts (`valux_posts`). Nacen en `borrador` |
 | Ventas | Cada cobro en `valux_sales`: total, comisión de Cluster y parte del creador |
@@ -119,7 +120,7 @@ El retorno del navegador no basta: si el alumno cierra la pestaña o el mes se r
 
 | Pasarela | URL | Eventos |
 | --- | --- | --- |
-| Stripe | `/api/academia/stripe` | `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created` |
+| Stripe | `/api/academia/stripe` | `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`, `charge.refunded`, `charge.dispute.created` |
 | PayPal | `/api/academia/paypal` | `CHECKOUT.ORDER.APPROVED`, `BILLING.SUBSCRIPTION.ACTIVATED`, `PAYMENT.SALE.COMPLETED`, `BILLING.SUBSCRIPTION.CANCELLED`, `BILLING.SUBSCRIPTION.SUSPENDED`, `BILLING.SUBSCRIPTION.EXPIRED` |
 
 Cada cobro mensual es una venta `suscripcion` sin vendedor y mueve el vencimiento.
@@ -200,6 +201,56 @@ Los dos primeros se pueden limitar a un curso. Cada reto tiene bono de XP y fech
 
 **Recibos:** `/academia/recibos` lista las ventas de la persona de la sesión, incluidas las reembolsadas. `/academia/recibos/<id>` es un comprobante imprimible (Imprimir → PDF del navegador). No es una factura fiscal. Otra persona no puede abrir el recibo, aunque tenga el id.
 
+## Cupones
+
+En `/dashboard/cursos/cupones` (finanzas) se crean códigos con estas opciones:
+- porcentaje o monto fijo;
+- para un curso o para todos;
+- tope de usos y fecha de vencimiento opcionales.
+
+Funcionan así:
+- Solo descuentan cursos. La membresía es recurrente y no lleva cupón.
+- El alumno escribe el código en el checkout. `buyCourse` calcula el precio en el servidor con `applyCoupon` y rechaza el código si no existe, venció, se agotó o es de otro curso.
+- El código queda en el intent, en la transferencia y en la venta (`coupon_code`).
+- Un uso se cuenta cuando la venta queda entregada, también en un curso que queda gratis con el cupón.
+- La comisión y la parte del profesor salen de lo cobrado de verdad.
+- El tope es orientativo: dos pagos simultáneos con el último uso pueden pasar los dos.
+
+## Correos de seguimiento
+
+`src/lib/valux/followups.ts`. La tarea programada los corre cada 5 minutos, hasta 50 por tipo y corrida. Cada uno queda en `academia_followups` con una llave única, así que no se repite.
+
+| Correo | Cuándo | A quién |
+| --- | --- | --- |
+| Pago pendiente | Un `checkout_started` de hace entre 1 y 48 h sin compra después. Máximo uno cada 7 días por correo | Solo con `consent_email` (es marketing) |
+| Recordatorio | Compró un curso, no lo terminó y lleva 7 días sin completar clases. Hasta 3, cada 14 días | Todos los compradores, salvo que lo apaguen en Perfil (`reminders_off`) |
+| Membresía por vencer | Vence en 3 días o menos y no se renueva sola (`no_renueva` o sin pasarela) | Todos |
+| Cobro fallido | Webhook `invoice.payment_failed`; trae el enlace de Stripe para pagar con otra tarjeta | Todos |
+
+La llave se reserva antes de mandar el correo. Si Resend falla, ese correo no se reintenta.
+
+**Primer deploy:** quien ya tenga un curso sin avanzar recibe su primer recordatorio en las primeras corridas, de a 50 cada 5 minutos.
+
+## Videos protegidos (Bunny Stream)
+
+En el campo Video de la lección se pega `bunny:<id del video>` o la URL de Bunny (`https://iframe.mediadelivery.net/embed/<biblioteca>/<video>`). `lessonEmbed` (`src/lib/valux/video.ts`) solo genera el enlace para quien puede ver la clase. Con `BUNNY_STREAM_TOKEN_KEY` el enlace va firmado: `token = sha256(clave + id + vencimiento)` y vence a las 6 horas.
+
+En Bunny hay que hacer tres cosas:
+1. Activar **Token authentication** en la biblioteca. Sin eso, Bunny no exige la firma.
+2. Agregar el dominio del sitio en **Allowed domains**.
+3. Copiar la clave y el id de la biblioteca a Vercel.
+
+YouTube y Vimeo se siguen aceptando, pero su enlace funciona fuera de la academia.
+
+## Alertas de errores
+
+`alertTeam` (`src/lib/valux/alerts.ts`) manda un correo por Resend a `ALERT_EMAIL`, o al correo del sitio. Hay como máximo uno por tema cada hora; el tope queda en `crm_meta`, `alert:<tema>`. Avisa en estos casos:
+- falla un webhook de Stripe o de PayPal;
+- falla la tarea programada;
+- falla la conciliación, o la conciliación encuentra pagos sin entregar o eventos de Stripe sin procesar;
+- fallan los correos de seguimiento;
+- cualquier error del servidor en producción (`src/instrumentation.ts`, `onRequestError`). Las redirecciones y los 404 no cuentan.
+
 ## Leads y eventos
 
 **Primer contacto:** la primera visita a `/academia` con parámetros `utm_*`, o con un referer externo, guarda la cookie `cluster_lead` (fuente y UTM) por 90 días. Visitas posteriores no la pisan.
@@ -279,6 +330,11 @@ src/lib/valux/challenges.ts    Retos
 src/lib/valux/analytics.ts     KPIs del panel
 src/lib/crm/course-access.ts   Quién puede editar un curso
 scripts/check-lms-cierre.ts    Prueba de contratos, leads, eventos, Stripe, recibos, retos y analítica
+src/lib/valux/coupons.ts       Cupones
+src/lib/valux/followups.ts     Correos de seguimiento
+src/lib/valux/video.ts         Video incrustado y firma de Bunny
+src/lib/valux/alerts.ts        Alertas por correo
+scripts/check-seguimiento.ts   Prueba de cupones, seguimientos, Bunny y alertas
 ```
 
 ## Variables
@@ -292,3 +348,6 @@ scripts/check-lms-cierre.ts    Prueba de contratos, leads, eventos, Stripe, reci
 | `PAYPAL_WEBHOOK_ID` | Id del webhook creado en PayPal; sin él se rechazan sus avisos |
 | `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` | Correo de acceso |
 | `BLOB_READ_WRITE_TOKEN` | Portadas y archivos subidos |
+| `BUNNY_STREAM_LIBRARY_ID` | Biblioteca de Bunny Stream para lecciones cargadas como `bunny:<id>` |
+| `BUNNY_STREAM_TOKEN_KEY` | Clave de firma de Bunny («Token authentication key»); sin ella el video de Bunny va sin firma |
+| `ALERT_EMAIL` | A quién llegan las alertas de errores (por defecto el correo del sitio) |

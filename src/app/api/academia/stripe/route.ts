@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { crm } from '@/lib/crm/db';
+import { alertTeam } from '@/lib/valux/alerts';
+import { sendPaymentFailed } from '@/lib/valux/followups';
 import { fulfillStripeSession, recordSubscriptionPayment, revokeSales, setSubscriptionEnded } from '@/lib/valux/fulfill';
 import { cancelStripeSubscription, stripePaymentRefs, verifyStripeEvent } from '@/lib/valux/stripe';
 
@@ -62,13 +64,22 @@ export async function POST(request: Request) {
         // ponytail: un reembolso parcial no quita acceso; se decide a mano desde Ventas.
         if (item.refunded) await revokeCharge(ref(item.payment_intent), ref(item.invoice), 'reembolso');
         break;
+      case 'invoice.payment_failed':
+        // Renovación rechazada: aviso al alumno con el enlace de Stripe para pagar con otra tarjeta.
+        await sendPaymentFailed({
+          invoiceId: ref(item.id),
+          email: String(item.customer_email || ''),
+          amountCents: Number(item.amount_due) || 0,
+          payUrl: String(item.hosted_invoice_url || ''),
+        });
+        break;
       case 'charge.dispute.created':
         await revokeCharge(ref(item.payment_intent), '', 'disputa');
         break;
     }
   } catch (error) {
     // 500 hace que Stripe reintente.
-    console.error('[academia] stripe webhook:', event.type, error);
+    await alertTeam(`webhook de Stripe (${event.type})`, error);
     await sql`UPDATE stripe_events SET error = ${String(error instanceof Error ? error.message : error).slice(0, 500)} WHERE id = ${event.id}`;
     return NextResponse.json({ error: 'failed' }, { status: 500 });
   }

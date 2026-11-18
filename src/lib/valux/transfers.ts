@@ -80,8 +80,9 @@ export async function createTransfer(input: {
   email: string;
   amountCents: number;
   months?: number;
-  // amountCents ya incluye el bump.
+  // amountCents ya incluye el bump y el cupón.
   bump?: { itemId: string; cents: number; title: string } | null;
+  couponCode?: string | null;
 }) {
   const sql = await crm();
   const description = input.bump ? `${input.description} + ${input.bump.title}` : input.description;
@@ -92,11 +93,11 @@ export async function createTransfer(input: {
     const rows = await sql`
       INSERT INTO valux_transfers (
         id, reference, kind, item_id, description, buyer_name, buyer_email, amount_cents, months, expires_at,
-        bump_item_id, bump_cents
+        bump_item_id, bump_cents, coupon_code
       ) VALUES (
         ${crypto.randomUUID()}, ${candidate}, ${input.kind}, ${input.itemId || null}, ${description.slice(0, 160)},
         ${input.name.trim()}, ${input.email.trim().toLowerCase()}, ${input.amountCents}, ${input.months || 1}, ${expires.toISOString()},
-        ${input.bump?.itemId || null}, ${input.bump?.cents || 0}
+        ${input.bump?.itemId || null}, ${input.bump?.cents || 0}, ${input.couponCode || null}
       )
       ON CONFLICT (reference) DO NOTHING
       RETURNING reference

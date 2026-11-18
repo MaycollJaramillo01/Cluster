@@ -9,6 +9,7 @@ import { site } from '@/lib/site';
 import { getPersonByEmail, getPerson, getPlan, lessonAccess, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
 import { gradeMission, parseMission } from './mission';
 import { challengeProgress, getChallenge } from './challenges';
+import { applyCoupon, cleanCode } from './coupons';
 import { computePayouts, ensurePerson, grantAccess, revokeSales, subscriptionCanceled, type GrantKind } from './fulfill';
 import { periodYm, slugify } from './money';
 import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './paypal';
@@ -55,6 +56,8 @@ async function checkout(input: {
   method?: string;
   // Order bump: otro curso en el mismo pago, con precio calculado aquí, nunca desde el navegador.
   bump?: { itemId: string; cents: number; title: string } | null;
+  // Cupón ya validado: amountCents trae el precio con descuento.
+  couponCode?: string | null;
 }) {
   if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
   const bump = input.bump && input.bump.cents > 0 ? input.bump : null;
@@ -103,11 +106,11 @@ async function checkout(input: {
     });
     await sql`
       INSERT INTO valux_intents (
-        id, paypal_order_id, kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents
+        id, paypal_order_id, kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents, coupon_code
       ) VALUES (
         ${crypto.randomUUID()}, ${session.id}, ${input.kind}, ${input.itemId || null},
         ${input.name}, ${input.email.toLowerCase()}, ${total}, ${input.months || 1},
-        ${bump?.itemId || null}, ${bump?.cents || 0}
+        ${bump?.itemId || null}, ${bump?.cents || 0}, ${input.couponCode || null}
       )
     `;
     redirect(session.url);
@@ -120,12 +123,22 @@ async function checkout(input: {
 export async function buyCourse(formData: FormData) {
   const course = await publishedCourse(field(formData, 'slug'));
   if (!course) return;
+  // El descuento se calcula aquí con el precio de la base; el navegador solo manda el código.
+  let price = course.price_cents;
+  let couponCode: string | null = null;
+  if (field(formData, 'cupon')) {
+    const coupon = await applyCoupon(field(formData, 'cupon'), course.id, course.price_cents);
+    if (!coupon.ok) redirect(`/academia/${course.slug}?error=cupon-${coupon.reason}`);
+    price = coupon.cents;
+    couponCode = coupon.code;
+  }
   await checkout({
     kind: 'curso',
     itemId: course.id,
     name: field(formData, 'name'),
     email: field(formData, 'email'),
-    amountCents: course.price_cents,
+    amountCents: price,
+    couponCode,
     description: course.title,
     method: field(formData, 'metodo'),
     failPath: `/academia/${course.slug}`,
@@ -288,7 +301,10 @@ export async function updateProfile(formData: FormData) {
       niche = ${field(formData, 'niche')},
       instagram_url = ${field(formData, 'instagram_url') || null},
       portfolio_url = ${field(formData, 'portfolio_url') || null},
-      paypal_email = ${field(formData, 'paypal_email') || null}
+      paypal_email = ${field(formData, 'paypal_email') || null},
+      consent_at = CASE WHEN consent_email IS DISTINCT FROM ${field(formData, 'consent_email') === '1'} THEN now() ELSE consent_at END,
+      consent_email = ${field(formData, 'consent_email') === '1'},
+      reminders_off = ${field(formData, 'reminders') !== '1'}
     WHERE id = ${id}
   `;
   refresh();
@@ -551,6 +567,29 @@ export async function buildPayouts(formData: FormData) {
   if (!/^\d{4}-\d{2}$/.test(period)) return;
   await computePayouts(period);
   refresh();
+}
+
+export async function saveCoupon(formData: FormData) {
+  await requireDashboard('finanzas');
+  const code = cleanCode(field(formData, 'code'));
+  const percent = Math.max(0, Math.min(100, Math.round(Number(field(formData, 'percent')) || 0)));
+  const amount = cents(field(formData, 'amount'));
+  if (!code || (!percent && !amount)) redirect('/dashboard/cursos/cupones?error=datos');
+  const maxRaw = Math.round(Number(field(formData, 'max_uses')));
+  const maxUses = Number.isFinite(maxRaw) && maxRaw > 0 ? maxRaw : null;
+  const endsRaw = field(formData, 'expires_at');
+  const expires = /^\d{4}-\d{2}-\d{2}$/.test(endsRaw) ? new Date(`${endsRaw}T23:59:59-06:00`).toISOString() : null;
+  const active = field(formData, 'editing') ? field(formData, 'active') === '1' : true;
+  const sql = await crm();
+  await sql`
+    INSERT INTO valux_coupons (code, percent, amount_cents, course_id, max_uses, expires_at, active)
+    VALUES (${code}, ${percent}, ${percent ? 0 : amount}, ${field(formData, 'course_id') || null}, ${maxUses}, ${expires}, ${active})
+    ON CONFLICT (code) DO UPDATE SET
+      percent = EXCLUDED.percent, amount_cents = EXCLUDED.amount_cents, course_id = EXCLUDED.course_id,
+      max_uses = EXCLUDED.max_uses, expires_at = EXCLUDED.expires_at, active = EXCLUDED.active
+  `;
+  refresh();
+  redirect('/dashboard/cursos/cupones');
 }
 
 export async function saveContract(formData: FormData) {

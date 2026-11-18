@@ -29,6 +29,7 @@ export type ValuxPerson = {
   stage: string;
   consent_email: boolean;
   consent_whatsapp: boolean;
+  reminders_off: boolean;
 };
 
 export type ValuxSettings = { commission_percent: number; subscription_cents: number; bank_details: string };
@@ -50,6 +51,7 @@ function mapPerson(row: Record<string, unknown>): ValuxPerson {
     stage: text(row.stage) || 'nuevo',
     consent_email: bool(row.consent_email),
     consent_whatsapp: bool(row.consent_whatsapp),
+    reminders_off: bool(row.reminders_off),
   };
 }
 
@@ -68,7 +70,7 @@ export async function listPeople() {
   const sql = await crm();
   const rows = await sql`
     SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url,
-      source, utm, stage, consent_email, consent_whatsapp
+      source, utm, stage, consent_email, consent_whatsapp, reminders_off
     FROM valux_people
     ORDER BY name
   `;
@@ -80,7 +82,7 @@ export async function getPerson(id: string) {
   const sql = await crm();
   const rows = await sql`
     SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url,
-      source, utm, stage, consent_email, consent_whatsapp
+      source, utm, stage, consent_email, consent_whatsapp, reminders_off
     FROM valux_people WHERE id = ${id}
   `;
   return rows[0] ? mapPerson(rows[0] as Record<string, unknown>) : null;
@@ -90,7 +92,7 @@ export async function getPersonByEmail(email: string) {
   const sql = await crm();
   const rows = await sql`
     SELECT id, name, email, role, paypal_email, is_active, bio, niche, instagram_url, portfolio_url,
-      source, utm, stage, consent_email, consent_whatsapp
+      source, utm, stage, consent_email, consent_whatsapp, reminders_off
     FROM valux_people WHERE email = ${email.trim().toLowerCase()}
   `;
   return rows[0] ? mapPerson(rows[0] as Record<string, unknown>) : null;
@@ -621,7 +623,7 @@ export async function personSubscription(personId: string) {
 export async function getIntent(orderId: string) {
   const sql = await crm();
   const rows = await sql`
-    SELECT kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents
+    SELECT kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents, coupon_code
     FROM valux_intents WHERE paypal_order_id = ${orderId}
   `;
   const entry = rows[0] as Record<string, unknown> | undefined;
@@ -635,6 +637,7 @@ export async function getIntent(orderId: string) {
     months: num(entry.months) || 1,
     bumpItemId: text(entry.bump_item_id),
     bumpCents: num(entry.bump_cents),
+    couponCode: text(entry.coupon_code),
   };
 }
 

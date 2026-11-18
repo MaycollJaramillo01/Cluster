@@ -14,9 +14,17 @@ export function Cover({ url, title }: { url: string; title: string }) {
   );
 }
 
+const COUPON_ERRORS: Record<string, string> = {
+  invalido: 'Ese cupón no existe o ya no está activo.',
+  vencido: 'Ese cupón ya venció.',
+  agotado: 'Ese cupón ya se usó todas las veces permitidas.',
+  curso: 'Ese cupón es para otro curso.',
+};
+
 export function payNote(code?: string) {
   if (code === 'pasarela') return 'El cobro queda listo cuando se cargue la clave de Stripe o los datos para transferencia.';
   if (code === 'datos') return 'Faltan el nombre y el correo.';
+  if (code?.startsWith('cupon-')) return COUPON_ERRORS[code.slice(6)] || 'Ese cupón no aplica.';
   if (code) return 'No se pudo completar el pago.';
   return '';
 }
@@ -55,6 +63,7 @@ export function Checkout({
   note,
   pay,
   bump,
+  coupon,
 }: {
   action: (formData: FormData) => Promise<void>;
   hidden?: Record<string, string>;
@@ -63,6 +72,8 @@ export function Checkout({
   pay?: PayOptions;
   // Oferta opcional en el mismo pago: la casilla empieza sin marcar.
   bump?: { title: string; cents: number } | null;
+  // Campo de cupón (solo cursos de pago).
+  coupon?: boolean;
 }) {
   return (
     <form action={action} className="space-y-3">
@@ -84,6 +95,12 @@ export function Checkout({
             <span className="block font-medium">Agrega {bump.title} por {academyMoney(bump.cents)}</span>
             <span className="block text-xs text-black/55">Opcional. Se suma a este mismo pago.</span>
           </span>
+        </label>
+      ) : null}
+      {coupon ? (
+        <label className="block text-sm">
+          <span className="mb-1 block text-xs text-black/45">Cupón (opcional)</span>
+          <input name="cupon" autoComplete="off" className="w-full border border-black/15 px-3 py-2.5 text-sm uppercase outline-none focus:border-ink" />
         </label>
       ) : null}
       <PayMethod options={pay} />

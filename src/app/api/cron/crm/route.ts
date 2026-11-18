@@ -4,6 +4,8 @@ import { processDue } from '@/lib/crm/automations';
 import { processCampaignSends } from '@/lib/crm/campaigns';
 import { expireTransfers } from '@/lib/valux/transfers';
 import { nightlyReconcile } from '@/lib/valux/reconcile';
+import { alertTeam } from '@/lib/valux/alerts';
+import { runFollowups } from '@/lib/valux/followups';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -26,8 +28,16 @@ export async function GET(request: Request) {
     result.automations = await processDue(200);
     result.expired = await expireTransfers();
     // La conciliación falla sola: no detiene las campañas.
-    result.reconcile = await nightlyReconcile().catch((error) => {
-      console.error('[cron] conciliación:', error);
+    const reconcile = await nightlyReconcile().catch(async (error) => {
+      await alertTeam('conciliación nocturna', error);
+      return 'failed' as const;
+    });
+    result.reconcile = reconcile;
+    if (reconcile && reconcile !== 'failed' && (reconcile.failed > 0 || reconcile.eventErrors > 0)) {
+      await alertTeam('conciliación con pendientes', `Pagos de Stripe sin entregar: ${reconcile.failed}. Eventos de Stripe sin procesar (2 días): ${reconcile.eventErrors}. Revisa stripe_events y los logs.`);
+    }
+    result.followups = await runFollowups().catch(async (error) => {
+      await alertTeam('correos de seguimiento', error);
       return 'failed';
     });
     // Lotes de campañas hasta acercarse al límite de la función.
@@ -38,7 +48,7 @@ export async function GET(request: Request) {
       if (batch.sent + batch.failed === 0) break;
     }
   } catch (error) {
-    console.error('[cron] crm:', error);
+    await alertTeam('tarea programada', error);
     return NextResponse.json({ ...result, error: 'failed' }, { status: 500 });
   }
   return NextResponse.json(result);

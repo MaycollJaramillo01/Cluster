@@ -6,6 +6,7 @@ import { readStripeCheckout, readStripeSubscription } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { academyMoney, payoutDueAt, periodYm, previousYm, splitCents } from './money';
 import { advanceStage, trackEvent } from './events';
+import { countCouponUse } from './coupons';
 
 export type GrantKind = 'curso' | 'producto' | 'suscripcion' | 'donacion';
 
@@ -61,8 +62,9 @@ export async function grantAccess(input: {
   months?: number;
   monthlyCents?: number;
   paypalOrderId?: string | null;
-  // Precio ya cobrado (oferta de bump o upsell, plan por transferencia). Sin él, el precio de la base.
+  // Precio ya cobrado (oferta de bump o upsell, plan por transferencia, cupón). Sin él, el precio de la base.
   amountCents?: number;
+  couponCode?: string | null;
 }) {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
@@ -130,10 +132,10 @@ export async function grantAccess(input: {
   if (split.amount > 0) {
     const sale = await sql`
       INSERT INTO valux_sales (
-        id, kind, buyer_id, seller_id, course_id, product_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym
+        id, kind, buyer_id, seller_id, course_id, product_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym, coupon_code
       ) VALUES (
         ${crypto.randomUUID()}, ${input.kind}, ${personId}, ${sellerId}, ${courseId}, ${productId},
-        ${split.amount}, ${split.fee}, ${split.seller}, ${input.paypalOrderId || null}, ${periodYm()}
+        ${split.amount}, ${split.fee}, ${split.seller}, ${input.paypalOrderId || null}, ${periodYm()}, ${input.couponCode || null}
       )
       ON CONFLICT (paypal_order_id) DO NOTHING
       RETURNING id
@@ -175,6 +177,7 @@ export async function grantAccess(input: {
 
   const path = await destination(input.kind, input.itemId);
   if (fresh) {
+    await countCouponUse(input.couponCode);
     await notifyAccess(email, name, path);
     await trackEvent('purchase_completed', {
       id: input.paypalOrderId ? `purchase_completed:${input.paypalOrderId}` : undefined,
@@ -232,6 +235,7 @@ async function grantFromIntent(intent: Intent, orderId: string) {
     monthlyCents: donation ? Math.round(intent.amountCents / Math.max(1, intent.months)) : undefined,
     amountCents: donation ? undefined : intent.amountCents - intent.bumpCents,
     paypalOrderId: orderId,
+    couponCode: intent.couponCode || null,
   });
   await grantBump({ ...intent, orderId });
   return result;

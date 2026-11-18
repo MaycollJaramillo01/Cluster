@@ -16,7 +16,7 @@ La sesión es la cookie `cluster_dashboard`: HttpOnly, path `/dashboard`, 14 dí
 | --- | --- |
 | Superadmin | Todo, incluido **Equipo** (`/dashboard/equipo`) |
 | Admin de contenido | Academia: cursos, lecciones, misiones, retos, marketplace, blog, revisiones, fichas, personas |
-| Finanzas | Academia: ventas, transferencias, comprobantes, clientes, membresías, liquidaciones y contratos, donaciones, comisión, analítica |
+| Finanzas | Academia: ventas, cupones, transferencias, comprobantes, clientes, membresías, liquidaciones y contratos, donaciones, comisión, analítica |
 | Profesor | `/dashboard/profesor` (sus cursos, alumnos, ventas y liquidaciones) y el temario de sus propios cursos, con «Pedir revisión» |
 
 - Los correos de la lista del servidor (`PRIMARY_ADMIN` en `session.ts`, `DASHBOARD_ALLOWED_EMAILS`, `CAREERS_ADMIN_EMAILS`) son superadmin fijos.

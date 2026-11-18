@@ -5,13 +5,7 @@ import { completeLesson, submitMission } from '@/lib/valux/actions';
 import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/valux/data';
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
 import { trackEvent } from '@/lib/valux/events';
-
-function embed(url: string) {
-  if (url.includes('youtu.be/')) return `https://www.youtube.com/embed/${url.split('youtu.be/')[1]?.split('?')[0]}`;
-  if (url.includes('watch?v=')) return `https://www.youtube.com/embed/${url.split('watch?v=')[1]?.split('&')[0]}`;
-  if (url.includes('vimeo.com/')) return `https://player.vimeo.com/video/${url.split('vimeo.com/')[1]?.split('?')[0]}`;
-  return '';
-}
+import { lessonEmbed } from '@/lib/valux/video';
 
 function missionNote(code: string | undefined, xp: number) {
   if (!code) return '';
@@ -48,7 +42,8 @@ export default async function LessonPlayer({
   const index = lessons.findIndex((item) => item.slug === lessonSlug);
   const previous = lessons[index - 1];
   const next = lessons[index + 1];
-  const video = embed(detail.lesson.video_url);
+  // El enlace firmado solo se genera para quien puede ver la clase.
+  const video = open ? lessonEmbed(detail.lesson.video_url) : '';
   const sections = [
     ...detail.course.sections.map((section) => ({
       id: section.id,
@@ -70,7 +65,7 @@ export default async function LessonPlayer({
         </header>
         <div className="bg-black">
           {open && video ? (
-            <iframe className="aspect-video w-full" src={video} title={detail.lesson.title} allowFullScreen />
+            <iframe className="aspect-video w-full" src={video} title={detail.lesson.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
           ) : (
             <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-white/70">
               {open ? 'Esta clase no tiene video. El contenido está debajo.' : locked ? 'Completa la clase anterior para abrir esta.' : 'Esta clase es de un curso de pago.'}
@@ -81,7 +76,7 @@ export default async function LessonPlayer({
           <h1 className="text-2xl font-medium">{detail.lesson.title}</h1>
           {open ? (
             <div className="mt-6 max-w-3xl space-y-6">
-              {!video && detail.lesson.video_url ? <a className="text-sm underline" href={detail.lesson.video_url}>Abrir video</a> : null}
+              {!video && detail.lesson.video_url && !detail.lesson.video_url.startsWith('bunny:') && !detail.lesson.video_url.includes('mediadelivery.net') ? <a className="text-sm underline" href={detail.lesson.video_url}>Abrir video</a> : null}
               {detail.lesson.content ? <p className="whitespace-pre-wrap text-sm leading-relaxed text-black/75">{detail.lesson.content}</p> : null}
               {detail.lesson.resources.length > 0 ? (
                 <section>

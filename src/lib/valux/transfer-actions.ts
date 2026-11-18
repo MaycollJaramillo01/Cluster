@@ -50,7 +50,7 @@ export async function approveTransfer(formData: FormData) {
   const taken = await sql`
     UPDATE valux_transfers SET status = 'aprobada', bank_ref = ${bankRef}, reviewed_at = now()
     WHERE id = ${id} AND status IN ('pendiente', 'vencida')
-    RETURNING reference, kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents
+    RETURNING reference, kind, item_id, buyer_name, buyer_email, amount_cents, months, bump_item_id, bump_cents, coupon_code
   `;
   const row = taken[0] as
     | {
@@ -63,6 +63,7 @@ export async function approveTransfer(formData: FormData) {
         months: number;
         bump_item_id: string | null;
         bump_cents: number;
+        coupon_code: string | null;
       }
     | undefined;
   if (!row) redirect('/dashboard/cursos/transferencias');
@@ -77,6 +78,7 @@ export async function approveTransfer(formData: FormData) {
       amountCents: row.kind === 'donacion' ? undefined : Number(row.amount_cents) - (Number(row.bump_cents) || 0),
       // Mismo id para cualquier reintento: grantAccess no crea una segunda venta.
       paypalOrderId: `tr_${row.reference}`,
+      couponCode: row.coupon_code,
     });
     await grantBump({
       bumpItemId: row.bump_item_id || '',

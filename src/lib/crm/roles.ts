@@ -30,12 +30,13 @@ const FINANCE = [
   '/dashboard/cursos/donaciones',
   '/dashboard/cursos/ajustes',
   '/dashboard/cursos/analitica',
+  '/dashboard/cursos/cupones',
   '/dashboard/comprobante',
 ];
 
 // Subpáginas de /dashboard/cursos que no son un curso.
 const SECTIONS = new Set([
-  'ajustes', 'analitica', 'blog', 'clientes', 'donaciones', 'fichas', 'liquidaciones', 'marketplace',
+  'ajustes', 'analitica', 'blog', 'cupones', 'clientes', 'donaciones', 'fichas', 'liquidaciones', 'marketplace',
   'personas', 'retos', 'revisiones', 'suscripcion', 'transferencias', 'ventas',
 ]);
 
