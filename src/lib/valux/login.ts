@@ -44,11 +44,18 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
   const recent = await sql`
     SELECT count(*) AS n FROM academia_logins WHERE email = ${email} AND created_at > now() - interval '1 hour'
   `;
-  if (Number((recent[0] as { n?: unknown } | undefined)?.n) >= MAX_PER_HOUR) return id;
+  // Los avisos van solo a los registros del servidor: la pantalla sigue igual para no revelar qué correos existen.
+  if (Number((recent[0] as { n?: unknown } | undefined)?.n) >= MAX_PER_HOUR) {
+    console.warn('Entrada a la academia: ese correo ya pidió 5 códigos en la última hora');
+    return id;
+  }
   const person = await getPersonByEmail(email);
   const name = (input.name || '').trim();
   const phone = input.phone || '';
-  if (!person && !(input.register && name && phone)) return id;
+  if (!person && !(input.register && name && phone)) {
+    console.warn(`Entrada a la academia: correo sin cuenta (${input.register ? 'registro sin nombre o WhatsApp válido' : 'pestaña Entrar'})`);
+    return id;
+  }
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
   const token = randomBytes(32).toString('base64url');

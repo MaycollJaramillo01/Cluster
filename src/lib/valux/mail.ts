@@ -7,7 +7,7 @@ export async function sendAcademiaMail(to: string, subject: string, text: string
     return;
   }
   try {
-    await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${key}`,
@@ -20,7 +20,10 @@ export async function sendAcademiaMail(to: string, subject: string, text: string
         text,
       }),
     });
-  } catch {
+    // Resend responde 4xx sin lanzar error (remitente sin verificar, clave mala): queda en los registros de Vercel.
+    if (!response.ok) console.error(`Resend rechazó el correo (${response.status}): ${(await response.text()).slice(0, 300)}`);
+  } catch (error) {
     // El acceso ya quedó guardado. El correo no debe deshacer la compra.
+    console.error('Resend no respondió:', error);
   }
 }
