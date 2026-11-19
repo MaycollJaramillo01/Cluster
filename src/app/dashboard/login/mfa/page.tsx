@@ -57,19 +57,12 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
         <div className="mt-6 bg-paper p-6 text-ink sm:p-8">
           <h1 className="font-display text-5xl tracking-wide">{enrolled ? 'Segundo paso' : 'Protege tu cuenta'}</h1>
           {enrolled ? (
-            <>
-              <p className="mt-2 text-base text-black/65">Abre tu app de autenticación y escribe el código de Cluster.</p>
-              <div className="mt-8">{codeForm}</div>
-            </>
+            <div className="mt-8">{codeForm}</div>
           ) : (
             <>
-              <p className="mt-2 text-base text-black/65">
-                El panel pide un código de tu celular además de la contraseña. Se configura una sola vez.
-              </p>
               <ol className="mt-8 space-y-8">
                 <li>
                   <p className="text-sm font-medium">1. Escanea el código QR con tu app de autenticación</p>
-                  <p className="mt-1 text-sm text-black/55">Google Authenticator, Microsoft Authenticator, 1Password o Authy.</p>
                   <div className="mt-4 flex justify-center border border-black/10 bg-white p-3">
                     <div
                       role="img"
@@ -84,7 +77,6 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
                   >
                     Abrir en mi app de autenticación
                   </a>
-                  <p className="mt-1.5 text-center text-sm text-black/55">Si estás en el celular, agrégalo con un toque.</p>
                   <details className="group mt-3 text-sm">
                     <summary className="cursor-pointer list-none text-black/60 underline underline-offset-2 hover:text-ink [&::-webkit-details-marker]:hidden">
                       ¿No puedes escanearlo? Escribe la clave a mano
@@ -102,8 +94,7 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
               </ol>
             </>
           )}
-          <p className="mt-8 text-sm text-black/55">
-            ¿Perdiste el celular? Un superadmin puede reiniciar tu doble factor desde Equipo.{' '}
+          <p className="mt-8 text-sm">
             <Link className="font-medium text-ink underline underline-offset-2" href="/dashboard/login">Volver</Link>
           </p>
         </div>

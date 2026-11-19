@@ -8,7 +8,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton';
 const messages: Record<string, string> = {
   clave: 'El correo o la contraseña no coinciden.',
   corta: 'La contraseña tiene al menos 8 caracteres.',
-  setup: 'Primera entrada: usa la contraseña de administrador del servidor (CAREERS_ADMIN_PASSWORD).',
+  setup: 'El correo o la contraseña no coinciden.',
   google: 'Google no completó el ingreso. Intenta de nuevo.',
   config: 'El ingreso con Google no está configurado.',
   lista: 'No hay correos autorizados.',
