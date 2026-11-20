@@ -10,8 +10,10 @@ type PageParams = { params: Promise<{ locale: string; vertical: string }> };
 // Solo existen las verticales de content.ts, y solo en español.
 export const dynamicParams = false;
 
-export function generateStaticParams({ params }: { params: { locale: string } }) {
-  return params.locale === 'es' ? verticals.map((v) => ({ vertical: v.slug })) : [];
+// Devuelve locale y vertical juntos: desde Next 15.5 el `params` del padre no llegaba con
+// locale y la ruta quedaba sin páginas (404 con dynamicParams = false).
+export function generateStaticParams() {
+  return verticals.map((v) => ({ locale: 'es', vertical: v.slug }));
 }
 
 export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
