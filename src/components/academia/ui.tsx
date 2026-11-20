@@ -77,7 +77,7 @@ const COUPON_ERRORS: Record<string, string> = {
 };
 
 export function payNote(code?: string) {
-  if (code === 'pasarela') return 'El cobro queda listo cuando se cargue la clave de Stripe o los datos para transferencia.';
+  if (code === 'pasarela') return 'El pago no está disponible en este momento.';
   if (code === 'datos') return 'Faltan el nombre y el correo.';
   if (code?.startsWith('cupon-')) return COUPON_ERRORS[code.slice(6)] || 'Ese cupón no aplica.';
   if (code) return 'No se pudo completar el pago.';

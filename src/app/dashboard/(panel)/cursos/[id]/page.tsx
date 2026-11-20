@@ -81,7 +81,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       <form action={updateCourseMeta} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <input type="hidden" name="id" value={course.id} />
         <Field label="Descripción"><textarea className={fieldClass} name="description" rows={3} defaultValue={course.description} /></Field>
-        <Field label="Precio USD"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue={(course.price_cents / 100).toFixed(2)} /></Field>
+        <Field label="Precio (L)"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue={(course.price_cents / 100).toFixed(2)} /></Field>
         <Field label="Portada"><input className={fieldClass} name="cover_url" defaultValue={course.cover_url || ''} placeholder="https://" /></Field>
         <Field label="O sube la portada"><input className={fieldClass} name="cover" type="file" accept="image/*" /></Field>
         <Field label="Profesor">
@@ -103,7 +103,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             {others.map((item) => <option key={item.id} value={item.id}>{item.title}{item.published ? '' : ' (borrador)'}</option>)}
           </select>
         </Field>
-        <Field label="Precio del bump USD">
+        <Field label="Precio del bump (L)">
           <input className={fieldClass} name="bump_price" type="number" min="0" step="0.01" defaultValue={(detail.course.bump_cents / 100).toFixed(2)} />
         </Field>
         <Field label="Upsell: oferta después de pagar">
@@ -112,7 +112,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             {others.map((item) => <option key={item.id} value={item.id}>{item.title}{item.published ? '' : ' (borrador)'}</option>)}
           </select>
         </Field>
-        <Field label="Precio del upsell USD">
+        <Field label="Precio del upsell (L)">
           <input className={fieldClass} name="upsell_price" type="number" min="0" step="0.01" defaultValue={(detail.course.upsell_cents / 100).toFixed(2)} />
         </Field>
         <button className={btn} type="submit">Guardar ficha</button>

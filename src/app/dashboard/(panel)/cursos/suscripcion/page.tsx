@@ -22,7 +22,7 @@ export default async function SuscripcionAdmin() {
             <Field label="Nombre">
               <input className={fieldClass} name="name" required defaultValue={plan.name} />
             </Field>
-            <Field label="Precio mensual USD">
+            <Field label="Precio mensual (L)">
               <input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue={(plan.price_cents / 100).toFixed(2)} />
             </Field>
             <Field label="Beneficios (uno por línea)">

@@ -36,7 +36,6 @@ export default async function FichaPage({ searchParams }: { searchParams: Promis
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-10">
       <h1 className="font-display text-5xl tracking-wide">Ficha de asociado</h1>
-      <p className="max-w-xl text-sm text-black/60">La junta revisa la ficha. Si la acepta, la persona queda como asociado.</p>
       {query.ok ? <p className="text-sm text-brand">Ficha enviada.</p> : null}
       {query.error ? <p className="text-sm">Faltan el nombre y el correo.</p> : null}
       <form action={submitApplication} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">

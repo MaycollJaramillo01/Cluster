@@ -43,7 +43,6 @@ export default async function ProductPage({
               action={buyProduct}
               hidden={{ id: product.id }}
               label={product.price_cents > 0 ? 'Comprar ahora' : 'Obtener'}
-              note={product.price_cents > 0 ? payHint(pay) : 'Acceso inmediato'}
               pay={product.price_cents > 0 ? pay : undefined}
             />
           )}

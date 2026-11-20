@@ -1,5 +1,6 @@
 import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 import { connection } from 'next/server';
+import { migrateAcademiaCurrency } from '@/lib/valux/currency-migration';
 
 export type Sql = NeonQueryFunction<false, false>;
 
@@ -700,6 +701,8 @@ async function migrate(sql: Sql) {
     await clearStoredRows(sql);
     await sql`DELETE FROM crm_meta WHERE key = 'seeded'`;
   }
+  // La base local puede ser la de producción: el cambio se hace con el despliegue.
+  if (process.env.NODE_ENV === 'production') await migrateAcademiaCurrency(sql);
 }
 
 const STORED_TABLES = [

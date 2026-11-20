@@ -4,7 +4,7 @@ import { getIntent } from './data';
 import { paypalOrderPaid, paypalSubscriptionPayments, readPaypalSubscription } from './paypal';
 import { readStripeCheckout, readStripeSubscription } from './stripe';
 import { queueAcademiaMail } from './mail-queue';
-import { academyMoney, payoutDueAt, periodYm, previousYm, splitCents } from './money';
+import { academyMoney, CURRENCY, usdToHnlCents, payoutDueAt, periodYm, previousYm, splitCents } from './money';
 import { advanceStage, trackEvent } from './events';
 import { countCouponUse } from './coupons';
 
@@ -261,7 +261,7 @@ export async function fulfillStripeSession(sessionId: string): Promise<Fulfilled
   const intent = await getIntent(sessionId);
   if (!intent) return null;
   const session = await readStripeCheckout(sessionId);
-  if (!session.paid || session.amountCents + 1 < intent.amountCents) return null;
+  if (!session.paid || session.currency !== CURRENCY || session.amountCents + 1 < intent.amountCents) return null;
   if (!session.subscriptionId) return grantFromIntent(intent, sessionId);
 
   const subscription = await readStripeSubscription(session.subscriptionId).catch(() => null);
@@ -287,7 +287,7 @@ export async function fulfillPaypalOrder(orderId: string): Promise<Fulfilled> {
   if (!intent) return null;
   if (!(await alreadyPaid(orderId))) {
     const order = await paypalOrderPaid(orderId);
-    if (!order.paid || order.amountCents + 1 < intent.amountCents) return null;
+    if (!order.paid || usdToHnlCents(order.amountCents) + 1 < intent.amountCents) return null;
   }
   return grantFromIntent(intent, orderId);
 }
@@ -306,7 +306,7 @@ export async function fulfillPaypalSubscription(subscriptionId: string): Promise
   });
   const payments = await paypalSubscriptionPayments(subscriptionId).catch(() => []);
   for (const payment of payments) {
-    await recordSubscriptionPayment({ gatewayId: subscriptionId, paymentId: payment.id, amountCents: payment.amountCents });
+    await recordSubscriptionPayment({ gatewayId: subscriptionId, paymentId: payment.id, amountCents: usdToHnlCents(payment.amountCents) });
   }
   return { personId, path: '/academia/suscripcion?ok=1' };
 }

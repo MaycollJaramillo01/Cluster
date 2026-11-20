@@ -11,6 +11,8 @@
     "test:lms": "node scripts/check-lms-isolated.cjs"
   },
   "dependencies": {
+    "@astryxdesign/core": "^0.7.15",
+    "@astryxdesign/theme-neutral": "^0.7.16",
     "@neondatabase/serverless": "^1.2.0",
     "@react-map/honduras": "^1.0.9",
     "@vercel/blob": "^2.8.0",
@@ -24,6 +26,7 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
+    "@astryxdesign/cli": "^0.7.16",
     "@types/node": "22.10.7",
     "@types/qrcode": "^1.5.5",
     "@types/react": "19.0.7",

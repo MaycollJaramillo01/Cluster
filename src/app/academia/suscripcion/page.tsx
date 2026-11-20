@@ -26,8 +26,8 @@ export default async function SuscripcionPage({
       <div className="max-w-2xl space-y-2">
         <h1 className="font-display text-5xl tracking-wide">Membresías</h1>
         <p className="text-sm text-black/60">
-          Pago mensual en dólares (USD). Con tarjeta se renueva sola cada mes y la cancelas cuando quieras; por transferencia pagas un mes por vez.
-          Si cancelas, los beneficios siguen hasta el final del mes pagado. Los cursos que compraste aparte son tuyos para siempre.
+          Pago mensual en lempiras. Cancela cuando quieras.
+          El acceso se mantiene hasta el final del período pagado.
         </p>
       </div>
       {query.ok ? <p className="text-sm text-brand">Membresía activa.</p> : null}

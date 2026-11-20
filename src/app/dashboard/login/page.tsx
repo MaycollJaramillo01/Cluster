@@ -1,41 +1,13 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { dashboardUnlocked } from '@/lib/crm/access';
-import { googleConfigured } from '@/lib/crm/session';
-import { LoginForm } from '@/components/dashboard/LoginForm';
+import { dashboardSession } from '@/lib/crm/session';
+import { homeFor } from '@/lib/crm/roles';
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  if (await dashboardUnlocked()) redirect('/dashboard');
+// Un único acceso visual para maestros y estudiantes; conserva los enlaces antiguos.
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const session = await dashboardSession();
+  if (session) redirect(homeFor(session.role));
   const params = await searchParams;
-
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-ink px-4 py-12 text-white">
-      <div className="w-full max-w-md">
-        <p className="font-brand text-sm font-extrabold uppercase tracking-[0.22em]">Cluster</p>
-        <div className="mt-6 bg-paper p-6 text-ink sm:p-8">
-          <h1 className="font-display text-5xl tracking-wide">Entra al panel</h1>
-          <div className="mt-8">
-            <LoginForm initialError={params.error || ''} />
-          </div>
-          {googleConfigured() ? (
-            <>
-              <div className="my-6 flex items-center gap-3 text-sm text-black/45">
-                <span className="h-px flex-1 bg-black/10" />o<span className="h-px flex-1 bg-black/10" />
-              </div>
-              <Link href="/dashboard/auth/google" className="flex h-12 w-full items-center justify-center border border-black/20 bg-white text-base transition-colors duration-150 hover:border-ink">
-                Entrar con Google
-              </Link>
-            </>
-          ) : null}
-        </div>
-        <p className="mt-6 text-sm text-white/60">
-          ¿Eres alumno? <Link href="/academia/entrar" className="text-white underline underline-offset-2">Entra a la academia</Link>
-        </p>
-      </div>
-    </main>
-  );
+  const query = new URLSearchParams({ acceso: 'maestros' });
+  if (params.error) query.set('error', params.error);
+  redirect(`/academia/entrar?${query}`);
 }

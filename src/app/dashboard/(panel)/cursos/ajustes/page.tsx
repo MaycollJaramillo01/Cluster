@@ -8,7 +8,6 @@ export default async function ComisionPage() {
   return (
     <div className="space-y-4">
       <PageTitle title="Comisión" />
-      <p className="max-w-xl text-sm text-black/60">De cada curso o producto vendido, este porcentaje se queda en la academia. El resto queda para el profesor o el creador y entra en la liquidación del mes. Sin datos bancarios, la transferencia no aparece como forma de pago.</p>
       <form action={saveSettings} className="flex flex-wrap items-end gap-3 border border-black/10 bg-white p-4">
         <Field label="Comisión %">
           <input className={fieldClass} name="commission" type="number" min="0" max="100" defaultValue={settings.commission_percent} />

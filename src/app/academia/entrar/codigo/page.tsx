@@ -11,14 +11,6 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:py-16">
       <h1 className="font-display text-5xl tracking-wide">Revisa tu correo</h1>
-      <p className="mt-3 text-base text-black/65">
-        Si el correo tiene cuenta, o la acabas de crear, te llegó un código de 6 dígitos. Sirve una vez y vence en 15 minutos.
-      </p>
-      {devCode ? (
-        <p className="mt-6 border border-black/15 bg-white px-4 py-3 text-sm">
-          Modo local, sin envío de correos. Tu código es <span className="font-medium tabular-nums">{devCode}</span>.
-        </p>
-      ) : null}
       <form action={confirmLoginCode} className="mt-8 space-y-5">
         <input type="hidden" name="l" value={query.l || ''} />
         <div>
@@ -39,7 +31,7 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
           />
           {error ? (
             <p id="code-error" role="alert" className="mt-2 text-sm text-[#b42318]">
-              El código no coincide, venció o tuvo demasiados intentos. Revísalo o pide uno nuevo.
+              Código incorrecto o vencido.
             </p>
           ) : null}
         </div>

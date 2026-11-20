@@ -59,7 +59,7 @@ export default async function LiquidacionesPage() {
               </select>
             </Field>
             <Field label="Comisión academia (%)"><input className={fieldClass} name="percent" type="number" min="0" max="100" defaultValue={person.percent ?? ''} /></Field>
-            <Field label="Honorario mensual (USD)"><input className={fieldClass} name="fee" inputMode="decimal" defaultValue={person.fee_cents ? (person.fee_cents / 100).toFixed(2) : ''} /></Field>
+            <Field label="Honorario mensual (L)"><input className={fieldClass} name="fee" inputMode="decimal" defaultValue={person.fee_cents ? (person.fee_cents / 100).toFixed(2) : ''} /></Field>
             <Field label="Reembolsos">
               <select className={fieldClass} name="refund" defaultValue={person.refund}>
                 <option value="descontar">Se descuentan al profesor</option>

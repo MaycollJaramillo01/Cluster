@@ -1,8 +1,16 @@
-// La academia cobra en dólares (decisión del cliente, 2026-11-17). Montos en centavos.
-export const CURRENCY = 'USD';
+export const CURRENCY = 'HNL';
+export const USD_HNL_RATE = 27;
+
+export function usdToHnlCents(cents: number) {
+  return Math.round(cents * USD_HNL_RATE);
+}
+
+export function hnlToUsdCents(cents: number) {
+  return Math.round(cents / USD_HNL_RATE);
+}
 
 export function academyMoney(cents: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: CURRENCY }).format((Number(cents) || 0) / 100);
+  return new Intl.NumberFormat('es-HN', { style: 'currency', currency: CURRENCY, currencyDisplay: 'narrowSymbol' }).format((Number(cents) || 0) / 100);
 }
 
 export function splitCents(amountCents: number, commissionPercent: number) {

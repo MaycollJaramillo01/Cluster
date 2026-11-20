@@ -21,7 +21,7 @@ export default async function CuponesPage({ searchParams }: { searchParams: Prom
         <input className={`${fieldClass} uppercase`} name="code" required defaultValue={item?.code} readOnly={Boolean(item)} />
       </Field>
       <Field label="Descuento %"><input className={fieldClass} name="percent" type="number" min="0" max="100" defaultValue={item?.percent || ''} /></Field>
-      <Field label="O monto fijo USD"><input className={fieldClass} name="amount" inputMode="decimal" defaultValue={item?.amount_cents ? (item.amount_cents / 100).toFixed(2) : ''} /></Field>
+      <Field label="O monto fijo (L)"><input className={fieldClass} name="amount" inputMode="decimal" defaultValue={item?.amount_cents ? (item.amount_cents / 100).toFixed(2) : ''} /></Field>
       <Field label="Curso">
         <select className={fieldClass} name="course_id" defaultValue={item?.course_id || ''}>
           <option value="">Todos los cursos</option>

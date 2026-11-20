@@ -12,7 +12,7 @@ export default async function MarketplaceAdmin() {
       <PageTitle title="Marketplace" action={<Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href="/academia/marketplace">Ver catálogo</Link>} />
       <form action={createProduct} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <Field label="Título"><input className={fieldClass} name="title" required /></Field>
-        <Field label="Precio USD"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue="0" /></Field>
+        <Field label="Precio (L)"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue="0" /></Field>
         <Field label="Creador">
           <select className={fieldClass} name="creator_id" defaultValue="">
             <option value="">Sin creador</option>

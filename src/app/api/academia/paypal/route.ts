@@ -6,6 +6,7 @@ import {
   setSubscriptionEnded,
 } from '@/lib/valux/fulfill';
 import { readPaypalSubscription, verifyPaypalEvent } from '@/lib/valux/paypal';
+import { usdToHnlCents } from '@/lib/valux/money';
 
 export const runtime = 'nodejs';
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
         const known = await recordSubscriptionPayment({
           gatewayId: subscriptionId,
           paymentId: id,
-          amountCents: Math.round(Number(resource.amount?.total || 0) * 100),
+          amountCents: usdToHnlCents(Math.round(Number(resource.amount?.total || 0) * 100)),
           periodEnd: subscription?.periodEnd ?? null,
         });
         // Primer cobro antes de que el alumno vuelva: se da de alta desde el intento.

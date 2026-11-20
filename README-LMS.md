@@ -35,6 +35,10 @@ Desde la ficha del curso el equipo puede:
 
 ## Menú del panel
 
+La portada de `/academia` separa hasta cuatro cursos destacados, el catálogo completo con búsqueda y filtros (todos, gratis y de pago), y una entrada al Marketplace, que también muestra los cursos publicados. En `/dashboard/cursos`, «La selección de la portada» permite guardar hasta cuatro cursos publicados, sin repetir, en el orden elegido. La selección vive en `crm_meta.academia_featured_courses`. Hasta guardar una selección, se muestran los primeros cuatro publicados; nunca se inventan cursos para completar posiciones.
+
+El acceso de `/academia/entrar` tiene pestañas para **Estudiantes** (código por correo y registro) y **Maestros** (`?acceso=maestros`, contraseña y segundo factor). `/dashboard/login` conserva enlaces antiguos y redirige al acceso docente manteniendo los errores. Cada cuenta conserva los permisos de su rol; elegir una pestaña no asigna permisos.
+
 Todo cuelga de `/dashboard/cursos`.
 
 | Pantalla | Qué hace |
@@ -96,11 +100,11 @@ La prueba `scripts/check-academia.ts` recorre esto, los planes y los reembolsos 
 
 **Curso gratis** (precio 0, también con cupón del 100 %): requiere sesión verificada por código. `checkout` usa el nombre y correo de esa sesión e ignora los del formulario. Sin sesión redirige al registro. No pide pasarela ni crea cookies de acceso.
 
-**Moneda:** la academia cobra en **dólares (USD)**. Los montos se guardan en centavos (`CURRENCY` y `academyMoney` en `src/lib/valux/money.ts`).
+**Moneda:** la academia cobra en **lempiras (HNL)**. Los montos se guardan en centavos de lempira (`CURRENCY` y `academyMoney` en `src/lib/valux/money.ts`).
 
 **Curso, producto, suscripción o donación con precio:** hace falta Stripe o datos para transferencia. PayPal ya no cobra en la academia; solo queda para liquidar a creadores y para suscripciones viejas.
 
-1. **Tarjeta:** con `STRIPE_SECRET_KEY`, el checkout es de Stripe en USD y vuelve por `/academia/stripe/retorno`. Se guarda un intento en `valux_intents`.
+1. **Tarjeta:** con `STRIPE_SECRET_KEY`, el checkout es de Stripe en HNL y vuelve por `/academia/stripe/retorno`. Se guarda un intento en `valux_intents`.
 2. **Transferencia:** aparece cuando el panel tiene datos bancarios (Comisión → Datos para transferencia). Crea una fila en `valux_transfers` con referencia `CL-XXXXXXXX`, vence a las 72 horas y le manda al comprador los datos por correo. En `/academia/transferencia/<referencia>` ve las instrucciones y puede subir el comprobante (privado, solo se abre desde el panel). **No da acceso**: finanzas aprueba en `/dashboard/cursos/transferencias` después de ver el depósito en el banco y anota el número de operación. Aprobar llama a `grantAccess` con el id `tr_<referencia>`, así un doble clic no crea dos ventas. La tarea programada vence las pendientes; una vencida todavía se puede aprobar.
 
 Con los dos métodos disponibles, el formulario pregunta cuál usar.
@@ -360,3 +364,7 @@ scripts/check-seguimiento.ts   Prueba de cupones, seguimientos, Bunny y alertas
 El webhook de Stripe se registra en `https://www.cluster.marketing/api/academia/stripe`, con los ocho eventos de la tabla anterior y `STRIPE_WEBHOOK_SECRET` en producción.
 
 Pendientes por decisión del propietario: datos bancarios, biblioteca y clave de Bunny Stream, videos y nuevos cursos. Transferencias permanece oculta sin banco configurado. La compra real con tarjeta de prueba requiere credenciales del entorno de pruebas de Stripe; la clave disponible es de producción.
+
+Referencias del rediseño: [Coursera](https://www.coursera.org/) para separar destacados, búsqueda y catálogo; [MasterClass](https://www.masterclass.com/) para dar peso a las portadas y mantener una jerarquía editorial; [Canvas](https://www.instructure.com/canvas/login) para explicar el acceso antes de pedir credenciales. En Inspo se revisaron las capturas móviles de Coursera y MasterClass y la descripción de sus composiciones de escritorio; las páginas públicas también se abrieron. La implementación conserva la tipografía y los colores de Cluster. La nueva selección se prueba en `scripts/check-academia-catalog.ts`, incluido en `npm run test:lms`.
+
+La conversión inicial USD → HNL usa L27 por US$1 como referencia comercial redondeada. En producción, la primera inicialización convierte precios, ofertas, cupones fijos y honorarios de forma atómica, guarda los originales en `crm_meta.academia_currency_backup_usd` y marca `academia_currency=HNL`. Si hay ventas, suscripciones, órdenes, transferencias, liquidaciones o donaciones previas, detiene la conversión para exigir conciliación; no reetiqueta operaciones. Los reintentos no vuelven a multiplicar precios. PayPal recibe o liquida USD con conversión explícita. `scripts/check-academia-currency.ts` comprueba la migración y el rechazo de pagos en otra moneda.

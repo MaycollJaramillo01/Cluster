@@ -6,6 +6,7 @@ import { storedFile } from '@/lib/valux/upload';
 import { crm } from './db';
 import { requireCourseEditor } from './course-access';
 import { requireDashboard } from './session';
+import { FEATURED_KEY } from '@/lib/valux/catalog';
 
 function field(formData: FormData, key: string) {
   return String(formData.get(key) ?? '').trim();
@@ -44,6 +45,19 @@ function slugify(value: string) {
 
 function refresh() {
   revalidatePath('/dashboard', 'layout');
+  revalidatePath('/academia', 'layout');
+}
+
+export async function saveFeaturedCourses(formData: FormData) {
+  await requireDashboard('contenido');
+  const ids = formData.getAll('featured').map(String).filter(Boolean);
+  if (ids.length > 4 || new Set(ids).size !== ids.length) redirect('/dashboard/cursos?error=destacados');
+  const sql = await crm();
+  const published = ids.length ? await sql`SELECT id FROM lms_courses WHERE published AND id = ANY(${ids})` : [];
+  if (published.length !== ids.length) redirect('/dashboard/cursos?error=destacados');
+  await sql`INSERT INTO crm_meta (key, value) VALUES (${FEATURED_KEY}, ${JSON.stringify(ids)}) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`;
+  refresh();
+  redirect('/dashboard/cursos?guardado=destacados');
 }
 
 async function lessonCourse(lessonId: string) {

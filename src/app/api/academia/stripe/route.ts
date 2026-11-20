@@ -4,6 +4,7 @@ import { alertTeam } from '@/lib/valux/alerts';
 import { sendPaymentFailed } from '@/lib/valux/followups';
 import { fulfillStripeSession, recordSubscriptionPayment, revokeSales, setSubscriptionEnded } from '@/lib/valux/fulfill';
 import { cancelStripeSubscription, stripePaymentRefs, verifyStripeEvent } from '@/lib/valux/stripe';
+import { CURRENCY } from '@/lib/valux/money';
 
 export const runtime = 'nodejs';
 
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
         await fulfillStripeSession(ref(item.id));
         break;
       case 'invoice.paid': {
+        if (String(item.currency).toUpperCase() !== CURRENCY) throw new Error('Moneda de factura incorrecta');
         const parent = item.parent as { subscription_details?: { subscription?: unknown } } | undefined;
         const subscriptionId = ref(item.subscription) || ref(parent?.subscription_details?.subscription);
         const lines = item.lines as { data?: { period?: { end?: number } }[] } | undefined;
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
         if (item.refunded) await revokeCharge(ref(item.payment_intent), ref(item.invoice), 'reembolso');
         break;
       case 'invoice.payment_failed':
+        if (String(item.currency).toUpperCase() !== CURRENCY) throw new Error('Moneda de factura incorrecta');
         // Renovación rechazada: aviso al alumno con el enlace de Stripe para pagar con otra tarjeta.
         await sendPaymentFailed({
           invoiceId: ref(item.id),

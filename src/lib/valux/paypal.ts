@@ -1,4 +1,5 @@
 import { crm } from '@/lib/crm/db';
+import { hnlToUsdCents } from './money';
 
 export function paypalConfigured() {
   return Boolean(process.env.PAYPAL_CLIENT_ID?.trim() && process.env.PAYPAL_CLIENT_SECRET?.trim());
@@ -61,7 +62,7 @@ export async function createPaypalOrder(input: {
     purchase_units: [
       {
         description: input.description.slice(0, 120),
-        amount: { currency_code: 'USD', value: dollars(input.amountCents) },
+        amount: { currency_code: 'USD', value: dollars(hnlToUsdCents(input.amountCents)) },
       },
     ],
     application_context: {
@@ -122,14 +123,14 @@ async function paypalPlan(amountCents: number) {
 
   const plan = await paypalApi<{ id?: string }>('/v1/billing/plans', {
     product_id: productId,
-    name: `Academia mensual ${dollars(amountCents)} USD`,
+    name: `Academia mensual ${dollars(hnlToUsdCents(amountCents))} USD`,
     billing_cycles: [
       {
         frequency: { interval_unit: 'MONTH', interval_count: 1 },
         tenure_type: 'REGULAR',
         sequence: 1,
         total_cycles: 0,
-        pricing_scheme: { fixed_price: { value: dollars(amountCents), currency_code: 'USD' } },
+        pricing_scheme: { fixed_price: { value: dollars(hnlToUsdCents(amountCents)), currency_code: 'USD' } },
       },
     ],
     payment_preferences: { auto_bill_outstanding: true, payment_failure_threshold: 1 },
@@ -217,7 +218,7 @@ export async function sendPaypalPayout(input: { payoutId: string; email: string;
       items: [
         {
           recipient_type: 'EMAIL',
-          amount: { value: dollars(input.amountCents), currency: 'USD' },
+          amount: { value: dollars(hnlToUsdCents(input.amountCents)), currency: 'USD' },
           receiver: input.email,
           sender_item_id: input.payoutId,
         },

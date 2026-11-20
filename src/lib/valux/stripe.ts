@@ -82,6 +82,7 @@ export async function listPaidStripeSessions(since: number) {
 export async function readStripeCheckout(sessionId: string) {
   const data = await stripeApi<{
     payment_status?: string;
+    currency?: string;
     amount_total?: number;
     metadata?: Record<string, string>;
     subscription?: string | { id?: string } | null;
@@ -92,6 +93,7 @@ export async function readStripeCheckout(sessionId: string) {
   return {
     paid: data.payment_status === 'paid',
     amountCents: Number(data.amount_total) || 0,
+    currency: data.currency?.toUpperCase() || '',
     metadata: data.metadata || {},
     subscriptionId: ref(data.subscription),
     invoiceId: ref(data.invoice),

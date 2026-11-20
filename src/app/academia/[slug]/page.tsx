@@ -65,7 +65,7 @@ export default async function CourseCatalogPage({
           </p>
         </section>
 
-        {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo. Abre la primera clase del temario.</p> : null}
+        {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo.</p> : null}
         {query.terminado && finished ? (
           <p className="border border-brand/40 bg-white px-4 py-3 text-sm">
             Terminaste el curso: completaste {lessonCount === 1 ? 'la clase' : `las ${lessonCount} clases`}.
@@ -128,7 +128,6 @@ export default async function CourseCatalogPage({
         <section className="border border-black/10 bg-white p-5">
           <h2 className="text-xl font-medium">Instructor</h2>
           <p className="mt-3 font-medium">{course.teacher_name || 'Academia'}</p>
-          <p className="mt-1 text-sm text-black/55">Dicta este curso en la academia.</p>
         </section>
       </div>
 
@@ -167,7 +166,6 @@ export default async function CourseCatalogPage({
               action={buyCourse}
               hidden={{ slug: course.slug }}
               label={course.price_cents > 0 ? 'Inscribirme ahora' : 'Empezar gratis'}
-              note={course.price_cents > 0 ? payHint(pay) : 'Acceso inmediato a las clases'}
               pay={course.price_cents > 0 || course.bump ? pay : undefined}
               bump={course.bump}
               coupon={course.price_cents > 0}

@@ -11,7 +11,6 @@ export default async function VentasPage({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-6">
       <PageTitle title="Ventas" />
-      <p className="max-w-2xl text-sm text-black/60">Cada venta parte el monto: la comisión de la academia y el resto para quien creó el curso o el producto. El catálogo cobra con tarjeta (Stripe) o por transferencia; las transferencias se aprueban en Transferencias. Desde aquí también puedes anotar un pago ya recibido.</p>
       {query.error === 'plan' ? <p className="text-sm text-red-700">Para registrar una membresía elige el plan.</p> : null}
       <form action={recordSale} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <Field label="Nombre"><input className={fieldClass} name="name" required /></Field>
