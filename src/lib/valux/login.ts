@@ -69,7 +69,7 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
     )
   `;
   if (localMail()) devCodes.set(id, code);
-  await sendAcademiaMail(
+  const delivered = await sendAcademiaMail(
     email,
     `Tu código para entrar: ${code}`,
     [
@@ -83,6 +83,10 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
       `Sirve una sola vez y vence en ${LOGIN_MINUTES} minutos. Si no lo pediste, ignora este correo.`,
     ].join('\n'),
   );
+  if (!delivered) {
+    await sql`UPDATE academia_logins SET expires_at = now() WHERE id = ${id}`;
+    throw new Error('No se pudo enviar el código');
+  }
   return id;
 }
 

@@ -13,7 +13,7 @@ async function main() {
   // Fuera de Next no hay request: connection() se anula para la prueba.
   const req = require('next/server');
   req.connection = async () => {};
-  const { crm } = await import('@/lib/crm/db');
+  const { crm } = require('@/lib/crm/db') as typeof import('@/lib/crm/db');
   const { gradeMission, parseMission, publicMission } = await import('@/lib/valux/mission');
   const { currentStep, totpCode, verifyTotp } = await import('@/lib/crm/totp');
   const { areaForPath, canDo } = await import('@/lib/crm/roles');

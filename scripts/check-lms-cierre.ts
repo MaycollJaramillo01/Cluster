@@ -19,7 +19,7 @@ async function main() {
     return realFetch(input, init);
   }) as typeof fetch;
 
-  const { crm } = await import('@/lib/crm/db');
+  const { crm } = require('@/lib/crm/db') as typeof import('@/lib/crm/db');
   const { areaForPath, canDo } = await import('@/lib/crm/roles');
   const { computePayouts, grantAccess, recordSubscriptionPayment, revokeSales, setSubscriptionEnded } = await import('@/lib/valux/fulfill');
   const { previousYm } = await import('@/lib/valux/money');

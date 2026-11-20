@@ -15,7 +15,9 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
       ? register
         ? 'Revisa tu nombre, el WhatsApp con código de país y el correo.'
         : 'Revisa el correo: parece incompleto.'
-      : '';
+      : query.error === 'correo'
+        ? 'No pudimos enviar el código. Intenta de nuevo en unos minutos.'
+        : '';
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:py-16">

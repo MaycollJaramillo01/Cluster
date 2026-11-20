@@ -2,7 +2,7 @@ import { put } from '@vercel/blob';
 import { crm } from '@/lib/crm/db';
 import { site } from '@/lib/site';
 import type { GrantKind } from './fulfill';
-import { sendAcademiaMail } from './mail';
+import { queueAcademiaMail } from './mail-queue';
 import { academyMoney } from './money';
 import { stripeConfigured } from './stripe';
 
@@ -107,7 +107,7 @@ export async function createTransfer(input: {
   if (!reference) throw new Error('No se pudo generar la referencia');
 
   const bank = await bankDetails();
-  await sendAcademiaMail(
+  await queueAcademiaMail(
     input.email,
     `Datos para tu transferencia (${reference})`,
     [

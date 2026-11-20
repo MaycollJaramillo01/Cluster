@@ -94,7 +94,7 @@ La sesión del alumno es la cookie `cluster_academia`: el id de `valux_people`, 
 
 La prueba `scripts/check-academia.ts` recorre esto, los planes y los reembolsos contra la base de `.env.local`, y borra lo que crea.
 
-**Curso gratis** (precio 0): `checkout` llama a `grantAccess` en el momento, deja la cookie y entra al curso. No pide pasarela.
+**Curso gratis** (precio 0, también con cupón del 100 %): requiere sesión verificada por código. `checkout` usa el nombre y correo de esa sesión e ignora los del formulario. Sin sesión redirige al registro. No pide pasarela ni crea cookies de acceso.
 
 **Moneda:** la academia cobra en **dólares (USD)**. Los montos se guardan en centavos (`CURRENCY` y `academyMoney` en `src/lib/valux/money.ts`).
 
@@ -116,7 +116,7 @@ El alumno ve su suscripción en `/academia/suscripcion` y puede cancelar la reno
 
 ## Webhooks
 
-El retorno del navegador no basta: si el alumno cierra la pestaña o el mes se renueva, solo avisa el webhook. Los dos llaman a las mismas funciones de `fulfill.ts` y son idempotentes por id de pasarela.
+El retorno del navegador no inicia sesión: pagar con un correo no prueba ser su dueño. El alumno entra con el código enviado a su correo. El retorno del navegador no basta: si el alumno cierra la pestaña o el mes se renueva, solo avisa el webhook. Los dos llaman a las mismas funciones de `fulfill.ts` y son idempotentes por id de pasarela.
 
 | Pasarela | URL | Eventos |
 | --- | --- | --- |
@@ -227,7 +227,7 @@ Funcionan así:
 | Membresía por vencer | Vence en 3 días o menos y no se renueva sola (`no_renueva` o sin pasarela) | Todos |
 | Cobro fallido | Webhook `invoice.payment_failed`; trae el enlace de Stripe para pagar con otra tarjeta | Todos |
 
-La llave se reserva antes de mandar el correo. Si Resend falla, ese correo no se reintenta.
+La llave se reserva antes de mandar el correo y solo cuenta como enviado cuando Resend lo acepta. Si falla, se libera para la siguiente corrida (los avisos de cobro fallido se recuperan con el reintento del webhook). Una reserva interrumpida vence en 5 minutos. Los errores temporales se reintentan hasta 3 veces con una llave de idempotencia estable y timeout. Los correos de acceso tras una compra y las instrucciones de transferencia quedan en `academia_mail_queue`; el cron recupera los pendientes cada 5 minutos. Un código cuyo envío falla se invalida y la pantalla permite volver a pedirlo.
 
 **Primer deploy:** quien ya tenga un curso sin avanzar recibe su primer recordatorio en las primeras corridas, de a 50 cada 5 minutos.
 
@@ -351,3 +351,12 @@ scripts/check-seguimiento.ts   Prueba de cupones, seguimientos, Bunny y alertas
 | `BUNNY_STREAM_LIBRARY_ID` | Biblioteca de Bunny Stream para lecciones cargadas como `bunny:<id>` |
 | `BUNNY_STREAM_TOKEN_KEY` | Clave de firma de Bunny («Token authentication key»); sin ella el video de Bunny va sin firma |
 | `ALERT_EMAIL` | A quién llegan las alertas de errores (por defecto el correo del sitio) |
+
+
+## Validación aislada y pendientes de operación
+
+`npm run test:lms` ejecuta las pruebas de acceso, planes, pagos simulados, reembolsos, retos, permisos, correos y seguridad en un esquema PostgreSQL temporal. El esquema se elimina al terminar; los correos y las pasarelas se interceptan. Necesita `DATABASE_URL` con permiso de crear esquemas. No procesa contactos ni ventas reales.
+
+El webhook de Stripe se registra en `https://www.cluster.marketing/api/academia/stripe`, con los ocho eventos de la tabla anterior y `STRIPE_WEBHOOK_SECRET` en producción.
+
+Pendientes por decisión del propietario: datos bancarios, biblioteca y clave de Bunny Stream, videos y nuevos cursos. Transferencias permanece oculta sin banco configurado. La compra real con tarjeta de prueba requiere credenciales del entorno de pruebas de Stripe; la clave disponible es de producción.

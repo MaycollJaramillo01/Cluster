@@ -1,0 +1,102 @@
+export {};
+import assert from 'node:assert/strict';
+
+async function main() {
+  if (!process.env.LMS_TEST_SCHEMA) throw new Error('Usa npm run test:lms para aislar los datos');
+  const sql = await (require('@/lib/crm/db') as typeof import('@/lib/crm/db')).crm();
+  const jar = new Map<string, string>();
+  const headers = require('next/headers');
+  headers.cookies = async () => ({ get: (key: string) => jar.has(key) ? { value: jar.get(key) } : undefined, set: () => { throw new Error('No se debe crear sesión en el checkout'); } });
+  headers.headers = async () => new Headers({ host: 'localhost:3000' });
+  require('next/cache').revalidatePath = () => {};
+  let statuses: number[] = [];
+  let calls: string[] = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async (_url: RequestInfo | URL, init?: RequestInit) => {
+    if (!String(_url).includes('api.resend.com')) return realFetch(_url, init);
+    calls.push(String((init?.headers as Record<string, string>)['Idempotency-Key']));
+    return new Response('{}', { status: statuses.shift() || 200 });
+  }) as typeof fetch;
+  const { buyCourse, completeLesson, submitMission } = await import('@/lib/valux/actions');
+  const { ACADEMIA_COOKIE, academiaCookieValue } = await import('@/lib/valux/session');
+  const { academiaLanding } = await import('@/lib/valux/landing');
+  const { sendAcademiaMail } = await import('@/lib/valux/mail');
+  const { sendPaymentFailed } = await import('@/lib/valux/followups');
+  const { startLogin } = await import('@/lib/valux/login');
+  const form = (data: Record<string, string>) => { const f = new FormData(); Object.entries(data).forEach(([k,v]) => f.set(k,v)); return f; };
+  async function redirect(action: () => Promise<void>) {
+    try { await action(); } catch (e) {
+      const digest = (e as { digest?: string }).digest || '';
+      if (!digest.startsWith('NEXT_REDIRECT;')) throw e;
+      return digest.split(';')[2];
+    }
+    throw new Error('Se esperaba una redirección');
+  }
+  const ok = (label: string) => console.log(`OK   ${label}`);
+  await sql`INSERT INTO valux_people(id,name,email) VALUES ('actor','Alumno','actor@example.test'),('victim','Otra persona','victim@example.test')`;
+  await sql`INSERT INTO lms_courses(id,slug,title,price_cents,published) VALUES ('free','free','Gratis',0,true)`;
+  const checkout = () => buyCourse(form({ slug: 'free', name: 'Otra persona', email: 'victim@example.test' }));
+  assert.match(await redirect(checkout), /academia\/entrar/);
+  assert.equal((await sql`SELECT id FROM lms_enrollments`).length, 0);
+  ok('anónimo no se inscribe ni obtiene la sesión del correo escrito');
+  jar.set(ACADEMIA_COOKIE, academiaCookieValue('actor'));
+  await redirect(checkout);
+  assert.equal((await sql`SELECT person_id FROM lms_enrollments`)[0].person_id, 'actor');
+  assert.equal((await sql`SELECT id FROM lms_enrollments WHERE person_id='victim'`).length, 0);
+  ok('la inscripción usa al alumno verificado, aunque el formulario mande otro correo');
+  const landing = academiaLanding({ personId: 'victim', path: '/academia/free' }, 'https://cluster.marketing');
+  assert.equal(landing.headers.get('set-cookie'), null);
+  ok('un retorno de pago no permite suplantar al comprador');
+  await sql`INSERT INTO lms_lessons(id,course_id,slug,title,sort_order,mission,points) VALUES ('first','free','first','Primera',1,'Pregunta\n- Mal\n* Bien',10),('second','free','second','Segunda',2,'',10)`;
+  await redirect(() => completeLesson(form({ lesson_id: 'second' })));
+  assert.equal((await sql`SELECT id FROM lms_progress`).length, 0);
+  await redirect(() => completeLesson(form({ lesson_id: 'first' })));
+  assert.equal((await sql`SELECT id FROM lms_progress`).length, 0);
+  await redirect(() => submitMission(form({ lesson_id: 'first', q0: '0' })));
+  assert.equal((await sql`SELECT id FROM lms_progress`).length, 0);
+  await redirect(() => submitMission(form({ lesson_id: 'first', q0: '1' })));
+  await redirect(() => submitMission(form({ lesson_id: 'first', q0: '1' })));
+  await redirect(() => completeLesson(form({ lesson_id: 'second' })));
+  assert.equal((await sql`SELECT id FROM lms_progress`).length, 2);
+  assert.equal((await sql`SELECT xp FROM lms_xp WHERE person_id='actor'`)[0].xp, 10);
+  ok('no se saltan clases ni misiones; aprobar completa el curso y suma XP una vez');
+  calls = []; statuses = [503,200];
+  assert.equal(await sendAcademiaMail('actor@example.test', 'Prueba', 'texto'), true);
+  assert.equal(calls.length, 2); assert.equal(calls[0], calls[1]);
+  ok('error temporal reintentado con la misma llave para evitar duplicados');
+  calls = []; statuses = [403];
+  assert.equal(await sendAcademiaMail('actor@example.test', 'Prueba', 'texto'), false);
+  assert.equal(calls.length, 1);
+  ok('un rechazo de configuración no se trata como envío correcto');
+  statuses = [403];
+  await assert.rejects(startLogin({ email: 'actor@example.test', register: false, base: 'http://localhost' }));
+  assert.equal((await sql`SELECT id FROM academia_logins WHERE expires_at > now()`).length, 0);
+  ok('un código cuyo correo falla queda invalidado');
+  const failed = { invoiceId: 'in_retry', email: 'actor@example.test', amountCents: 800, payUrl: '' };
+  statuses = [503,503,503];
+  await assert.rejects(sendPaymentFailed(failed));
+  assert.equal((await sql`SELECT key FROM academia_followups WHERE key='cobro:in_retry'`).length, 0);
+  statuses = []; calls = [];
+  assert.equal(await sendPaymentFailed(failed), true);
+  assert.equal(await sendPaymentFailed(failed), false);
+  assert.equal(calls.length, 1);
+  ok('un seguimiento fallido se recupera y uno aceptado no se duplica');
+  await sql`INSERT INTO academia_followups(key,email,kind,delivered,sent_at) VALUES ('cobro:in_stale','actor@example.test','cobro',false,now()-interval '6 minutes')`;
+  assert.equal(await sendPaymentFailed({ ...failed, invoiceId: 'in_stale' }), true);
+  const concurrent = await Promise.all([sendPaymentFailed({ ...failed, invoiceId: 'in_parallel' }),sendPaymentFailed({ ...failed, invoiceId: 'in_parallel' })]);
+  assert.equal(concurrent.filter(Boolean).length, 1);
+  ok('una reserva interrumpida se recupera y dos procesos no duplican el correo');
+  const { queueAcademiaMail, retryAcademiaMail } = await import('@/lib/valux/mail-queue');
+  statuses = [503,503,503];
+  assert.equal(await queueAcademiaMail('actor@example.test', 'Acceso pendiente', 'Tu compra está guardada'), false);
+  const queued = (await sql`SELECT id FROM academia_mail_queue WHERE sent_at IS NULL`)[0];
+  assert.ok(queued);
+  await sql`UPDATE academia_mail_queue SET next_attempt = now() WHERE id = ${queued.id}`;
+  statuses = []; calls = [];
+  assert.equal((await retryAcademiaMail()).sent, 1);
+  assert.equal((await retryAcademiaMail()).pending, 0);
+  assert.equal(calls.length, 1);
+  ok('un correo de compra queda pendiente y el cron lo recupera una sola vez');
+
+}
+main().catch((error) => { console.error(error); process.exitCode = 1; });

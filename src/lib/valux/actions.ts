@@ -62,12 +62,17 @@ async function checkout(input: {
   if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
   const bump = input.bump && input.bump.cents > 0 ? input.bump : null;
   const total = input.amountCents + (bump?.cents || 0);
+  if (total <= 0) {
+    // Una inscripción gratuita tampoco demuestra que el correo del formulario sea propio.
+    const person = await getPerson(await academiaPersonId());
+    if (!person?.is_active) redirect('/academia/entrar?modo=registro');
+    input = { ...input, email: person.email, name: person.name };
+  }
   await trackEvent('checkout_started', { email: input.email, data: { kind: input.kind, item: input.itemId || null, cents: total, method: input.method || 'tarjeta' } });
   if (bump) await trackEvent('bump_accepted', { email: input.email, data: { item: bump.itemId, cents: bump.cents } });
   await advanceStage({ email: input.email }, 'checkout');
   if (total <= 0) {
     const result = await grantAccess(input);
-    if (result.personId) await setAcademiaPerson(result.personId);
     refresh();
     redirect(result.path);
   }
@@ -269,7 +274,12 @@ export async function enterAcademia(formData: FormData) {
       consentWhatsapp: field(formData, 'consent_whatsapp') === '1',
     };
   }
-  const id = await startLogin({ email, name, phone, register, base, lead });
+  let id = '';
+  try {
+    id = await startLogin({ email, name, phone, register, base, lead });
+  } catch {
+    redirect(`/academia/entrar?error=correo${register ? '&modo=registro' : ''}`);
+  }
   redirect(`/academia/entrar/codigo?l=${id}`);
 }
 

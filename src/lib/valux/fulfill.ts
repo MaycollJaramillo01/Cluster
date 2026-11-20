@@ -3,7 +3,7 @@ import { crm } from '@/lib/crm/db';
 import { getIntent } from './data';
 import { paypalOrderPaid, paypalSubscriptionPayments, readPaypalSubscription } from './paypal';
 import { readStripeCheckout, readStripeSubscription } from './stripe';
-import { sendAcademiaMail } from './mail';
+import { queueAcademiaMail } from './mail-queue';
 import { academyMoney, payoutDueAt, periodYm, previousYm, splitCents } from './money';
 import { advanceStage, trackEvent } from './events';
 import { countCouponUse } from './coupons';
@@ -203,7 +203,7 @@ async function notifyAccess(email: string, name: string, path: string) {
   const host = h.get('x-forwarded-host') || h.get('host') || '';
   const proto = h.get('x-forwarded-proto') || 'https';
   const link = host ? `${proto}://${host}${path.split('?')[0]}` : path;
-  await sendAcademiaMail(
+  await queueAcademiaMail(
     email,
     'Tu acceso en la academia',
     `Hola ${name},\n\nYa quedó tu acceso. Entrá aquí:\n${link}\n\nSi te pide correo, usá este mismo.\n`,

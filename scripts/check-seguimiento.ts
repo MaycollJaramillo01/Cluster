@@ -25,7 +25,7 @@ async function main() {
   process.env.RESEND_API_KEY = process.env.RESEND_API_KEY || 'test';
   const sent = (to: string) => mails.filter((mail) => mail.to === to).length;
 
-  const { crm } = await import('@/lib/crm/db');
+  const { crm } = require('@/lib/crm/db') as typeof import('@/lib/crm/db');
   const { applyCoupon } = await import('@/lib/valux/coupons');
   const { grantAccess } = await import('@/lib/valux/fulfill');
   const { trackEvent } = await import('@/lib/valux/events');

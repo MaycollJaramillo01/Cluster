@@ -6,6 +6,7 @@ import { expireTransfers } from '@/lib/valux/transfers';
 import { nightlyReconcile } from '@/lib/valux/reconcile';
 import { alertTeam } from '@/lib/valux/alerts';
 import { runFollowups } from '@/lib/valux/followups';
+import { retryAcademiaMail } from '@/lib/valux/mail-queue';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,7 @@ export async function GET(request: Request) {
   try {
     result.automations = await processDue(200);
     result.expired = await expireTransfers();
+    result.mailQueue = await retryAcademiaMail();
     // La conciliación falla sola: no detiene las campañas.
     const reconcile = await nightlyReconcile().catch(async (error) => {
       await alertTeam('conciliación nocturna', error);

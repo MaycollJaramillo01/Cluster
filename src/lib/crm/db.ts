@@ -635,6 +635,17 @@ const STATEMENTS = [
     kind TEXT NOT NULL,
     sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE academia_followups ADD COLUMN IF NOT EXISTS delivered BOOLEAN NOT NULL DEFAULT true`,
+  `CREATE TABLE IF NOT EXISTS academia_mail_queue (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    body TEXT NOT NULL,
+    sent_at TIMESTAMPTZ,
+    locked_until TIMESTAMPTZ,
+    next_attempt TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
   `CREATE INDEX IF NOT EXISTS academia_followups_email_idx ON academia_followups (email, kind, sent_at)`,
 ];
 
