@@ -158,18 +158,18 @@ export default async function LessonPlayer({
   const sectionTitle = groups.find((group) => group.lessons.some((item) => item.id === lesson.id))?.title;
   const summary = personId ? `${doneCount} de ${order.length} completadas` : `${order.length} ${order.length === 1 ? 'clase' : 'clases'}`;
   const syllabus = (
-    <Syllabus groups={groups} current={lessonSlug} done={done} isLocked={(item) => canRead && !access.unlocked.has(item.id)} href={href} summary={summary} />
+    <Syllabus groups={groups} current={lessonSlug} done={done} isLocked={(item) => !canRead || !access.unlocked.has(item.id)} href={href} summary={summary} />
   );
 
   // Una sola acción principal: "Siguiente clase" completa esta clase y abre la otra.
   // Con misión pendiente, la acción lleva a la misión; nunca a una clase cerrada.
-  const arrow = <Icon name="arrow-right" size={16} />;
+  const arrow = <Icon name="arrow-right" size={16} aria-hidden="true" />;
   let primary: ReactNode = null;
   let status = '';
   if (!canRead) {
-    primary = <Link href={`/academia/${slug}`} className={primaryClass}>Ver el curso</Link>;
+    primary = <Link href={`/academia/${slug}?inscripcion=1`} className={primaryClass}>Inscribirme al curso {arrow}</Link>;
   } else if (!personId) {
-    primary = <Link href="/academia/entrar" className={primaryClass}>Entra para guardar tu avance</Link>;
+    primary = <Link href={`/academia/entrar?modo=registro&curso=${encodeURIComponent(slug)}`} className={primaryClass}>Entra para guardar tu avance</Link>;
   } else if (locked) {
     primary = pending ? <Link href={href(pending)} className={primaryClass}>Ir a la clase pendiente {arrow}</Link> : null;
   } else if (shown && !isDone) {

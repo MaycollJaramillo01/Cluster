@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Icon } from '@/components/ui/Icon';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { academyMoney } from '@/lib/valux/money';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 
@@ -61,8 +61,24 @@ export function Page({ children, className = '' }: { children: ReactNode; classN
   return <div className={`mx-auto w-full max-w-6xl px-4 py-10 ${className}`}>{children}</div>;
 }
 
-export function Cover({ url, title }: { url: string; title: string }) {
-  if (url) return <img src={url} alt="" className="aspect-video w-full bg-ink object-cover" />;
+const courseArt: Record<string, { icon: IconName; tone: string }> = {
+  'publicidad-facebook-instagram': { icon: 'megaphone', tone: 'bg-ink text-brand' },
+  'diseno-contenido-canva': { icon: 'pen', tone: 'bg-paper-dim text-ink' },
+  'ventas-por-whatsapp': { icon: 'whatsapp', tone: 'bg-brand text-ink' },
+  'ia-automatizacion-negocios': { icon: 'bot', tone: 'bg-ink-700 text-brand' },
+  'meta-ads-negocios-locales': { icon: 'target', tone: 'bg-paper-soft text-ink' },
+};
+
+export function Cover({ url, title, slug = '', eager = false }: { url: string; title: string; slug?: string; eager?: boolean }) {
+  const art = courseArt[slug];
+  if (art && (!url || url.startsWith('/assets/videos/services/'))) {
+    return (
+      <figure aria-hidden="true" className={`relative grid aspect-video w-full place-items-center overflow-hidden ${art.tone}`}>
+        <Icon name={art.icon} strokeWidth={1.25} className="h-20 w-20 sm:h-24 sm:w-24" />
+      </figure>
+    );
+  }
+  if (url) return <img src={url} alt="" width={640} height={360} loading={eager ? 'eager' : 'lazy'} className="aspect-video w-full bg-ink object-cover" />;
   return (
     <div className="flex aspect-video items-end bg-ink p-4" aria-hidden>
       <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-white/50">{title ? 'Curso' : ''}</span>
@@ -80,6 +96,7 @@ const COUPON_ERRORS: Record<string, string> = {
 export function payNote(code?: string) {
   if (code === 'pasarela') return 'El pago no está disponible en este momento.';
   if (code === 'datos') return 'Faltan el nombre y el correo.';
+  if (code === 'curso') return 'Este curso ya no está disponible. Vuelve al catálogo para elegir otro.';
   if (code?.startsWith('cupon-')) return COUPON_ERRORS[code.slice(6)] || 'Ese cupón no aplica.';
   if (code) return 'No se pudo completar el pago.';
   return '';
@@ -88,14 +105,14 @@ export function payNote(code?: string) {
 export type PayOptions = { card: boolean; transfer: boolean };
 
 // Tarjeta (Stripe) o transferencia. Con un solo método disponible no se pregunta.
-export function PayMethod({ options }: { options?: PayOptions }) {
+export function PayMethod({ options, method }: { options?: PayOptions; method?: string }) {
   if (!options) return null;
   if (options.card && options.transfer) {
     return (
       <fieldset className="space-y-2 text-sm">
         <legend className="mb-1 text-xs text-black/45">Forma de pago</legend>
-        <label className="flex items-center gap-2"><input type="radio" name="metodo" value="tarjeta" defaultChecked /> Tarjeta</label>
-        <label className="flex items-center gap-2"><input type="radio" name="metodo" value="transferencia" /> Transferencia bancaria</label>
+        <label className="flex min-h-11 items-center gap-2"><input type="radio" name="metodo" value="tarjeta" defaultChecked={method !== 'transferencia'} /> Tarjeta</label>
+        <label className="flex min-h-11 items-center gap-2"><input type="radio" name="metodo" value="transferencia" defaultChecked={method === 'transferencia'} /> Transferencia bancaria</label>
       </fieldset>
     );
   }
@@ -121,9 +138,9 @@ export function Checkout({
   bump,
   coupon,
   contact,
-  couponOpen,
+  feedback,
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (formData: FormData) => void | Promise<void>;
   hidden?: Record<string, string>;
   label: string;
   note?: string;
@@ -133,11 +150,13 @@ export function Checkout({
   // Campo de cupón (solo cursos de pago).
   coupon?: boolean;
   contact?: { name: string; email: string };
-  couponOpen?: boolean;
+  feedback?: { error?: string; coupon: string; method: string; bump: boolean };
 }) {
   const field = 'min-h-11 w-full border border-black/25 bg-white px-3 py-2.5 text-base text-ink placeholder:text-black/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink';
+  const couponError = feedback?.error?.startsWith('cupon-') ? payNote(feedback.error) : '';
   return (
     <form action={action} className="space-y-4 [color-scheme:light]">
+      {feedback?.error && !couponError ? <p role="alert" tabIndex={-1} data-checkout-error className="border border-black/15 bg-paper p-3 text-sm">{payNote(feedback.error)} Revisa los datos o intenta de nuevo.</p> : null}
       {Object.entries(hidden || {}).map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />
       ))}
@@ -147,11 +166,11 @@ export function Checkout({
       </label>
       <label className="block text-sm">
         <span className="mb-1.5 block font-medium text-ink">Correo</span>
-        <input name="email" type="email" autoComplete="email" defaultValue={contact?.email} required className={field} />
+        <input name="email" type="email" autoComplete="email" spellCheck={false} defaultValue={contact?.email} required className={field} />
       </label>
       {bump ? (
         <label className="flex items-start gap-3 border border-dashed border-brand bg-brand/5 p-3 text-sm">
-          <input type="checkbox" name="bump" value="1" className="mt-1" />
+          <input type="checkbox" name="bump" value="1" defaultChecked={feedback?.bump} className="mt-1" />
           <span>
             <span className="block font-medium">Agrega {bump.title} por {academyMoney(bump.cents)}</span>
             <span className="block text-xs text-black/55">Opcional. Se suma a este mismo pago.</span>
@@ -159,15 +178,16 @@ export function Checkout({
         </label>
       ) : null}
       {coupon ? (
-        <details open={couponOpen || undefined}>
+        <details open={Boolean(feedback?.coupon || couponError) || undefined}>
           <summary className="w-fit cursor-pointer text-sm font-medium underline underline-offset-4">Tengo un cupón</summary>
           <label className="mt-3 block text-sm">
             <span className="mb-1.5 block font-medium text-ink">Código del cupón</span>
-            <input name="cupon" autoComplete="off" className={`${field} uppercase`} />
+            <input name="cupon" autoComplete="off" spellCheck={false} defaultValue={feedback?.coupon} aria-invalid={Boolean(couponError) || undefined} aria-describedby={couponError ? 'checkout-coupon-error' : undefined} data-checkout-error={couponError ? '' : undefined} className={`${field} uppercase`} />
           </label>
+          {couponError ? <p id="checkout-coupon-error" role="alert" className="mt-2 text-sm text-red-800">{couponError} Revisa el código o continúa sin cupón.</p> : null}
         </details>
       ) : null}
-      <PayMethod options={pay} />
+      <PayMethod options={pay} method={feedback?.method} />
       <SubmitButton pending="Procesando…">{label}</SubmitButton>
       {note ? <p className="text-center text-xs text-black/45">{note}</p> : null}
     </form>

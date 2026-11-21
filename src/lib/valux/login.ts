@@ -5,6 +5,7 @@ import { getPersonByEmail } from './data';
 import { ensurePerson } from './fulfill';
 import { saveLead, trackEvent, type Lead } from './events';
 import { sendAcademiaMail } from './mail';
+import { courseLoginQuery } from './login-course';
 
 const LOGIN_MINUTES = 15;
 const MAX_ATTEMPTS = 5;
@@ -36,7 +37,7 @@ export function cleanPhone(raw: string) {
 }
 
 // Siempre devuelve un id: la pantalla del código es igual exista o no el correo (sin enumeración).
-export async function startLogin(input: { email: string; name?: string; phone?: string; register: boolean; base: string; lead?: Lead }) {
+export async function startLogin(input: { email: string; name?: string; phone?: string; register: boolean; base: string; lead?: Lead; course?: string }) {
   const id = crypto.randomUUID();
   const email = input.email.trim().toLowerCase();
   if (!email.includes('@')) return id;
@@ -78,7 +79,7 @@ export async function startLogin(input: { email: string; name?: string; phone?: 
       `Tu código para entrar a la academia de Cluster es: ${code}`,
       '',
       'O abre este enlace:',
-      `${input.base}/academia/entrar/confirmar?t=${token}`,
+      `${input.base}/academia/entrar/confirmar?t=${token}${courseLoginQuery(input.course)}`,
       '',
       `Sirve una sola vez y vence en ${LOGIN_MINUTES} minutos. Si no lo pediste, ignora este correo.`,
     ].join('\n'),

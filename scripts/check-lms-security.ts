@@ -6,18 +6,27 @@ async function main() {
   const sql = await (require('@/lib/crm/db') as typeof import('@/lib/crm/db')).crm();
   const jar = new Map<string, string>();
   const headers = require('next/headers');
-  headers.cookies = async () => ({ get: (key: string) => jar.has(key) ? { value: jar.get(key) } : undefined, set: () => { throw new Error('No se debe crear sesión en el checkout'); } });
+  let allowSession = false;
+  headers.cookies = async () => ({
+    get: (key: string) => jar.has(key) ? { value: jar.get(key) } : undefined,
+    set: (key: string, value: string) => {
+      assert.ok(allowSession, 'El checkout no debe crear sesión');
+      jar.set(key, value);
+    },
+  });
   headers.headers = async () => new Headers({ host: 'localhost:3000' });
   require('next/cache').revalidatePath = () => {};
   let statuses: number[] = [];
   let calls: string[] = [];
+  let mailText = '';
   const realFetch = globalThis.fetch;
   globalThis.fetch = (async (_url: RequestInfo | URL, init?: RequestInit) => {
     if (!String(_url).includes('api.resend.com')) return realFetch(_url, init);
     calls.push(String((init?.headers as Record<string, string>)['Idempotency-Key']));
+    mailText = JSON.parse(String(init?.body)).text;
     return new Response('{}', { status: statuses.shift() || 200 });
   }) as typeof fetch;
-  const { buyCourse, completeLesson, submitMission } = await import('@/lib/valux/actions');
+  const { buyCourse, buyCourseWithFeedback, completeLesson, confirmLoginCode, confirmLoginLink, enterAcademia, submitMission } = await import('@/lib/valux/actions');
   const { ACADEMIA_COOKIE, academiaCookieValue } = await import('@/lib/valux/session');
   const { academiaLanding } = await import('@/lib/valux/landing');
   const { sendAcademiaMail } = await import('@/lib/valux/mail');
@@ -44,6 +53,22 @@ async function main() {
   assert.equal((await sql`SELECT person_id FROM lms_enrollments`)[0].person_id, 'actor');
   assert.equal((await sql`SELECT id FROM lms_enrollments WHERE person_id='victim'`).length, 0);
   ok('la inscripción usa al alumno verificado, aunque el formulario mande otro correo');
+  jar.delete(ACADEMIA_COOKIE);
+  const loginPath = await redirect(() => enterAcademia(form({ email: 'actor@example.test', curso: 'free' })));
+  const login = new URL(loginPath, 'http://localhost');
+  const code = mailText.match(/\b\d{6}\b/)?.[0] || '';
+  const id = login.searchParams.get('l') || '';
+  assert.equal(login.searchParams.get('curso'), 'free');
+  const wrong = code === '000000' ? '111111' : '000000';
+  assert.match(await redirect(() => confirmLoginCode(form({ l: id, code: wrong, curso: 'free' }))), /error=1&curso=free$/);
+  allowSession = true;
+  assert.equal(await redirect(() => confirmLoginCode(form({ l: id, code, curso: 'free' }))), '/academia/free');
+  await redirect(() => enterAcademia(form({ email: 'actor@example.test', curso: 'free' })));
+  const link = new URL(mailText.match(/https?:\/\/\S+/)?.[0] || '');
+  assert.equal(link.searchParams.get('curso'), 'free');
+  assert.equal(await redirect(() => confirmLoginLink(form({ t: link.searchParams.get('t') || '', curso: 'free' }))), '/academia/free');
+  allowSession = false;
+  ok('la confirmación por código o enlace vuelve al curso elegido y conserva el curso al reintentar');
   const landing = academiaLanding({ personId: 'victim', path: '/academia/free' }, 'https://cluster.marketing');
   assert.equal(landing.headers.get('set-cookie'), null);
   ok('un retorno de pago no permite suplantar al comprador');
@@ -68,6 +93,11 @@ async function main() {
   await sql`INSERT INTO crm_staff(email,name,role) VALUES ('teacher@example.test','Profesor','profesor'),('finance@example.test','Finanzas','finanzas')`;
   await sql`INSERT INTO valux_people(id,name,email,role) VALUES ('teacher','Profesor','teacher@example.test','profesor')`;
   await sql`INSERT INTO lms_courses(id,slug,title,price_cents,published,teacher_id) VALUES ('paid','paid','De pago',49500,true,'teacher')`;
+  const invalidCoupon = await buyCourseWithFeedback({ attempt: 0 }, form({
+    slug: 'paid', name: 'Comprador', email: 'buyer@example.test', cupon: 'NO-EXISTE', metodo: 'transferencia', bump: '1',
+  }));
+  assert.deepEqual(invalidCoupon, { error: 'cupon-invalido', attempt: 1, name: 'Comprador', email: 'buyer@example.test', coupon: 'NO-EXISTE', method: 'transferencia', bump: true });
+  ok('un cupón inválido devuelve los datos y las opciones elegidas sin iniciar un pago');
   await sql`INSERT INTO lms_lessons(id,course_id,slug,title,sort_order) VALUES ('paid-first','paid','first','Video de prueba',1)`;
   jar.set(SESSION_COOKIE, issueSession('teacher@example.test', 'Profesor', 'profesor'));
   const video = 'https://iframe.mediadelivery.net/embed/123456/11111111-2222-4333-8444-555555555555';
@@ -120,7 +150,7 @@ async function main() {
   ok('un rechazo de configuración no se trata como envío correcto');
   statuses = [403];
   await assert.rejects(startLogin({ email: 'actor@example.test', register: false, base: 'http://localhost' }));
-  assert.equal((await sql`SELECT id FROM academia_logins WHERE expires_at > now()`).length, 0);
+  assert.equal((await sql`SELECT id FROM academia_logins WHERE used_at IS NULL AND expires_at > now()`).length, 0);
   ok('un código cuyo correo falla queda invalidado');
   const failed = { invoiceId: 'in_retry', email: 'actor@example.test', amountCents: 800, payUrl: '' };
   statuses = [503,503,503];

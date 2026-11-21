@@ -25,7 +25,7 @@ export default async function MyCoursesPage() {
             const pct = course.lessons ? Math.round((course.done / course.lessons) * 100) : 0;
             return (
               <Link key={course.slug} href={`/academia/${course.slug}`} className="border border-black/10 bg-white">
-                <Cover url={course.cover_url} title={course.title} />
+                <Cover url={course.cover_url} title={course.title} slug={course.slug} />
                 <div className="space-y-3 p-4">
                   <p className="font-medium leading-snug">{course.title}</p>
                   <p className="text-sm text-black/50">{course.teacher_name || 'Academia'}</p>

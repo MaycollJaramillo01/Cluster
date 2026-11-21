@@ -20,7 +20,7 @@ La presentación dura unos 20 minutos. Utiliza dos ventanas o perfiles de navega
 
 ## Apertura · 2 minutos
 
-1. Entra al catálogo y muestra los cursos destacados.
+1. Entra al catálogo. La selección de cursos destacados aparece primero en la misma lista.
 2. Busca **Canva** para enseñar cómo se encuentra un curso por nombre. Borra la búsqueda y muestra los filtros de cursos gratis y de pago.
 3. Abre un curso y señala el temario, el instructor y el precio cuando aplique. Explica el recorrido en una frase: «El profesor prepara las clases, el equipo revisa y publica, y el alumno entra al aula y avanza a su ritmo».
 
@@ -36,7 +36,7 @@ La presentación dura unos 20 minutos. Utiliza dos ventanas o perfiles de navega
 
 1. Abre [Acceso para estudiantes](https://www.cluster.marketing/academia/entrar). Selecciona **Crear cuenta**, escribe nombre, WhatsApp y correo de prueba, y envía el formulario. Si ya tienes cuenta, elige **Estudiantes** e introduce tu correo.
 2. Abre el correo y escribe el código de seis dígitos en la Academia, o sigue el enlace y pulsa el botón de confirmación. El código y el enlace vencen en 15 minutos.
-3. Regresa a **Cursos**, abre el curso gratuito y pulsa **Empezar gratis**. En **Mis cursos**, abre el curso y entra a la primera lección.
+3. Si empezaste desde un curso gratuito, la confirmación te devuelve a ese curso. Si empezaste desde **Acceso para estudiantes**, abre el curso gratuito en **Cursos**. Pulsa **Empezar gratis** para inscribirte y abre la primera lección.
 4. Muestra el texto, los recursos y el reproductor si esa lección tiene video. Señala que la siguiente lección se desbloquea con el avance.
 5. Completa la primera lección. Si tiene misión, responde el quiz o marca la lista y envíala. Si la lección usa la lista del ejemplo, marca las dos tareas. Regresa al temario y abre la segunda lección para mostrar el desbloqueo.
 6. Vuelve a **Mis cursos** y muestra el avance. Si completaste una misión con XP, muestra el nivel. Si hay un reto activo, abre **Retos** para enseñar dónde se consulta la meta y se reclama el bono una vez alcanzada.

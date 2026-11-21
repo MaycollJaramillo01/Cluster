@@ -67,6 +67,7 @@ export function Frame({ children, signedIn }: { children: ReactNode; signedIn: b
 
   return (
     <div className="flex min-h-screen flex-col bg-paper text-ink">
+      <a href="#academia-contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-30 focus:bg-ink focus:px-4 focus:py-3 focus:text-white">Saltar al contenido</a>
       <header ref={header} className="sticky top-0 z-20 border-b border-black/10 bg-white">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
           <Link href="/academia" className="font-brand text-sm font-extrabold uppercase tracking-[0.18em]">
@@ -139,7 +140,7 @@ export function Frame({ children, signedIn }: { children: ReactNode; signedIn: b
           </nav>
         </div>
       </header>
-      <div className="flex-1">{children}</div>
+      <div id="academia-contenido" tabIndex={-1} className="flex-1 scroll-mt-20">{children}</div>
       <footer className="border-t border-black/10 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-black/55">
           <Link href="/academia/suscripcion" className="hover:text-ink">Suscripción</Link>

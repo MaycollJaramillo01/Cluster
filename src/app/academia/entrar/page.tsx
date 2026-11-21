@@ -9,12 +9,12 @@ import { Heading } from '@astryxdesign/core/Heading';
 import { dashboardSession, googleConfigured } from '@/lib/crm/session';
 import { homeFor } from '@/lib/crm/roles';
 import { redirect } from 'next/navigation';
+import { publishedCourse } from '@/lib/valux/data';
+import { courseLoginQuery, loginCourse } from '@/lib/valux/login-course';
 
 const input = 'h-12 w-full border border-black/20 bg-white px-3 text-base outline-none transition-colors duration-150 placeholder:text-black/35 focus:border-ink focus:ring-1 focus:ring-ink';
 const label = 'mb-1.5 block text-sm font-medium';
-const tab = 'flex h-10 items-center justify-center text-sm transition-colors duration-150';
-
-export default async function EntrarPage({ searchParams }: { searchParams: Promise<{ error?: string; modo?: string; acceso?: string }> }) {
+export default async function EntrarPage({ searchParams }: { searchParams: Promise<{ error?: string; modo?: string; acceso?: string; curso?: string }> }) {
   const query = await searchParams;
   const teacher = query.acceso === 'maestros';
   if (teacher) {
@@ -22,6 +22,9 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
     if (session) redirect(homeFor(session.role));
   }
   const register = query.modo === 'registro';
+  const slug = loginCourse(query.curso);
+  const course = !teacher && slug ? await publishedCourse(slug) : null;
+  const context = courseLoginQuery(course?.slug);
   const error = query.error === 'enlace'
     ? 'Ese enlace ya se usó o venció. Pide un código nuevo.'
     : query.error === 'datos'
@@ -33,35 +36,24 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
         : '';
 
   return (
-    <AcademySurface className="mx-auto w-full max-w-lg px-4 py-10 md:py-16">
+    <AcademySurface className="mx-auto w-full max-w-lg px-4 py-6 md:py-12">
     <section className="w-full">
       <VStack gap={0} className="min-w-0 border border-black/10 bg-white p-5 sm:p-8">
-      <Heading level={1} className="mb-6 font-display text-4xl">Entra a la academia</Heading>
-      <AccessTabs teacher={teacher} />
+      <Heading level={1} className="mb-3 text-balance font-display text-4xl">{teacher ? 'Acceso para maestros' : register ? 'Crea tu cuenta' : 'Entra a la academia'}</Heading>
+      {course ? <p className="mb-4 text-sm text-black/70">Para continuar con <Link href={`/academia/${course.slug}`} className="font-semibold text-ink underline underline-offset-4">{course.title}</Link>.</p> : <AccessTabs teacher={teacher} />}
       {teacher ? (
-        <VStack gap={5} className="pt-8">
-          <Heading level={2} className="font-display text-4xl tracking-wide">Acceso para maestros</Heading>
+        <VStack gap={5} className="pt-5">
           <LoginForm initialError={query.error || ''} />
           {googleConfigured() ? <Link href="/dashboard/auth/google" className="flex h-12 items-center justify-center border border-black/20 text-sm hover:border-ink">Entrar con Google</Link> : null}
         </VStack>
       ) : <>
-      <nav aria-label="Entrar o crear cuenta" className="mt-6 grid grid-cols-2 border border-black/15 bg-white p-1">
-        <Link href="/academia/entrar" aria-current={register ? undefined : 'page'} className={`${tab} ${register ? 'text-black/60 hover:text-ink' : 'bg-ink font-medium text-white'}`}>
-          Entrar
-        </Link>
-        <Link href="/academia/entrar?modo=registro" aria-current={register ? 'page' : undefined} className={`${tab} ${register ? 'bg-ink font-medium text-white' : 'text-black/60 hover:text-ink'}`}>
-          Crear cuenta
-        </Link>
-      </nav>
-
-      <Heading level={2} className="mt-8 font-display text-4xl tracking-wide">{register ? 'Crea tu cuenta' : 'Acceso para estudiantes'}</Heading>
-
       {error ? (
         <p role="alert" className="mt-6 border border-[#b42318]/30 bg-[#fef3f2] px-4 py-3 text-sm text-[#7a271a]">{error}</p>
       ) : null}
 
-      <form action={enterAcademia} className="mt-8 space-y-5">
+      <form action={enterAcademia} className="mt-5 space-y-4">
         <input type="hidden" name="modo" value={register ? 'registro' : 'entrar'} />
+        <input type="hidden" name="curso" value={course?.slug || ''} />
         {register ? (
           <>
             <VStack gap={0}>
@@ -76,11 +68,12 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
         ) : null}
         <VStack gap={0}>
           <label htmlFor="email" className={label}>Correo</label>
-          <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" autoFocus={!register} placeholder="tu@correo.com" className={input} />
+          <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" spellCheck={false} placeholder="tu@correo.com" className={input} />
         </VStack>
         {register ? (
-          <fieldset className="space-y-3">
-            <legend className="mb-2 text-sm text-black/55">Avisos (opcional)</legend>
+          <details>
+            <summary className="cursor-pointer py-2 text-sm text-black/70">Preferencias de avisos (opcional)</summary>
+            <fieldset aria-label="Preferencias de avisos" className="space-y-3 pb-2">
             <label className="flex items-start gap-3 text-sm text-black/75">
               <input name="consent_whatsapp" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0 accent-[#111111]" />
               Acepto recibir mensajes de la academia por WhatsApp.
@@ -89,11 +82,15 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
               <input name="consent_email" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0 accent-[#111111]" />
               Acepto recibir novedades y ofertas por correo.
             </label>
-          </fieldset>
+            </fieldset>
+          </details>
         ) : null}
-        <SubmitButton pending="Enviando…">{register ? 'Crear cuenta' : 'Continuar'}</SubmitButton>
+        <SubmitButton pending="Enviando…">{register ? 'Crear cuenta' : 'Enviarme un código'}</SubmitButton>
       </form>
-
+      <p className="mt-4 text-sm text-black/70">
+        {register ? '¿Ya tienes cuenta? ' : '¿Es tu primera vez? '}
+        <Link href={`/academia/entrar?modo=${register ? 'entrar' : 'registro'}${context}`} className="font-semibold text-ink underline underline-offset-4">{register ? 'Entrar' : 'Crear cuenta'}</Link>
+      </p>
       </>}
       </VStack>
     </section>

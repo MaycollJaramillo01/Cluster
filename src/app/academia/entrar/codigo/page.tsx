@@ -2,8 +2,9 @@ import Link from 'next/link';
 import { confirmLoginCode } from '@/lib/valux/actions';
 import { devLoginCode } from '@/lib/valux/login';
 import { SubmitButton } from '@/components/ui/SubmitButton';
+import { courseLoginQuery, loginCourse } from '@/lib/valux/login-course';
 
-export default async function CodigoPage({ searchParams }: { searchParams: Promise<{ l?: string; error?: string }> }) {
+export default async function CodigoPage({ searchParams }: { searchParams: Promise<{ l?: string; error?: string; curso?: string; modo?: string }> }) {
   const query = await searchParams;
   const devCode = devLoginCode(query.l || '');
   const error = Boolean(query.error);
@@ -13,6 +14,8 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
       <h1 className="font-display text-5xl tracking-wide">Revisa tu correo</h1>
       <form action={confirmLoginCode} className="mt-8 space-y-5">
         <input type="hidden" name="l" value={query.l || ''} />
+        <input type="hidden" name="curso" value={loginCourse(query.curso)} />
+        <input type="hidden" name="modo" value={query.modo === 'registro' ? 'registro' : 'entrar'} />
         <div>
           <label htmlFor="code" className="mb-1.5 block text-sm font-medium">Código de 6 dígitos</label>
           <input
@@ -23,7 +26,6 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
             autoComplete="one-time-code"
             pattern="[0-9 ]{6,7}"
             maxLength={7}
-            autoFocus
             defaultValue={devCode}
             aria-invalid={error || undefined}
             aria-describedby={error ? 'code-error' : undefined}
@@ -39,7 +41,7 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
       </form>
       <p className="mt-10 text-sm text-black/60">
         ¿No llegó? Revisa spam o promociones, o{' '}
-        <Link href="/academia/entrar" className="font-medium text-ink underline underline-offset-2">pide otro código</Link>.
+        <Link href={`/academia/entrar?modo=${query.modo === 'registro' ? 'registro' : 'entrar'}${courseLoginQuery(query.curso)}`} className="font-medium text-ink underline underline-offset-2">pide otro código</Link>.
       </p>
     </div>
   );

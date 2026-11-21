@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Checkout, Cover, LessonMark, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { Cover, LessonMark, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { CourseCheckoutForm } from '@/components/academia/CourseCheckoutForm';
 import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse, buyUpsell } from '@/lib/valux/actions';
 import { canReadCourse, getPerson, lessonAccess, ownsCourse, publishedCourse } from '@/lib/valux/data';
@@ -42,7 +43,7 @@ export default async function CourseCatalogPage({
   const paid = course.price_cents > 0;
   const priceLabel = paid ? money(course.price_cents) : 'Gratis';
   const bump = payReady(pay) ? course.bump : null;
-  const registration = '/academia/entrar?modo=registro';
+  const registration = `/academia/entrar?modo=registro&curso=${encodeURIComponent(course.slug)}`;
   const person = !hasAccess && (query.inscripcion === '1' || !paid) ? await getPerson(personId) : null;
   const contact = person?.is_active ? { name: person.name || person.email, email: person.email } : undefined;
 
@@ -53,10 +54,10 @@ export default async function CourseCatalogPage({
         <h1 className="my-5 font-display text-5xl tracking-wide text-ink sm:text-6xl">Inscripción</h1>
         <section className="grid items-start gap-5 md:grid-cols-3">
           <aside aria-label="Resumen del curso" className="overflow-hidden border border-black/10 bg-white">
-            {course.cover_url ? <figure className="hidden md:block"><Cover url={course.cover_url} title={course.title} /></figure> : null}
+            <section aria-hidden="true" className="hidden md:block"><Cover url={course.cover_url} title={course.title} slug={course.slug} eager /></section>
             <section className="p-5">
               <VStack gap={2}>
-              <h2 className="text-lg font-semibold leading-snug">{course.title}</h2>
+              <h2 className="text-balance font-brand text-lg font-semibold normal-case leading-snug">{course.title}</h2>
               <p className="text-sm text-black/65">{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
               <p className="border-t border-black/10 pt-3 font-display text-4xl tracking-wide">{priceLabel}</p>
               </VStack>
@@ -70,15 +71,12 @@ export default async function CourseCatalogPage({
               <Link href={registration} className={primaryAction}>Crear cuenta para inscribirme</Link>
             ) : (
               <>
-                <h2 className="text-xl font-semibold">Tus datos</h2>
-                <Checkout
-                  action={buyCourse}
+                <CourseCheckoutForm
                   hidden={{ slug: course.slug }}
                   label={paid ? 'Continuar al pago' : 'Confirmar inscripción'}
                   pay={paid || bump ? pay : undefined}
                   bump={bump}
                   coupon={paid}
-                  couponOpen={query.error?.startsWith('cupon-')}
                   contact={contact}
                   note={paid ? payHint(pay) : undefined}
                 />
@@ -107,14 +105,12 @@ export default async function CourseCatalogPage({
 
   return (
     <main className="mx-auto grid max-w-6xl items-start gap-6 px-4 py-8 lg:grid-cols-3 lg:gap-8">
-        <section className="bg-ink px-6 py-8 text-white sm:px-8 sm:py-10 lg:col-span-2">
-          <p className="text-sm text-white/50"><Link href="/academia" className="hover:text-white">Cursos</Link></p>
-          <h1 className="mt-3 break-words font-display text-4xl leading-none tracking-wide sm:text-6xl">{course.title}</h1>
-          <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/75">{course.description}</p>
-          <p className="mt-5 text-sm">
-            Creado por <span className="text-brand">{course.teacher_name || 'Academia'}</span>
-          </p>
-          <p className="mt-2 text-sm text-white/55">
+        <section className="py-2 sm:py-4 lg:col-span-2">
+          <p className="text-sm"><Link href="/academia" className="font-medium underline underline-offset-4">← Cursos</Link></p>
+          <h1 className="mt-4 text-balance break-words font-brand text-3xl font-bold normal-case leading-tight sm:text-5xl">{course.title}</h1>
+          <p className="mt-4 max-w-xl text-base leading-relaxed text-black/75">{course.description}</p>
+          {course.teacher_name ? <p className="mt-4 text-sm">Por {course.teacher_name}</p> : null}
+          <p className="mt-3 text-sm text-black/65">
             {lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}
             {minutes ? ` · ${durationLabel(minutes)} de contenido` : ''}
             {course.students ? ` · ${course.students} ${course.students === 1 ? 'alumno' : 'alumnos'}` : ''}
@@ -150,8 +146,9 @@ export default async function CourseCatalogPage({
         <section className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-xl font-medium">Contenido del curso</h2>
-            <p className="text-sm text-black/45">{course.sections.length ? `${course.sections.length} secciones · ` : ''}{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
+            <p className="text-sm text-black/65">{course.sections.length ? `${course.sections.length} secciones · ` : ''}{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
           </div>
+          {!hasAccess && paid ? <p className="text-sm text-black/70">Las clases se habilitan al inscribirte.</p> : null}
           {groups.length === 0 ? <p className="border border-black/10 bg-white px-4 py-6 text-sm text-black/50">Este curso todavía no tiene clases.</p> : groups.map((group) => {
             const groupMinutes = group.lessons.reduce((sum, lesson) => sum + (lesson.duration_min || 0), 0);
             return (
@@ -164,18 +161,22 @@ export default async function CourseCatalogPage({
                   </span>
                 </summary>
                 <ol className="border-t border-black/10">
-                  {group.lessons.map((lesson, index) => (
-                    <li key={lesson.id} className="border-b border-black/5 last:border-0">
-                      <Link href={lessonUrl(lesson)} className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-black/[0.02]">
-                        <span className="flex items-center gap-2">
-                          <span className="mr-1 font-mono text-[10px] text-black/35">{index + 1}</span>
-                          {access ? <LessonMark done={access.done.has(lesson.id)} locked={!access.unlocked.has(lesson.id)} /> : null}
-                          <span>{lesson.title}</span>
-                        </span>
-                        {lesson.duration_min ? <span className="shrink-0 text-xs text-black/40">{lesson.duration_min} min</span> : null}
-                      </Link>
-                    </li>
-                  ))}
+                  {group.lessons.map((lesson) => {
+                    const locked = access ? !access.unlocked.has(lesson.id) : paid;
+                    const row = 'flex min-h-11 items-center gap-3 px-4 py-3 text-sm';
+                    const contents = <>
+                      {(locked || access) ? <LessonMark done={Boolean(access?.done.has(lesson.id))} locked={locked} /> : null}
+                      <span className="min-w-0 flex-1 break-words">{lesson.title}</span>
+                      {lesson.duration_min ? <span className="shrink-0 text-xs text-black/65">{lesson.duration_min} min</span> : null}
+                    </>;
+                    return (
+                      <li key={lesson.id} className="border-b border-black/5 last:border-0">
+                        {locked ? <p className={`${row} text-black/70`}>{contents}</p> : (
+                          <Link href={lessonUrl(lesson)} className={`${row} hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset`}>{contents}</Link>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ol>
               </details>
             );
@@ -185,7 +186,7 @@ export default async function CourseCatalogPage({
       </article>
 
       <aside className="border border-black/10 bg-white lg:sticky lg:top-24 lg:col-start-3 lg:row-span-2 lg:row-start-1">
-        {course.cover_url ? <figure className="hidden lg:block"><Cover url={course.cover_url} title={course.title} /></figure> : null}
+        <section aria-hidden="true" className="hidden lg:block"><Cover url={course.cover_url} title={course.title} slug={course.slug} eager /></section>
         {access ? (
           <div className="space-y-4 p-4">
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">

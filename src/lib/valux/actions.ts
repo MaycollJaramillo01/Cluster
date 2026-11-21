@@ -16,6 +16,7 @@ import { cancelPaypalSubscription, paypalConfigured, sendPaypalPayout } from './
 import { bankDetails, createTransfer } from './transfers';
 import { academiaPersonId, clearAcademiaPerson, setAcademiaPerson } from './session';
 import { cleanPhone, startLogin, verifyLoginCode, verifyLoginLink } from './login';
+import { courseLoginQuery, loginCourse } from './login-course';
 import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { advanceStage, trackEvent, type Lead } from './events';
@@ -53,12 +54,17 @@ async function checkout(input: {
   monthlyCents?: number;
   description: string;
   failPath: string;
+  inlineErrors?: boolean;
   method?: string;
   // Order bump: otro curso en el mismo pago, con precio calculado aquí, nunca desde el navegador.
   bump?: { itemId: string; cents: number; title: string } | null;
   // Cupón ya validado: amountCents trae el precio con descuento.
   couponCode?: string | null;
 }) {
+  const fail = (code: string) => {
+    if (input.inlineErrors) return code;
+    redirect(`${input.failPath}?error=${code}`);
+  };
   const bump = input.bump && input.bump.cents > 0 ? input.bump : null;
   const total = input.amountCents + (bump?.cents || 0);
   if (total <= 0) {
@@ -67,7 +73,7 @@ async function checkout(input: {
     if (!person?.is_active) redirect('/academia/entrar?modo=registro');
     input = { ...input, email: person.email, name: person.name || person.email };
   }
-  if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
+  if (!input.email.includes('@') || !input.name) return fail('datos');
   await trackEvent('checkout_started', { email: input.email, data: { kind: input.kind, item: input.itemId || null, cents: total, method: input.method || 'tarjeta' } });
   if (bump) await trackEvent('bump_accepted', { email: input.email, data: { item: bump.itemId, cents: bump.cents } });
   await advanceStage({ email: input.email }, 'checkout');
@@ -77,17 +83,17 @@ async function checkout(input: {
     redirect(result.path);
   }
   if (input.method === 'transferencia') {
-    if (!(await bankDetails())) redirect(`${input.failPath}?error=pasarela`);
+    if (!(await bankDetails())) return fail('pasarela');
     let reference = '';
     try {
       reference = await createTransfer({ ...input, amountCents: total, bump });
     } catch (error) {
       console.error('[academia] transferencia:', error);
-      redirect(`${input.failPath}?error=pago`);
+      return fail('pago');
     }
     redirect(`/academia/transferencia/${reference}`);
   }
-  if (!stripeConfigured()) redirect(`${input.failPath}?error=pasarela`);
+  if (!stripeConfigured()) return fail('pasarela');
   try {
     const base = await origin();
     const sql = await crm();
@@ -121,26 +127,30 @@ async function checkout(input: {
     redirect(session.url);
   } catch (error) {
     if (error && typeof error === 'object' && 'digest' in error) throw error;
-    redirect(`${input.failPath}?error=pago`);
+    return fail('pago');
   }
 }
 
-export async function buyCourse(formData: FormData) {
+async function coursePurchase(formData: FormData, inlineErrors: boolean) {
   const course = await publishedCourse(field(formData, 'slug'));
-  if (!course) return;
+  if (!course) return 'curso';
   // El descuento se calcula aquí con el precio de la base; el navegador solo manda el código.
   let price = course.price_cents;
   let couponCode: string | null = null;
   if (field(formData, 'cupon')) {
     const coupon = await applyCoupon(field(formData, 'cupon'), course.id, course.price_cents);
-    if (!coupon.ok) redirect(`/academia/${course.slug}?error=cupon-${coupon.reason}`);
+    if (!coupon.ok) {
+      const error = `cupon-${coupon.reason}`;
+      if (inlineErrors) return error;
+      redirect(`/academia/${course.slug}?error=${error}`);
+    }
     price = coupon.cents;
     couponCode = coupon.code;
   }
   const bump = field(formData, 'bump') === '1' && course.bump
     ? { itemId: course.bump.id, cents: course.bump.cents, title: course.bump.title }
     : null;
-  await checkout({
+  return checkout({
     kind: 'curso',
     itemId: course.id,
     name: field(formData, 'name'),
@@ -150,9 +160,26 @@ export async function buyCourse(formData: FormData) {
     description: course.title,
     method: field(formData, 'metodo'),
     failPath: `/academia/${course.slug}`,
+    inlineErrors,
     // La casilla llega sin marcar; solo cuenta si la persona la marcó.
     bump,
   });
+}
+
+export async function buyCourse(formData: FormData) {
+  await coursePurchase(formData, false);
+}
+
+export async function buyCourseWithFeedback(previous: { attempt: number }, formData: FormData) {
+  return {
+    error: await coursePurchase(formData, true),
+    attempt: previous.attempt + 1,
+    name: field(formData, 'name'),
+    email: field(formData, 'email'),
+    coupon: field(formData, 'cupon'),
+    method: field(formData, 'metodo'),
+    bump: field(formData, 'bump') === '1',
+  };
 }
 
 // Oferta después de pagar: pago nuevo, con casilla de autorización explícita. No reutiliza la tarjeta.
@@ -254,11 +281,13 @@ export async function donate(formData: FormData) {
 // Registro y entrada usan lo mismo: un código o enlace por correo, de un solo uso.
 export async function enterAcademia(formData: FormData) {
   const register = field(formData, 'modo') === 'registro';
+  const course = loginCourse(field(formData, 'curso'));
+  const context = courseLoginQuery(course);
+  const mode = register ? '&modo=registro' : '';
   const email = field(formData, 'email');
   const name = field(formData, 'name');
   const phone = cleanPhone(field(formData, 'phone'));
-  if (!email.includes('@')) redirect(`/academia/entrar?error=datos${register ? '&modo=registro' : ''}`);
-  if (register && (!name || !phone)) redirect('/academia/entrar?modo=registro&error=datos');
+  if (!email.includes('@') || (register && (!name || !phone))) redirect(`/academia/entrar?error=datos${mode}${context}`);
   // El enlace del correo sale del dominio fijo: un Host falso no puede desviarlo.
   const base = process.env.NODE_ENV === 'production' ? site.url : await origin();
   // Consentimientos: casillas sin marcar por defecto; solo cuentan si la persona las marcó.
@@ -279,27 +308,33 @@ export async function enterAcademia(formData: FormData) {
   }
   let id = '';
   try {
-    id = await startLogin({ email, name, phone, register, base, lead });
+    id = await startLogin({ email, name, phone, register, base, lead, course });
   } catch {
-    redirect(`/academia/entrar?error=correo${register ? '&modo=registro' : ''}`);
+    redirect(`/academia/entrar?error=correo${mode}${context}`);
   }
-  redirect(`/academia/entrar/codigo?l=${id}`);
+  redirect(`/academia/entrar/codigo?l=${id}${mode}${context}`);
+}
+
+async function finishAcademiaLogin(personId: string, course: string) {
+  await setAcademiaPerson(personId);
+  redirect(course && await publishedCourse(course) ? `/academia/${course}` : '/academia/mis-cursos');
 }
 
 export async function confirmLoginCode(formData: FormData) {
   const id = field(formData, 'l');
+  const course = loginCourse(field(formData, 'curso'));
+  const mode = field(formData, 'modo') === 'registro' ? '&modo=registro' : '';
   const personId = await verifyLoginCode(id, field(formData, 'code').replace(/\s/g, ''));
-  if (!personId) redirect(`/academia/entrar/codigo?l=${encodeURIComponent(id)}&error=1`);
-  await setAcademiaPerson(personId);
-  redirect('/academia/mis-cursos');
+  if (!personId) redirect(`/academia/entrar/codigo?l=${encodeURIComponent(id)}&error=1${mode}${courseLoginQuery(course)}`);
+  await finishAcademiaLogin(personId, course);
 }
 
 // El enlace se gasta con un clic en un botón: los escáneres de correo solo hacen GET.
 export async function confirmLoginLink(formData: FormData) {
+  const course = loginCourse(field(formData, 'curso'));
   const personId = await verifyLoginLink(field(formData, 't'));
-  if (!personId) redirect('/academia/entrar?error=enlace');
-  await setAcademiaPerson(personId);
-  redirect('/academia/mis-cursos');
+  if (!personId) redirect(`/academia/entrar?error=enlace${courseLoginQuery(course)}`);
+  await finishAcademiaLogin(personId, course);
 }
 
 export async function leaveAcademia() {
