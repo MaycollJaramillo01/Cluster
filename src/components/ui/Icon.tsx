@@ -25,6 +25,7 @@ export type IconName =
   | 'search'
   | 'pen'
   | 'users'
+  | 'user'
   | 'chart'
   | 'bolt'
   | 'upload'
@@ -126,6 +127,7 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   pen: <path d="M4 20l4-1L20 7a2 2 0 00-3-3L5 16l-1 4zM14 6l3 3" />,
+  user: <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" />,
   users: (
     <>
       <circle cx="9" cy="8" r="3.5" />

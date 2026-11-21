@@ -12,7 +12,7 @@ export default async function AcademiaLayout({ children }: { children: ReactNode
   return (
     <html lang="es" className={`${display.variable} ${body.variable} ${mono.variable} ${brand.variable}`}>
       <body suppressHydrationWarning className="bg-paper font-sans text-ink antialiased">
-        <Frame name={person ? person.name || person.email : null}>{children}</Frame>
+        <Frame signedIn={Boolean(person)}>{children}</Frame>
       </body>
     </html>
   );

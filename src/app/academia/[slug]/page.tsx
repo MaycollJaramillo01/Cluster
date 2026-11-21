@@ -3,17 +3,22 @@ import { notFound } from 'next/navigation';
 import { Checkout, Cover, LessonMark, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
 import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse, buyUpsell } from '@/lib/valux/actions';
-import { canReadCourse, lessonAccess, ownsCourse, publishedCourse } from '@/lib/valux/data';
+import { canReadCourse, getPerson, lessonAccess, ownsCourse, publishedCourse } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
 import { paymentOptions } from '@/lib/valux/transfers';
 import { advanceStage } from '@/lib/valux/events';
+import { Icon } from '@/components/ui/Icon';
+import { SubmitButton } from '@/components/ui/SubmitButton';
+import { VStack } from '@astryxdesign/core/VStack';
+
+const primaryAction = 'flex min-h-12 w-full items-center justify-center gap-2 bg-brand px-4 py-3 text-center text-sm font-semibold text-ink hover:bg-brand/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export default async function CourseCatalogPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ok?: string; error?: string; terminado?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; terminado?: string; inscripcion?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
@@ -32,6 +37,58 @@ export default async function CourseCatalogPage({
   // Inscrito, o con acceso a un curso de pago por membresía o rol: ve su avance en vez del checkout.
   const enrolled = await ownsCourse(personId, course.id);
   const hasAccess = Boolean(personId) && (enrolled || (course.price_cents > 0 && (await canReadCourse(personId, course))));
+  const coursePath = `/academia/${course.slug}`;
+  const checkoutPath = `${coursePath}?inscripcion=1`;
+  const paid = course.price_cents > 0;
+  const priceLabel = paid ? money(course.price_cents) : 'Gratis';
+  const bump = payReady(pay) ? course.bump : null;
+  const registration = '/academia/entrar?modo=registro';
+  const person = !hasAccess && (query.inscripcion === '1' || !paid) ? await getPerson(personId) : null;
+  const contact = person?.is_active ? { name: person.name || person.email, email: person.email } : undefined;
+
+  if (!hasAccess && (query.inscripcion === '1' || (paid && query.error))) {
+    return (
+      <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+        <Link href={coursePath} className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">← Volver al curso</Link>
+        <h1 className="my-5 font-display text-5xl tracking-wide text-ink sm:text-6xl">Inscripción</h1>
+        <section className="grid items-start gap-5 md:grid-cols-3">
+          <aside aria-label="Resumen del curso" className="overflow-hidden border border-black/10 bg-white">
+            {course.cover_url ? <figure className="hidden md:block"><Cover url={course.cover_url} title={course.title} /></figure> : null}
+            <section className="p-5">
+              <VStack gap={2}>
+              <h2 className="text-lg font-semibold leading-snug">{course.title}</h2>
+              <p className="text-sm text-black/65">{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
+              <p className="border-t border-black/10 pt-3 font-display text-4xl tracking-wide">{priceLabel}</p>
+              </VStack>
+            </section>
+          </aside>
+          <section aria-label="Datos de inscripción" className="space-y-5 border border-black/10 bg-white p-5 sm:p-8 md:col-span-2">
+            {query.error && (payReady(pay) || query.error !== 'pasarela') ? <p role="alert" className="border border-black/15 bg-paper p-3 text-sm text-ink">{payNote(query.error)}</p> : null}
+            {paid && !payReady(pay) ? (
+              <p>{payNote('pasarela')}</p>
+            ) : !paid && !contact ? (
+              <Link href={registration} className={primaryAction}>Crear cuenta para inscribirme</Link>
+            ) : (
+              <>
+                <h2 className="text-xl font-semibold">Tus datos</h2>
+                <Checkout
+                  action={buyCourse}
+                  hidden={{ slug: course.slug }}
+                  label={paid ? 'Continuar al pago' : 'Confirmar inscripción'}
+                  pay={paid || bump ? pay : undefined}
+                  bump={bump}
+                  coupon={paid}
+                  couponOpen={query.error?.startsWith('cupon-')}
+                  contact={contact}
+                  note={paid ? payHint(pay) : undefined}
+                />
+              </>
+            )}
+          </section>
+        </section>
+      </main>
+    );
+  }
   const access = hasAccess ? await lessonAccess(personId, course) : null;
   const doneCount = access ? access.order.filter((lesson) => access.done.has(lesson.id)).length : 0;
   const nextLesson = access?.order.find((lesson) => !access.done.has(lesson.id));
@@ -49,11 +106,10 @@ export default async function CourseCatalogPage({
   ];
 
   return (
-    <div className="mx-auto grid max-w-6xl items-start gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="space-y-10">
-        <section className="bg-ink px-6 py-10 text-white">
+    <main className="mx-auto grid max-w-6xl items-start gap-6 px-4 py-8 lg:grid-cols-3 lg:gap-8">
+        <section className="bg-ink px-6 py-8 text-white sm:px-8 sm:py-10 lg:col-span-2">
           <p className="text-sm text-white/50"><Link href="/academia" className="hover:text-white">Cursos</Link></p>
-          <h1 className="mt-3 font-display text-5xl tracking-wide md:text-6xl">{course.title}</h1>
+          <h1 className="mt-3 break-words font-display text-4xl leading-none tracking-wide sm:text-6xl">{course.title}</h1>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/75">{course.description}</p>
           <p className="mt-5 text-sm">
             Creado por <span className="text-brand">{course.teacher_name || 'Academia'}</span>
@@ -65,6 +121,7 @@ export default async function CourseCatalogPage({
           </p>
         </section>
 
+      <article className="order-3 space-y-8 lg:col-span-2">
         {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo.</p> : null}
         {query.terminado && finished ? (
           <p className="border border-brand/40 bg-white px-4 py-3 text-sm">
@@ -125,14 +182,10 @@ export default async function CourseCatalogPage({
           })}
         </section>
 
-        <section className="border border-black/10 bg-white p-5">
-          <h2 className="text-xl font-medium">Instructor</h2>
-          <p className="mt-3 font-medium">{course.teacher_name || 'Academia'}</p>
-        </section>
-      </div>
+      </article>
 
-      <aside className="border border-black/10 bg-white lg:sticky lg:top-6">
-        <Cover url={course.cover_url} title={course.title} />
+      <aside className="border border-black/10 bg-white lg:sticky lg:top-24 lg:col-start-3 lg:row-span-2 lg:row-start-1">
+        {course.cover_url ? <figure className="hidden lg:block"><Cover url={course.cover_url} title={course.title} /></figure> : null}
         {access ? (
           <div className="space-y-4 p-4">
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">
@@ -157,23 +210,24 @@ export default async function CourseCatalogPage({
             ) : null}
           </div>
         ) : (
-        <div className="space-y-4 p-4">
-          <p className="font-display text-5xl tracking-wide">{course.price_cents > 0 ? money(course.price_cents) : 'Gratis'}</p>
-          {course.price_cents > 0 && !payReady(pay) ? (
+        <section aria-label="Inscripción al curso" className="space-y-4 p-5 sm:p-6">
+          <p className="font-display text-4xl tracking-wide sm:text-5xl">{priceLabel}</p>
+          {paid && !payReady(pay) ? (
             <p className="text-sm leading-relaxed text-black/70">{payNote('pasarela')}</p>
+          ) : !paid && contact && !bump ? (
+            <form action={buyCourse}>
+              <input type="hidden" name="slug" value={course.slug} />
+              <SubmitButton className={primaryAction} pending="Inscribiendo…">Empezar gratis</SubmitButton>
+            </form>
           ) : (
-            <Checkout
-              action={buyCourse}
-              hidden={{ slug: course.slug }}
-              label={course.price_cents > 0 ? 'Inscribirme ahora' : 'Empezar gratis'}
-              pay={course.price_cents > 0 || course.bump ? pay : undefined}
-              bump={course.bump}
-              coupon={course.price_cents > 0}
-            />
+            <Link href={!paid && !contact ? registration : checkoutPath} className={primaryAction}>
+              {paid ? 'Inscribirme ahora' : 'Empezar gratis'}
+              <Icon name="arrow-right" size={17} aria-hidden="true" />
+            </Link>
           )}
-        </div>
+        </section>
         )}
       </aside>
-    </div>
+    </main>
   );
 }

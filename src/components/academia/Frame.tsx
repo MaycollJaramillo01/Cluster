@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { leaveAcademia } from '@/lib/valux/actions';
+import { Icon } from '@/components/ui/Icon';
 
 const links = [
   ['/academia', 'Cursos'],
@@ -30,8 +31,7 @@ function useMenu() {
   return { state, open: () => setState('open'), close, reset: () => setState('closed') };
 }
 
-// name: nombre de la persona con sesión, o null si no entró.
-export function Frame({ children, name }: { children: ReactNode; name: string | null }) {
+export function Frame({ children, signedIn }: { children: ReactNode; signedIn: boolean }) {
   const path = usePathname();
   const menu = useMenu();
   const header = useRef<HTMLElement>(null);
@@ -79,12 +79,12 @@ export function Frame({ children, name }: { children: ReactNode; name: string | 
               </Link>
             ))}
           </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-3 text-sm sm:gap-4">
-            <Link href="/academia/mis-cursos" className={`text-black/70 hover:text-ink ${name ? '' : 'hidden md:inline'}`}>Mis cursos</Link>
-            {name ? (
+          <div className="ml-auto flex shrink-0 items-center gap-2 text-sm sm:gap-4">
+            <Link href="/academia/mis-cursos" className={`text-black/70 hover:text-ink ${signedIn ? '' : 'hidden md:inline'}`}>Mis cursos</Link>
+            {signedIn ? (
               <>
-                <Link href="/academia/perfil" aria-label={`Perfil de ${name}`} className="hidden max-w-[10rem] truncate text-black/70 hover:text-ink lg:inline">
-                  {name}
+                <Link href="/academia/perfil" aria-label="Mi perfil" title="Mi perfil" aria-current={path === '/academia/perfil' ? 'page' : undefined} className="grid h-11 w-11 place-items-center border border-black/15 text-ink hover:border-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
+                  <Icon name="user" size={20} aria-hidden="true" />
                 </Link>
                 <form action={leaveAcademia} className="hidden md:block">
                   <button type="submit" className="border border-black/15 px-3 py-2 hover:border-ink">Salir</button>
@@ -125,11 +125,8 @@ export function Frame({ children, name }: { children: ReactNode; name: string | 
                 </li>
               ))}
             </ul>
-            {name ? (
+            {signedIn ? (
               <div className="mt-2 border-t border-black/10 pt-2">
-                <Link href="/academia/perfil" onClick={close} className={`${row} text-black/75`}>
-                  <span className="truncate">{name}</span>
-                </Link>
                 <form action={leaveAcademia}>
                   <button type="submit" className={`${row} w-full text-black/75`}>Salir</button>
                 </form>

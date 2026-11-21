@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Icon } from '@/components/ui/Icon';
 import { academyMoney } from '@/lib/valux/money';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 
 // Estado de una clase en el temario. Ocupa siempre el mismo ancho para que los títulos queden alineados.
 export function LessonMark({ done, locked }: { done: boolean; locked: boolean }) {
@@ -119,6 +120,8 @@ export function Checkout({
   pay,
   bump,
   coupon,
+  contact,
+  couponOpen,
 }: {
   action: (formData: FormData) => Promise<void>;
   hidden?: Record<string, string>;
@@ -129,19 +132,22 @@ export function Checkout({
   bump?: { title: string; cents: number } | null;
   // Campo de cupón (solo cursos de pago).
   coupon?: boolean;
+  contact?: { name: string; email: string };
+  couponOpen?: boolean;
 }) {
+  const field = 'min-h-11 w-full border border-black/25 bg-white px-3 py-2.5 text-base text-ink placeholder:text-black/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink';
   return (
-    <form action={action} className="space-y-3">
+    <form action={action} className="space-y-4 [color-scheme:light]">
       {Object.entries(hidden || {}).map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />
       ))}
       <label className="block text-sm">
-        <span className="mb-1 block text-xs text-black/45">Nombre</span>
-        <input name="name" required className="w-full border border-black/15 px-3 py-2.5 text-sm outline-none focus:border-ink" />
+        <span className="mb-1.5 block font-medium text-ink">Nombre</span>
+        <input name="name" autoComplete="name" defaultValue={contact?.name} required className={field} />
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-xs text-black/45">Correo</span>
-        <input name="email" type="email" required className="w-full border border-black/15 px-3 py-2.5 text-sm outline-none focus:border-ink" />
+        <span className="mb-1.5 block font-medium text-ink">Correo</span>
+        <input name="email" type="email" autoComplete="email" defaultValue={contact?.email} required className={field} />
       </label>
       {bump ? (
         <label className="flex items-start gap-3 border border-dashed border-brand bg-brand/5 p-3 text-sm">
@@ -153,13 +159,16 @@ export function Checkout({
         </label>
       ) : null}
       {coupon ? (
-        <label className="block text-sm">
-          <span className="mb-1 block text-xs text-black/45">Cupón (opcional)</span>
-          <input name="cupon" autoComplete="off" className="w-full border border-black/15 px-3 py-2.5 text-sm uppercase outline-none focus:border-ink" />
-        </label>
+        <details open={couponOpen || undefined}>
+          <summary className="w-fit cursor-pointer text-sm font-medium underline underline-offset-4">Tengo un cupón</summary>
+          <label className="mt-3 block text-sm">
+            <span className="mb-1.5 block font-medium text-ink">Código del cupón</span>
+            <input name="cupon" autoComplete="off" className={`${field} uppercase`} />
+          </label>
+        </details>
       ) : null}
       <PayMethod options={pay} />
-      <button className="w-full bg-brand px-4 py-3 text-sm font-medium text-ink" type="submit">{label}</button>
+      <SubmitButton pending="Procesando…">{label}</SubmitButton>
       {note ? <p className="text-center text-xs text-black/45">{note}</p> : null}
     </form>
   );

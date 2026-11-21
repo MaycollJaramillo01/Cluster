@@ -59,15 +59,15 @@ async function checkout(input: {
   // Cupón ya validado: amountCents trae el precio con descuento.
   couponCode?: string | null;
 }) {
-  if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
   const bump = input.bump && input.bump.cents > 0 ? input.bump : null;
   const total = input.amountCents + (bump?.cents || 0);
   if (total <= 0) {
     // Una inscripción gratuita tampoco demuestra que el correo del formulario sea propio.
     const person = await getPerson(await academiaPersonId());
     if (!person?.is_active) redirect('/academia/entrar?modo=registro');
-    input = { ...input, email: person.email, name: person.name };
+    input = { ...input, email: person.email, name: person.name || person.email };
   }
+  if (!input.email.includes('@') || !input.name) redirect(`${input.failPath}?error=datos`);
   await trackEvent('checkout_started', { email: input.email, data: { kind: input.kind, item: input.itemId || null, cents: total, method: input.method || 'tarjeta' } });
   if (bump) await trackEvent('bump_accepted', { email: input.email, data: { item: bump.itemId, cents: bump.cents } });
   await advanceStage({ email: input.email }, 'checkout');
@@ -137,6 +137,9 @@ export async function buyCourse(formData: FormData) {
     price = coupon.cents;
     couponCode = coupon.code;
   }
+  const bump = field(formData, 'bump') === '1' && course.bump
+    ? { itemId: course.bump.id, cents: course.bump.cents, title: course.bump.title }
+    : null;
   await checkout({
     kind: 'curso',
     itemId: course.id,
@@ -148,7 +151,7 @@ export async function buyCourse(formData: FormData) {
     method: field(formData, 'metodo'),
     failPath: `/academia/${course.slug}`,
     // La casilla llega sin marcar; solo cuenta si la persona la marcó.
-    bump: field(formData, 'bump') === '1' && course.bump ? { itemId: course.bump.id, cents: course.bump.cents, title: course.bump.title } : null,
+    bump,
   });
 }
 
