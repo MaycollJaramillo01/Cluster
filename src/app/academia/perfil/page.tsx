@@ -1,35 +1,22 @@
 import Link from 'next/link';
-import { updateProfile } from '@/lib/valux/actions';
+import { VStack } from '@astryxdesign/core/VStack';
+import { ProfileSettings } from '@/components/academia/ProfileSettings';
 import { getPerson } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
 
-export default async function PerfilPage() {
+export default async function PerfilPage({ searchParams }: { searchParams: Promise<{ guardado?: string }> }) {
   const person = await getPerson(await academiaPersonId());
   if (!person) {
-    return <p className="mx-auto max-w-lg px-4 py-10 text-sm">Entra con tu correo para ver el perfil. <Link className="underline" href="/academia/entrar">Entrar</Link></p>;
+    return (
+      <main className="mx-auto w-full max-w-lg px-4 py-12">
+        <VStack gap={4} className="border border-black/10 bg-white p-6 sm:p-8">
+          <h1 className="font-brand text-3xl font-bold normal-case">Mi perfil</h1>
+          <p className="text-sm text-black/70">Entra con tu correo para ver los datos de tu cuenta.</p>
+          <Link href="/academia/entrar" className="inline-flex min-h-12 w-fit items-center bg-brand px-5 text-sm font-semibold text-ink hover:bg-brand/85">Entrar a la Academia</Link>
+        </VStack>
+      </main>
+    );
   }
-
-  return (
-    <div className="mx-auto max-w-lg space-y-4 px-4 py-10">
-      <h1 className="font-display text-5xl tracking-wide">Perfil</h1>
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">{person.role} · {person.email}</p>
-      <form action={updateProfile} className="space-y-3 border border-black/10 bg-white p-4">
-        <label className="block text-sm">Nombre<input name="name" defaultValue={person.name} required className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
-        <label className="block text-sm">Nicho<input name="niche" defaultValue={person.niche} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
-        <label className="block text-sm">Bio<textarea name="bio" rows={4} defaultValue={person.bio} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
-        <label className="block text-sm">Instagram<input name="instagram_url" defaultValue={person.instagram_url} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
-        <label className="block text-sm">Portafolio<input name="portfolio_url" defaultValue={person.portfolio_url} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
-        <label className="block text-sm">PayPal para liquidaciones<input name="paypal_email" defaultValue={person.paypal_email} className="mt-1 w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" /></label>
-        <label className="flex items-start gap-2 text-sm">
-          <input name="reminders" type="checkbox" value="1" defaultChecked={!person.reminders_off} className="mt-1" />
-          Recordatorios por correo cuando dejo un curso sin avanzar
-        </label>
-        <label className="flex items-start gap-2 text-sm">
-          <input name="consent_email" type="checkbox" value="1" defaultChecked={person.consent_email} className="mt-1" />
-          Novedades y ofertas por correo
-        </label>
-        <button className="bg-brand px-4 py-2 text-sm font-medium text-ink" type="submit">Guardar</button>
-      </form>
-    </div>
-  );
+  const { guardado } = await searchParams;
+  return <ProfileSettings person={person} saved={guardado === '1'} />;
 }

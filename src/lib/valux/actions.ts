@@ -361,6 +361,7 @@ export async function updateProfile(formData: FormData) {
     WHERE id = ${id}
   `;
   refresh();
+  redirect('/academia/perfil?guardado=1#guardar-perfil');
 }
 
 export async function subscribeNewsletter(formData: FormData) {
