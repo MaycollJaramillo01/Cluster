@@ -363,6 +363,15 @@ scripts/check-seguimiento.ts   Prueba de cupones, seguimientos, Bunny y alertas
 
 El webhook de Stripe se registra en `https://www.cluster.marketing/api/academia/stripe`, con los ocho eventos de la tabla anterior y `STRIPE_WEBHOOK_SECRET` en producción.
 
+### Preparar una prueba operativa
+
+1. **Preview.** Usar una base de prueba. Verificar primero qué base resuelve el despliegue, porque el conector `neon/clustercrm` tiene prioridad sobre `DATABASE_URL`. Configurar `STRIPE_SECRET_KEY` en modo de pruebas, con el `STRIPE_WEBHOOK_SECRET` del endpoint `/api/academia/stripe` de esa misma vista previa. Registrar los ocho eventos de la tabla. La URL debe ser accesible para Stripe. Configurar también el correo de prueba y un almacén Blob privado para comprobantes.
+2. **Profesor y video.** Crear un profesor de prueba en Equipo y vincularlo a su persona de Academia con el mismo correo. Asignarle un curso de prueba. En Bunny, configurar la autenticación por token y permitir el dominio de la vista previa. Añadir el ID de biblioteca y la clave de firma de `.env.example`. Como profesor, guardar `bunny:<id del video>` en una lección y pedir revisión. Como alumno inscrito, reproducir el video y completar la lección.
+3. **Transferencia.** Dejar vacío el campo Comisión → Datos para transferencia hasta disponer de las instrucciones aprobadas para producción. El campo muestra un ejemplo sin guardarlo. En la vista previa se puede guardar un banco ficticio y usar un PDF de prueba. Comprobar que subirlo no da acceso y que el rol Finanzas, al aprobar con un número de operación, habilita el curso una sola vez.
+4. **Tarjeta.** Completar una compra en HNL con una tarjeta de pruebas. Cerrar la pestaña antes de regresar a la Academia, comprobar que Stripe recibió un 200 y verificar el curso y el recibo en la cuenta del alumno. Repetir las comprobaciones autenticadas con vistas de 390 × 844 y 1440 × 900.
+
+La suite aislada incluye datos ficticios para probar permisos del profesor al guardar la URL de una lección y la aprobación de transferencias sin cobros ni instrucciones bancarias reales.
+
 Pendientes por decisión del propietario: datos bancarios, biblioteca y clave de Bunny Stream, videos y nuevos cursos. Transferencias permanece oculta sin banco configurado. La compra real con tarjeta de prueba requiere credenciales del entorno de pruebas de Stripe; la clave disponible es de producción.
 
 Referencias del rediseño: [Coursera](https://www.coursera.org/) para separar destacados, búsqueda y catálogo; [MasterClass](https://www.masterclass.com/) para dar peso a las portadas y mantener una jerarquía editorial; [Canvas](https://www.instructure.com/canvas/login) para explicar el acceso antes de pedir credenciales. En Inspo se revisaron las capturas móviles de Coursera y MasterClass y la descripción de sus composiciones de escritorio; las páginas públicas también se abrieron. La implementación conserva la tipografía y los colores de Cluster. La nueva selección se prueba en `scripts/check-academia-catalog.ts`, incluido en `npm run test:lms`.
