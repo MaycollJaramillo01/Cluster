@@ -10,9 +10,12 @@ import { HStack } from '@astryxdesign/core/HStack';
 import { Grid } from '@astryxdesign/core/Grid';
 import { Heading } from '@astryxdesign/core/Heading';
 import { Text } from '@astryxdesign/core/Text';
+import { requireDashboard } from '@/lib/crm/session';
 
 export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ error?: string; guardado?: string }> }) {
+  const { role } = await requireDashboard('contenido');
   const [courses, selected, query] = await Promise.all([listCourses(), featuredCourseIds(), searchParams]);
+  courses.sort((a, b) => Number(Boolean(b.review_requested_at && !b.published)) - Number(Boolean(a.review_requested_at && !a.published)));
   const published = courses.filter((course) => course.published);
   const featured = selectFeatured(published, selected);
   const stats = [['Cursos', courses.length], ['Publicados', published.length], ['Lecciones', courses.reduce((sum, c) => sum + c.lessons, 0)], ['Por revisar', courses.filter((c) => c.review_requested_at).length]];
@@ -45,16 +48,17 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
           </table>
         </VStack> : <VStack gap={2} padding={8} className="border border-dashed border-black/20"><Heading level={3}>Tu primer curso empieza aquí</Heading></VStack>}
       </VStack>
-      <details className="border border-black/10 bg-white p-5 sm:p-6">
+      <details open={query.error === 'curso' || undefined} className="border border-black/10 bg-white p-5 sm:p-6">
         <summary className="cursor-pointer text-base font-semibold focus-visible:outline focus-visible:outline-2">Crear un nuevo curso</summary>
         <form action={createCourse} className="mt-6 max-w-2xl space-y-4">
+          {query.error === 'curso' ? <p role="alert" className="text-sm text-red-800">Completa el título y la descripción.</p> : null}
           <Field label="Título"><input className={fieldClass} name="title" required /></Field>
           <Field label="Descripción"><textarea className={fieldClass} name="description" rows={4} required /></Field>
           <Field label="Precio (L)"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue="0" /></Field>
           <Field label="Portada"><input className={fieldClass} name="cover_url" placeholder="https://" /></Field>
           <Field label="O sube la portada"><input className={fieldClass} name="cover" type="file" accept="image/*" /></Field>
           <Field label="Video de la primera lección"><input className={fieldClass} name="video_url" placeholder="https://" /></Field>
-          <label className="flex items-center gap-2 text-sm"><input name="published" type="checkbox" />Publicar en el catálogo</label>
+          {role === 'superadmin' ? <label className="flex items-center gap-2 text-sm"><input name="published" type="checkbox" />Publicar en el catálogo</label> : null}
           <button className={btn} type="submit">Crear curso</button>
         </form>
       </details>

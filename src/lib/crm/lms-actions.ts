@@ -66,7 +66,7 @@ async function lessonCourse(lessonId: string) {
   return String((rows[0] as { course_id?: string } | undefined)?.course_id || '');
 }
 
-// El profesor pide revisión; contenido la ve en la lista de cursos y publica.
+// El profesor pide revisión y el superadmin publica desde la ficha del curso.
 export async function requestReview(formData: FormData) {
   const courseId = field(formData, 'course_id');
   if (!courseId) return;
@@ -101,22 +101,35 @@ async function uniqueLessonSlug(courseId: string, title: string) {
 }
 
 export async function createCourse(formData: FormData) {
-  await requireDashboard('contenido');
+  const session = await requireDashboard('curso');
+  const teacherDraft = session.role === 'profesor';
   const title = field(formData, 'title');
   const description = field(formData, 'description');
-  if (!title || !description) return;
+  if (!title || !description) redirect(teacherDraft ? '/dashboard/profesor?error=curso' : '/dashboard/cursos?error=curso');
   const sql = await crm();
   const id = crypto.randomUUID();
   const slug = await uniqueCourseSlug(title);
-  const publish = field(formData, 'published') === 'on' ? 'si' : 'no';
-  const teacher = field(formData, 'teacher_id') || null;
+  const publish = session.role === 'superadmin' && field(formData, 'published') === 'on';
+  if (teacherDraft) {
+    await sql`
+      WITH teacher AS (
+        INSERT INTO valux_people (id, name, email, role)
+        VALUES (${crypto.randomUUID()}, ${session.name}, ${session.email}, 'profesor')
+        ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
+        RETURNING id
+      )
+      INSERT INTO lms_courses (id, slug, title, description, teacher_id)
+      SELECT ${id}, ${slug}, ${title}, ${description}, id FROM teacher
+    `;
+    refresh();
+    redirect(`/dashboard/cursos/${id}`);
+  }
   const cover = await storedFile(formData, 'cover', 'cover_url');
   await sql`
     INSERT INTO lms_courses (id, slug, title, description, price_cents, published, cover_url, teacher_id)
     VALUES (
       ${id}, ${slug}, ${title}, ${description}, ${cents(formData, 'price')},
-      CASE WHEN ${publish} = 'si' THEN true ELSE false END,
-      ${cover}, ${teacher}
+      ${publish}, ${cover}, ${field(formData, 'teacher_id') || null}
     )
   `;
   const video = field(formData, 'video_url');
@@ -130,12 +143,13 @@ export async function createCourse(formData: FormData) {
   redirect(`/dashboard/cursos/${id}`);
 }
 
-export async function toggleCourse(formData: FormData) {
-  await requireDashboard('contenido');
+export async function setCoursePublication(formData: FormData) {
+  await requireDashboard();
   const id = field(formData, 'id');
-  if (!id) return;
+  const state = field(formData, 'publication');
+  if (!id || (state !== 'publish' && state !== 'draft')) return;
   const sql = await crm();
-  await sql`UPDATE lms_courses SET published = NOT published, review_requested_at = NULL WHERE id = ${id}`;
+  await sql`UPDATE lms_courses SET published = ${state === 'publish'}, review_requested_at = NULL WHERE id = ${id}`;
   refresh();
 }
 

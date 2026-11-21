@@ -11,7 +11,7 @@ import {
   requestReview,
   saveFinalGrade,
   saveLessonScore,
-  toggleCourse,
+  setCoursePublication,
   updateCourseMeta,
 } from '@/lib/crm/lms-actions';
 import { getCourse, listCourses } from '@/lib/crm/lms';
@@ -21,11 +21,11 @@ import { listPeople, listPlans } from '@/lib/valux/data';
 import { requireCourseEditor } from '@/lib/crm/course-access';
 import { formatDate } from '@/lib/crm/format';
 import { Field, PageTitle, btn, btnGhost, btnTiny, fieldClass } from '@/components/dashboard/ui';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 
 export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  // El profesor dueño edita el temario y pide revisión; publicar, precio y alumnos quedan para contenido.
-  const { teacher } = await requireCourseEditor(id);
+  const { session, teacher } = await requireCourseEditor(id);
   const [detail, contacts, people, courses, plans] = await Promise.all([
     getCourse(id),
     teacher ? Promise.resolve([]) : listContacts({}),
@@ -55,7 +55,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
       />
       <div className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white p-4">
         <p className="text-sm text-black/60">
-          {course.published ? 'Publicado' : 'Borrador'} · {lessons.length} {lessons.length === 1 ? 'lección' : 'lecciones'} · {enrollments.length} {enrollments.length === 1 ? 'alumno' : 'alumnos'} · {money(course.price_cents)}
+          {course.published ? 'Publicado' : course.review_requested_at ? 'Revisión pendiente' : 'Borrador'} · {lessons.length} {lessons.length === 1 ? 'lección' : 'lecciones'} · {enrollments.length} {enrollments.length === 1 ? 'alumno' : 'alumnos'} · {money(course.price_cents)}
           {course.review_requested_at ? ` · revisión pedida el ${formatDate(course.review_requested_at)}` : ''}
         </p>
         {teacher ? (
@@ -65,10 +65,13 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
           </form>
         ) : (
         <div className="flex gap-2">
-          <form action={toggleCourse}>
-            <input type="hidden" name="id" value={course.id} />
-            <button className={btnGhost} type="submit">{course.published ? 'Pasar a borrador' : 'Publicar'}</button>
-          </form>
+          {session.role === 'superadmin' ? (
+            <form action={setCoursePublication}>
+              <input type="hidden" name="id" value={course.id} />
+              <input type="hidden" name="publication" value={course.published ? 'draft' : 'publish'} />
+              {course.published ? <button className={btnGhost} type="submit">Pasar a borrador</button> : <SubmitButton pending="Publicando…">Aprobar y publicar</SubmitButton>}
+            </form>
+          ) : null}
           <form action={deleteCourse}>
             <input type="hidden" name="id" value={course.id} />
             <button className={btnTiny} type="submit">Eliminar curso</button>

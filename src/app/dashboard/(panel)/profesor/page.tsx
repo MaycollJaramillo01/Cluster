@@ -5,28 +5,30 @@ import { requireDashboard } from '@/lib/crm/session';
 import { getPersonByEmail } from '@/lib/valux/data';
 import { academyMoney as money } from '@/lib/valux/money';
 import { PageTitle } from '@/components/dashboard/ui';
+import { TeacherCourseForm } from '@/components/dashboard/TeacherCourseForm';
 
 // Todo se filtra por la persona de la academia con el mismo correo: nunca ve cursos, alumnos ni ventas de otros.
-export default async function ProfesorPage() {
+export default async function ProfesorPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const session = await requireDashboard('profesor');
   const person = await getPersonByEmail(session.email);
+  const { error } = await searchParams;
+  const form = session.role === 'profesor' ? <TeacherCourseForm invalid={error === 'curso'} /> : null;
   if (!person) {
     return (
       <div className="space-y-4">
         <PageTitle title="Mis cursos" />
-        <p className="text-sm text-black/60">
-          Tu correo ({session.email}) no está en Academia → Personas. Pide que te den de alta como profesor y te asignen tus cursos.
-        </p>
+        {form}
+        <p className="text-sm text-black/60">Todavía no tienes cursos.</p>
       </div>
     );
   }
   const sql = await crm();
   const courses = (await sql`
-    SELECT c.id, c.title, c.published,
+    SELECT c.id, c.title, c.published, c.review_requested_at,
       (SELECT count(*) FROM lms_lessons l WHERE l.course_id = c.id) AS lessons
     FROM lms_courses c WHERE c.teacher_id = ${person.id}
     ORDER BY c.created_at DESC
-  `) as unknown as { id: string; title: string; published: boolean; lessons: number }[];
+  `) as unknown as { id: string; title: string; published: boolean; review_requested_at: string | null; lessons: number }[];
   const ids = courses.map((course) => course.id);
   const students = ids.length
     ? ((await sql`
@@ -58,18 +60,19 @@ export default async function ProfesorPage() {
   return (
     <div className="space-y-8">
       <PageTitle title="Mis cursos" />
+      {form}
       <div className="grid gap-3 sm:grid-cols-3">
         <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{courses.length}</span><span className="text-xs text-black/50">cursos</span></p>
         <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{students.length}</span><span className="text-xs text-black/50">inscripciones</span></p>
         <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{money(earned)}</span><span className="text-xs text-black/50">tu parte de las ventas (últimas 100)</span></p>
       </div>
 
-      {courses.length === 0 ? <p className="text-sm text-black/60">Todavía no tienes cursos asignados.</p> : courses.map((course) => {
+      {courses.length === 0 ? <p className="text-sm text-black/60">Todavía no tienes cursos.</p> : courses.map((course) => {
         const mine = students.filter((student) => student.course_id === course.id);
         const lessons = Number(course.lessons) || 0;
         return (
           <section key={course.id} className="space-y-2">
-            <h2 className="text-xl font-medium">{course.title} <span className="text-sm font-normal text-black/45">· {course.published ? 'publicado' : 'borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</span> <Link className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-brand" href={`/dashboard/cursos/${course.id}`}>Editar temario</Link></h2>
+            <h2 className="text-xl font-medium">{course.title} <span className="text-sm font-normal text-black/60">· {course.published ? 'Publicado' : course.review_requested_at ? 'Revisión pendiente' : 'Borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</span> <Link className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-brand" href={`/dashboard/cursos/${course.id}`}>Editar temario</Link></h2>
             {mine.length === 0 ? <p className="text-sm text-black/50">Sin alumnos todavía.</p> : (
               <table className="w-full border border-black/10 bg-white text-left text-sm">
                 <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Alumno</th><th className="px-4 py-2 font-medium">Desde</th><th className="px-4 py-2 font-medium">Avance</th><th className="px-4 py-2 font-medium">XP</th></tr></thead>

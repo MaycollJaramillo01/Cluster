@@ -1,6 +1,6 @@
 # Guía para presentar la Academia de Cluster
 
-Gracias al catálogo de la Academia, una persona puede encontrar un curso, entrar con su correo y avanzar por lecciones. Desde el panel, un profesor prepara el temario de sus cursos, incorpora videos y actividades y solicita revisión al equipo de contenido.
+Gracias al catálogo de la Academia, una persona puede encontrar un curso, entrar con su correo y avanzar por lecciones. Desde el panel, un profesor crea un borrador, prepara el temario y pide al superadmin que lo revise y publique.
 
 La presentación dura unos 20 minutos. Utiliza dos ventanas o perfiles de navegador, uno para el profesor y otro para el alumno. Puedes mostrar cualquiera de los dos recorridos por separado.
 
@@ -8,7 +8,7 @@ La presentación dura unos 20 minutos. Utiliza dos ventanas o perfiles de navega
 
 1. Abre la [Academia de Cluster](https://www.cluster.marketing/academia). Identifica un curso gratuito para el recorrido público. **Meta Ads para negocios locales** es el ejemplo de esta guía.
 2. Prepara un correo de alumno al que puedas acceder durante la presentación. Para mostrar el registro desde cero, usa un correo de prueba sin cuenta. Para retomar una sesión, usa una cuenta ya registrada.
-3. Pide al equipo que cree una cuenta con rol **Profesor** en el panel y una persona de Academia con el mismo correo. El equipo debe asignarle un curso. Ten lista su contraseña y el segundo factor. Usa un curso de demostración para los cambios en vivo.
+3. Prepara una cuenta con rol **Profesor**, su contraseña y el segundo factor. Puedes crear un curso de demostración desde esa cuenta o usar un curso que ya tenga asignado.
 4. Prepara dos lecciones en el curso de demostración. En la primera puedes usar el título **Define el objetivo de tu campaña** y una misión con estas dos líneas:
 
    ```text
@@ -22,15 +22,15 @@ La presentación dura unos 20 minutos. Utiliza dos ventanas o perfiles de navega
 
 1. Entra al catálogo. La selección de cursos destacados aparece primero en la misma lista.
 2. Busca **Canva** para enseñar cómo se encuentra un curso por nombre. Borra la búsqueda y muestra los filtros de cursos gratis y de pago.
-3. Abre un curso y señala el temario, el instructor y el precio cuando aplique. Explica el recorrido en una frase: «El profesor prepara las clases, el equipo revisa y publica, y el alumno entra al aula y avanza a su ritmo».
+3. Abre un curso y señala el temario, el instructor y el precio cuando aplique. Explica el recorrido en una frase: «El profesor prepara las clases, el superadmin revisa y publica, y el alumno entra al aula y avanza a su ritmo».
 
 ## Recorrido del profesor · 7 minutos
 
 1. Abre [Acceso para maestros](https://www.cluster.marketing/academia/entrar?acceso=maestros). Entra con correo y contraseña y completa el segundo factor. Si es el primer acceso y aparece la configuración, escanea el QR con una app autenticadora e introduce el código.
-2. En el panel del profesor, elige el curso asignado y pulsa **Editar temario**. Muestra desde dónde se revisan las lecciones y, si ya hay alumnos, su avance.
+2. En el panel del profesor, abre **Crear curso**. Escribe el título y la descripción y pulsa **Crear borrador**. El curso queda asignado a tu cuenta y se abre su temario. Para continuar un curso ya asignado, pulsa **Editar temario**.
 3. En el temario, agrega una sección o elige una que ya exista. Crea la lección de muestra o abre su editor. Añade un texto corto, el video preparado y la misión. Agrega un recurso, por ejemplo una hoja de trabajo o un enlace, si quieres mostrar qué materiales puede consultar el alumno.
 4. Guarda la lección. Vuelve a abrirla y verifica que el texto, el video y la misión quedaron guardados.
-5. Pulsa **Pedir revisión para publicar**. Explica que el equipo de contenido recibe la solicitud y publica desde su panel. Si quieres que el alumno continúe con ese mismo curso en vivo, coordina antes quién hará la publicación y cómo se inscribirá el alumno dentro de la demostración. Para el recorrido independiente, usa el curso gratuito del catálogo.
+5. Pulsa **Pedir revisión para publicar**. En la cuenta de superadmin, abre **Cursos**, localiza el curso con **Revisión pendiente**, revisa el temario y pulsa **Aprobar y publicar**. Si vas a mostrar la inscripción en vivo, coordina cómo se inscribirá el alumno. Para el recorrido independiente, usa el curso gratuito del catálogo.
 
 ## Recorrido del alumno · 7 minutos
 

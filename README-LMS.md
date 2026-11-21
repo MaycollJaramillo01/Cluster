@@ -25,7 +25,7 @@ Por dentro:
 
 Crear, publicar, borrar y calificar es `src/lib/crm/lms-actions.ts`. Leer el temario del panel es `src/lib/crm/lms.ts`.
 
-Al crear un curso se puede marcar “publicar” y pegar el video de la primera lección. El slug sale del título. Publicar es lo que lo muestra en `/academia`. Borrar el curso borra secciones, lecciones, recursos, progreso e inscripciones.
+El maestro puede crear un borrador con título y descripción desde **Mis cursos**. El sistema se lo asigna por su correo del panel. Contenido puede crear borradores y preparar los datos comerciales. Solo el superadmin puede publicar. El slug sale del título y el catálogo muestra los cursos publicados.
 
 Desde la ficha del curso el equipo puede:
 
@@ -298,7 +298,7 @@ Las renovaciones se reconocen por un `payment_succeeded` anterior de la misma su
 
 **Regla de reembolso:** `descontar` (por defecto) o `academia`. Con `descontar`, un reembolso de una venta cuyo mes ya se pagó se resta en la liquidación del mes del reembolso.
 
-**Edición con revisión:** el profesor (rol `profesor` en Equipo, con el mismo correo que su persona en la academia) abre «Editar temario» desde su panel. Edita secciones, lecciones, misiones, recursos y notas por clase, solo de sus cursos: cada acción verifica `teacher_id` en el servidor. No ve el precio, la portada, el bump ni el upsell, ni puede publicar, inscribir o ver correos. Con «Pedir revisión para publicar» marca `review_requested_at`. Contenido lo ve en la lista y, al publicar o despublicar, la marca se limpia.
+**Edición con revisión:** el profesor (rol `profesor` en Equipo) crea borradores desde su panel y abre «Editar temario» para administrar sus cursos. Cada acción de edición verifica `teacher_id` en el servidor. Con «Pedir revisión para publicar» marca `review_requested_at`. Los cursos pendientes aparecen primero en **Cursos**. El superadmin revisa el temario y pulsa **Aprobar y publicar**. Publicar o pasar a borrador limpia la solicitud.
 
 ## Liquidaciones
 
@@ -366,7 +366,7 @@ El webhook de Stripe se registra en `https://www.cluster.marketing/api/academia/
 ### Preparar una prueba operativa
 
 1. **Preview.** Usar una base de prueba. Verificar primero qué base resuelve el despliegue, porque el conector `neon/clustercrm` tiene prioridad sobre `DATABASE_URL`. Configurar `STRIPE_SECRET_KEY` en modo de pruebas, con el `STRIPE_WEBHOOK_SECRET` del endpoint `/api/academia/stripe` de esa misma vista previa. Registrar los ocho eventos de la tabla. La URL debe ser accesible para Stripe. Configurar también el correo de prueba y un almacén Blob privado para comprobantes.
-2. **Profesor y video.** Crear un profesor de prueba en Equipo y vincularlo a su persona de Academia con el mismo correo. Asignarle un curso de prueba. En Bunny, configurar la autenticación por token y permitir el dominio de la vista previa. Añadir el ID de biblioteca y la clave de firma de `.env.example`. Como profesor, guardar `bunny:<id del video>` en una lección y pedir revisión. Como alumno inscrito, reproducir el video y completar la lección.
+2. **Profesor y video.** Crear un profesor de prueba en Equipo y, desde su cuenta, crear un borrador. En Bunny, configurar la autenticación por token y permitir el dominio de la vista previa. Añadir el ID de biblioteca y la clave de firma de `.env.example`. Como profesor, guardar `bunny:<id del video>` en una lección y pedir revisión. Como superadmin, aprobar y publicar. Como alumno inscrito, reproducir el video y completar la lección.
 3. **Transferencia.** Dejar vacío el campo Comisión → Datos para transferencia hasta disponer de las instrucciones aprobadas para producción. El campo muestra un ejemplo sin guardarlo. En la vista previa se puede guardar un banco ficticio y usar un PDF de prueba. Comprobar que subirlo no da acceso y que el rol Finanzas, al aprobar con un número de operación, habilita el curso una sola vez.
 4. **Tarjeta.** Completar una compra en HNL con una tarjeta de pruebas. Cerrar la pestaña antes de regresar a la Academia, comprobar que Stripe recibió un 200 y verificar el curso y el recibo en la cuenta del alumno. Repetir las comprobaciones autenticadas con vistas de 390 × 844 y 1440 × 900.
 
