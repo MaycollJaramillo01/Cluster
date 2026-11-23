@@ -763,7 +763,7 @@ export async function submitMission(formData: FormData) {
   if (!lesson.allowed || !lesson.active) redirect(lesson.url);
   if (lesson.mission.kind === 'assignment') redirect(`${lesson.url}#mision`);
   const result = gradeMission(lesson.mission, (key) => field(formData, key));
-  await trackEvent('mission_submitted', { personId, data: { lesson: lessonId, correct: result.correct, total: result.total } });
+  await trackEvent('mission_submitted', { personId, data: { lesson: lessonId, kind: lesson.mission.kind, correct: result.correct, total: result.total } });
   if (!result.passed) {
     // Lo que marcó vuelve a la página para no hacerle responder todo de nuevo.
     const mission = lesson.mission;

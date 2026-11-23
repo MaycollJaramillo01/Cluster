@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 import { notFound } from 'next/navigation';
 import { VStack } from '@astryxdesign/core/VStack';
 import { Cover, LessonText } from '@/components/academia/ui';
@@ -51,10 +52,16 @@ export default async function CoursePreview({ params, searchParams }: {
                     <section className="space-y-2">
                       <h2 className="text-lg font-semibold">Materiales</h2>
                       <ul className="divide-y divide-black/10 border border-black/10">
-                        {lesson.resources.map((resource) => <li className="break-words px-4 py-3 text-sm" key={resource.id}>
-                          {resource.url ? <a className="font-semibold underline underline-offset-4" href={`${preview}/material/${encodeURIComponent(resource.id)}`} target="_blank" rel="noopener noreferrer">{resource.title}</a> : <strong>{resource.title}</strong>}
-                          {resource.content ? <p className="mt-1 whitespace-pre-wrap">{resource.content}</p> : null}
-                        </li>)}
+                        {lesson.resources.map((resource) => {
+                          const template = resource.kind === TEXT_TEMPLATE_KIND;
+                          const href = `${preview}/material/${encodeURIComponent(resource.id)}`;
+                          return <li className="break-words px-4 py-3 text-sm" key={resource.id}>
+                            {template ? <a className="font-semibold underline underline-offset-4" href={href} download>{resource.title}</a>
+                              : resource.url ? <a className="font-semibold underline underline-offset-4" href={href} target="_blank" rel="noopener noreferrer">{resource.title}</a>
+                                : <strong>{resource.title}</strong>}
+                            {resource.content ? <p className="mt-1 whitespace-pre-wrap">{resource.content}</p> : null}
+                          </li>;
+                        })}
                       </ul>
                     </section>
                   ) : null}

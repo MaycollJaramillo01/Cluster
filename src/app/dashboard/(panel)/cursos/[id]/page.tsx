@@ -14,6 +14,7 @@ import {
 } from '@/lib/crm/lms-actions';
 import { getCourse, listCourses } from '@/lib/crm/lms';
 import { courseReviewIssues } from '@/lib/crm/course-review';
+import { findCourseRevision } from '@/lib/crm/course-revisions';
 import { listContacts } from '@/lib/crm/queries';
 import { listPeople, listPlans } from '@/lib/valux/data';
 import { requireCourseEditor } from '@/lib/crm/course-access';
@@ -33,17 +34,19 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
   const { id } = await params;
   const status = await searchParams;
   const { session, teacher } = await requireCourseEditor(id);
-  const view = workspaceView(status.vista, teacher, status.error);
+  const detail = await getCourse(id);
+  if (!detail) notFound();
+  const requested = workspaceView(status.vista, teacher, status.error);
+  const view = detail.course.revision_of && (requested === 'ajustes' || requested === 'alumnos') ? 'ficha' : requested;
   const roster = view === 'alumnos' && !teacher;
   const settings = view === 'ajustes';
-  const [detail, contacts, people, courses, plans] = await Promise.all([
-    getCourse(id),
+  const [contacts, people, courses, plans, revision] = await Promise.all([
     roster ? listContacts({}) : [],
     roster || settings ? listPeople() : [],
     settings ? listCourses() : [],
     settings ? listPlans() : [],
+    detail.course.published ? findCourseRevision(id) : null,
   ]);
-  if (!detail) notFound();
   const others = courses.filter((item) => item.id !== id);
   const { course, sections, lessons, enrollments, progress } = detail;
   const enrolledContacts = new Set(enrollments.map((item) => item.contact_id).filter(Boolean));
@@ -52,7 +55,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
   const availablePeople = people.filter((person) => !enrolledPeople.has(person.id));
 
   return (
-    <TeacherCourseBuilder course={course} sections={sections} lessons={lessons} status={status} role={session.role} view={view} issues={view === 'revision' ? courseReviewIssues(detail) : []}>
+    <TeacherCourseBuilder course={course} sections={sections} lessons={lessons} status={status} role={session.role} view={view} revision={revision} issues={view === 'revision' ? courseReviewIssues(detail) : []}>
       {settings ? <VStack as="section" gap={4}>
       <Heading level={2} className="font-brand text-xl font-semibold">Configuración comercial</Heading>
       <form action={updateCourseMeta} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">

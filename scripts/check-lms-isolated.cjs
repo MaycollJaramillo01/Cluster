@@ -37,7 +37,7 @@ if (process.env.LMS_TEST_SCHEMA) {
       const statements = new Function('return ' + source.slice(start, source.indexOf('\n];', start) + 2))();
       await raw.transaction([raw`SELECT set_config('search_path', ${schema}, true)`, ...statements.map((s) => raw.query(s))]);
       const tests = process.argv.slice(2);
-      for (const test of tests.length ? tests : ['check-academia.ts', 'check-lms-cierre.ts', 'check-seguimiento.ts', 'check-misiones-equipo.ts', 'check-lms-security.ts', 'check-academia-catalog.ts', 'check-academia-currency.ts', 'check-lms-access-delivery.ts', 'check-lms-authoring.ts', 'check-lms-student.ts', 'check-lms-certificates.ts']) {
+      for (const test of tests.length ? tests : ['check-academia.ts', 'check-lms-cierre.ts', 'check-seguimiento.ts', 'check-misiones-equipo.ts', 'check-lms-security.ts', 'check-academia-catalog.ts', 'check-academia-currency.ts', 'check-lms-access-delivery.ts', 'check-lms-authoring.ts', 'check-lms-student.ts', 'check-lms-certificates.ts', 'check-lms-published-course.ts']) {
         console.log(`\nPrueba aislada: ${test}`);
         const code = await new Promise((resolve) => {
           const child = spawn(process.execPath, ['--import', 'tsx', '--require', __filename, path.resolve('scripts', test)], {

@@ -2,15 +2,16 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { storedFile, storedPrivateAsset } from '@/lib/valux/upload';
+import { storedFile, storedPrivateAsset, TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 import { crm } from './db';
 import { requireCourseEditor } from './course-access';
 import { requireDashboard } from './session';
 import { FEATURED_KEY } from '@/lib/valux/catalog';
 import { parseMission } from '@/lib/valux/mission';
-import { validLessonVideo } from '@/lib/valux/video';
+import { bunnyVideo, validLessonVideo } from '@/lib/valux/video';
 import { getCourse } from './lms';
 import { courseReviewIssues } from './course-review';
+import { createCourseRevision, publishCourseRevision } from './course-revisions';
 import type { NeonQueryFunctionInTransaction, NeonQueryInTransaction } from '@neondatabase/serverless';
 
 function field(formData: FormData, key: string) {
@@ -190,6 +191,29 @@ export async function createCourse(formData: FormData) {
   redirect(`/dashboard/cursos/${id}`);
 }
 
+export async function startCourseRevision(formData: FormData) {
+  const id = field(formData, 'course_id');
+  if (!id) return;
+  const { teacherId } = await requireCourseEditor(id);
+  const draftId = await createCourseRevision(id, teacherId);
+  if (!draftId) redirect(`/dashboard/cursos/${id}?vista=revision&error=estado`);
+  refresh();
+  redirect(`/dashboard/cursos/${draftId}?vista=temario`);
+}
+
+export async function discardCourseRevision(formData: FormData) {
+  const id = field(formData, 'course_id');
+  if (!id) return;
+  const { teacherId, session } = await requireCourseEditor(id);
+  const sql = await crm();
+  const [draft] = await sql`DELETE FROM lms_courses WHERE id = ${id} AND revision_of IS NOT NULL AND NOT published
+    AND (review_requested_at IS NULL OR ${session.role === 'superadmin'})
+    AND (${teacherId}::text IS NULL OR teacher_id = ${teacherId}) RETURNING revision_of`;
+  if (!draft) redirect(`/dashboard/cursos/${id}?vista=revision&error=estado`);
+  refresh();
+  redirect(`/dashboard/cursos/${draft.revision_of}?vista=revision`);
+}
+
 export async function setCoursePublication(formData: FormData) {
   await requireDashboard();
   const id = field(formData, 'id');
@@ -200,8 +224,14 @@ export async function setCoursePublication(formData: FormData) {
   if (state === 'publish') {
     const detail = await getCourse(id);
     if (detail?.course.published) return;
-    if (!detail || courseReviewIssues(detail).length || (detail.course.teacher_id && !detail.course.review_requested_at)) {
+    if (!detail || courseReviewIssues(detail).length || ((detail.course.teacher_id || detail.course.revision_of) && !detail.course.review_requested_at)) {
       redirect(`${path}&error=revision#revision`);
+    }
+    if (detail.course.revision_of) {
+      const origin = detail.course.revision_of;
+      if (!await publishCourseRevision(id, origin, detail.course.authoring_version)) redirect(`${path}&error=version#revision`);
+      refresh();
+      redirect(`/dashboard/cursos/${origin}?vista=revision&guardado=version#revision`);
     }
     const published = await sql`UPDATE lms_courses SET published = true, review_requested_at = NULL, review_feedback = ''
       WHERE id = ${id} AND authoring_version = ${detail.course.authoring_version} AND NOT published
@@ -275,6 +305,7 @@ export async function updateLesson(formData: FormData) {
   const section = await courseSection(courseId, field(formData, 'section_id'), back);
   const video = field(formData, 'video_url');
   if (video && !validLessonVideo(video)) redirect(`${back}?error=video`);
+  if (field(formData, 'preview_public') === '1' && bunnyVideo(video)) redirect(`${back}?error=muestra`);
   const mission = String(formData.get('mission') ?? '').trim();
   if (mission.length > 24000 || parseMission(mission).errors.length) redirect(`${back}?error=mision`);
   const points = positive(field(formData, 'points')) || 10;
@@ -287,6 +318,7 @@ export async function updateLesson(formData: FormData) {
       points = ${points},
       duration_min = ${positive(field(formData, 'duration_min'))},
       mission = ${mission},
+      preview_public = CASE WHEN ${field(formData, 'preview_settings') === '1'} THEN ${field(formData, 'preview_public') === '1'} ELSE l.preview_public END,
       sort_order = CASE WHEN section_id IS DISTINCT FROM ${section}::text THEN
         (SELECT COALESCE(max(other.sort_order), 0) + 1 FROM lms_lessons other
           WHERE other.course_id = l.course_id AND other.section_id IS NOT DISTINCT FROM ${section}::text)
@@ -305,8 +337,9 @@ export async function deleteLesson(formData: FormData) {
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   if (!id || !courseId) return;
-  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) =>
-    tx`DELETE FROM lms_lessons WHERE id = ${id} AND course_id = ${courseId} AND ${allowed}`);
+  const deleted = await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) =>
+    tx`DELETE FROM lms_lessons WHERE id = ${id} AND course_id = ${courseId} AND source_id IS NULL AND ${allowed} RETURNING id`);
+  if (!deleted.length) redirect(`/dashboard/cursos/${courseId}/lecciones/${id}?error=conservar`);
   refresh();
   redirect(`/dashboard/cursos/${courseId}?vista=temario`);
 }
@@ -410,11 +443,15 @@ export async function createResource(formData: FormData) {
   const courseId = await lessonCourse(lessonId);
   const back = `/dashboard/cursos/${courseId}/lecciones/${lessonId}`;
   await checkEditableBeforeUpload(courseId, back);
-  const allowed = ['video', 'pdf', 'imagen', 'enlace', 'texto'];
-  const url = await storedPrivateAsset(formData, 'file', 'url').catch(() => {
+  const allowed = ['video', 'pdf', 'imagen', 'enlace', 'texto', TEXT_TEMPLATE_KIND];
+  const content = field(formData, 'content');
+  const file = formData.get('file');
+  if (kind === TEXT_TEMPLATE_KIND && (!content || content.length > 12000 || field(formData, 'url') || (file instanceof File && file.size))) {
+    redirect(`${back}?error=plantilla#materiales`);
+  }
+  const url = kind === TEXT_TEMPLATE_KIND ? null : await storedPrivateAsset(formData, 'file', 'url').catch(() => {
     redirect(`${back}?error=archivo#materiales`);
   });
-  const content = field(formData, 'content');
   if (!url && !content) redirect(`${back}?error=recurso#materiales`);
   await mutateCourse(courseId, back, (tx, editable) => tx`
     INSERT INTO lms_resources (id, lesson_id, kind, title, url, content, sort_order)

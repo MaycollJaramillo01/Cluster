@@ -8,7 +8,9 @@ import { completeLesson, submitMission } from '@/lib/valux/actions';
 import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/valux/data';
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
 import { trackEvent } from '@/lib/valux/events';
-import { directLessonVideo, lessonEmbed } from '@/lib/valux/video';
+import { bunnyVideo, directLessonVideo, lessonEmbed } from '@/lib/valux/video';
+import { getLessonQuestions } from '@/lib/valux/course-community';
+import { postLessonQuestion } from '@/lib/valux/community-actions';
 import { LessonText } from '@/components/academia/ui';
 import { LessonAssignment } from '@/components/academia/LessonAssignment';
 import { LessonNotes } from '@/components/academia/LessonNotes';
@@ -17,11 +19,22 @@ import { getLessonNote } from '@/lib/valux/lesson-notes';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { ScrollTop } from '@/components/academia/ScrollTop';
 import { Icon } from '@/components/ui/Icon';
+import { TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 
 type Item = { id: string; slug: string; title: string; section_id: string; duration_min: number | null };
 
 const primaryClass = 'inline-flex min-h-11 items-center justify-center gap-2 bg-brand px-4 py-2 text-sm font-semibold text-ink hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const secondaryClass = 'inline-flex min-h-11 items-center justify-center gap-2 border border-black/15 bg-white px-4 py-2 text-sm font-medium hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+
+function YoutubeLink({ embed }: { embed: string }) {
+  const prefix = 'https://www.youtube.com/embed/';
+  if (!embed.startsWith(prefix)) return null;
+  return (
+    <a className="inline-flex min-h-11 items-center gap-2 text-sm font-medium underline underline-offset-4" href={`https://www.youtube.com/watch?v=${embed.slice(prefix.length)}`} target="_blank" rel="noopener noreferrer">
+      <Icon name="play" size={16} aria-hidden="true" /> Ver en YouTube
+    </a>
+  );
+}
 
 function missionNote(code: string, kind: 'quiz' | 'checklist') {
   if (code === 'pendiente') return 'Responde la misión para completar esta clase.';
@@ -122,9 +135,9 @@ export default async function LessonPlayer({
   searchParams,
 }: {
   params: Promise<{ slug: string; lesson: string }>;
-  searchParams: Promise<{ mision?: string; r?: string }>;
+  searchParams: Promise<{ mision?: string; r?: string; pregunta?: string }>;
 }) {
-  const [{ slug, lesson: lessonSlug }, { mision, r }, personId] = await Promise.all([params, searchParams, academiaPersonId()]);
+  const [{ slug, lesson: lessonSlug }, { mision, r, pregunta }, personId] = await Promise.all([params, searchParams, academiaPersonId()]);
   // Respuestas del intento anterior, para volver a marcarlas.
   const picks = (r || '').split('.');
   const detail = await publishedLesson(slug, lessonSlug);
@@ -132,12 +145,31 @@ export default async function LessonPlayer({
   const { course, lesson } = detail;
   const [canRead, access] = await Promise.all([canReadCourse(personId, course), lessonAccess(personId, course)]);
   const { done, order, pending } = access;
+  if (!canRead && lesson.preview_public && course.price_cents > 0) {
+    const embed = bunnyVideo(lesson.video_url) ? '' : lessonEmbed(lesson.video_url);
+    const direct = !embed && directLessonVideo(lesson.video_url);
+    return (
+      <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+        <VStack gap={5}>
+          <Link href={`/academia/${slug}#temario`} className="text-sm font-semibold underline">← Volver al temario</Link>
+          <p className="text-sm font-semibold">Clase de muestra</p>
+          <Heading level={1} className="break-words font-brand text-3xl font-semibold sm:text-4xl">{lesson.title}</Heading>
+          {embed ? <iframe className="aspect-video w-full bg-ink" title={lesson.title} src={embed} allow="encrypted-media; picture-in-picture" allowFullScreen /> : null}
+          {direct ? <video className="aspect-video w-full bg-ink" aria-label={lesson.title} src={direct} controls playsInline preload="metadata" /> : null}
+          <YoutubeLink embed={embed} />
+          {lesson.content ? <LessonText text={lesson.content} /> : null}
+          <Link href={`/academia/${slug}?inscripcion=1`} className={primaryClass}>Inscribirme al curso</Link>
+        </VStack>
+      </main>
+    );
+  }
   const locked = canRead && !access.unlocked.has(lesson.id);
   const open = canRead && !locked;
   const signedIn = access.person?.is_active === true;
-  const [note, xp] = await Promise.all([
+  const [note, xp, questions] = await Promise.all([
     open && signedIn ? getLessonNote(personId, lesson.id) : null,
     mision === 'ok' && done.has(lesson.id) ? personXp(personId) : 0,
+    open && signedIn ? getLessonQuestions(lesson.id, personId) : [],
     open && signedIn ? trackEvent('lesson_started', { id: `lesson_started:${personId}:${lesson.id}`, personId, data: { lesson: lesson.id, course: course.id } }) : null,
   ]);
   const mission = open ? parseMission(lesson.mission).mission : null;
@@ -248,12 +280,14 @@ export default async function LessonPlayer({
                 {lesson.resources.length ? <a href="#materiales-clase" className={secondaryClass}>Materiales</a> : null}
                 {shown ? <a href="#mision" className={secondaryClass}>{shown.kind === 'assignment' ? 'Tarea' : 'Actividad'}</a> : null}
                 {signedIn ? <a href="#mis-notas" className={secondaryClass}>Mis notas</a> : null}
+                {signedIn ? <a href="#preguntas" className={secondaryClass}>Preguntas</a> : null}
               </nav>
             ) : null}
 
             {open ? (
               <VStack gap={8} className="mt-8">
                 <section id="resumen-clase" aria-label="Resumen de la clase" className="scroll-mt-24 space-y-4">
+                <YoutubeLink embed={video} />
                 {!video && !directVideo && lesson.video_url.startsWith('https://') && !lesson.video_url.includes('mediadelivery.net') ? (
                   <a className={secondaryClass} href={lesson.video_url} target="_blank" rel="noopener noreferrer">
                     <Icon name="play" size={16} /> Abrir video
@@ -270,13 +304,16 @@ export default async function LessonPlayer({
                         <li key={resource.id} className="flex items-start gap-3 px-4 py-3 text-sm">
                           <Icon name={resource.url ? 'link' : 'pen'} size={16} className="mt-0.5 shrink-0 text-black/45" />
                           <div className="min-w-0">
-                            {resource.url ? (
+                            {resource.kind === TEXT_TEMPLATE_KIND ? (
+                              signedIn ? <a className="font-medium underline underline-offset-2" href={`/api/academia/descargas/recurso/${encodeURIComponent(resource.id)}`} download>{resource.title} (.txt)</a>
+                                : <Link className="font-medium underline underline-offset-2" href={`/academia/entrar?curso=${encodeURIComponent(slug)}`}>Entra para descargar {resource.title}</Link>
+                            ) : resource.url ? (
                               <a className="font-medium underline-offset-2 hover:underline" href={`/api/academia/descargas/recurso/${encodeURIComponent(resource.id)}`} target="_blank" rel="noopener noreferrer">{resource.title}</a>
                             ) : (
                               <span className="font-medium">{resource.title}</span>
                             )}
-                            {resource.kind ? <span className="ml-2 text-xs text-black/45">{resource.kind.charAt(0).toUpperCase() + resource.kind.slice(1)}</span> : null}
-                            {resource.content ? <p className="mt-1 whitespace-pre-wrap text-black/65">{resource.content}</p> : null}
+                            {resource.kind === TEXT_TEMPLATE_KIND ? <span className="ml-2 text-xs text-black/65">Descarga privada</span> : resource.kind ? <span className="ml-2 text-xs text-black/45">{resource.kind.charAt(0).toUpperCase() + resource.kind.slice(1)}</span> : null}
+                            {resource.content && resource.kind !== TEXT_TEMPLATE_KIND ? <p className="mt-1 whitespace-pre-wrap text-black/65">{resource.content}</p> : null}
                           </div>
                         </li>
                       ))}
@@ -346,6 +383,27 @@ export default async function LessonPlayer({
                   </section>
                 ) : null}
                 {signedIn ? <LessonNotes key={lesson.id} lessonId={lesson.id} note={note} /> : null}
+                {signedIn ? (
+                  <section id="preguntas" className="scroll-mt-24 space-y-4 border border-black/10 bg-white p-4 sm:p-5">
+                    <h2 className="text-lg font-semibold">Preguntas de la clase</h2>
+                    <p className="text-sm text-black/70">Tu pregunta y la respuesta son privadas entre tú y el equipo del curso.</p>
+                    {pregunta === 'ok' ? <p role="status" className="text-sm font-semibold">Pregunta enviada al profesor.</p> : null}
+                    {pregunta === 'error' ? <p role="alert" className="text-sm text-red-800">Escribe entre 5 y 2.000 caracteres.</p> : null}
+                    <form action={postLessonQuestion} className="space-y-3">
+                      <input type="hidden" name="lesson_id" value={lesson.id} />
+                      <label className="block text-sm font-semibold">Tu pregunta
+                        <textarea className="mt-2 block w-full border border-black/20 bg-white p-3 text-ink" rows={3} name="question" required minLength={5} maxLength={2000} />
+                      </label>
+                      <SubmitButton pending="Enviando…" className="sm:w-auto">Enviar pregunta</SubmitButton>
+                    </form>
+                    {questions.length ? <ul className="divide-y divide-black/10">
+                      {questions.map((item) => <li key={item.id} className="space-y-2 py-3 text-sm">
+                        <p className="whitespace-pre-wrap break-words font-medium">{item.question}</p>
+                        {item.answer ? <p className="whitespace-pre-wrap break-words"><strong>Respuesta del equipo</strong>{'\n'}{item.answer}</p> : <p className="text-black/70">Esperando respuesta</p>}
+                      </li>)}
+                    </ul> : null}
+                  </section>
+                ) : null}
               </VStack>
             ) : (
               <div className="mt-8 border border-black/10 bg-white p-5">

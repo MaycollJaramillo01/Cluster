@@ -587,6 +587,33 @@ const STATEMENTS = [
     PRIMARY KEY (lesson_id, person_id)
   )`,
   `CREATE INDEX IF NOT EXISTS lms_assignment_review_idx ON lms_assignment_submissions (lesson_id, status, submitted_at)`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS revision_of TEXT REFERENCES lms_courses(id) ON DELETE CASCADE`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS revision_base_version INTEGER`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS lms_courses_one_revision_idx ON lms_courses (revision_of) WHERE revision_of IS NOT NULL`,
+  `ALTER TABLE lms_sections ADD COLUMN IF NOT EXISTS source_id TEXT`,
+  `ALTER TABLE lms_lessons ADD COLUMN IF NOT EXISTS source_id TEXT`,
+  `ALTER TABLE lms_lessons ADD COLUMN IF NOT EXISTS preview_public BOOLEAN NOT NULL DEFAULT false`,
+  `ALTER TABLE lms_resources ADD COLUMN IF NOT EXISTS source_id TEXT`,
+  `CREATE TABLE IF NOT EXISTS lms_course_reviews (
+    course_id TEXT NOT NULL REFERENCES lms_courses(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
+    rating SMALLINT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    body TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pendiente' CHECK (status IN ('pendiente','publicada','oculta')),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (course_id, person_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS lms_lesson_questions (
+    id TEXT PRIMARY KEY,
+    lesson_id TEXT NOT NULL REFERENCES lms_lessons(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL DEFAULT '',
+    answered_by TEXT,
+    answered_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS lms_lesson_questions_lesson_idx ON lms_lesson_questions(lesson_id, created_at DESC)`,
   `CREATE TABLE IF NOT EXISTS lms_lesson_notes (
     lesson_id TEXT NOT NULL REFERENCES lms_lessons(id) ON DELETE CASCADE,
     person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
@@ -624,6 +651,9 @@ const STATEMENTS = [
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS academia_events_name_idx ON academia_events (name, created_at)`,
+  `CREATE INDEX IF NOT EXISTS academia_learning_event_lesson_idx
+    ON academia_events ((data::jsonb ->> 'lesson'), person_id, created_at)
+    WHERE name IN ('lesson_started', 'mission_submitted')`,
   // Cada evento de Stripe se registra una vez por su id.
   `CREATE TABLE IF NOT EXISTS stripe_events (
     id TEXT PRIMARY KEY,
@@ -760,6 +790,8 @@ async function migrate(sql: Sql) {
 }
 
 const STORED_TABLES = [
+  'lms_course_reviews',
+  'lms_lesson_questions',
   'lms_course_certificates',
   'lms_lesson_notes',
   'lms_assignment_submissions',

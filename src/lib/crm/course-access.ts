@@ -10,7 +10,9 @@ export async function requireCourseEditor(courseId: string) {
   if (!teacher) return { session, teacher, teacherId: null };
   const sql = await crm();
   const person = await getPersonByEmail(session.email);
-  const rows = await sql`SELECT id FROM lms_courses WHERE id = ${courseId} AND teacher_id = ${person?.id || ''}`;
+  const rows = await sql`SELECT c.id FROM lms_courses c LEFT JOIN lms_courses original ON original.id = c.revision_of
+    WHERE c.id = ${courseId} AND c.teacher_id = ${person?.id || ''}
+      AND (c.revision_of IS NULL OR original.teacher_id = c.teacher_id)`;
   if (!rows.length) redirect('/dashboard/profesor');
   return { session, teacher, teacherId: person?.id ?? null };
 }

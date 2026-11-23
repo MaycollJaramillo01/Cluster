@@ -10,7 +10,7 @@ import { requireCourseEditor } from '@/lib/crm/course-access';
 import { getCourse, getLesson } from '@/lib/crm/lms';
 import { createResource, deleteLesson, deleteResource, updateLesson } from '@/lib/crm/lms-actions';
 import { parseMission } from '@/lib/valux/mission';
-import { isPrivateAcademiaAsset } from '@/lib/valux/upload';
+import { isPrivateAcademiaAsset, TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 import { directLessonVideo, lessonEmbed } from '@/lib/valux/video';
 
 const field = 'min-h-11 w-full border border-black/25 bg-white px-3 py-2 text-base text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink';
@@ -23,6 +23,7 @@ const editErrors: Record<string, string> = {
   video: 'Revisa el enlace del video. Usa YouTube, Vimeo, Bunny Stream o una URL MP4/WebM.',
   mision: 'Revisa que la actividad tenga instrucciones o respuestas válidas.',
   seccion: 'El módulo elegido ya no está disponible. Elige otro módulo.',
+  conservar: 'La clase está vinculada al avance del curso publicado y se conserva en el borrador de cambios.',
 };
 const materialKinds = [
   { id: 'enlace', name: 'Enlace o archivo' },
@@ -30,6 +31,7 @@ const materialKinds = [
   { id: 'imagen', name: 'Imagen' },
   { id: 'video', name: 'Video complementario' },
   { id: 'texto', name: 'Nota o texto' },
+  { id: TEXT_TEMPLATE_KIND, name: 'Plantilla de texto descargable' },
 ];
 const sections: { id: string; title: string; icon: IconName }[] = [
   { id: 'contenido', title: 'Contenido', icon: 'pen' },
@@ -132,12 +134,23 @@ export default async function LessonPage({ params, searchParams }: {
 
             <section id="video" aria-labelledby="lesson-video" className={`${panel} scroll-mt-6`}>
               <h2 id="lesson-video" className={subhead}>Video</h2>
+              {status.error === 'muestra' ? <p role="alert" className="text-sm text-red-800">Para una muestra con video, usa un enlace público de YouTube, Vimeo o MP4/WebM.</p> : null}
               {!readOnly ? (
                 <label className={label}>Enlace del video
                   <input className={field} name="video_url" defaultValue={lesson.video_url || ''} placeholder="https://…" inputMode="url" spellCheck={false} aria-invalid={status.error === 'video' || undefined} />
                   <small className="block font-normal text-black/70">Pega una URL de YouTube, Vimeo, Bunny Stream o un archivo MP4/WebM. También puedes usar <code>bunny:&lt;id&gt;</code>.</small>
                 </label>
               ) : null}
+              {!readOnly ? (
+                <>
+                  <input type="hidden" name="preview_settings" value="1" />
+                  <label className="flex items-start gap-3 text-sm">
+                    <input type="checkbox" name="preview_public" value="1" defaultChecked={lesson.preview_public} className="mt-1" />
+                    <strong>Ofrecer como clase de muestra</strong>
+                  </label>
+                  <p className="text-sm text-black/70">En cursos de pago, cualquier visitante podrá ver el texto y el video de esta clase.</p>
+                </>
+              ) : lesson.preview_public ? <p className="text-sm font-semibold">Clase de muestra</p> : null}
               {video ? (
                 <iframe title={`Video guardado de ${lesson.title}`} src={video} className="aspect-video w-full border border-black/10 bg-ink" loading="lazy" allow="accelerometer; gyroscope; encrypted-media; picture-in-picture" allowFullScreen />
               ) : directVideo ? (
@@ -185,7 +198,7 @@ export default async function LessonPage({ params, searchParams }: {
               <ul className="divide-y divide-black/10 border-y border-black/10">
                 {lesson.resources.map((resource) => {
                   const kind = materialKinds.find((item) => item.id === resource.kind);
-                  const privateFile = isPrivateAcademiaAsset(resource.url || '');
+                  const privateFile = resource.kind === TEXT_TEMPLATE_KIND || isPrivateAcademiaAsset(resource.url || '');
                   return (
                     <li key={resource.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                       <VStack gap={1} className="min-w-0 flex-1">
@@ -205,9 +218,10 @@ export default async function LessonPage({ params, searchParams }: {
             ) : <p className="text-sm text-black/70">Sin materiales guardados.</p>}
 
             {!readOnly ? (
-              <details open={status.error === 'archivo' || status.error === 'recurso' || undefined} className="border border-black/15 p-3 sm:p-4">
+              <details open={status.error === 'archivo' || status.error === 'recurso' || status.error === 'plantilla' || undefined} className="border border-black/15 p-3 sm:p-4">
                 <summary className="min-h-9 cursor-pointer font-semibold focus-visible:outline focus-visible:outline-2">Agregar material</summary>
                 <form action={createResource} className="mt-4 space-y-4">
+                  {status.error === 'plantilla' ? <p role="alert" className="text-sm text-red-800">Escribe hasta 12.000 caracteres para la plantilla y deja vacíos el enlace y el archivo.</p> : null}
                   <input type="hidden" name="lesson_id" value={lesson.id} />
                   <section className="grid gap-3 sm:grid-cols-2">
                     <label className={label}>Título del material<input className={field} name="title" required /></label>
@@ -227,7 +241,7 @@ export default async function LessonPage({ params, searchParams }: {
             ) : null}
           </section>
 
-          {!readOnly ? (
+          {!readOnly && !lesson.source_id ? (
             <details className="border border-black/15 bg-white p-4">
               <summary className="cursor-pointer text-sm font-semibold text-red-800">Eliminar clase</summary>
               <form action={deleteLesson} className="mt-3 space-y-3">

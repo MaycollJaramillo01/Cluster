@@ -62,6 +62,16 @@ export async function storedPrivateAsset(formData: FormData, fileKey: string, ur
 
 const noStore = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
 
+export const TEXT_TEMPLATE_KIND = 'plantilla-txt';
+
+export function deliverTextTemplate(content: string, title: string) {
+  const filename = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80) || 'plantilla-de-clase';
+  return new Response(content, {
+    headers: { ...noStore, 'Content-Type': 'text/plain; charset=utf-8', 'Content-Disposition': `attachment; filename="${filename}.txt"` },
+  });
+}
+
 // Se invoca solo después de comprobar permisos para el recurso o producto.
 export async function deliverAcademiaAsset(value: string, origin: string) {
   if (value.startsWith(privatePrefix)) {

@@ -12,6 +12,8 @@ import { advanceStage } from '@/lib/valux/events';
 import { Icon } from '@/components/ui/Icon';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { VStack } from '@astryxdesign/core/VStack';
+import { getCourseReviews } from '@/lib/valux/course-community';
+import { saveCourseReview } from '@/lib/valux/community-actions';
 
 const primaryAction = 'flex min-h-12 w-full items-center justify-center gap-2 bg-brand px-4 py-3 text-center text-sm font-semibold text-ink hover:bg-brand/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
@@ -20,7 +22,7 @@ export default async function CourseCatalogPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ok?: string; error?: string; terminado?: string; inscripcion?: string; constancia?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; terminado?: string; inscripcion?: string; constancia?: string; resena?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
@@ -89,12 +91,16 @@ export default async function CourseCatalogPage({
       </main>
     );
   }
-  const access = hasAccess ? await lessonAccess(personId, course) : null;
+  const [access, reviews] = await Promise.all([
+    hasAccess ? lessonAccess(personId, course) : null,
+    getCourseReviews(course.id, personId),
+  ]);
   const doneCount = access ? access.order.filter((lesson) => access.done.has(lesson.id)).length : 0;
   const nextLesson = access?.pending;
   const finished = Boolean(access) && lessonCount > 0 && !nextLesson;
   const pct = lessonCount ? Math.round((doneCount / lessonCount) * 100) : 0;
   const lessonUrl = (lesson: { slug: string }) => `/academia/${course.slug}/${lesson.slug}`;
+  const sample = paid && !hasAccess ? course.lessons.find((lesson) => lesson.preview_public) : null;
   const loose = course.lessons.filter((lesson) => !lesson.section_id);
   const groups = [
     ...course.sections.map((section) => ({
@@ -157,7 +163,7 @@ export default async function CourseCatalogPage({
           </ul>
         </section> : null}
 
-        <section className="space-y-3">
+        <section id="temario" className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-xl font-medium">Contenido del curso</h2>
             <p className="text-sm text-black/65">{course.sections.length ? `${course.sections.length} secciones · ` : ''}{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
@@ -176,11 +182,13 @@ export default async function CourseCatalogPage({
                 </summary>
                 <ol className="border-t border-black/10">
                   {group.lessons.map((lesson) => {
-                    const locked = access ? !access.unlocked.has(lesson.id) : paid;
+                    const preview = paid && !hasAccess && lesson.preview_public;
+                    const locked = !preview && (access ? !access.unlocked.has(lesson.id) : paid);
                     const row = 'flex min-h-11 items-center gap-3 px-4 py-3 text-sm';
                     const contents = <>
                       {(locked || access) ? <LessonMark done={Boolean(access?.done.has(lesson.id))} locked={locked} /> : null}
                       <span className="min-w-0 flex-1 break-words">{lesson.title}</span>
+                      {preview ? <span className="shrink-0 text-xs font-semibold underline">Ver muestra</span> : null}
                       {lesson.duration_min ? <span className="shrink-0 text-xs text-black/65">{lesson.duration_min} min</span> : null}
                     </>;
                     return (
@@ -201,6 +209,34 @@ export default async function CourseCatalogPage({
           {course.audience ? <section className="space-y-2"><h2 className="text-xl font-medium">Para quién es</h2><p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{course.audience}</p></section> : null}
           {course.prerequisites ? <section className="space-y-2"><h2 className="text-xl font-medium">Requisitos</h2><p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{course.prerequisites}</p></section> : null}
         </section> : null}
+        <section id="resenas" className="scroll-mt-24 space-y-4">
+          <h2 className="text-xl font-medium">Reseñas de alumnos</h2>
+          <p className="text-sm text-black/70">{reviews.count ? `${reviews.average.toLocaleString('es-HN')} de 5 · ${reviews.count} ${reviews.count === 1 ? 'reseña' : 'reseñas'}` : 'Aún no hay reseñas publicadas.'}</p>
+          {reviews.reviews.length ? <ul className="divide-y divide-black/10 border border-black/10 bg-white">
+            {reviews.reviews.map((review, index) => <li key={index} className="space-y-2 p-4 text-sm">
+              <p className="font-semibold">{review.rating} de 5 · Alumno verificado</p>
+              {review.body ? <p className="whitespace-pre-wrap break-words">{review.body}</p> : null}
+            </li>)}
+          </ul> : null}
+          {query.resena === 'error' || query.resena === 'acceso' ? <p role="alert" className="text-sm text-red-800">{query.resena === 'acceso' ? 'Inscríbete y completa una clase para dejar tu reseña.' : 'Selecciona una calificación del 1 al 5 y escribe hasta 1.500 caracteres.'}</p> : null}
+          {reviews.eligible ? (
+            <form action={saveCourseReview} className="space-y-3 border border-black/10 bg-white p-4">
+              <input type="hidden" name="slug" value={course.slug} />
+              <h3 className="font-semibold">Tu reseña</h3>
+              {reviews.own ? <p role="status" className="text-sm">{reviews.own.status === 'pendiente' ? 'Tu reseña está en moderación.' : reviews.own.status === 'publicada' ? 'Tu reseña está publicada.' : 'Tu reseña está oculta. Puedes editarla para enviarla de nuevo.'}</p> : null}
+              <label className="block text-sm font-medium">Calificación
+                <select name="rating" defaultValue={reviews.own?.rating ?? ''} required className="mt-2 block min-h-11 border border-black/20 bg-white px-3 text-ink">
+                  <option value="" disabled>Selecciona del 1 al 5</option>
+                  {[5, 4, 3, 2, 1].map((value) => <option value={value} key={value}>{value} de 5</option>)}
+                </select>
+              </label>
+              <label className="block text-sm font-medium">Tu experiencia (opcional)
+                <textarea name="body" defaultValue={reviews.own?.body ?? ''} maxLength={1500} rows={3} className="mt-2 block w-full border border-black/20 bg-white p-3 text-ink" />
+              </label>
+              <SubmitButton pending="Guardando…" className="sm:w-auto">Enviar reseña</SubmitButton>
+            </form>
+          ) : null}
+        </section>
       </article>
 
       <aside className="border border-black/10 bg-white lg:sticky lg:top-24 lg:col-start-3 lg:row-span-2 lg:row-start-1">
@@ -246,6 +282,7 @@ export default async function CourseCatalogPage({
               <Icon name="arrow-right" size={17} aria-hidden="true" />
             </Link>
           )}
+          {sample ? <Link href={lessonUrl(sample)} className="flex min-h-11 items-center justify-center border border-black/20 px-3 text-sm font-semibold">Ver clase de muestra</Link> : null}
         </section>
         )}
       </aside>

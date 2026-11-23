@@ -25,7 +25,7 @@ export default async function RevisionesPage() {
               <p className="break-words font-semibold">{course.title}</p>
               <p className="text-sm text-black/65">{course.teacher || 'Academia'} · {course.lessons} {course.lessons === 1 ? 'clase' : 'clases'} · {formatDateTime(course.requestedAt)}</p>
             </section>
-            <Link href={`/dashboard/cursos/${course.id}?vista=revision`} className={btnTiny}>Revisar curso</Link>
+            <Link href={`/dashboard/cursos/${course.id}?vista=revision`} className={btnTiny}>{course.revision ? 'Revisar actualización' : 'Revisar curso'}</Link>
           </li>)}
         </ul> : <p className="text-sm text-black/65">Los cursos enviados por profesores aparecerán aquí.</p>}
       </section>

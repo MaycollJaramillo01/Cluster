@@ -9,6 +9,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton';
 import {
   createLesson, createSection, deleteSection, moveCourseLesson, moveCourseSection,
   renameCourseSection, requestReview, returnCourseReview, setCoursePublication, updateCoursePresentation,
+  startCourseRevision, discardCourseRevision,
 } from '@/lib/crm/lms-actions';
 import type { LmsCourseRow, LmsLesson, LmsSection } from '@/lib/crm/lms';
 import { formatDate } from '@/lib/crm/format';
@@ -28,9 +29,11 @@ export function CourseWorkspaceHeader({ course, view, role }: { course: LmsCours
     { id: 'ficha', label: 'Ficha' },
     { id: 'temario', label: 'Temario' },
     { id: 'revision', label: 'Revisión' },
-    { id: 'alumnos', label: 'Alumnos' },
   ];
-  if (role !== 'profesor') tabs.push({ id: 'ajustes', label: 'Configuración comercial' });
+  if (!course.revision_of) {
+    tabs.push({ id: 'alumnos', label: 'Alumnos' });
+    if (role !== 'profesor') tabs.push({ id: 'ajustes', label: 'Configuración comercial' });
+  }
   const base = `/dashboard/cursos/${course.id}`;
 
   return (
@@ -58,6 +61,12 @@ export function CourseWorkspaceHeader({ course, view, role }: { course: LmsCours
             {label}
           </Link>
         ))}
+        {course.published ? (
+          <>
+            <Link href={`${base}/comunidad`} className="inline-flex min-h-12 items-center px-3 text-sm font-semibold">Comunidad</Link>
+            <Link href={`${base}/reportes`} className="inline-flex min-h-12 items-center px-3 text-sm font-semibold">Reportes</Link>
+          </>
+        ) : null}
       </nav>
     </header>
   );
@@ -242,7 +251,7 @@ function CourseReview({ course, role, issues, status }: {
 }) {
   const pending = Boolean(course.review_requested_at);
   const ready = !issues.length;
-  const needsReview = Boolean(course.teacher_id) && !pending;
+  const needsReview = Boolean(course.teacher_id || course.revision_of) && !pending;
   return (
     <section id="revision" className="scroll-mt-20 space-y-5 border border-black/15 bg-white p-5 sm:p-6">
       <Heading level={2} className="font-brand text-xl font-semibold">Revisión y publicación</Heading>
@@ -255,6 +264,18 @@ function CourseReview({ course, role, issues, status }: {
       </aside> : null}
       {status.error === 'feedback' ? <p role="alert" className="text-sm text-red-800">Escribe qué cambios debe hacer el maestro.</p> : null}
       {status.error === 'revision' || status.error === 'publicacion' ? <p role="alert" className="text-sm text-red-800">Revisa los requisitos antes de continuar.</p> : null}
+      {status.error === 'version' ? <p role="alert" className="text-sm text-red-800">El curso publicado cambió desde que se creó este borrador. Copia los cambios que quieras conservar y vuelve a crear el borrador desde la versión vigente.</p> : null}
+      {status.guardado === 'version' ? <p role="status" className="text-sm font-semibold">Nueva versión publicada. El avance de los alumnos se conservó.</p> : null}
+      {course.revision_of && (!pending || (status.error === 'version' && role === 'superadmin')) ? (
+        <details className="border border-black/15 p-4">
+          <summary className="cursor-pointer text-sm font-semibold">Descartar borrador de cambios</summary>
+          <form action={discardCourseRevision} className="mt-3 space-y-3">
+            <input type="hidden" name="course_id" value={course.id} />
+            <p className="text-sm">Se eliminarán los cambios de este borrador. Los alumnos seguirán usando el curso publicado.</p>
+            <SubmitButton pending="Descartando…" className="sm:w-auto">Confirmar descarte</SubmitButton>
+          </form>
+        </details>
+      ) : null}
       {!course.published ? (
         ready
           ? <p className="flex items-center gap-2 text-sm font-medium"><Icon name="check" size={18} aria-hidden="true" /> La ficha y el temario están completos para revisión.</p>
@@ -293,7 +314,7 @@ function CourseReview({ course, role, issues, status }: {
   );
 }
 
-export function TeacherCourseBuilder({ course, sections, lessons, status, role, view, issues, children }: {
+export function TeacherCourseBuilder({ course, sections, lessons, status, role, view, issues, revision, children }: {
   course: LmsCourseRow;
   sections: LmsSection[];
   lessons: LmsLesson[];
@@ -301,15 +322,25 @@ export function TeacherCourseBuilder({ course, sections, lessons, status, role, 
   role: StaffRole;
   view: CourseWorkspaceView;
   issues: string[];
+  revision: { id: string; pending: boolean; sameOwner: boolean } | null;
   children?: ReactNode;
 }) {
   const readOnly = role === 'profesor' && Boolean(course.published || course.review_requested_at);
   return (
     <VStack gap={5} className="mx-auto w-full max-w-6xl [color-scheme:light]">
       <CourseWorkspaceHeader course={course} view={view} role={role} />
+      {course.revision_of ? <p className="border-l-2 border-brand bg-white p-4 text-sm">
+        Borrador de actualización. Los alumnos siguen usando <Link href={`/dashboard/cursos/${course.revision_of}`} className="underline">la versión publicada</Link>.
+      </p> : null}
+      {revision && role === 'profesor' && !revision.sameOwner ? (
+        <p className="border-l-2 border-ink bg-white p-4 text-sm">El superadmin debe resolver el borrador del profesor anterior para que puedas abrir una nueva actualización.</p>
+      ) : revision ? <Link href={`/dashboard/cursos/${revision.id}?vista=${revision.pending ? 'revision' : 'temario'}`} className="inline-flex min-h-11 items-center self-start border border-black/20 bg-white px-4 text-sm font-semibold">{revision.pending ? 'Ver actualización en revisión' : 'Abrir borrador de cambios'}</Link> : course.published ? <form action={startCourseRevision}>
+        <input type="hidden" name="course_id" value={course.id} />
+        <SubmitButton pending="Abriendo borrador…" className="sm:w-auto">Editar próxima versión</SubmitButton>
+      </form> : null}
       {status.error === 'estado' ? <p role="alert" className="border-l-2 border-red-800 bg-white p-4 text-sm text-red-800">El estado del curso cambió. Revisa si el borrador todavía se puede editar.</p> : null}
       {readOnly ? <p className="border-l-2 border-ink bg-white p-4 text-sm">
-        {course.published ? 'El curso publicado está en modo de lectura. Pide al superadmin que lo devuelva a borrador si necesitas editarlo.' : 'El temario queda en modo de lectura durante la revisión. Si el superadmin solicita cambios, podrás editarlo otra vez.'}
+        {course.published ? 'Edita la próxima versión mientras los alumnos usan el curso publicado.' : 'El temario queda en modo de lectura durante la revisión. Si el superadmin solicita cambios, podrás editarlo otra vez.'}
       </p> : null}
       {!readOnly && course.review_feedback && view !== 'revision' ? <p className="border-l-2 border-ink bg-white p-4 text-sm">
         El superadmin solicitó cambios. <Link href={`/dashboard/cursos/${course.id}?vista=revision`} className="underline underline-offset-4">Ver observaciones</Link>

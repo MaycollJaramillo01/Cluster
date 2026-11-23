@@ -363,7 +363,7 @@ export async function publishedCourses() {
       (SELECT count(*) FROM lms_enrollments e WHERE e.course_id = c.id) AS students
     FROM lms_courses c
     LEFT JOIN valux_people v ON v.id = c.teacher_id
-    WHERE c.published
+    WHERE c.published AND c.revision_of IS NULL
     ORDER BY c.created_at DESC
   `;
   return rows.map((row) => {
@@ -396,7 +396,7 @@ export async function publishedCourse(slug: string) {
     LEFT JOIN valux_people v ON v.id = c.teacher_id
     LEFT JOIN lms_courses b ON b.id = c.bump_course_id AND b.published AND b.id <> c.id
     LEFT JOIN lms_courses u ON u.id = c.upsell_course_id AND u.published AND u.id <> c.id
-    WHERE c.slug = ${slug}
+    WHERE c.slug = ${slug} AND c.revision_of IS NULL
   `;
   const entry = rows[0] as Record<string, unknown> | undefined;
   if (!entry || !bool(entry.published)) return null;
@@ -405,7 +405,7 @@ export async function publishedCourse(slug: string) {
     SELECT id, title, sort_order FROM lms_sections WHERE course_id = ${courseId} ORDER BY sort_order, title, id
   `;
   const lessons = await sql`
-    SELECT id, slug, title, section_id, duration_min, sort_order
+    SELECT id, slug, title, section_id, duration_min, sort_order, preview_public
     FROM lms_lessons WHERE course_id = ${courseId} ORDER BY sort_order, title, id
   `;
   return {
@@ -441,6 +441,7 @@ export async function publishedCourse(slug: string) {
         title: text(lesson.title),
         section_id: text(lesson.section_id),
         duration_min: lesson.duration_min == null ? null : num(lesson.duration_min),
+        preview_public: bool(lesson.preview_public),
       };
     }),
   };
@@ -463,7 +464,7 @@ export async function publishedLesson(courseSlug: string, lessonSlug: string) {
   if (!course) return null;
   const sql = await crm();
   const rows = await sql`
-    SELECT id, slug, title, content, video_url, points, duration_min, mission
+    SELECT id, slug, title, content, video_url, points, duration_min, mission, preview_public
     FROM lms_lessons
     WHERE course_id = ${course.id} AND slug = ${lessonSlug}
   `;
@@ -483,6 +484,7 @@ export async function publishedLesson(courseSlug: string, lessonSlug: string) {
       points: num(entry.points),
       duration_min: entry.duration_min == null ? null : num(entry.duration_min),
       mission: text(entry.mission),
+      preview_public: bool(entry.preview_public),
       resources: resources.map((row) => {
         const resource = row as Record<string, unknown>;
         return {

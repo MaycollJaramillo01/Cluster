@@ -30,7 +30,7 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
   const courses = (await sql`
     SELECT c.id, c.title, c.published, c.review_requested_at, c.review_feedback,
       (SELECT count(*) FROM lms_lessons l WHERE l.course_id = c.id) AS lessons
-    FROM lms_courses c WHERE c.teacher_id = ${person.id}
+    FROM lms_courses c WHERE c.teacher_id = ${person.id} AND c.revision_of IS NULL
     ORDER BY c.created_at DESC
   `) as unknown as { id: string; title: string; published: boolean; review_requested_at: string | null; review_feedback: string | null; lessons: number }[];
   const ids = courses.map((course) => course.id);
