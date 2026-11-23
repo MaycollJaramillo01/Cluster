@@ -1,4 +1,10 @@
 import Link from 'next/link';
+import { Card } from '@astryxdesign/core/Card';
+import { Grid } from '@astryxdesign/core/Grid';
+import { Heading } from '@astryxdesign/core/Heading';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { VStack } from '@astryxdesign/core/VStack';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { Page } from '@/components/academia/ui';
 import { formatDate } from '@/lib/crm/format';
 import { claimChallenge } from '@/lib/valux/actions';
@@ -18,50 +24,50 @@ export default async function ChallengesPage({ searchParams }: { searchParams: P
   const progress = personId ? await Promise.all(challenges.map((item) => challengeProgress(personId, item))) : [];
 
   return (
-    <Page>
-      <h1 className="font-display text-5xl tracking-wide">Retos</h1>
-      {personId ? <p className="mt-2 font-mono text-xs uppercase tracking-[0.16em] text-black/55">Nivel {levelFor(xp)} · {xp} XP</p> : null}
-      {query.ok ? <p className="mt-4 text-sm">Listo, el bono ya está en tu XP.</p> : null}
-      {query.error === 'falta' ? <p className="mt-4 text-sm">Todavía no llegas a la meta de ese reto.</p> : null}
-      {query.error === 'cerrado' ? <p className="mt-4 text-sm">Ese reto ya cerró.</p> : null}
+    <Page className="gap-5">
+      <Heading level={1} className="academy-title">Retos</Heading>
+      {personId ? <p className="w-fit rounded-academy bg-academy-tint px-3 py-2 text-sm font-semibold text-academy-primary">Nivel {levelFor(xp)} · {xp} XP</p> : null}
+      {query.ok ? <p role="status" className="academy-notice">Listo, el bono ya está en tu XP.</p> : null}
+      {query.error === 'falta' ? <p role="alert" className="academy-notice">Todavía no llegas a la meta de ese reto.</p> : null}
+      {query.error === 'cerrado' ? <p role="alert" className="academy-notice">Ese reto ya cerró.</p> : null}
       {!personId ? (
         <p className="mt-4 text-sm text-black/60">
           <Link className="underline" href="/academia/entrar">Entra</Link> para ver tu avance en los retos.
         </p>
       ) : null}
-      {challenges.length === 0 ? <p className="mt-6 text-sm text-black/60">No hay retos abiertos ahora.</p> : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+      {challenges.length === 0 ? <p className="academy-panel p-5 text-academy-muted">No hay retos abiertos ahora.</p> : (
+        <Grid columns={{ minWidth: 250, max: 2 }} gap={4}>
           {challenges.map((item, index) => {
             const mine = progress[index];
             const done = claimed.has(item.id);
             const pct = mine && mine.goal ? Math.min(100, Math.round((mine.value / mine.goal) * 100)) : 0;
             return (
-              <article key={item.id} className="space-y-3 border border-black/10 bg-white p-4">
-                <div>
-                  <p className="font-medium">{item.title}</p>
-                  {item.description ? <p className="text-sm text-black/60">{item.description}</p> : null}
-                  <p className="mt-1 text-xs text-black/45">
+              <Card key={item.id} padding={5} className="space-y-4">
+                <VStack gap={2}>
+                  <Heading level={2} className="text-xl font-bold">{item.title}</Heading>
+                  {item.description ? <p className="text-sm text-academy-muted">{item.description}</p> : null}
+                  <p className="text-sm font-medium text-academy-primary">
                     +{item.bonus_xp} XP{item.course_title ? ` · ${item.course_title}` : ''}{item.ends_at ? ` · cierra el ${formatDate(item.ends_at)}` : ''}
                   </p>
-                </div>
+                </VStack>
                 {mine ? (
-                  <div>
-                    <div className="h-1 bg-black/10"><span className="block h-1 bg-brand" style={{ width: `${pct}%` }} /></div>
-                    <p className="mt-2 text-xs text-black/45">{mine.value} de {mine.goal} {UNIT[item.kind]}</p>
-                  </div>
+                  <VStack gap={2}>
+                    <ProgressBar label={`Avance en ${item.title}`} value={pct} isLabelHidden />
+                    <p className="text-sm text-academy-muted">{mine.value} de {mine.goal} {UNIT[item.kind]}</p>
+                  </VStack>
                 ) : null}
                 {done ? (
                   <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/55">Bono reclamado</p>
                 ) : mine?.met ? (
                   <form action={claimChallenge}>
                     <input type="hidden" name="id" value={item.id} />
-                    <button className="bg-brand px-4 py-2 text-sm font-medium text-ink" type="submit">Reclamar {item.bonus_xp} XP</button>
+                    <AcademySubmit label={`Reclamar ${item.bonus_xp} XP`} pending="Guardando…" />
                   </form>
                 ) : null}
-              </article>
+              </Card>
             );
           })}
-        </div>
+        </Grid>
       )}
     </Page>
   );

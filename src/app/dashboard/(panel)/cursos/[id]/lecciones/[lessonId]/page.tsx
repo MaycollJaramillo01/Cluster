@@ -13,11 +13,11 @@ import { parseMission } from '@/lib/valux/mission';
 import { isPrivateAcademiaAsset, TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 import { directLessonVideo, lessonEmbed } from '@/lib/valux/video';
 
-const field = 'min-h-11 w-full border border-black/25 bg-white px-3 py-2 text-base text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink';
-const label = 'block space-y-2 text-sm font-medium';
-const panel = 'min-w-0 space-y-4 border border-black/15 bg-white p-4 sm:p-6';
-const subhead = 'font-brand text-xl font-semibold normal-case';
-const secondary = 'inline-flex min-h-11 items-center gap-2 border border-black/20 bg-white px-4 text-sm font-semibold hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink';
+const field = 'academy-field block w-full';
+const label = 'block space-y-2 text-sm font-semibold';
+const panel = 'academy-panel min-w-0 space-y-4 p-4 sm:p-6';
+const subhead = 'text-xl font-bold';
+const secondary = 'academy-action academy-action-secondary';
 const editErrors: Record<string, string> = {
   estado: 'El curso está en revisión o publicado. Los cambios requieren que vuelva a borrador.',
   video: 'Revisa el enlace del video. Usa YouTube, Vimeo, Bunny Stream o una URL MP4/WebM.',
@@ -81,7 +81,7 @@ export default async function LessonPage({ params, searchParams }: {
       {readOnly ? <p className="border border-black/15 bg-paper p-4 text-sm">{course.published ? 'Esta clase está publicada.' : 'Esta clase forma parte de un curso en revisión.'} Puedes consultarla y abrir la vista de alumno.</p> : null}
 
       <section className="grid min-w-0 items-start gap-5 lg:grid-cols-3">
-        <aside className="space-y-4 border border-black/15 bg-white p-4 lg:sticky lg:top-6">
+        <aside className="academy-panel space-y-4 p-4 lg:sticky lg:top-24">
           <nav aria-label="Editor de clase">
             <ul className="grid grid-cols-2 gap-1 lg:grid-cols-1">
               {sections.map(({ id: anchor, title, icon }) => (

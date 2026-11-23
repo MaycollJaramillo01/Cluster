@@ -3,7 +3,9 @@ import type { ReactNode } from 'react';
 import { VStack } from '@astryxdesign/core/VStack';
 import { HStack } from '@astryxdesign/core/HStack';
 import { Heading } from '@astryxdesign/core/Heading';
+import { Button } from '@astryxdesign/core/Button';
 import { Cover } from '@/components/academia/ui';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { Icon } from '@/components/ui/Icon';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import {
@@ -38,33 +40,31 @@ export function CourseWorkspaceHeader({ course, view, role }: { course: LmsCours
 
   return (
     <header>
-      <Link href={role === 'profesor' ? '/dashboard/profesor' : '/dashboard/cursos'} className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">
-        ← {role === 'profesor' ? 'Mis cursos' : 'Cursos'}
+      <Link href={role === 'profesor' ? '/dashboard/profesor' : '/dashboard/cursos'} className="academy-nav academy-focus">
+        <Icon name="arrow-right" size={16} className="rotate-180" /> {role === 'profesor' ? 'Mis cursos' : 'Cursos'}
       </Link>
       <HStack gap={4} align="end" justify="between" wrap="wrap" className="pb-5">
         <VStack gap={2} className="min-w-0">
-          <Heading level={1} className="break-words font-brand text-3xl font-semibold leading-tight sm:text-4xl">{course.title}</Heading>
-          <p className="text-sm text-black/70">{courseStatusLabel(course)} · {course.lessons} {course.lessons === 1 ? 'clase' : 'clases'}</p>
+          <Heading level={1} className="academy-title">{course.title}</Heading>
+          <p className="text-sm text-academy-muted"><strong className="font-semibold text-academy-primary">{courseStatusLabel(course)}</strong> · {course.lessons} {course.lessons === 1 ? 'clase' : 'clases'}</p>
         </VStack>
-        <Link href={`${base}/vista-previa`} className="inline-flex min-h-11 items-center gap-2 border border-black/20 bg-white px-4 text-sm font-semibold hover:border-ink">
-          <Icon name="play" size={17} aria-hidden="true" /> Vista previa
-        </Link>
+        <Button as={Link} href={`${base}/vista-previa`} label="Vista previa" variant="secondary" icon={<Icon name="play" size={17} />} />
       </HStack>
-      <nav aria-label="Editor del curso" className="flex flex-wrap border-b border-black/15">
+      <nav aria-label="Editor del curso" className="academy-panel flex flex-wrap gap-1 px-2 py-2">
         {tabs.map(({ id, label }) => (
           <Link
             key={id}
             href={`${base}?vista=${id}`}
             aria-current={view === id ? 'page' : undefined}
-            className={`inline-flex min-h-12 items-center border-b-2 px-3 text-sm font-semibold sm:px-4 ${view === id ? 'border-ink text-ink' : 'border-transparent text-black/70 hover:text-ink'}`}
+            className="academy-nav academy-focus"
           >
             {label}
           </Link>
         ))}
         {course.published ? (
           <>
-            <Link href={`${base}/comunidad`} className="inline-flex min-h-12 items-center px-3 text-sm font-semibold">Comunidad</Link>
-            <Link href={`${base}/reportes`} className="inline-flex min-h-12 items-center px-3 text-sm font-semibold">Reportes</Link>
+            <Link href={`${base}/comunidad`} className="academy-nav academy-focus">Comunidad</Link>
+            <Link href={`${base}/reportes`} className="academy-nav academy-focus">Reportes</Link>
           </>
         ) : null}
       </nav>
@@ -332,11 +332,14 @@ export function TeacherCourseBuilder({ course, sections, lessons, status, role, 
       {course.revision_of ? <p className="border-l-2 border-brand bg-white p-4 text-sm">
         Borrador de actualización. Los alumnos siguen usando <Link href={`/dashboard/cursos/${course.revision_of}`} className="underline">la versión publicada</Link>.
       </p> : null}
+      {status.guardado === 'borrador' && revision && !revision.pending ? (
+        <p role="status" className="academy-notice">Borrador creado. Ya puedes preparar la próxima versión del curso.</p>
+      ) : null}
       {revision && role === 'profesor' && !revision.sameOwner ? (
         <p className="border-l-2 border-ink bg-white p-4 text-sm">El superadmin debe resolver el borrador del profesor anterior para que puedas abrir una nueva actualización.</p>
-      ) : revision ? <Link href={`/dashboard/cursos/${revision.id}?vista=${revision.pending ? 'revision' : 'temario'}`} className="inline-flex min-h-11 items-center self-start border border-black/20 bg-white px-4 text-sm font-semibold">{revision.pending ? 'Ver actualización en revisión' : 'Abrir borrador de cambios'}</Link> : course.published ? <form action={startCourseRevision}>
+      ) : revision ? <Button as={Link} href={`/dashboard/cursos/${revision.id}?vista=${revision.pending ? 'revision' : 'temario'}`} label={revision.pending ? 'Ver actualización en revisión' : 'Abrir borrador de cambios'} className="min-h-11 self-start" /> : course.published ? <form action={startCourseRevision}>
         <input type="hidden" name="course_id" value={course.id} />
-        <SubmitButton pending="Abriendo borrador…" className="sm:w-auto">Editar próxima versión</SubmitButton>
+        <AcademySubmit label="Crear borrador de cambios" pending="Creando borrador…" />
       </form> : null}
       {status.error === 'estado' ? <p role="alert" className="border-l-2 border-red-800 bg-white p-4 text-sm text-red-800">El estado del curso cambió. Revisa si el borrador todavía se puede editar.</p> : null}
       {readOnly ? <p className="border-l-2 border-ink bg-white p-4 text-sm">

@@ -1,10 +1,15 @@
 import Link from 'next/link';
+import { Button } from '@astryxdesign/core/Button';
+import { Grid } from '@astryxdesign/core/Grid';
+import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
+import { Icon } from '@/components/ui/Icon';
 import { crm } from '@/lib/crm/db';
 import { formatDate } from '@/lib/crm/format';
 import { requireDashboard } from '@/lib/crm/session';
 import { getPersonByEmail } from '@/lib/valux/data';
 import { academyMoney as money } from '@/lib/valux/money';
-import { PageTitle } from '@/components/dashboard/ui';
 import { TeacherCourseForm } from '@/components/dashboard/TeacherCourseForm';
 
 // Todo se filtra por la persona de la academia con el mismo correo: nunca ve cursos, alumnos ni ventas de otros.
@@ -13,16 +18,14 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
   const { error, vista } = await searchParams;
   if (session.role === 'profesor' && (vista === 'nuevo' || error === 'curso')) return <TeacherCourseForm error={error} />;
   const newCourse = session.role === 'profesor' ? (
-    <Link href="/dashboard/profesor?vista=nuevo" className="inline-flex min-h-12 items-center bg-brand px-5 text-sm font-semibold text-ink hover:bg-brand/85">
-      Crear curso
-    </Link>
+    <Button as={Link} href="/dashboard/profesor?vista=nuevo" label="Crear curso" variant="primary" size="lg" />
   ) : null;
   const person = await getPersonByEmail(session.email);
   if (!person) {
     return (
-      <section className="space-y-4">
-        <PageTitle title="Mis cursos" action={newCourse} />
-        <p className="text-sm text-black/60">Todavía no tienes cursos.</p>
+      <section className="space-y-5">
+        <HStack gap={3} align="center" justify="between" wrap="wrap"><Heading level={1} className="academy-title">Mis cursos</Heading>{newCourse}</HStack>
+        <p className="academy-notice">Todavía no tienes cursos.</p>
       </section>
     );
   }
@@ -62,24 +65,39 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
   const earned = sales.filter((sale) => !sale.refunded_at).reduce((sum, sale) => sum + Number(sale.seller_cents), 0);
 
   return (
-    <div className="space-y-8">
-      <PageTitle title="Mis cursos" action={newCourse} />
-      <div className="grid gap-3 sm:grid-cols-3">
-        <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{courses.length}</span><span className="text-xs text-black/50">cursos</span></p>
-        <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{students.length}</span><span className="text-xs text-black/50">inscripciones</span></p>
-        <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{money(earned)}</span><span className="text-xs text-black/50">tu parte de las ventas (últimas 100)</span></p>
-      </div>
+    <VStack gap={8} className="mx-auto w-full max-w-6xl">
+      <HStack as="header" gap={4} align="center" justify="between" wrap="wrap">
+        <Heading level={1} className="academy-title">Mis cursos</Heading>
+        {newCourse}
+      </HStack>
+      <Grid columns={{ minWidth: 146, max: 3 }} gap={0} className="academy-panel overflow-hidden bg-academy-tint">
+        {[
+          { label: 'Cursos', value: courses.length },
+          { label: 'Inscripciones', value: students.length },
+          { label: 'Tu parte de las ventas (últimas 100)', value: money(earned) },
+        ].map((metric) => (
+          <VStack as="dl" key={metric.label} gap={2} className="min-w-0 border-academy-line p-4 sm:border-r sm:last:border-r-0">
+            <dt className="text-sm font-semibold text-academy-muted">{metric.label}</dt>
+            <dd className="break-words text-3xl font-bold tabular-nums text-academy-ink">{metric.value}</dd>
+          </VStack>
+        ))}
+      </Grid>
 
       {courses.length === 0 ? <p className="text-sm text-black/60">Todavía no tienes cursos.</p> : courses.map((course) => {
         const mine = students.filter((student) => student.course_id === course.id);
         const lessons = Number(course.lessons) || 0;
         return (
-          <section key={course.id} className="space-y-2">
-            <h2 className="break-words text-xl font-medium">{course.title}</h2>
-            <p className="text-sm text-black/70">{course.published ? 'Publicado' : course.review_requested_at ? 'En revisión' : course.review_feedback ? 'Cambios solicitados' : 'Borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</p>
-            <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" href={`/dashboard/cursos/${course.id}?vista=${course.review_requested_at || course.review_feedback ? 'revision' : 'temario'}`}>Abrir editor</Link>
+          <section key={course.id} className="academy-panel space-y-3 p-4 sm:p-5">
+            <HStack align="center" justify="between" wrap="wrap" gap={3}>
+              <VStack gap={2} className="min-w-0">
+                <Heading level={2} className="break-words text-xl font-bold">{course.title}</Heading>
+                <p className="text-sm text-academy-muted">{course.published ? 'Publicado' : course.review_requested_at ? 'En revisión' : course.review_feedback ? 'Cambios solicitados' : 'Borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</p>
+              </VStack>
+              <Button as={Link} href={`/dashboard/cursos/${course.id}?vista=${course.review_requested_at || course.review_feedback ? 'revision' : 'temario'}`} label="Abrir editor" icon={<Icon name="pen" size={16} />} />
+            </HStack>
             {mine.length === 0 ? <p className="text-sm text-black/50">Sin alumnos todavía.</p> : (
-              <table className="w-full border border-black/10 bg-white text-left text-sm">
+              <section className="academy-panel overflow-x-auto" aria-label={`Alumnos de ${course.title}`} tabIndex={0}>
+              <table className="w-full min-w-max text-left text-sm">
                 <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Alumno</th><th className="px-4 py-2 font-medium">Desde</th><th className="px-4 py-2 font-medium">Avance</th><th className="px-4 py-2 font-medium">XP</th></tr></thead>
                 <tbody>
                   {mine.map((student, index) => (
@@ -92,6 +110,7 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
                   ))}
                 </tbody>
               </table>
+              </section>
             )}
           </section>
         );
@@ -100,7 +119,8 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
       <section className="space-y-2">
         <h2 className="text-xl font-medium">Ventas</h2>
         {sales.length === 0 ? <p className="text-sm text-black/50">Sin ventas todavía.</p> : (
-          <table className="w-full border border-black/10 bg-white text-left text-sm">
+          <section className="academy-panel overflow-x-auto" aria-label="Detalle de ventas" tabIndex={0}>
+          <table className="w-full min-w-max text-left text-sm">
             <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Fecha</th><th className="px-4 py-2 font-medium">Curso</th><th className="px-4 py-2 font-medium">Total</th><th className="px-4 py-2 font-medium">Tu parte</th></tr></thead>
             <tbody>
               {sales.map((sale, index) => (
@@ -113,6 +133,7 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
               ))}
             </tbody>
           </table>
+          </section>
         )}
       </section>
 
@@ -124,6 +145,6 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
           </ul>
         )}
       </section>
-    </div>
+    </VStack>
   );
 }

@@ -12,10 +12,12 @@ import { advanceStage } from '@/lib/valux/events';
 import { Icon } from '@/components/ui/Icon';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { VStack } from '@astryxdesign/core/VStack';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Heading } from '@astryxdesign/core/Heading';
 import { getCourseReviews } from '@/lib/valux/course-community';
 import { saveCourseReview } from '@/lib/valux/community-actions';
 
-const primaryAction = 'flex min-h-12 w-full items-center justify-center gap-2 bg-brand px-4 py-3 text-center text-sm font-semibold text-ink hover:bg-brand/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
+const primaryAction = 'academy-action academy-action-primary w-full';
 
 export default async function CourseCatalogPage({
   params,
@@ -53,22 +55,23 @@ export default async function CourseCatalogPage({
 
   if (!hasAccess && !suspended && (query.inscripcion === '1' || (paid && query.error && query.error !== 'reembolso'))) {
     return (
-      <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-        <Link href={coursePath} className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">← Volver al curso</Link>
-        <h1 className="my-5 font-display text-5xl tracking-wide text-ink sm:text-6xl">Inscripción</h1>
-        <section className="grid items-start gap-5 md:grid-cols-3">
-          <aside aria-label="Resumen del curso" className="overflow-hidden border border-black/10 bg-white">
+      <main className="academy-page max-w-5xl">
+        <Link href={coursePath} className="academy-nav academy-focus w-fit"><Icon name="arrow-right" size={16} className="rotate-180" /> Volver al curso</Link>
+        <Heading level={1} className="academy-title mb-6 mt-3">Inscripción</Heading>
+        <section className="grid items-start gap-5 md:grid-cols-3 md:gap-7">
+          <aside aria-label="Resumen del curso" className="academy-panel overflow-hidden md:order-2">
             <section aria-hidden="true" className="hidden md:block"><Cover url={course.cover_url} title={course.title} slug={course.slug} eager /></section>
             <section className="p-5">
               <VStack gap={2}>
-              <h2 className="text-balance font-brand text-lg font-semibold normal-case leading-snug">{course.title}</h2>
-              <p className="text-sm text-black/65">{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
-              <p className="border-t border-black/10 pt-3 font-display text-4xl tracking-wide">{priceLabel}</p>
+              <Heading level={2} className="text-balance text-xl font-bold">{course.title}</Heading>
+              <p className="text-sm text-academy-muted">{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}{minutes ? ` · ${durationLabel(minutes)}` : ''}</p>
+              <p className="border-t border-academy-line pt-3 text-3xl font-bold tabular-nums">{priceLabel}</p>
               </VStack>
             </section>
           </aside>
-          <section aria-label="Datos de inscripción" className="space-y-5 border border-black/10 bg-white p-5 sm:p-8 md:col-span-2">
-            {query.error && (payReady(pay) || query.error !== 'pasarela') ? <p role="alert" className="border border-black/15 bg-paper p-3 text-sm text-ink">{payNote(query.error)}</p> : null}
+          <section aria-label="Datos de inscripción" className="academy-panel space-y-5 p-5 sm:p-8 md:order-1 md:col-span-2">
+            <Heading level={2} className="academy-section-title">Datos de inscripción</Heading>
+            {query.error && (payReady(pay) || query.error !== 'pasarela') ? <p role="alert" className="academy-notice">{payNote(query.error)}</p> : null}
             {paid && !payReady(pay) ? (
               <p>{payNote('pasarela')}</p>
             ) : !paid && !contact ? (
@@ -112,20 +115,22 @@ export default async function CourseCatalogPage({
   ];
 
   return (
-    <main className="mx-auto grid max-w-6xl items-start gap-6 px-4 py-8 lg:grid-cols-3 lg:gap-8">
-        <section className="py-2 sm:py-4 lg:col-span-2">
-          <p className="text-sm"><Link href="/academia" className="font-medium underline underline-offset-4">← Cursos</Link></p>
-          <h1 className="mt-4 text-balance break-words font-brand text-3xl font-bold normal-case leading-tight sm:text-5xl">{course.title}</h1>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-black/75">{course.description}</p>
-          {course.teacher_name ? <p className="mt-4 text-sm">Por {course.teacher_name}</p> : null}
-          <p className="mt-3 text-sm text-black/65">
-            {lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}
-            {minutes ? ` · ${durationLabel(minutes)} de contenido` : ''}
-            {course.students ? ` · ${course.students} ${course.students === 1 ? 'alumno' : 'alumnos'}` : ''}
-          </p>
-        </section>
+    <main className="academy-page grid items-start gap-6 lg:grid-cols-12 lg:gap-8">
+      <VStack as="header" gap={5} className="academy-hero rounded-academy-xl p-6 text-white sm:p-8 lg:col-span-8 lg:p-10">
+        <Link href="/academia" className="academy-focus inline-flex min-h-11 w-fit items-center gap-2 text-sm font-semibold text-white/90">
+          <Icon name="arrow-right" size={16} className="rotate-180" /> Cursos
+        </Link>
+        <Heading level={1} className="text-balance break-words text-3xl font-bold tracking-tight text-white sm:text-5xl">{course.title}</Heading>
+        <p className="max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg">{course.description}</p>
+        <HStack gap={4} wrap="wrap" className="border-t border-white/20 pt-4 text-sm text-white/90">
+          {course.teacher_name ? <p className="flex items-center gap-2"><Icon name="user" size={17} /> {course.teacher_name}</p> : null}
+          <p className="flex items-center gap-2"><Icon name="play" size={17} /> {lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
+          {minutes ? <p className="flex items-center gap-2"><Icon name="clock" size={17} /> {durationLabel(minutes)}</p> : null}
+          {course.students ? <p className="flex items-center gap-2"><Icon name="users" size={17} /> {course.students} {course.students === 1 ? 'alumno' : 'alumnos'}</p> : null}
+        </HStack>
+      </VStack>
 
-      <article className="order-3 space-y-8 lg:col-span-2">
+      <article className="order-3 min-w-0 space-y-8 lg:col-span-8">
         {query.ok && hasAccess ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo.</p> : null}
         {query.terminado && finished ? (
           <p className="border border-brand/40 bg-white px-4 py-3 text-sm">
@@ -148,10 +153,10 @@ export default async function CourseCatalogPage({
             </label>
             {query.error === 'acepto' ? <p className="text-sm">Marca la casilla para continuar.</p> : null}
             <PayMethod options={pay} />
-            <div className="flex flex-wrap gap-3">
+            <HStack gap={3} wrap="wrap">
               <button className="bg-brand px-4 py-2.5 text-sm font-medium text-ink" type="submit">Sí, agregarlo</button>
               <Link href={`/academia/${course.slug}`} className="px-4 py-2.5 text-sm text-black/55 underline">No, gracias</Link>
-            </div>
+            </HStack>
           </form>
         ) : null}
         {query.error && query.error !== 'acepto' ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">{payNote(query.error)}</p> : null}
@@ -163,22 +168,23 @@ export default async function CourseCatalogPage({
           </ul>
         </section> : null}
 
-        <section id="temario" className="space-y-3">
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-xl font-medium">Contenido del curso</h2>
-            <p className="text-sm text-black/65">{course.sections.length ? `${course.sections.length} secciones · ` : ''}{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
-          </div>
+        <section id="temario" className="scroll-mt-24 space-y-3">
+          <HStack align="center" justify="between" wrap="wrap" gap={2}>
+            <Heading level={2} className="academy-section-title">Contenido del curso</Heading>
+            <p className="text-sm text-academy-muted">{course.sections.length ? `${course.sections.length} secciones · ` : ''}{lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
+          </HStack>
           {!hasAccess && paid ? <p className="text-sm text-black/70">Las clases se habilitan al inscribirte.</p> : null}
-          {groups.length === 0 ? <p className="border border-black/10 bg-white px-4 py-6 text-sm text-black/50">Este curso todavía no tiene clases.</p> : groups.map((group) => {
+          {groups.length === 0 ? <p className="academy-notice">Este curso todavía no tiene clases.</p> : groups.map((group, index) => {
             const groupMinutes = group.lessons.reduce((sum, lesson) => sum + (lesson.duration_min || 0), 0);
             return (
-              <details key={group.id} open className="border border-black/10 bg-white">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-medium">
-                  <span>{group.title}</span>
-                  <span className="text-xs font-normal text-black/45">
+              <details key={group.id} open={index === 0 || undefined} className="academy-panel group overflow-hidden">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3 font-semibold [&::-webkit-details-marker]:hidden">
+                  <Icon name="chevron-down" size={16} className="shrink-0 text-academy-primary transition-transform group-open:rotate-180" />
+                  <strong className="min-w-0 flex-1 break-words">{group.title}</strong>
+                  <small className="shrink-0 text-xs font-normal text-academy-muted">
                     {group.lessons.length} {group.lessons.length === 1 ? 'clase' : 'clases'}
                     {groupMinutes ? ` · ${durationLabel(groupMinutes)}` : ''}
-                  </span>
+                  </small>
                 </summary>
                 <ol className="border-t border-black/10">
                   {group.lessons.map((lesson) => {
@@ -194,7 +200,7 @@ export default async function CourseCatalogPage({
                     return (
                       <li key={lesson.id} className="border-b border-black/5 last:border-0">
                         {locked ? <p className={`${row} text-black/70`}>{contents}</p> : (
-                          <Link prefetch={false} href={lessonUrl(lesson)} className={`${row} hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset`}>{contents}</Link>
+                  <Link prefetch={false} href={lessonUrl(lesson)} className={`${row} hover:bg-academy-tint focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset`}>{contents}</Link>
                         )}
                       </li>
                     );
@@ -239,17 +245,17 @@ export default async function CourseCatalogPage({
         </section>
       </article>
 
-      <aside className="border border-black/10 bg-white lg:sticky lg:top-24 lg:col-start-3 lg:row-span-2 lg:row-start-1">
+      <aside className="academy-panel overflow-hidden lg:sticky lg:top-24 lg:col-span-4 lg:col-start-9 lg:row-span-2 lg:row-start-1">
         <section aria-hidden="true" className="hidden lg:block"><Cover url={course.cover_url} title={course.title} slug={course.slug} eager /></section>
         {access ? (
-          <div className="space-y-4 p-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">
+          <VStack gap={4} className="p-5 sm:p-6">
+            <p className="text-lg font-bold text-academy-ink">
               {finished ? 'Curso terminado' : enrolled ? 'Tu progreso' : 'Tienes acceso a este curso'}
             </p>
-            <div>
-              <div className="h-1 bg-black/10" aria-hidden="true"><span className="block h-1 bg-brand" style={{ width: `${pct}%` }} /></div>
-              <p className="mt-2 text-sm text-black/60">{pct}% · {doneCount} de {lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
-            </div>
+            <VStack gap={2}>
+              <progress aria-label="Progreso del curso" value={pct} max={100} className="academy-progress w-full" />
+              <p className="text-sm text-academy-muted">{pct}% · {doneCount} de {lessonCount} {lessonCount === 1 ? 'clase' : 'clases'}</p>
+            </VStack>
             {finished ? (
               <>
                 {access.person?.is_active ? <CertificateRequest slug={course.slug} /> : null}
@@ -257,16 +263,16 @@ export default async function CourseCatalogPage({
               </>
             ) : nextLesson ? (
               <>
-                <Link prefetch={false} href={lessonUrl(nextLesson)} className="block w-full bg-brand px-4 py-3 text-center text-sm font-medium text-ink">
+                <Link prefetch={false} href={lessonUrl(nextLesson)} className={primaryAction}>
                   {doneCount ? 'Continuar' : 'Empezar el curso'}
                 </Link>
                 <p className="text-sm text-black/55">{doneCount ? 'Sigue' : 'Primera clase'}: {nextLesson.title}</p>
               </>
             ) : null}
-          </div>
+          </VStack>
         ) : (
         <section aria-label="Inscripción al curso" className="space-y-4 p-5 sm:p-6">
-          <p className="font-display text-4xl tracking-wide sm:text-5xl">{priceLabel}</p>
+          <p className="text-4xl font-bold tracking-tight text-academy-ink">{priceLabel}</p>
           {suspended ? (
             <p role="status" className="text-sm leading-relaxed text-black/70">{payNote('suspendido')}</p>
           ) : paid && !payReady(pay) ? (
@@ -282,7 +288,7 @@ export default async function CourseCatalogPage({
               <Icon name="arrow-right" size={17} aria-hidden="true" />
             </Link>
           )}
-          {sample ? <Link href={lessonUrl(sample)} className="flex min-h-11 items-center justify-center border border-black/20 px-3 text-sm font-semibold">Ver clase de muestra</Link> : null}
+          {sample ? <Link href={lessonUrl(sample)} className="academy-action academy-action-secondary w-full"><Icon name="play" size={17} /> Ver clase de muestra</Link> : null}
         </section>
         )}
       </aside>

@@ -1,157 +1,108 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { leaveAcademia } from '@/lib/valux/actions';
+import { useEffect, useRef, type ReactNode } from 'react';
+import { Button } from '@astryxdesign/core/Button';
+import { HStack } from '@astryxdesign/core/HStack';
+import { Text } from '@astryxdesign/core/Text';
+import { VStack } from '@astryxdesign/core/VStack';
 import { Icon } from '@/components/ui/Icon';
+import { leaveAcademia } from '@/lib/valux/actions';
+import { AcademyTheme } from './AcademySurface';
 
 const links = [
   ['/academia', 'Cursos'],
   ['/academia/marketplace', 'Marketplace'],
   ['/academia/blog', 'Blog'],
   ['/academia/retos', 'Retos'],
-];
+] as const;
 
 const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos', 'transferencia', 'recibos', 'retos', 'constancias']);
 
-function classroomPath(path: string) {
-  const parts = path.split('/').filter(Boolean);
-  return parts[0] === 'academia' && parts.length >= 3 && !reserved.has(parts[1]);
-}
-
-// Menú del celular (transitions.dev, menu dropdown): abre en 250ms y cierra en 150ms.
-function useMenu() {
-  const [state, setState] = useState<'closed' | 'open' | 'closing'>('closed');
-  const close = () => {
-    setState((current) => (current === 'open' ? 'closing' : current));
-    const ms = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--dropdown-close-dur')) || 150;
-    setTimeout(() => setState((current) => (current === 'closing' ? 'closed' : current)), ms);
-  };
-  return { state, open: () => setState('open'), close, reset: () => setState('closed') };
+function AcademyBrand() {
+  return (
+    <Link href="/academia" className="academy-focus flex shrink-0 items-center gap-2.5" aria-label="Academia Cluster">
+      <HStack align="center" justify="center" className="size-10 shrink-0 rounded-academy bg-academy-ink">
+        <Image src="/assets/logo-white.webp" alt="" width={28} height={18} className="w-7" />
+      </HStack>
+      <Text className="text-lg font-bold tracking-tight text-academy-ink">Academia</Text>
+    </Link>
+  );
 }
 
 export function Frame({ children, signedIn }: { children: ReactNode; signedIn: boolean }) {
   const path = usePathname();
-  const menu = useMenu();
-  const header = useRef<HTMLElement>(null);
-  const toggle = useRef<HTMLButtonElement>(null);
-  const isOpen = menu.state === 'open';
+  const previousPath = useRef(path);
+  const menu = useRef<HTMLElement>(null);
+  const parts = path.split('/').filter(Boolean);
+  const coursePath = parts[0] === 'academia' && parts.length >= 2 && !reserved.has(parts[1]);
+  const classroom = coursePath && parts.length >= 3;
+  const printing = path.startsWith('/academia/constancias/') || path.startsWith('/academia/recibos/');
 
-  const { reset, close } = menu;
-  // Al cambiar de página el menú queda cerrado.
-  useEffect(() => reset(), [path]);
+  function closeMenu() {
+    if (menu.current?.matches(':popover-open')) menu.current.hidePopover();
+  }
 
-  // Escape o un toque fuera del encabezado lo cierran.
   useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      close();
-      toggle.current?.focus();
-    };
-    const onPointer = (event: PointerEvent) => {
-      if (!header.current?.contains(event.target as Node)) close();
-    };
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('pointerdown', onPointer);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('pointerdown', onPointer);
-    };
-  }, [isOpen]);
+    if (path !== previousPath.current) closeMenu();
+    previousPath.current = path;
+  }, [path]);
 
-  if (classroomPath(path)) return <div className="min-h-screen bg-ink">{children}</div>;
-  const printCertificate = path.startsWith('/academia/constancias/');
+  const isCurrent = (href: string) => path === href || (href === '/academia' ? coursePath : path.startsWith(`${href}/`));
+  const nav = links.map(([href, label]) => (
+    <Link key={href} href={href} aria-current={isCurrent(href) ? 'page' : undefined} className="academy-nav academy-focus" onClick={closeMenu}>{label}</Link>
+  ));
+  const library = <Link href="/academia/mis-cursos" className="academy-nav academy-focus" aria-current={isCurrent('/academia/mis-cursos') ? 'page' : undefined} onClick={closeMenu}>Mis cursos</Link>;
 
-  const row = 'flex h-12 items-center text-base';
-
+  if (classroom) return <AcademyTheme className="min-h-screen">{children}</AcademyTheme>;
   return (
-    <div className={`flex min-h-screen flex-col bg-paper text-ink ${printCertificate ? 'print:block print:min-h-0 print:bg-white' : ''}`}>
-      <a href="#academia-contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-30 focus:bg-ink focus:px-4 focus:py-3 focus:text-white">Saltar al contenido</a>
-      <header ref={header} className={`sticky top-0 z-20 border-b border-black/10 bg-white ${printCertificate ? 'print:hidden' : ''}`}>
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
-          <Link href="/academia" className="font-brand text-sm font-extrabold uppercase tracking-[0.18em]">
-            Academia
-          </Link>
-          <nav aria-label="Academia" className="hidden min-w-0 flex-1 items-center gap-5 text-sm text-black/70 md:flex">
-            {links.map(([href, label]) => (
-              <Link key={href} href={href} aria-current={path === href ? 'page' : undefined} className={`shrink-0 ${path === href ? 'font-medium text-ink' : 'hover:text-ink'}`}>
-                {label}
-              </Link>
-            ))}
-          </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-2 text-sm sm:gap-4">
-            <Link href="/academia/mis-cursos" className={`text-black/70 hover:text-ink ${signedIn ? '' : 'hidden md:inline'}`}>Mis cursos</Link>
+    <AcademyTheme className={`min-h-screen ${printing ? 'print:block print:min-h-0 print:bg-white' : ''}`}>
+      <a href="#academia-contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-academy-ink focus:px-4 focus:py-3 focus:text-white">Saltar al contenido</a>
+      <header className={`sticky top-0 z-20 border-b border-academy-line bg-academy-surface ${printing ? 'print:hidden' : ''}`}>
+        <HStack gap={4} align="center" className="mx-auto h-[var(--academy-header-size)] w-full max-w-7xl px-4 sm:gap-6 sm:px-6 lg:px-8">
+          <AcademyBrand />
+          <nav aria-label="Academia" className="hidden min-w-0 flex-1 items-center gap-1 md:flex">{nav}</nav>
+          <HStack gap={2} align="center" className="ml-auto shrink-0">
+            <HStack className={signedIn ? 'hidden sm:flex' : 'hidden lg:flex'}>{library}</HStack>
             {signedIn ? (
               <>
-                <Link href="/academia/perfil" aria-label="Mi perfil" title="Mi perfil" aria-current={path === '/academia/perfil' ? 'page' : undefined} className="grid h-11 w-11 place-items-center border border-black/15 text-ink hover:border-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
-                  <Icon name="user" size={20} aria-hidden="true" />
+                <Link href="/academia/perfil" aria-label="Mi perfil" title="Mi perfil" aria-current={isCurrent('/academia/perfil') ? 'page' : undefined} className="academy-nav academy-focus justify-center px-0">
+                  <Icon name="user" size={19} aria-hidden="true" className="mx-3" />
                 </Link>
                 <form action={leaveAcademia} className="hidden md:block">
-                  <button type="submit" className="border border-black/15 px-3 py-2 hover:border-ink">Salir</button>
+                  <Button type="submit" variant="ghost" label="Salir" />
                 </form>
               </>
-            ) : (
-              <Link href="/academia/entrar" className="bg-ink px-3 py-2 text-white">Entrar</Link>
-            )}
-            <button
-              ref={toggle}
-              type="button"
-              aria-label="Menú"
-              aria-expanded={isOpen}
-              aria-controls="academia-menu"
-              onClick={isOpen ? close : menu.open}
-              className="flex h-11 w-11 items-center justify-center border border-black/15 hover:border-ink md:hidden"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" aria-hidden="true">
-                {isOpen ? <path d="M5 5l10 10M15 5L5 15" /> : <path d="M3 6h14M3 10h14M3 14h14" />}
-              </svg>
+            ) : <Button as={Link} href="/academia/entrar" label="Entrar" variant="primary" className="min-h-11" />}
+            <button type="button" popoverTarget="academia-menu" aria-label="Menú" className="academy-nav academy-focus justify-center px-0 md:hidden">
+              <Icon name="menu" size={21} className="mx-3" />
             </button>
-          </div>
-        </div>
-
-        <div
-          id="academia-menu"
-          data-origin="top-right"
-          inert={!isOpen}
-          className={`t-dropdown absolute inset-x-0 top-full border-b border-black/10 bg-white md:hidden ${isOpen ? 'is-open' : menu.state === 'closing' ? 'is-closing' : ''}`}
-        >
-          <nav aria-label="Academia" className="px-4 py-2">
-            <ul>
-              {links.map(([href, label]) => (
-                <li key={href}>
-                  <Link href={href} onClick={close} aria-current={path === href ? 'page' : undefined} className={`${row} ${path === href ? 'font-medium text-ink' : 'text-black/75'}`}>
-                    {label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            {signedIn ? (
-              <div className="mt-2 border-t border-black/10 pt-2">
-                <form action={leaveAcademia}>
-                  <button type="submit" className={`${row} w-full text-black/75`}>Salir</button>
-                </form>
-              </div>
-            ) : (
-              <div className="mt-2 border-t border-black/10 pt-2">
-                <Link href="/academia/mis-cursos" onClick={close} className={`${row} text-black/75`}>Mis cursos</Link>
-              </div>
-            )}
-          </nav>
-        </div>
+            <nav ref={menu} popover="auto" id="academia-menu" aria-label="Menú de Academia" className="academy-popover border-b border-academy-line bg-academy-surface shadow-lg md:hidden">
+              <VStack gap={1} className="p-4">
+                {nav}
+                {library}
+                {signedIn ? <form action={leaveAcademia}><Button variant="ghost" type="submit" label="Salir" /></form> : null}
+              </VStack>
+            </nav>
+          </HStack>
+        </HStack>
       </header>
-      <div id="academia-contenido" tabIndex={-1} className="flex-1 scroll-mt-20">{children}</div>
-      <footer className={`border-t border-black/10 bg-white ${printCertificate ? 'print:hidden' : ''}`}>
-        <div className="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-black/55">
-          <Link href="/academia/suscripcion" className="hover:text-ink">Suscripción</Link>
-          <Link href="/academia/apoyar" className="hover:text-ink">Apoyar</Link>
-          <Link href="/academia/ficha" className="hover:text-ink">Ficha de asociado</Link>
-          <Link href="/academia/perfil" className="hover:text-ink">Perfil</Link>
-          <Link href="/academia/recibos" className="hover:text-ink">Recibos</Link>
-          <Link href="/dashboard/cursos" className="hover:text-ink">Panel</Link>
-        </div>
+      <VStack id="academia-contenido" tabIndex={-1} className="flex-1 scroll-mt-20">{children}</VStack>
+      <footer className={`border-t border-academy-line bg-academy-surface ${printing ? 'print:hidden' : ''}`}>
+        <HStack align="start" justify="between" wrap="wrap" gap={5} className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <AcademyBrand />
+          <nav aria-label="Servicios y cuenta" className="flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium text-academy-muted">
+            <Link href="/academia/suscripcion" className="academy-focus hover:text-academy-primary">Suscripción</Link>
+            <Link href="/academia/apoyar" className="academy-focus hover:text-academy-primary">Apoyar</Link>
+            <Link href="/academia/ficha" className="academy-focus hover:text-academy-primary">Ficha de asociado</Link>
+            <Link href="/academia/recibos" className="academy-focus hover:text-academy-primary">Recibos</Link>
+            <Link href="/academia/constancias" className="academy-focus hover:text-academy-primary">Constancias</Link>
+            <Link href="/dashboard/cursos" className="academy-focus hover:text-academy-primary">Panel</Link>
+          </nav>
+        </HStack>
       </footer>
-    </div>
+    </AcademyTheme>
   );
 }

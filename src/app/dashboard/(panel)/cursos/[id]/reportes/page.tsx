@@ -26,15 +26,15 @@ export default async function CourseReports({ params }: { params: Promise<{ id: 
   return (
     <VStack as="section" aria-labelledby="curso-reportes" gap={6} className="mx-auto w-full max-w-5xl [color-scheme:light]">
       <Link href={base} className="text-sm font-medium underline">← {course.title}</Link>
-      <Heading id="curso-reportes" level={1} className="font-brand text-3xl font-semibold">Reportes del curso</Heading>
+      <Heading id="curso-reportes" level={1} className="academy-title">Reportes del curso</Heading>
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">Progreso de alumnos inscritos</h2>
-        <a href={`${base}/reportes/exportar`} download className="inline-flex min-h-11 items-center bg-brand px-4 text-sm font-semibold text-ink">Descargar progreso en CSV</a>
+        <a href={`${base}/reportes/exportar`} download className="academy-action academy-action-primary">Descargar progreso en CSV</a>
       </section>
       <section className="space-y-3">
         <h2 id="retencion" className="text-xl font-semibold">Abandono por clase</h2>
         <p className="text-sm text-black/70">Se cuenta a quien abrió una clase hace 7 días o más y todavía no la completó.</p>
-        <section tabIndex={0} aria-labelledby="retencion" className="overflow-x-auto border border-black/10 bg-white">
+        <section tabIndex={0} aria-labelledby="retencion" className="academy-panel overflow-x-auto">
           <table role="table" className="block w-full text-left text-sm sm:table">
             <thead className="hidden bg-paper sm:table-header-group"><tr><th scope="col" className="p-3">Clase</th><th scope="col" className="p-3">Iniciaron</th><th scope="col" className="p-3">Completaron</th><th scope="col" className="p-3">Abandono</th></tr></thead>
             <tbody role="rowgroup" className="block divide-y divide-black/10 sm:table-row-group">{lessons.map((lesson) => <tr role="row" key={lesson.id} className="grid grid-cols-3 sm:table-row">
@@ -49,7 +49,7 @@ export default async function CourseReports({ params }: { params: Promise<{ id: 
       </section>
       <section className="space-y-3">
         <h2 id="quizzes" className="text-xl font-semibold">Resultados de cuestionarios</h2>
-        {quizzes.length ? <section tabIndex={0} aria-labelledby="quizzes" className="overflow-x-auto border border-black/10 bg-white">
+        {quizzes.length ? <section tabIndex={0} aria-labelledby="quizzes" className="academy-panel overflow-x-auto">
           <table role="table" className="block w-full text-left text-sm sm:table">
             <thead className="hidden bg-paper sm:table-header-group"><tr><th scope="col" className="p-3">Clase</th><th scope="col" className="p-3">Intentos</th><th scope="col" className="p-3">Participantes</th><th scope="col" className="p-3">Aprobaron</th><th scope="col" className="p-3">Promedio</th></tr></thead>
             <tbody role="rowgroup" className="block divide-y divide-black/10 sm:table-row-group">{quizzes.map((lesson) => <tr role="row" key={lesson.id} className="grid grid-cols-2 sm:table-row">

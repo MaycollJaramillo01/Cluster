@@ -8,6 +8,7 @@ import { logout } from '@/lib/crm/access';
 import type { SidebarCounts } from '@/lib/crm/types';
 import { allowedHref, itemsFor, sectionFor, sectionsFor, type NavItem } from './nav';
 import type { StaffRole } from '@/lib/crm/roles';
+import { AcademyStaffShell } from './AcademyStaffShell';
 
 function itemActive(item: NavItem, pathname: string, params: URLSearchParams) {
   const [path, query = ''] = item.href.split('#')[0].split('?');
@@ -30,7 +31,7 @@ function itemActive(item: NavItem, pathname: string, params: URLSearchParams) {
     const head = pathname.startsWith(`${path}/`) ? pathname.slice(path.length + 1).split('/')[0] : '';
     const reserved = new Set([
       'marketplace', 'blog', 'ventas', 'revisiones', 'fichas', 'personas',
-      'clientes', 'suscripcion', 'liquidaciones', 'donaciones', 'ajustes', 'transferencias',
+      'clientes', 'suscripcion', 'liquidaciones', 'donaciones', 'ajustes', 'transferencias', 'retos', 'cupones', 'analitica',
     ]);
     return Boolean(head) && !reserved.has(head);
   }
@@ -58,8 +59,14 @@ export function Shell({
   const pathname = usePathname();
   const params = useSearchParams();
   const section = sectionFor(pathname);
-  const items = itemsFor(section.id, counts).filter((item) => allowedHref(role, item.href));
+  const academy = section.id === 'cursos' || section.id === 'profesor';
+  const items = itemsFor(academy && role === 'profesor' ? 'profesor' : section.id, counts).filter((item) => allowedHref(role, item.href));
   const visible = sectionsFor(role, counts);
+
+  if (academy) {
+    const active = role === 'profesor' ? '/dashboard/profesor' : items.find((item) => itemActive(item, pathname, params))?.href;
+    return <AcademyStaffShell teacher={role === 'profesor'} openAccess={openAccess} path={pathname} items={items} active={active} sections={visible}>{children}</AcademyStaffShell>;
+  }
 
   return (
     <div className="min-h-screen bg-paper text-ink">

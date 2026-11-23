@@ -1,0 +1,19 @@
+{
+  "name": "cluster-academia",
+  "like": "neutral",
+  "mode": "both",
+  "settings": [
+    {
+      "thing": "accent",
+      "value": "#007d65",
+      "source": "dial"
+    },
+    {
+      "thing": "corners",
+      "value": "large",
+      "source": "dial"
+    }
+  ],
+  "lifted": [],
+  "palette": "18fe2697e25ba99b870475b9c843501285abff427cf19c59c6c097b1cd0191a8"
+}

@@ -8,6 +8,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        academy: {
+          page: 'var(--academy-page)',
+          surface: 'var(--color-background-surface)',
+          ink: 'var(--color-text-primary)',
+          muted: 'var(--color-text-secondary)',
+          line: 'var(--color-border)',
+          tint: 'var(--academy-tint)',
+          primary: 'var(--color-text-accent)',
+          action: 'var(--color-accent)',
+          'action-text': 'var(--color-on-accent)',
+          deep: 'var(--academy-deep)',
+        },
         // Paleta editorial: tinta #111111 (negro neutro) + papel #F9F9F9
         ink: {
           DEFAULT: '#111111',
@@ -55,6 +67,9 @@ const config: Config = {
       },
       // Estética editorial: esquinas rectas en todo el sitio.
       borderRadius: {
+        academy: 'var(--radius-element)',
+        'academy-lg': 'var(--radius-container)',
+        'academy-xl': 'var(--radius-page)',
         none: '0',
         sm: '0',
         DEFAULT: '0',

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { Page } from '@/components/academia/ui';
+import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
 import { formatDate } from '@/lib/crm/format';
 import { site } from '@/lib/site';
 import { academyMoney as money, CURRENCY } from '@/lib/valux/money';
@@ -22,31 +25,31 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
       <p className="mb-4 text-sm print:hidden">
         <Link className="underline" href="/academia/recibos">Volver a recibos</Link> · Para guardarlo en PDF usa Imprimir en tu navegador.
       </p>
-      <article className="space-y-6 border border-black/10 bg-white p-6 sm:p-8">
-        <header className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="font-brand text-sm font-extrabold uppercase tracking-[0.18em]">{site.name} · Academia</p>
-            <p className="mt-1 text-xs text-black/50">Recibo de pago</p>
-          </div>
-          <div className="text-right text-sm">
+      <article className="academy-panel space-y-6 p-5 sm:p-8 print:border-none">
+        <HStack as="header" align="start" justify="between" wrap="wrap" gap={4}>
+          <VStack gap={2}>
+            <Heading level={1} className="text-2xl font-bold">Recibo de pago</Heading>
+            <p className="text-sm text-academy-muted">{site.name} · Academia</p>
+          </VStack>
+          <VStack gap={1} className="text-right text-sm">
             <p className="font-mono">N.º {receipt.number}</p>
-            <p className="text-black/60">{formatDate(receipt.created_at)}</p>
-          </div>
-        </header>
-        <dl className="grid gap-3 text-sm sm:grid-cols-[140px_1fr]">
+            <p className="text-academy-muted">{formatDate(receipt.created_at)}</p>
+          </VStack>
+        </HStack>
+        <dl className="grid gap-3 break-words text-sm sm:grid-cols-3">
           <dt className="text-black/50">Cliente</dt>
-          <dd>{receipt.buyer_name}<span className="block text-black/50">{receipt.buyer_email}</span></dd>
+          <dd className="min-w-0 sm:col-span-2">{receipt.buyer_name}<small className="block break-words text-sm text-academy-muted">{receipt.buyer_email}</small></dd>
           <dt className="text-black/50">Concepto</dt>
-          <dd>{receipt.concept}</dd>
+          <dd className="sm:col-span-2">{receipt.concept}</dd>
           <dt className="text-black/50">Método</dt>
-          <dd>{receipt.method}</dd>
+          <dd className="sm:col-span-2">{receipt.method}</dd>
           <dt className="text-black/50">Moneda</dt>
-          <dd>{CURRENCY}</dd>
+          <dd className="sm:col-span-2">{CURRENCY}</dd>
         </dl>
-        <div className="flex items-baseline justify-between border-t border-black/10 pt-4">
-          <span className="text-sm text-black/60">Total pagado</span>
-          <span className="font-display text-4xl">{money(receipt.amount_cents)}</span>
-        </div>
+        <HStack align="center" gap={3} wrap="wrap" justify="between" className="academy-notice">
+          <p className="font-semibold">Total pagado</p>
+          <strong className="text-3xl font-bold tabular-nums">{money(receipt.amount_cents)}</strong>
+        </HStack>
         {receipt.refunded_at ? (
           <p className="border border-black/15 bg-black/[0.03] px-3 py-2 text-sm">
             Reembolsado el {formatDate(receipt.refunded_at)}{receipt.refund_reason ? ` (${receipt.refund_reason})` : ''}.

@@ -197,8 +197,8 @@ export async function startCourseRevision(formData: FormData) {
   const { teacherId } = await requireCourseEditor(id);
   const draftId = await createCourseRevision(id, teacherId);
   if (!draftId) redirect(`/dashboard/cursos/${id}?vista=revision&error=estado`);
-  refresh();
-  redirect(`/dashboard/cursos/${draftId}?vista=temario`);
+  revalidatePath(`/dashboard/cursos/${id}`);
+  redirect(`/dashboard/cursos/${id}?vista=revision&guardado=borrador`);
 }
 
 export async function discardCourseRevision(formData: FormData) {

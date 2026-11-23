@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { initials, rate } from '@/lib/crm/format';
+import { HStack } from '@astryxdesign/core/HStack';
 
 export const btn =
   'inline-flex items-center justify-center bg-brand px-4 py-2 text-sm font-medium text-ink transition hover:brightness-95';
@@ -13,10 +14,10 @@ export const labelClass = 'mb-1 block font-mono text-[10px] uppercase tracking-[
 
 export function PageTitle({ title, action }: { title: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <HStack as="header" gap={3} wrap="wrap" align="center" className="dashboard-page-title">
       <h1 className="font-display text-4xl tracking-wide text-ink md:text-5xl">{title}</h1>
       {action}
-    </div>
+    </HStack>
   );
 }
 

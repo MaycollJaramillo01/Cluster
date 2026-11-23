@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Heading } from '@astryxdesign/core/Heading';
+import { VStack } from '@astryxdesign/core/VStack';
+import { Cover } from '@/components/academia/ui';
 import { getPostBySlug } from '@/lib/valux/data';
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -8,11 +11,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   if (!post) notFound();
 
   return (
-    <article className="mx-auto max-w-2xl space-y-4 px-4 py-10">
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45"><Link href="/academia/blog">Blog</Link></p>
-      <h1 className="font-display text-5xl tracking-wide">{post.title}</h1>
-      {post.author_name ? <p className="text-sm text-black/50">{post.author_name}</p> : null}
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-black/75">{post.body}</p>
-    </article>
+    <main className="academy-page max-w-3xl">
+      <VStack as="article" gap={5}>
+        <Link href="/academia/blog" className="academy-nav academy-focus w-fit">← Blog</Link>
+        <Heading level={1} className="academy-title">{post.title}</Heading>
+        {post.author_name ? <p className="text-sm font-semibold text-academy-muted">{post.author_name}</p> : null}
+        {post.cover_url ? <figure className="overflow-hidden rounded-academy-lg"><Cover url={post.cover_url} title={post.title} /></figure> : null}
+        <p className="whitespace-pre-wrap break-words leading-relaxed text-academy-ink">{post.body}</p>
+      </VStack>
+    </main>
   );
 }

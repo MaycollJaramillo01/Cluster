@@ -30,14 +30,14 @@ export default async function CourseCommunity({ params, searchParams }: {
   return (
     <VStack as="section" aria-labelledby="curso-comunidad" gap={5} className="mx-auto w-full max-w-5xl [color-scheme:light]">
       <Link href={base} className="text-sm font-medium underline">← {course.title}</Link>
-      <Heading id="curso-comunidad" level={1} className="font-brand text-3xl font-semibold">Comunidad del curso</Heading>
+      <Heading id="curso-comunidad" level={1} className="academy-title">Comunidad del curso</Heading>
       {resultado === 'error' ? <p role="alert" className="text-sm text-red-800">Comprueba el texto o vuelve a abrir el elemento. Su estado pudo haber cambiado.</p> : null}
       {resultado === 'ok' ? <p role="status" className="text-sm font-semibold">Respuesta guardada.</p> : null}
       {resultado === 'resena' ? <p role="status" className="text-sm font-semibold">Estado de la reseña actualizado.</p> : null}
       <section aria-labelledby="bandeja" className="space-y-4">
         <h2 id="bandeja" className="text-xl font-semibold">Preguntas por lección</h2>
         <nav aria-label="Filtrar preguntas" className="flex flex-wrap gap-2">
-          {['pendientes', 'respondidas'].map((value) => <Link key={value} aria-current={filter === value ? 'page' : undefined} href={`${base}/comunidad?filtro=${value}`} className={`inline-flex min-h-11 items-center border border-black/15 px-3 text-sm capitalize ${filter === value ? 'bg-ink font-semibold text-white' : 'bg-white'}`}>{value}</Link>)}
+          {['pendientes', 'respondidas'].map((value) => <Link key={value} aria-current={filter === value ? 'page' : undefined} href={`${base}/comunidad?filtro=${value}`} className="academy-filter academy-focus capitalize">{value}</Link>)}
         </nav>
         {questions.length ? <ul className="divide-y divide-black/10 border border-black/10 bg-white">
           {questions.map((item) => <li key={item.id} className="space-y-3 p-4">

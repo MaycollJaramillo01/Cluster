@@ -1,4 +1,7 @@
-import { PayMethod, payNote, payReady } from '@/components/academia/ui';
+import { Page, PayMethod, payNote, payReady } from '@/components/academia/ui';
+import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { buySubscription, cancelMySubscription } from '@/lib/valux/actions';
 import { listPlans, personSubscription } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
@@ -6,8 +9,8 @@ import { formatDate } from '@/lib/crm/format';
 import { academyMoney as money } from '@/lib/valux/money';
 import { paymentOptions } from '@/lib/valux/transfers';
 
-const label = 'mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-black/45';
-const input = 'w-full border border-black/15 px-3 py-2 outline-none focus:border-brand';
+const label = 'block space-y-2 text-sm font-semibold';
+const input = 'academy-field block w-full';
 
 export default async function SuscripcionPage({
   searchParams,
@@ -22,14 +25,14 @@ export default async function SuscripcionPage({
   const paid = plans.some((plan) => plan.price_cents > 0);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <div className="max-w-2xl space-y-2">
-        <h1 className="font-display text-5xl tracking-wide">Membresías</h1>
-        <p className="text-sm text-black/60">
+    <Page className="max-w-5xl gap-6">
+      <header className="academy-hero space-y-3 rounded-academy-xl p-6 text-white sm:p-9">
+        <Heading level={1} className="text-4xl font-bold text-white sm:text-5xl">Membresías</Heading>
+        <p className="max-w-prose text-white/80">
           Pago mensual en lempiras. Cancela cuando quieras.
           El acceso se mantiene hasta el final del período pagado.
         </p>
-      </div>
+      </header>
       {query.ok ? <p className="text-sm text-brand">Membresía activa.</p> : null}
       {query.cancelada ? <p className="text-sm">Listo, no se va a renovar.</p> : null}
       {query.error === 'cancelar' ? <p className="text-sm">No se pudo cancelar en la pasarela. Prueba de nuevo o escríbenos.</p> : null}
@@ -37,7 +40,7 @@ export default async function SuscripcionPage({
       {query.error && !['cancelar', 'plan'].includes(query.error) ? <p className="text-sm">{payNote(query.error)}</p> : null}
 
       {current ? (
-        <div className="max-w-md space-y-3 border border-black/10 bg-white p-4 text-sm">
+        <section className="academy-panel max-w-md space-y-3 p-5 text-sm">
           <p className="font-medium">Plan {current.plan_name || 'completo'}</p>
           <p>
             {current.status === 'activa'
@@ -46,10 +49,10 @@ export default async function SuscripcionPage({
           </p>
           {current.status === 'activa' && current.gateway_id ? (
             <form action={cancelMySubscription}>
-              <button className="border border-black/15 px-4 py-2 text-sm" type="submit">Cancelar renovación</button>
+              <button className="academy-action academy-action-secondary" type="submit">Cancelar renovación</button>
             </form>
           ) : null}
-        </div>
+        </section>
       ) : plans.length === 0 ? (
         <p className="text-sm text-black/60">Todavía no hay planes disponibles.</p>
       ) : (
@@ -59,15 +62,15 @@ export default async function SuscripcionPage({
             {plans.map((plan) => (
               <label
                 key={plan.id}
-                className="flex cursor-pointer flex-col gap-3 border border-black/10 bg-white p-4 has-[:checked]:border-brand has-[:checked]:ring-2 has-[:checked]:ring-brand/30"
+                className="academy-panel flex cursor-pointer flex-col gap-3 p-5 has-[:checked]:border-academy-primary has-[:checked]:bg-academy-tint"
               >
-                <span className="flex items-center gap-2">
+                <HStack as="span" gap={2} align="center">
                   <input type="radio" name="plan" value={plan.id} required />
-                  <span className="font-medium">{plan.name}</span>
-                </span>
-                <span className="font-display text-4xl tracking-wide">
-                  {money(plan.price_cents)}<span className="text-base text-black/45"> /mes</span>
-                </span>
+                  <strong>{plan.name}</strong>
+                </HStack>
+                <strong className="text-4xl font-bold tracking-tight">
+                  {money(plan.price_cents)}<small className="text-base font-medium text-academy-muted"> /mes</small>
+                </strong>
                 <ul className="space-y-1 text-sm text-black/70">
                   {plan.benefits.map((benefit) => <li key={benefit}>· {benefit}</li>)}
                 </ul>
@@ -77,21 +80,19 @@ export default async function SuscripcionPage({
           {paid && !payReady(pay) ? (
             <p className="max-w-md border border-black/10 bg-white p-4 text-sm leading-relaxed">{payNote('pasarela')}</p>
           ) : (
-          <div className="max-w-md space-y-3 border border-black/10 bg-white p-4">
-            <label className="block text-sm">
-              <span className={label}>Nombre</span>
+          <section className="academy-panel max-w-md space-y-4 p-5">
+            <label className={label}>Nombre
               <input name="name" required className={input} />
             </label>
-            <label className="block text-sm">
-              <span className={label}>Correo</span>
+            <label className={label}>Correo
               <input name="email" type="email" required className={input} />
             </label>
             {paid ? <PayMethod options={pay} /> : null}
-            <button className="bg-brand px-4 py-2 text-sm font-medium text-ink" type="submit">Suscribirme</button>
-          </div>
+            <AcademySubmit label="Suscribirme" pending="Procesando…" fullWidth />
+          </section>
           )}
         </form>
       )}
-    </div>
+    </Page>
   );
 }

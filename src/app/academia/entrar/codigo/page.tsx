@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { confirmLoginCode } from '@/lib/valux/actions';
 import { devLoginCode } from '@/lib/valux/login';
-import { SubmitButton } from '@/components/ui/SubmitButton';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
+import { Heading } from '@astryxdesign/core/Heading';
+import { VStack } from '@astryxdesign/core/VStack';
 import { courseLoginQuery, loginCourse } from '@/lib/valux/login-course';
 
 export default async function CodigoPage({ searchParams }: { searchParams: Promise<{ l?: string; error?: string; curso?: string; modo?: string }> }) {
@@ -10,14 +12,14 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
   const error = Boolean(query.error);
 
   return (
-    <div className="mx-auto max-w-md px-4 py-12 sm:py-16">
-      <h1 className="font-display text-5xl tracking-wide">Revisa tu correo</h1>
-      <form action={confirmLoginCode} className="mt-8 space-y-5">
+    <VStack as="main" gap={5} className="academy-page max-w-lg">
+      <Heading level={1} className="academy-title">Revisa tu correo</Heading>
+      <form action={confirmLoginCode} className="academy-panel space-y-5 p-5 sm:p-7">
         <input type="hidden" name="l" value={query.l || ''} />
         <input type="hidden" name="curso" value={loginCourse(query.curso)} />
         <input type="hidden" name="modo" value={query.modo === 'registro' ? 'registro' : 'entrar'} />
-        <div>
-          <label htmlFor="code" className="mb-1.5 block text-sm font-medium">Código de 6 dígitos</label>
+        <VStack gap={2}>
+          <label htmlFor="code" className="text-sm font-semibold">Código de 6 dígitos</label>
           <input
             id="code"
             name="code"
@@ -29,20 +31,20 @@ export default async function CodigoPage({ searchParams }: { searchParams: Promi
             defaultValue={devCode}
             aria-invalid={error || undefined}
             aria-describedby={error ? 'code-error' : undefined}
-            className={`t-input h-16 w-full border bg-white text-center font-mono text-3xl tracking-[0.45em] outline-none transition-colors duration-150 focus:ring-1 ${error ? 'is-shaking border-[#b42318] focus:border-[#b42318] focus:ring-[#b42318]' : 'border-black/20 focus:border-ink focus:ring-ink'}`}
+            className={`academy-field t-input h-16 w-full text-center font-mono text-3xl tracking-widest ${error ? 'is-shaking' : ''}`}
           />
           {error ? (
-            <p id="code-error" role="alert" className="mt-2 text-sm text-[#b42318]">
+            <p id="code-error" role="alert" className="text-sm text-red-800">
               Código incorrecto o vencido.
             </p>
           ) : null}
-        </div>
-        <SubmitButton pending="Verificando…">Entrar</SubmitButton>
+        </VStack>
+        <AcademySubmit pending="Verificando…" label="Entrar" fullWidth />
       </form>
-      <p className="mt-10 text-sm text-black/60">
+      <p className="text-sm text-academy-muted">
         ¿No llegó? Revisa spam o promociones, o{' '}
         <Link href={`/academia/entrar?modo=${query.modo === 'registro' ? 'registro' : 'entrar'}${courseLoginQuery(query.curso)}`} className="font-medium text-ink underline underline-offset-2">pide otro código</Link>.
       </p>
-    </div>
+    </VStack>
   );
 }

@@ -1,0 +1,18 @@
+{
+  "modeStrategy": "light-and-dark",
+  "families": [
+    {
+      "id": "accent",
+      "name": "Accent",
+      "seed": "#007d65",
+      "anchors": [
+        {
+          "mode": "light",
+          "stop": 45,
+          "color": "#007d65",
+          "policy": "exact"
+        }
+      ]
+    }
+  ]
+}

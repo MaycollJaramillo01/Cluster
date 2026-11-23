@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { enterAcademia } from '@/lib/valux/actions';
-import { SubmitButton } from '@/components/ui/SubmitButton';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { LoginForm } from '@/components/dashboard/LoginForm';
-import { AcademySurface } from '@/components/academia/AcademySurface';
 import { AccessTabs } from '@/components/academia/AccessTabs';
+import { Cover } from '@/components/academia/ui';
 import { VStack } from '@astryxdesign/core/VStack';
 import { Heading } from '@astryxdesign/core/Heading';
 import { dashboardSession, googleConfigured } from '@/lib/crm/session';
@@ -12,8 +13,8 @@ import { redirect } from 'next/navigation';
 import { publishedCourse } from '@/lib/valux/data';
 import { courseLoginQuery, loginCourse } from '@/lib/valux/login-course';
 
-const input = 'h-12 w-full border border-black/20 bg-white px-3 text-base outline-none transition-colors duration-150 placeholder:text-black/35 focus:border-ink focus:ring-1 focus:ring-ink';
-const label = 'mb-1.5 block text-sm font-medium';
+const input = 'academy-field w-full';
+const label = 'mb-2 block text-sm font-semibold';
 export default async function EntrarPage({ searchParams }: { searchParams: Promise<{ error?: string; modo?: string; acceso?: string; curso?: string }> }) {
   const query = await searchParams;
   const teacher = query.acceso === 'maestros';
@@ -36,10 +37,21 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
         : '';
 
   return (
-    <AcademySurface className="mx-auto w-full max-w-lg px-4 py-6 md:py-12">
-    <section className="w-full">
-      <VStack gap={0} className="min-w-0 border border-black/10 bg-white p-5 sm:p-8">
-      <Heading level={1} className="mb-3 text-balance font-display text-4xl">{teacher ? 'Acceso para maestros' : register ? 'Crea tu cuenta' : 'Entra a la academia'}</Heading>
+    <main className="academy-page max-w-5xl">
+    <section className="academy-panel grid overflow-hidden lg:grid-cols-2">
+      <aside className="academy-hero relative hidden flex-col justify-end overflow-hidden text-white lg:flex" aria-label={course ? 'Curso seleccionado' : 'Academia Cluster'}>
+        {course ? <Cover url={course.cover_url} title={course.title} slug={course.slug} /> : (
+          <figure className="relative min-h-64 flex-1">
+            <Image src="/assets/stock/workspace.jpg" alt="" fill sizes="480px" className="object-cover" />
+          </figure>
+        )}
+        <VStack gap={2} className="p-8">
+          <Heading level={2} className="text-3xl font-bold text-white">{course?.title || (teacher ? 'Panel docente' : 'Tu espacio de aprendizaje')}</Heading>
+          <p className="text-sm leading-relaxed text-white/80">{course ? 'Entra o crea una cuenta para seguir con el curso.' : teacher ? 'Accede al editor, a tus alumnos y al avance de tus cursos.' : 'Retoma tus cursos y guarda tu avance con tu correo.'}</p>
+        </VStack>
+      </aside>
+      <VStack gap={0} className="min-w-0 p-5 sm:p-8 lg:p-10">
+      <Heading level={1} className="academy-title mb-4">{teacher ? 'Acceso para maestros' : register ? 'Crea tu cuenta' : 'Entra a la academia'}</Heading>
       {course ? <p className="mb-4 text-sm text-black/70">Para continuar con <Link href={`/academia/${course.slug}`} className="font-semibold text-ink underline underline-offset-4">{course.title}</Link>.</p> : <AccessTabs teacher={teacher} />}
       {teacher ? (
         <VStack gap={5} className="pt-5">
@@ -48,7 +60,7 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
         </VStack>
       ) : <>
       {error ? (
-        <p role="alert" className="mt-6 border border-[#b42318]/30 bg-[#fef3f2] px-4 py-3 text-sm text-[#7a271a]">{error}</p>
+        <p role="alert" className="mt-6 rounded-academy border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</p>
       ) : null}
 
       <form action={enterAcademia} className="mt-5 space-y-4">
@@ -75,17 +87,17 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
             <summary className="cursor-pointer py-2 text-sm text-black/70">Preferencias de avisos (opcional)</summary>
             <fieldset aria-label="Preferencias de avisos" className="space-y-3 pb-2">
             <label className="flex items-start gap-3 text-sm text-black/75">
-              <input name="consent_whatsapp" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0 accent-[#111111]" />
+              <input name="consent_whatsapp" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0" />
               Acepto recibir mensajes de la academia por WhatsApp.
             </label>
             <label className="flex items-start gap-3 text-sm text-black/75">
-              <input name="consent_email" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0 accent-[#111111]" />
+              <input name="consent_email" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0" />
               Acepto recibir novedades y ofertas por correo.
             </label>
             </fieldset>
           </details>
         ) : null}
-        <SubmitButton pending="Enviando…">{register ? 'Crear cuenta' : 'Enviarme un código'}</SubmitButton>
+        <AcademySubmit pending="Enviando…" label={register ? 'Crear cuenta' : 'Enviarme un código'} fullWidth />
       </form>
       <p className="mt-4 text-sm text-black/70">
         {register ? '¿Ya tienes cuenta? ' : '¿Es tu primera vez? '}
@@ -94,6 +106,6 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
       </>}
       </VStack>
     </section>
-    </AcademySurface>
+    </main>
   );
 }

@@ -1,4 +1,7 @@
 import { submitApplication } from '@/lib/valux/actions';
+import { Heading } from '@astryxdesign/core/Heading';
+import { VStack } from '@astryxdesign/core/VStack';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
 
 const fields: [string, string][] = [
   ['photo_url', 'Foto (URL)'],
@@ -34,29 +37,27 @@ export default async function FichaPage({ searchParams }: { searchParams: Promis
   const query = await searchParams;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 px-4 py-10">
-      <h1 className="font-display text-5xl tracking-wide">Ficha de asociado</h1>
-      {query.ok ? <p className="text-sm text-brand">Ficha enviada.</p> : null}
-      {query.error ? <p className="text-sm">Faltan el nombre y el correo.</p> : null}
-      <form action={submitApplication} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
-        <label className="text-sm md:col-span-2">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">Nombre completo</span>
-          <input name="full_name" required className="w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" />
+    <VStack as="main" gap={5} className="academy-page max-w-5xl">
+      <Heading level={1} className="academy-title">Ficha de asociado</Heading>
+      {query.ok ? <p role="status" className="academy-notice">Ficha enviada.</p> : null}
+      {query.error ? <p role="alert" className="academy-notice">Faltan el nombre y el correo.</p> : null}
+      <form action={submitApplication} className="academy-panel grid gap-4 p-5 sm:p-7 md:grid-cols-2">
+        <label className="space-y-2 text-sm font-semibold">Nombre completo
+          <input name="full_name" required autoComplete="name" className="academy-field block w-full" />
         </label>
-        <label className="text-sm md:col-span-2">
-          <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">Correo</span>
-          <input name="email" type="email" required className="w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" />
+        <label className="space-y-2 text-sm font-semibold">Correo
+          <input name="email" type="email" required autoComplete="email" className="academy-field block w-full" />
         </label>
         {fields.map(([name, label]) => (
-          <label key={name} className="text-sm">
-            <span className="mb-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-black/45">{label}</span>
-            <input name={name} className="w-full border border-black/15 px-3 py-2 outline-none focus:border-brand" />
+          <label key={name} className="space-y-2 text-sm font-semibold">
+            {label}
+            <input name={name} className="academy-field block w-full" />
           </label>
         ))}
-        <div className="md:col-span-2">
-          <button className="bg-brand px-4 py-2 text-sm font-medium text-ink" type="submit">Enviar ficha</button>
-        </div>
+        <footer className="border-t border-academy-line pt-4 md:col-span-2">
+          <AcademySubmit label="Enviar ficha" pending="Enviando…" />
+        </footer>
       </form>
-    </div>
+    </VStack>
   );
 }

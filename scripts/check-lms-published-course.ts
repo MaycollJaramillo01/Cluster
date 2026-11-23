@@ -61,8 +61,10 @@ async function main() {
   signIn('profesor', otherTeacher);
   assert.equal(await redirected(() => startCourseRevision(draftData)), '/dashboard/profesor');
   signIn('profesor', teacher);
-  const draftPath = await redirected(() => startCourseRevision(draftData));
-  const draftId = draftPath.split('/').at(-1)!.split('?')[0];
+  assert.equal(await redirected(() => startCourseRevision(draftData)), '/dashboard/cursos/versiones-curso?vista=revision&guardado=borrador');
+  const drafts = await sql`SELECT id FROM lms_courses WHERE revision_of = 'versiones-curso' AND teacher_id = 'versiones-teacher' AND NOT published`;
+  assert.equal(drafts.length, 1);
+  const draftId = drafts[0].id;
   assert.equal(await createCourseRevision('versiones-curso', 'versiones-teacher'), draftId);
   const [copy] = await sql`SELECT id FROM lms_lessons WHERE course_id = ${draftId} AND source_id = 'versiones-first'`;
   assert.match(await redirected(() => deleteLesson(form({ course_id: draftId, id: copy.id }))), /error=conservar/);

@@ -52,5 +52,12 @@ next-env.d.ts
 
 # Postulaciones (perfiles, archivos y hash de acceso local)
 /data/careers/
+# Astryx theme editor previews
+/themes/.astryx-render-*/
+/themes/*/preview*.png
+/themes/*/sheet*.png
+/themes/*/preview.html
+/themes/*/sheet.html
+/themes/*/*.pictures.json
 .vercel
 .env*

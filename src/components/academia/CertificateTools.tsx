@@ -1,14 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@astryxdesign/core/Button';
 import { Icon } from '@/components/ui/Icon';
 
-const buttonClass = 'inline-flex min-h-11 items-center justify-center gap-2 border border-black/25 bg-white px-4 text-sm font-semibold hover:border-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
-
 export function PrintCertificate() {
-  return <button type="button" onClick={() => window.print()} className={`${buttonClass} print:hidden`}>
-    Imprimir o guardar PDF
-  </button>;
+  return <Button label="Imprimir o guardar PDF" onClick={() => window.print()} className="print:hidden" />;
 }
 
 export function CopyCertificateLink({ path }: { path: string }) {
@@ -22,7 +19,7 @@ export function CopyCertificateLink({ path }: { path: string }) {
     }
   }
   return <>
-    <button type="button" onClick={copy} className={buttonClass}><Icon name="link" size={17} aria-hidden="true" />Copiar enlace</button>
+    <Button label="Copiar enlace" onClick={copy} icon={<Icon name="link" size={17} />} />
     {message ? <p role="status" className="w-full text-sm text-ink/70">{message}</p> : null}
   </>;
 }

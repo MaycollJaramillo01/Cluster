@@ -1,11 +1,16 @@
 import Link from 'next/link';
+import { Button } from '@astryxdesign/core/Button';
+import { Heading } from '@astryxdesign/core/Heading';
+import { VStack } from '@astryxdesign/core/VStack';
 
 export default function PagoCancelado() {
   return (
-    <div className="mx-auto max-w-6xl space-y-3 px-4 py-10">
-      <h1 className="font-display text-5xl tracking-wide">Pago cancelado</h1>
-      <p className="text-sm text-black/60">No se registró la compra.</p>
-      <Link className="text-sm underline" href="/academia">Volver a la academia</Link>
-    </div>
+    <main className="academy-page max-w-xl">
+      <VStack gap={4} className="academy-panel items-start p-6">
+        <Heading level={1} className="academy-title">Pago cancelado</Heading>
+        <p className="text-academy-muted">No se registró la compra.</p>
+        <Button as={Link} href="/academia" label="Volver a la academia" variant="primary" />
+      </VStack>
+    </main>
   );
 }

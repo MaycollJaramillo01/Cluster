@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { VStack } from '@astryxdesign/core/VStack';
 import { submitAssignment } from '@/lib/valux/assignment-actions';
 import { getAssignmentSubmission } from '@/lib/valux/assignments';
-import { SubmitButton } from '@/components/ui/SubmitButton';
+import { AcademySubmit } from './AcademySubmit';
 import { LessonText } from './ui';
 
 const statusLabel = { pendiente: 'Entrega en revisión', cambios: 'Tu profesor pidió cambios', aprobada: 'Tarea aprobada' };
@@ -13,7 +13,7 @@ export async function LessonAssignment({ lessonId, personId, instructions, done,
   const submission = await getAssignmentSubmission(lessonId, personId);
   const ready = !done && (!submission || submission.status === 'cambios');
   return (
-    <section id="mision" className="scroll-mt-20 border border-black/10 bg-white p-5 sm:p-6">
+    <section id="mision" className="academy-panel scroll-mt-24 p-5 sm:p-6">
       <VStack gap={4}>
         <header>
           <h2 className="text-lg font-semibold">Tarea</h2>
@@ -22,7 +22,7 @@ export async function LessonAssignment({ lessonId, personId, instructions, done,
         <LessonText text={instructions} />
         {submission ? (
           <section className="space-y-2 border-t border-black/10 pt-4">
-            <p role="status" className="font-medium">{statusLabel[submission.status]}</p>
+            <p role="status" className="academy-notice font-medium">{statusLabel[submission.status]}</p>
             {submission.feedback ? <p className="whitespace-pre-wrap break-words text-sm">{submission.feedback}</p> : null}
             {submission.status !== 'cambios' ? <details className="text-sm">
               <summary className="cursor-pointer">Ver mi entrega</summary>
@@ -37,12 +37,10 @@ export async function LessonAssignment({ lessonId, personId, instructions, done,
             <input type="hidden" name="attempt" value={submission?.attempt ?? 0} />
             <label className="block space-y-2 text-sm font-medium">
               Tu respuesta
-              <textarea name="response" defaultValue={submission?.response} required maxLength={12000} rows={6} className="block w-full border border-black/20 bg-paper px-3 py-2 focus-visible:outline focus-visible:outline-2" />
+              <textarea name="response" defaultValue={submission?.response} required maxLength={12000} rows={6} className="academy-field block w-full" />
             </label>
             {error ? <p role="alert" className="text-sm text-red-800">Escribe una respuesta de hasta 12000 caracteres.</p> : null}
-            <SubmitButton className="bg-ink px-5 py-3 text-sm font-semibold text-white" pending="Enviando…">
-              {submission ? 'Reenviar para revisión' : 'Entregar tarea'}
-            </SubmitButton>
+            <AcademySubmit pending="Enviando…" label={submission ? 'Reenviar para revisión' : 'Entregar tarea'} />
           </form>
         ) : null}
       </VStack>
