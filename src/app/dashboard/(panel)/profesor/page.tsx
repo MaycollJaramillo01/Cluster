@@ -8,27 +8,31 @@ import { PageTitle } from '@/components/dashboard/ui';
 import { TeacherCourseForm } from '@/components/dashboard/TeacherCourseForm';
 
 // Todo se filtra por la persona de la academia con el mismo correo: nunca ve cursos, alumnos ni ventas de otros.
-export default async function ProfesorPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function ProfesorPage({ searchParams }: { searchParams: Promise<{ error?: string; vista?: string }> }) {
   const session = await requireDashboard('profesor');
+  const { error, vista } = await searchParams;
+  if (session.role === 'profesor' && (vista === 'nuevo' || error === 'curso')) return <TeacherCourseForm error={error} />;
+  const newCourse = session.role === 'profesor' ? (
+    <Link href="/dashboard/profesor?vista=nuevo" className="inline-flex min-h-12 items-center bg-brand px-5 text-sm font-semibold text-ink hover:bg-brand/85">
+      Crear curso
+    </Link>
+  ) : null;
   const person = await getPersonByEmail(session.email);
-  const { error } = await searchParams;
-  const form = session.role === 'profesor' ? <TeacherCourseForm invalid={error === 'curso'} /> : null;
   if (!person) {
     return (
-      <div className="space-y-4">
-        <PageTitle title="Mis cursos" />
-        {form}
+      <section className="space-y-4">
+        <PageTitle title="Mis cursos" action={newCourse} />
         <p className="text-sm text-black/60">Todavía no tienes cursos.</p>
-      </div>
+      </section>
     );
   }
   const sql = await crm();
   const courses = (await sql`
-    SELECT c.id, c.title, c.published, c.review_requested_at,
+    SELECT c.id, c.title, c.published, c.review_requested_at, c.review_feedback,
       (SELECT count(*) FROM lms_lessons l WHERE l.course_id = c.id) AS lessons
     FROM lms_courses c WHERE c.teacher_id = ${person.id}
     ORDER BY c.created_at DESC
-  `) as unknown as { id: string; title: string; published: boolean; review_requested_at: string | null; lessons: number }[];
+  `) as unknown as { id: string; title: string; published: boolean; review_requested_at: string | null; review_feedback: string | null; lessons: number }[];
   const ids = courses.map((course) => course.id);
   const students = ids.length
     ? ((await sql`
@@ -59,8 +63,7 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="space-y-8">
-      <PageTitle title="Mis cursos" />
-      {form}
+      <PageTitle title="Mis cursos" action={newCourse} />
       <div className="grid gap-3 sm:grid-cols-3">
         <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{courses.length}</span><span className="text-xs text-black/50">cursos</span></p>
         <p className="border border-black/10 bg-white p-4"><span className="block font-display text-4xl">{students.length}</span><span className="text-xs text-black/50">inscripciones</span></p>
@@ -72,7 +75,9 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
         const lessons = Number(course.lessons) || 0;
         return (
           <section key={course.id} className="space-y-2">
-            <h2 className="text-xl font-medium">{course.title} <span className="text-sm font-normal text-black/60">· {course.published ? 'Publicado' : course.review_requested_at ? 'Revisión pendiente' : 'Borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</span> <Link className="ml-2 font-mono text-[10px] uppercase tracking-[0.16em] text-brand" href={`/dashboard/cursos/${course.id}`}>Editar temario</Link></h2>
+            <h2 className="break-words text-xl font-medium">{course.title}</h2>
+            <p className="text-sm text-black/70">{course.published ? 'Publicado' : course.review_requested_at ? 'En revisión' : course.review_feedback ? 'Cambios solicitados' : 'Borrador'} · {lessons} {Number(lessons) === 1 ? 'clase' : 'clases'} · {mine.length} {mine.length === 1 ? 'alumno' : 'alumnos'}</p>
+            <Link className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" href={`/dashboard/cursos/${course.id}?vista=${course.review_requested_at || course.review_feedback ? 'revision' : 'temario'}`}>Abrir editor</Link>
             {mine.length === 0 ? <p className="text-sm text-black/50">Sin alumnos todavía.</p> : (
               <table className="w-full border border-black/10 bg-white text-left text-sm">
                 <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Alumno</th><th className="px-4 py-2 font-medium">Desde</th><th className="px-4 py-2 font-medium">Avance</th><th className="px-4 py-2 font-medium">XP</th></tr></thead>

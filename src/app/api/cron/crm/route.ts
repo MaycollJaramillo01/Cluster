@@ -3,10 +3,11 @@ import { timingSafeEqual } from 'crypto';
 import { processDue } from '@/lib/crm/automations';
 import { processCampaignSends } from '@/lib/crm/campaigns';
 import { expireTransfers } from '@/lib/valux/transfers';
-import { nightlyReconcile } from '@/lib/valux/reconcile';
+import { nightlyReconcile, retryPendingStripePayments } from '@/lib/valux/reconcile';
 import { alertTeam } from '@/lib/valux/alerts';
 import { runFollowups } from '@/lib/valux/followups';
 import { retryAcademiaMail } from '@/lib/valux/mail-queue';
+import { retryApprovedTransfers } from '@/lib/valux/transfer-fulfillment';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,14 @@ export async function GET(request: Request) {
   try {
     result.automations = await processDue(200);
     result.expired = await expireTransfers();
+    result.stripeAccess = await retryPendingStripePayments().catch(async (error) => {
+      await alertTeam('entrega de pagos con tarjeta', error);
+      return 'failed';
+    });
+    result.transferAccess = await retryApprovedTransfers().catch(async (error) => {
+      await alertTeam('entrega de transferencias', error);
+      return 'failed';
+    });
     result.mailQueue = await retryAcademiaMail();
     // La conciliación falla sola: no detiene las campañas.
     const reconcile = await nightlyReconcile().catch(async (error) => {

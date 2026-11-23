@@ -30,13 +30,13 @@ export default async function ProductPage({
         <p className="max-w-2xl whitespace-pre-wrap text-sm leading-relaxed text-black/70">{product.description}</p>
         {query.ok ? <p className="text-sm text-brand">Compra registrada.</p> : null}
         {query.error ? <p className="text-sm">{payNote(query.error)}</p> : null}
-        {open && product.download_url ? <a className="inline-block bg-ink px-4 py-3 text-sm text-white" href={product.download_url}>Descargar</a> : null}
+        {open && product.download_url ? <a className="inline-block bg-ink px-4 py-3 text-sm text-white" href={`/api/academia/descargas/producto/${encodeURIComponent(product.id)}`}>Descargar</a> : null}
       </div>
       <aside className="border border-black/10 bg-white lg:sticky lg:top-6">
         <Cover url={product.cover_url} title={product.title} />
         <div className="space-y-4 p-4">
           <p className="font-display text-5xl tracking-wide">{product.price_cents > 0 ? money(product.price_cents) : 'Gratis'}</p>
-          {product.price_cents > 0 && !payReady(pay) ? (
+          {open ? <p className="text-sm text-black/75">{product.download_url ? 'Tienes acceso a la descarga.' : 'El archivo aún no está disponible.'}</p> : product.price_cents > 0 && !payReady(pay) ? (
             <p className="text-sm leading-relaxed text-black/70">{payNote('pasarela')}</p>
           ) : (
             <Checkout

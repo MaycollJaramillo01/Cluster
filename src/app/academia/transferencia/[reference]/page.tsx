@@ -8,7 +8,9 @@ export const dynamic = 'force-dynamic';
 
 const STATUS: Record<string, string> = {
   pendiente: 'Esperando el depósito',
-  aprobada: 'Pago confirmado. Ya te enviamos el acceso por correo.',
+  aprobada: 'Pago confirmado. Consulta tu acceso en la Academia.',
+  aprobando: 'Pago confirmado. Estamos habilitando tu acceso.',
+  reembolsada: 'El pago se registró como reembolsado.',
   rechazada: 'No encontramos el depósito. Escribinos si ya pagaste.',
   vencida: 'Venció el plazo. Si ya pagaste, escribinos con la referencia.',
 };

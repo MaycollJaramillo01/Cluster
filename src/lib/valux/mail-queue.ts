@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { crm } from '@/lib/crm/db';
 import { sendAcademiaMail } from './mail';
 
-async function sendQueued(id: string) {
+export async function sendQueuedAcademiaMail(id: string) {
   const sql = await crm();
   const rows = await sql`
     UPDATE academia_mail_queue SET locked_until = now() + interval '5 minutes'
@@ -26,7 +26,7 @@ export async function queueAcademiaMail(email: string, subject: string, text: st
   const sql = await crm();
   const id = randomUUID();
   await sql`INSERT INTO academia_mail_queue (id, email, subject, body) VALUES (${id}, ${email}, ${subject}, ${text})`;
-  return sendQueued(id);
+  return sendQueuedAcademiaMail(id);
 }
 
 export async function retryAcademiaMail() {
@@ -36,6 +36,6 @@ export async function retryAcademiaMail() {
       AND (locked_until IS NULL OR locked_until < now()) ORDER BY created_at LIMIT 50
   `;
   let sent = 0;
-  for (const row of rows) if (await sendQueued(String(row.id))) sent += 1;
+  for (const row of rows) if (await sendQueuedAcademiaMail(String(row.id))) sent += 1;
   return { pending: rows.length, sent };
 }

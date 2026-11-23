@@ -1,14 +1,22 @@
-import { headers } from 'next/headers';
 import { crm } from '@/lib/crm/db';
 import { getIntent } from './data';
 import { paypalOrderPaid, paypalSubscriptionPayments, readPaypalSubscription } from './paypal';
 import { readStripeCheckout, readStripeSubscription } from './stripe';
-import { queueAcademiaMail } from './mail-queue';
+import { sendQueuedAcademiaMail } from './mail-queue';
+import { site } from '@/lib/site';
 import { academyMoney, CURRENCY, usdToHnlCents, payoutDueAt, periodYm, previousYm, splitCents } from './money';
 import { advanceStage, trackEvent } from './events';
-import { countCouponUse } from './coupons';
+import { cleanCode } from './coupons';
+import type { NeonQueryFunctionInTransaction } from '@neondatabase/serverless';
 
 export type GrantKind = 'curso' | 'producto' | 'suscripcion' | 'donacion';
+
+function deliveryLocks(sql: NeonQueryFunctionInTransaction<false, false>, keys: string[]) {
+  return sql`
+    SELECT pg_advisory_xact_lock(hashtextextended('academia:' || item.key, 0))
+    FROM (SELECT DISTINCT key FROM unnest(${keys}::text[]) AS keys(key) ORDER BY key DESC) AS item
+  `;
+}
 
 async function settings() {
   const sql = await crm();
@@ -43,8 +51,11 @@ export async function ensurePerson(email: string, name: string, role = 'usuario'
     await sql`
       INSERT INTO valux_people (id, name, email, role)
       VALUES (${id}, ${name.trim()}, ${normalized}, ${role})
+      ON CONFLICT (email) DO NOTHING
     `;
-    return id;
+    const [person] = await sql`SELECT id FROM valux_people WHERE email = ${normalized}`;
+    if (!person) throw new Error('No se pudo recuperar la cuenta de Academia');
+    return String(person.id);
   }
   if (role === 'asociado' && current.role !== 'junta') {
     await sql`UPDATE valux_people SET role = 'asociado', name = ${name.trim()} WHERE id = ${current.id}`;
@@ -65,22 +76,14 @@ export async function grantAccess(input: {
   // Precio ya cobrado (oferta de bump o upsell, plan por transferencia, cupón). Sin él, el precio de la base.
   amountCents?: number;
   couponCode?: string | null;
+  paidAt?: Date;
 }) {
   const email = input.email.trim().toLowerCase();
   const name = input.name.trim();
   if (!email.includes('@') || !name) throw new Error('Faltan nombre y correo');
   const sql = await crm();
-  if (input.paypalOrderId) {
-    if (input.kind === 'donacion') {
-      const paid = await sql`SELECT id FROM valux_donations WHERE paypal_order_id = ${input.paypalOrderId}`;
-      if (paid.length) return { personId: '', path: '/academia/apoyar?ok=1' };
-    } else {
-      const paid = await sql`SELECT buyer_id FROM valux_sales WHERE paypal_order_id = ${input.paypalOrderId}`;
-      const buyer = paid[0] as { buyer_id?: string } | undefined;
-      if (buyer?.buyer_id) return { personId: buyer.buyer_id, path: await destination(input.kind, input.itemId) };
-    }
-  }
-
+  const orderId = input.paypalOrderId || '';
+  const orderRefs = orderId.endsWith(':bump') ? [orderId, orderId.slice(0, -5)] : orderId ? [orderId] : [];
   const config = await settings();
   const months = Math.max(1, Math.min(24, Math.round(input.months || 1)));
 
@@ -88,18 +91,24 @@ export async function grantAccess(input: {
     const monthly = Math.max(0, Math.round(input.monthlyCents || 0));
     const total = monthly * months;
     if (total <= 0) throw new Error('La donación no tiene monto');
-    const gift = await sql`
-      INSERT INTO valux_donations (id, monthly_cents, months, total_cents, status, paypal_order_id, payer_email, payer_name, paid_at)
-      VALUES (
-        ${crypto.randomUUID()}, ${monthly}, ${months}, ${total}, 'pagada',
-        ${input.paypalOrderId || null}, ${email}, ${name}, now()
+    const mailId = crypto.randomUUID();
+    const [, [gift]] = await sql.transaction((tx) => [deliveryLocks(tx, orderRefs.map((id) => `pago:${id}`)), tx`
+      WITH revoked AS (SELECT FROM valux_revoked_orders WHERE order_id = ANY(${orderRefs}::text[])), donation AS (
+        INSERT INTO valux_donations (id, monthly_cents, months, total_cents, status, paypal_order_id, payer_email, payer_name, paid_at)
+        SELECT ${crypto.randomUUID()}, ${monthly}, ${months}, ${total}, 'pagada',
+          ${orderId || null}, ${email}, ${name}, COALESCE(${input.paidAt?.toISOString() ?? null}::timestamptz, now())
+        WHERE NOT EXISTS (SELECT FROM revoked)
+        ON CONFLICT (paypal_order_id) DO NOTHING
+        RETURNING id
+      ), mail AS (
+        INSERT INTO academia_mail_queue (id, email, subject, body)
+        SELECT ${mailId}, ${email}, 'Gracias por apoyar a la Academia', ${`Hola ${name},\n\nRecibimos tu aporte. Gracias por apoyar a la Academia.\n`}
+        FROM donation RETURNING id
       )
-      ON CONFLICT (paypal_order_id) DO NOTHING
-      RETURNING id
-    `;
-    if (!gift.length) return { personId: '', path: '/academia/apoyar?ok=1' };
-    await notifyAccess(email, name, '/academia/apoyar?ok=1');
-    return { personId: '', path: '/academia/apoyar?ok=1' };
+      SELECT EXISTS (SELECT FROM mail) AS notified, EXISTS (SELECT FROM revoked) AS revoked
+    `]);
+    if (gift.notified) await sendQueuedAcademiaMail(mailId).catch((error) => console.error('[academia] aviso pendiente:', error));
+    return { personId: '', path: gift.revoked ? '/academia/apoyar?error=reembolso' : '/academia/apoyar?ok=1' };
   }
 
   let amount = 0;
@@ -128,21 +137,73 @@ export async function grantAccess(input: {
 
   const personId = await ensurePerson(email, name);
   const split = sellerId ? splitCents(amount, await sellerCommission(sellerId, config.commission)) : { amount, fee: amount, seller: 0 };
-  let fresh = false;
-  if (split.amount > 0) {
-    const sale = await sql`
+  const path = await destination(input.kind, input.itemId);
+  const saleId = crypto.randomUUID();
+  const mailId = crypto.randomUUID();
+  const recordSale = split.amount > 0 || Boolean(input.paypalOrderId);
+  const paidAt = input.paidAt ?? new Date();
+  // La venta, la entrega y el aviso se confirman en una sola sentencia. Una venta anterior
+  // sin marca puede completar su entrega una vez; las ventas devueltas quedan excluidas.
+  const lockKeys = [
+    ...orderRefs.map((id) => `pago:${id}`),
+    ...(courseId ? [`curso:${courseId}:${personId}`] : []),
+  ];
+  const [, [result]] = await sql.transaction((tx) => [deliveryLocks(tx, lockKeys), tx`
+    WITH existing AS (
+      SELECT * FROM valux_sales WHERE paypal_order_id = ${orderId || null}
+    ), revoked AS (
+      SELECT FROM valux_revoked_orders WHERE order_id = ANY(${orderRefs}::text[])
+      UNION ALL SELECT FROM valux_sales WHERE paypal_order_id = ANY(${orderRefs}::text[]) AND refunded_at IS NOT NULL
+    ), sale AS (
       INSERT INTO valux_sales (
-        id, kind, buyer_id, seller_id, course_id, product_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym, coupon_code
-      ) VALUES (
-        ${crypto.randomUUID()}, ${input.kind}, ${personId}, ${sellerId}, ${courseId}, ${productId},
-        ${split.amount}, ${split.fee}, ${split.seller}, ${input.paypalOrderId || null}, ${periodYm()}, ${input.couponCode || null}
+        id, kind, buyer_id, seller_id, course_id, product_id, amount_cents, fee_cents, seller_cents,
+        paypal_order_id, period_ym, coupon_code, created_at, entitlement_applied_at
       )
-      ON CONFLICT (paypal_order_id) DO NOTHING
+      SELECT ${saleId}, ${input.kind}, ${personId}, ${sellerId}, ${courseId}, ${productId},
+        ${split.amount}, ${split.fee}, ${split.seller}, ${orderId || null}, ${periodYm(paidAt)}, ${input.couponCode || null}, ${paidAt.toISOString()}, now()
+      WHERE ${recordSale}::boolean AND NOT EXISTS (SELECT FROM revoked)
+      ON CONFLICT (paypal_order_id) DO UPDATE SET entitlement_applied_at = now()
+      WHERE valux_sales.entitlement_applied_at IS NULL AND valux_sales.refunded_at IS NULL
+        AND valux_sales.kind = EXCLUDED.kind AND valux_sales.buyer_id = EXCLUDED.buyer_id
+        AND valux_sales.course_id IS NOT DISTINCT FROM EXCLUDED.course_id
+        AND valux_sales.product_id IS NOT DISTINCT FROM EXCLUDED.product_id
       RETURNING id
-    `;
-    // Otro pedido con la misma orden ya entregó el acceso.
-    if (!sale.length) return { personId, path: await destination(input.kind, input.itemId) };
-    fresh = true;
+    ), enrollment AS (
+      INSERT INTO lms_enrollments (id, course_id, person_id)
+      SELECT ${crypto.randomUUID()}, ${courseId}, ${personId}
+      WHERE ${courseId}::text IS NOT NULL AND (NOT ${recordSale}::boolean OR EXISTS (SELECT FROM sale))
+      ON CONFLICT (course_id, person_id) WHERE person_id IS NOT NULL DO NOTHING
+      RETURNING id
+    ), expiry AS (
+      SELECT ${paidAt.toISOString()}::timestamptz + ${`${months} months`}::interval AS period_end
+    ), membership AS (
+      INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, plan_id)
+      SELECT ${crypto.randomUUID()}, ${personId}, CASE WHEN period_end > now() THEN 'activa' ELSE 'vencida' END, period_end,
+        ${orderId || null}, ${input.itemId || null} FROM expiry
+      WHERE ${input.kind}::text = 'suscripcion' AND (NOT ${recordSale}::boolean OR EXISTS (SELECT FROM sale))
+        AND NOT EXISTS (SELECT FROM valux_subscriptions WHERE paypal_order_id = ${input.paypalOrderId || null})
+      RETURNING status
+    ), counted_coupon AS (
+      UPDATE valux_coupons SET uses = uses + 1 WHERE code = ${cleanCode(input.couponCode || '')}
+        AND (EXISTS (SELECT FROM sale WHERE id = ${saleId})
+          OR (NOT ${recordSale}::boolean AND EXISTS (SELECT FROM enrollment)))
+    ), mail AS (
+      INSERT INTO academia_mail_queue (id, email, subject, body)
+      SELECT ${mailId}, ${email}, 'Tu acceso en la academia',
+        ${`Hola ${name},\n\nYa quedó tu acceso. Entrá aquí:\n${site.url}${path.split('?')[0]}\n\nSi te pide correo, usá este mismo.\n`}
+      WHERE (EXISTS (SELECT FROM sale WHERE id = ${saleId}) AND ${input.kind}::text <> 'suscripcion')
+        OR EXISTS (SELECT FROM enrollment) OR EXISTS (SELECT FROM membership WHERE status = 'activa')
+      RETURNING id
+    )
+    SELECT EXISTS (SELECT FROM sale WHERE id = ${saleId}) AS new_sale,
+      EXISTS (SELECT FROM mail) AS notified,
+      EXISTS (SELECT FROM revoked) AS revoked,
+      EXISTS (SELECT FROM sale) OR EXISTS (SELECT FROM existing WHERE kind = ${input.kind} AND buyer_id = ${personId}
+        AND course_id IS NOT DISTINCT FROM ${courseId}::text AND product_id IS NOT DISTINCT FROM ${productId}::text) AS matched_sale
+  `]);
+  if (result.revoked) return { personId: '', path: path.replace('?ok=1', '?error=reembolso') };
+  if (recordSale && !result.matched_sale) throw new Error('La orden ya está vinculada a otra compra');
+  if (result.new_sale && split.amount > 0) {
     await trackEvent('payment_succeeded', {
       id: input.paypalOrderId ? `payment_succeeded:${input.paypalOrderId}` : undefined,
       personId,
@@ -150,35 +211,8 @@ export async function grantAccess(input: {
       data: { kind: input.kind, item: input.itemId || null, cents: split.amount },
     });
   }
-
-  if (courseId) {
-    const enrolled = await sql`
-      SELECT id FROM lms_enrollments WHERE course_id = ${courseId} AND person_id = ${personId}
-    `;
-    if (!enrolled.length) {
-      await sql`
-        INSERT INTO lms_enrollments (id, course_id, person_id)
-        VALUES (${crypto.randomUUID()}, ${courseId}, ${personId})
-      `;
-      fresh = true;
-    }
-  }
-
-  if (input.kind === 'suscripcion') {
-    await sql`
-      INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, plan_id)
-      VALUES (
-        ${crypto.randomUUID()}, ${personId}, 'activa', now() + ${`${months} months`}::interval,
-        ${input.paypalOrderId || null}, ${input.itemId || null}
-      )
-    `;
-    fresh = true;
-  }
-
-  const path = await destination(input.kind, input.itemId);
-  if (fresh) {
-    await countCouponUse(input.couponCode);
-    await notifyAccess(email, name, path);
+  if (result.notified) {
+    await sendQueuedAcademiaMail(mailId).catch((error) => console.error('[academia] aviso pendiente:', error));
     await trackEvent('purchase_completed', {
       id: input.paypalOrderId ? `purchase_completed:${input.paypalOrderId}` : undefined,
       personId,
@@ -196,18 +230,6 @@ async function planPrice(planId?: string | null) {
   const rows = await sql`SELECT price_cents FROM valux_plans WHERE id = ${planId}`;
   const row = rows[0] as { price_cents?: unknown } | undefined;
   return row ? Number(row.price_cents) || 0 : null;
-}
-
-async function notifyAccess(email: string, name: string, path: string) {
-  const h = await headers();
-  const host = h.get('x-forwarded-host') || h.get('host') || '';
-  const proto = h.get('x-forwarded-proto') || 'https';
-  const link = host ? `${proto}://${host}${path.split('?')[0]}` : path;
-  await queueAcademiaMail(
-    email,
-    'Tu acceso en la academia',
-    `Hola ${name},\n\nYa quedó tu acceso. Entrá aquí:\n${link}\n\nSi te pide correo, usá este mismo.\n`,
-  );
 }
 
 async function destination(kind: GrantKind, itemId?: string | null) {
@@ -237,12 +259,12 @@ async function grantFromIntent(intent: Intent, orderId: string) {
     paypalOrderId: orderId,
     couponCode: intent.couponCode || null,
   });
-  await grantBump({ ...intent, orderId });
+  if (!result.path.includes('error=reembolso')) await grantBump({ ...intent, orderId });
   return result;
 }
 
 // El bump va en el mismo pago pero es otra venta: su id es el del pago con ":bump".
-export async function grantBump(input: { bumpItemId: string; bumpCents: number; name: string; email: string; orderId: string }) {
+export async function grantBump(input: { bumpItemId: string; bumpCents: number; name: string; email: string; orderId: string; paidAt?: Date }) {
   if (!input.bumpItemId || input.bumpCents <= 0) return;
   await grantAccess({
     kind: 'curso',
@@ -251,35 +273,57 @@ export async function grantBump(input: { bumpItemId: string; bumpCents: number; 
     email: input.email,
     amountCents: input.bumpCents,
     paypalOrderId: `${input.orderId}:bump`,
+    paidAt: input.paidAt,
   });
 }
 
 export type Fulfilled = { personId: string; path: string } | null;
 
 // Retorno del navegador y webhook llaman lo mismo; todo es idempotente por id de pasarela.
-export async function fulfillStripeSession(sessionId: string): Promise<Fulfilled> {
+export async function fulfillStripeSession(sessionId: string, webhookEvent?: 'checkout.session.completed' | 'checkout.session.async_payment_succeeded'): Promise<Fulfilled> {
   const intent = await getIntent(sessionId);
   if (!intent) return null;
   const session = await readStripeCheckout(sessionId);
-  if (!session.paid || session.currency !== CURRENCY || session.amountCents + 1 < intent.amountCents) return null;
-  if (!session.subscriptionId) return grantFromIntent(intent, sessionId);
-
-  const subscription = await readStripeSubscription(session.subscriptionId).catch(() => null);
-  const personId = await activateSubscription({
-    gatewayId: session.subscriptionId,
-    email: intent.email,
-    name: intent.name,
-    planId: intent.itemId,
-    periodEnd: subscription?.periodEnd ?? null,
-  });
-  if (session.invoiceId) {
-    await recordSubscriptionPayment({
-      gatewayId: session.subscriptionId,
-      paymentId: session.invoiceId,
-      amountCents: session.amountCents,
-    });
+  if (!session.paid) {
+    if (webhookEvent === 'checkout.session.async_payment_succeeded') throw new Error('Stripe aún no confirma el pago asíncrono');
+    return null;
   }
-  return { personId, path: '/academia/suscripcion?ok=1' };
+  if (session.currency !== CURRENCY || session.amountCents + 1 < intent.amountCents) {
+    if (webhookEvent) throw new Error('La moneda o el monto de Stripe no coinciden con el pedido');
+    return null;
+  }
+  const sql = await crm();
+  await sql`
+    UPDATE valux_intents SET payment_validated_at = COALESCE(payment_validated_at, now())
+    WHERE paypal_order_id = ${sessionId}
+  `;
+  let result: NonNullable<Fulfilled>;
+  if (!session.subscriptionId) {
+    if (intent.kind === 'suscripcion') throw new Error('La sesión pagada aún no tiene suscripción');
+    result = await grantFromIntent(intent, sessionId);
+  } else {
+    const subscription = await readStripeSubscription(session.subscriptionId);
+    if (!subscription.periodEnd) throw new Error('Stripe aún no indicó el fin del periodo de la suscripción');
+    const personId = await activateSubscription({
+      gatewayId: session.subscriptionId,
+      email: intent.email,
+      name: intent.name,
+      planId: intent.itemId,
+      periodEnd: subscription.periodEnd,
+      active: ['active', 'trialing'].includes(subscription.status) && subscription.periodEnd.getTime() > Date.now(),
+      orderRefs: [sessionId, session.invoiceId],
+    });
+    if (personId && session.invoiceId) {
+      await recordSubscriptionPayment({
+        gatewayId: session.subscriptionId,
+        paymentId: session.invoiceId,
+        amountCents: session.amountCents,
+      });
+    }
+    result = { personId, path: personId ? '/academia/suscripcion' : '/academia/suscripcion?error=reembolso' };
+  }
+  await sql`UPDATE valux_intents SET fulfilled_at = COALESCE(fulfilled_at, now()) WHERE paypal_order_id = ${sessionId}`;
+  return result;
 }
 
 export async function fulfillPaypalOrder(orderId: string): Promise<Fulfilled> {
@@ -304,6 +348,7 @@ export async function fulfillPaypalSubscription(subscriptionId: string): Promise
     planId: intent.itemId,
     periodEnd: subscription.periodEnd,
   });
+  if (!personId) return { personId, path: '/academia/suscripcion?error=reembolso' };
   const payments = await paypalSubscriptionPayments(subscriptionId).catch(() => []);
   for (const payment of payments) {
     await recordSubscriptionPayment({ gatewayId: subscriptionId, paymentId: payment.id, amountCents: usdToHnlCents(payment.amountCents) });
@@ -324,20 +369,38 @@ export async function activateSubscription(input: {
   name: string;
   planId?: string;
   periodEnd: Date | null;
+  active?: boolean;
+  orderRefs?: string[];
 }) {
   const sql = await crm();
   const personId = await ensurePerson(input.email, input.name);
-  const end = input.periodEnd && input.periodEnd.getTime() > Date.now() ? input.periodEnd : monthFromNow();
-  const rows = await sql`
+  const end = input.periodEnd ?? monthFromNow();
+  const active = input.active !== false && end.getTime() > Date.now();
+  const refs = [input.gatewayId, ...(input.orderRefs ?? []).filter(Boolean)];
+  const mailId = crypto.randomUUID();
+  const [, [result]] = await sql.transaction((tx) => [deliveryLocks(tx, refs.map((id) => `pago:${id}`)), tx`
+    WITH membership AS (
     INSERT INTO valux_subscriptions (id, person_id, status, current_period_end, paypal_order_id, gateway_id, plan_id)
-    VALUES (${crypto.randomUUID()}, ${personId}, 'activa', ${end.toISOString()}, ${input.gatewayId}, ${input.gatewayId}, ${input.planId || null})
+    SELECT ${crypto.randomUUID()}, ${personId}, ${active ? 'activa' : 'vencida'}, ${end.toISOString()}, ${input.gatewayId}, ${input.gatewayId}, ${input.planId || null}
+    WHERE NOT EXISTS (SELECT FROM valux_revoked_orders WHERE order_id = ANY(${refs}::text[]))
     ON CONFLICT (gateway_id) DO UPDATE SET
-      current_period_end = GREATEST(valux_subscriptions.current_period_end, EXCLUDED.current_period_end),
-      status = CASE WHEN valux_subscriptions.status = 'vencida' THEN 'activa' ELSE valux_subscriptions.status END
-    RETURNING (xmax = 0) AS inserted
-  `;
-  if ((rows[0] as { inserted?: boolean } | undefined)?.inserted) {
-    await notifyAccess(input.email.trim().toLowerCase(), input.name.trim(), '/academia/suscripcion?ok=1');
+      current_period_end = CASE WHEN EXCLUDED.status = 'activa' THEN GREATEST(valux_subscriptions.current_period_end, EXCLUDED.current_period_end)
+        ELSE valux_subscriptions.current_period_end END,
+      status = CASE WHEN valux_subscriptions.status = 'vencida' AND EXCLUDED.status = 'activa'
+        AND EXCLUDED.current_period_end > valux_subscriptions.current_period_end THEN 'activa' ELSE valux_subscriptions.status END
+    RETURNING (xmax = 0) AS inserted, status
+    ), mail AS (
+      INSERT INTO academia_mail_queue (id, email, subject, body)
+      SELECT ${mailId}, ${input.email.trim().toLowerCase()}, 'Tu acceso en la academia',
+        ${`Hola ${input.name.trim()},\n\nTu membresía está activa. Entrá aquí:\n${site.url}/academia/suscripcion\n`}
+      FROM membership WHERE inserted AND status = 'activa'
+      RETURNING id
+    )
+    SELECT EXISTS (SELECT FROM membership) AS applied, EXISTS (SELECT FROM mail) AS notified
+  `]);
+  if (!result.applied) return '';
+  if (result.notified) {
+    await sendQueuedAcademiaMail(mailId).catch((error) => console.error('[academia] aviso pendiente:', error));
     await trackEvent('subscription_started', { id: `subscription_started:${input.gatewayId}`, personId, email: input.email, data: { plan: input.planId || null } });
     await advanceStage({ personId }, 'miembro');
   }
@@ -352,36 +415,39 @@ export async function recordSubscriptionPayment(input: {
   periodEnd?: Date | null;
 }) {
   const sql = await crm();
-  const rows = await sql`SELECT person_id FROM valux_subscriptions WHERE gateway_id = ${input.gatewayId}`;
-  const personId = (rows[0] as { person_id?: string } | undefined)?.person_id;
-  if (!personId) return false;
-  if (input.periodEnd) {
-    await sql`
-      UPDATE valux_subscriptions SET
-        current_period_end = GREATEST(current_period_end, ${input.periodEnd.toISOString()}::timestamptz),
-        status = CASE WHEN status = 'vencida' THEN 'activa' ELSE status END
-      WHERE gateway_id = ${input.gatewayId}
-    `;
-  }
-  if (input.amountCents > 0) {
-    const sale = await sql`
+  const end = input.periodEnd?.toISOString() ?? null;
+  const [, [result]] = await sql.transaction((tx) => [deliveryLocks(tx, [`pago:${input.gatewayId}`, `pago:${input.paymentId}`]), tx`
+    WITH revoked AS (
+      SELECT FROM valux_revoked_orders WHERE order_id IN (${input.gatewayId}, ${input.paymentId}) LIMIT 1
+    ), membership AS (
+      SELECT person_id FROM valux_subscriptions WHERE gateway_id = ${input.gatewayId}
+    ), sale AS (
       INSERT INTO valux_sales (id, kind, buyer_id, amount_cents, fee_cents, seller_cents, paypal_order_id, period_ym)
-      VALUES (
-        ${crypto.randomUUID()}, 'suscripcion', ${personId}, ${input.amountCents}, ${input.amountCents}, 0,
+      SELECT ${crypto.randomUUID()}, 'suscripcion', person_id, ${input.amountCents}, ${input.amountCents}, 0,
         ${input.paymentId}, ${periodYm()}
-      )
+      FROM membership WHERE ${input.amountCents}::integer > 0 AND NOT EXISTS (SELECT FROM revoked)
       ON CONFLICT (paypal_order_id) DO NOTHING
       RETURNING id
+    ), renewed AS (
+      UPDATE valux_subscriptions SET current_period_end = ${end}::timestamptz,
+        status = CASE WHEN status = 'vencida' AND ${end}::timestamptz > now() THEN 'activa' ELSE status END
+      WHERE gateway_id = ${input.gatewayId} AND status <> 'cancelada'
+        AND ${end}::timestamptz > current_period_end AND NOT EXISTS (SELECT FROM revoked)
+        AND NOT EXISTS (SELECT FROM valux_sales WHERE paypal_order_id = ${input.paymentId} AND refunded_at IS NOT NULL)
+    )
+    SELECT (SELECT person_id FROM membership) AS person_id,
+      EXISTS (SELECT FROM sale) AS new_sale, EXISTS (SELECT FROM revoked) AS revoked
+  `]);
+  if (result.revoked) return true;
+  if (!result.person_id) return false;
+  if (result.new_sale) {
+    const personId = String(result.person_id);
+    const before = await sql`
+      SELECT 1 FROM academia_events WHERE name = 'payment_succeeded' AND data::jsonb ->> 'gateway' = ${input.gatewayId} LIMIT 1
     `;
-    if (sale.length) {
-      // El primer cobro de la membresía es el alta; los siguientes son renovaciones.
-      const before = await sql`
-        SELECT 1 FROM academia_events WHERE name = 'payment_succeeded' AND data::jsonb ->> 'gateway' = ${input.gatewayId} LIMIT 1
-      `;
-      await trackEvent('payment_succeeded', { id: `payment_succeeded:${input.paymentId}`, personId, data: { kind: 'suscripcion', gateway: input.gatewayId, cents: input.amountCents } });
-      if (before.length) {
-        await trackEvent('subscription_renewed', { id: `subscription_renewed:${input.paymentId}`, personId, data: { gateway: input.gatewayId, cents: input.amountCents } });
-      }
+    await trackEvent('payment_succeeded', { id: `payment_succeeded:${input.paymentId}`, personId, data: { kind: 'suscripcion', gateway: input.gatewayId, cents: input.amountCents } });
+    if (before.length) {
+      await trackEvent('subscription_renewed', { id: `subscription_renewed:${input.paymentId}`, personId, data: { gateway: input.gatewayId, cents: input.amountCents } });
     }
   }
   return true;
@@ -478,31 +544,56 @@ export async function revokeSales(refs: string[], reason: string) {
   const sql = await crm();
   let revoked = 0;
   for (const ref of refs.filter(Boolean)) {
-    const sales = await sql`
-      UPDATE valux_sales SET refunded_at = now(), refund_reason = ${reason}
-      WHERE (id = ${ref} OR paypal_order_id IN (${ref}, ${`${ref}:bump`})) AND refunded_at IS NULL
-      RETURNING id, buyer_id, course_id, amount_cents
-    `;
-    for (const sale of sales as { id: string; buyer_id: string | null; course_id: string | null; amount_cents: number }[]) {
+    const matches = await sql`SELECT paypal_order_id FROM valux_sales WHERE id = ${ref}`;
+    const orderIds = [...new Set([ref, `${ref}:bump`, ...matches.flatMap((row) => row.paypal_order_id ? [String(row.paypal_order_id)] : [])])];
+    // Primero se bloquean las órdenes y después se descubre el acceso que pudieron crear.
+    const [, , [result]] = await sql.transaction((tx) => [deliveryLocks(tx, orderIds.map((id) => `pago:${id}`)), tx`
+      SELECT pg_advisory_xact_lock(hashtextextended('academia:' || item.key, 0))
+      FROM (
+        SELECT DISTINCT 'curso:' || course_id || ':' || buyer_id AS key FROM valux_sales
+        WHERE (id = ${ref} OR paypal_order_id = ANY(${orderIds}::text[])) AND course_id IS NOT NULL AND buyer_id IS NOT NULL
+        ORDER BY key DESC
+      ) AS item
+    `, tx`
+      WITH revoked_order AS (
+        INSERT INTO valux_revoked_orders (order_id, reason)
+        SELECT order_id, ${reason} FROM unnest(${orderIds}::text[]) AS orders(order_id)
+        ON CONFLICT (order_id) DO NOTHING
+      ), sales AS (
+        UPDATE valux_sales SET refunded_at = now(), refund_reason = ${reason}
+        WHERE (id = ${ref} OR paypal_order_id = ANY(${orderIds}::text[])) AND refunded_at IS NULL
+        RETURNING id, buyer_id, course_id, amount_cents
+      ), removed AS (
+        DELETE FROM lms_enrollments e
+        WHERE NOT e.manual_access
+          AND EXISTS (SELECT FROM sales a WHERE a.course_id = e.course_id AND a.buyer_id = e.person_id)
+          AND NOT EXISTS (
+            SELECT FROM valux_sales s
+            WHERE s.buyer_id = e.person_id AND s.course_id = e.course_id AND s.refunded_at IS NULL
+              AND NOT EXISTS (SELECT FROM sales a WHERE a.id = s.id)
+          )
+      ), cut AS (
+        UPDATE valux_subscriptions SET status = 'cancelada', current_period_end = LEAST(current_period_end, now())
+        WHERE (paypal_order_id = ANY(${orderIds}::text[]) OR gateway_id = ${ref}) AND status <> 'cancelada'
+        RETURNING id, person_id
+      ), gifts AS (
+        UPDATE valux_donations SET status = 'reembolsada'
+        WHERE paypal_order_id = ${ref} AND status = 'pagada'
+      ), transfers AS (
+        UPDATE valux_transfers SET status = 'reembolsada'
+        WHERE reference IN (
+          SELECT substr(order_id, 4) FROM unnest(${orderIds}::text[]) AS orders(order_id)
+          WHERE left(order_id, 3) = 'tr_' AND right(order_id, 5) <> ':bump'
+        ) AND status IN ('aprobando', 'aprobada')
+      )
+      SELECT COALESCE((SELECT jsonb_agg(sales) FROM sales), '[]'::jsonb) AS sales,
+        COALESCE((SELECT jsonb_agg(cut) FROM cut), '[]'::jsonb) AS cut
+    `]);
+    for (const sale of result.sales as { id: string; buyer_id: string | null; amount_cents: number }[]) {
       revoked += 1;
       await trackEvent('refund_issued', { id: `refund_issued:${sale.id}`, personId: sale.buyer_id, data: { reason, cents: Number(sale.amount_cents) || 0 } });
-      if (!sale.course_id || !sale.buyer_id) continue;
-      // Si pagó el mismo curso en otra venta vigente, lo conserva.
-      await sql`
-        DELETE FROM lms_enrollments e
-        WHERE e.course_id = ${sale.course_id} AND e.person_id = ${sale.buyer_id}
-          AND NOT EXISTS (
-            SELECT 1 FROM valux_sales s
-            WHERE s.buyer_id = e.person_id AND s.course_id = e.course_id AND s.refunded_at IS NULL
-          )
-      `;
     }
-    const cut = await sql`
-      UPDATE valux_subscriptions SET status = 'cancelada', current_period_end = LEAST(current_period_end, now())
-      WHERE (paypal_order_id = ${ref} OR gateway_id = ${ref}) AND status <> 'cancelada'
-      RETURNING id, person_id
-    `;
-    for (const row of cut as { id: string; person_id: string }[]) await subscriptionCanceled(row.id, row.person_id, reason);
+    for (const row of result.cut as { id: string; person_id: string }[]) await subscriptionCanceled(row.id, row.person_id, reason);
   }
   return revoked;
 }

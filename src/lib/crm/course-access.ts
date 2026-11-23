@@ -7,10 +7,10 @@ import { requireDashboard } from './session';
 export async function requireCourseEditor(courseId: string) {
   const session = await requireDashboard('curso');
   const teacher = session.role === 'profesor';
-  if (!teacher) return { session, teacher };
+  if (!teacher) return { session, teacher, teacherId: null };
   const sql = await crm();
   const person = await getPersonByEmail(session.email);
   const rows = await sql`SELECT id FROM lms_courses WHERE id = ${courseId} AND teacher_id = ${person?.id || ''}`;
   if (!rows.length) redirect('/dashboard/profesor');
-  return { session, teacher };
+  return { session, teacher, teacherId: person?.id ?? null };
 }

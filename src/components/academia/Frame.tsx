@@ -13,7 +13,7 @@ const links = [
   ['/academia/retos', 'Retos'],
 ];
 
-const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos', 'transferencia', 'recibos', 'retos']);
+const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', 'perfil', 'ficha', 'apoyar', 'suscripcion', 'mis-cursos', 'transferencia', 'recibos', 'retos', 'constancias']);
 
 function classroomPath(path: string) {
   const parts = path.split('/').filter(Boolean);
@@ -62,13 +62,14 @@ export function Frame({ children, signedIn }: { children: ReactNode; signedIn: b
   }, [isOpen]);
 
   if (classroomPath(path)) return <div className="min-h-screen bg-ink">{children}</div>;
+  const printCertificate = path.startsWith('/academia/constancias/');
 
   const row = 'flex h-12 items-center text-base';
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper text-ink">
+    <div className={`flex min-h-screen flex-col bg-paper text-ink ${printCertificate ? 'print:block print:min-h-0 print:bg-white' : ''}`}>
       <a href="#academia-contenido" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-30 focus:bg-ink focus:px-4 focus:py-3 focus:text-white">Saltar al contenido</a>
-      <header ref={header} className="sticky top-0 z-20 border-b border-black/10 bg-white">
+      <header ref={header} className={`sticky top-0 z-20 border-b border-black/10 bg-white ${printCertificate ? 'print:hidden' : ''}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
           <Link href="/academia" className="font-brand text-sm font-extrabold uppercase tracking-[0.18em]">
             Academia
@@ -141,7 +142,7 @@ export function Frame({ children, signedIn }: { children: ReactNode; signedIn: b
         </div>
       </header>
       <div id="academia-contenido" tabIndex={-1} className="flex-1 scroll-mt-20">{children}</div>
-      <footer className="border-t border-black/10 bg-white">
+      <footer className={`border-t border-black/10 bg-white ${printCertificate ? 'print:hidden' : ''}`}>
         <div className="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-black/55">
           <Link href="/academia/suscripcion" className="hover:text-ink">Suscripción</Link>
           <Link href="/academia/apoyar" className="hover:text-ink">Apoyar</Link>

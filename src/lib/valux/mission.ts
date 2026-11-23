@@ -14,11 +14,19 @@
 
 export type Mission =
   | { kind: 'quiz'; questions: { prompt: string; options: string[]; answer: number }[] }
-  | { kind: 'checklist'; items: string[] };
+  | { kind: 'checklist'; items: string[] }
+  | { kind: 'assignment'; instructions: string };
 
 const CHECK = /^\[\s?\]\s*/;
 
 export function parseMission(raw: string): { mission: Mission | null; errors: string[] } {
+  const assignment = /^\[tarea\](?:\r?\n|$)/i.exec(raw.trimStart());
+  if (assignment) {
+    const instructions = raw.trimStart().slice(assignment[0].length).trim();
+    return instructions && instructions.length <= 6000
+      ? { mission: { kind: 'assignment', instructions }, errors: [] }
+      : { mission: null, errors: ['La tarea necesita instrucciones de hasta 6000 caracteres.'] };
+  }
   const lines = raw.replace(/\r/g, '').split('\n').map((line) => line.trim());
   if (!lines.some(Boolean)) return { mission: null, errors: [] };
 
@@ -50,11 +58,11 @@ export function parseMission(raw: string): { mission: Mission | null; errors: st
 
 // Lo que ve el alumno: sin la respuesta correcta.
 export function publicMission(mission: Mission) {
-  if (mission.kind === 'checklist') return mission;
+  if (mission.kind !== 'quiz') return mission;
   return { kind: 'quiz' as const, questions: mission.questions.map(({ prompt, options }) => ({ prompt, options })) };
 }
 
-export function gradeMission(mission: Mission, read: (key: string) => string) {
+export function gradeMission(mission: Exclude<Mission, { kind: 'assignment' }>, read: (key: string) => string) {
   if (mission.kind === 'checklist') {
     const correct = mission.items.filter((_, index) => read(`item${index}`) === '1').length;
     return { correct, total: mission.items.length, passed: correct === mission.items.length };

@@ -1,9 +1,13 @@
+import Link from 'next/link';
 import { reviewPost, reviewProduct, setApplicationStatus } from '@/lib/valux/actions';
 import { listApplications, listPosts, listProducts } from '@/lib/valux/data';
 import { PageTitle, btnTiny } from '@/components/dashboard/ui';
+import { listCourseReviewRequests } from '@/lib/crm/lms';
+import { formatDateTime } from '@/lib/crm/format';
 
 export default async function RevisionesPage() {
-  const [products, posts, applications] = await Promise.all([
+  const [courses, products, posts, applications] = await Promise.all([
+    listCourseReviewRequests(),
     listProducts('pendiente'),
     listPosts('pendiente'),
     listApplications(),
@@ -13,6 +17,18 @@ export default async function RevisionesPage() {
   return (
     <div className="space-y-8">
       <PageTitle title="Revisiones" />
+      <section className="space-y-2">
+        <h2 className="font-display text-3xl tracking-wide">Cursos pendientes de revisión</h2>
+        {courses.length ? <ul className="divide-y divide-black/10 border border-black/10 bg-white">
+          {courses.map((course) => <li key={course.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <section className="min-w-0">
+              <p className="break-words font-semibold">{course.title}</p>
+              <p className="text-sm text-black/65">{course.teacher || 'Academia'} · {course.lessons} {course.lessons === 1 ? 'clase' : 'clases'} · {formatDateTime(course.requestedAt)}</p>
+            </section>
+            <Link href={`/dashboard/cursos/${course.id}?vista=revision`} className={btnTiny}>Revisar curso</Link>
+          </li>)}
+        </ul> : <p className="text-sm text-black/65">Los cursos enviados por profesores aparecerán aquí.</p>}
+      </section>
       <section className="space-y-2">
         <h2 className="font-display text-3xl tracking-wide">Productos</h2>
         {products.length === 0 ? <p className="text-sm text-black/50">Nada pendiente.</p> : products.map((product) => (

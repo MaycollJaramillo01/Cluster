@@ -352,6 +352,7 @@ scripts/check-seguimiento.ts   Prueba de cupones, seguimientos, Bunny y alertas
 | `PAYPAL_WEBHOOK_ID` | Id del webhook creado en PayPal; sin él se rechazan sus avisos |
 | `RESEND_API_KEY`, `CONTACT_FROM_EMAIL` | Correo de acceso |
 | `BLOB_READ_WRITE_TOKEN` | Portadas y archivos subidos |
+| `ACADEMIA_PRIVATE_BLOB_READ_WRITE_TOKEN` | Archivos de clases y descargas pagadas del Marketplace |
 | `BUNNY_STREAM_LIBRARY_ID` | Biblioteca de Bunny Stream para lecciones cargadas como `bunny:<id>` |
 | `BUNNY_STREAM_TOKEN_KEY` | Clave de firma de Bunny («Token authentication key»); sin ella el video de Bunny va sin firma |
 | `ALERT_EMAIL` | A quién llegan las alertas de errores (por defecto el correo del sitio) |
@@ -359,18 +360,62 @@ scripts/check-seguimiento.ts   Prueba de cupones, seguimientos, Bunny y alertas
 
 ## Validación aislada y pendientes de operación
 
+### Crear y revisar un curso
+
+1. **Profesor.** En **Mis cursos → Crear curso**, guarda el título, la descripción y, si aplica, portada, objetivos, audiencia y requisitos. El curso se abre como borrador.
+2. **Temario.** Crea los módulos, ordénalos y añade las clases. Abre cada clase para guardar su texto, duración, video o materiales. El reproductor admite enlaces de YouTube, Vimeo, Bunny Stream y archivos MP4/WebM alojados por HTTPS. Los materiales subidos usan el almacén privado de Academia.
+3. **Actividades.** Elige una lista de pasos, un cuestionario autocorregible o una tarea escrita. Una tarea mantiene cerrada la siguiente clase hasta que el profesor apruebe la entrega. Si pide cambios, el alumno ve las observaciones, corrige y reenvía su respuesta desde la misma clase.
+4. **Revisión.** Usa **Vista previa** para recorrer el curso como alumno dentro del panel. En **Revisión**, corrige las comprobaciones pendientes y envía el curso. Se permite consultar el contenido mientras está en revisión o publicado. Para recuperar la edición docente, el superadmin devuelve el borrador o retira el curso publicado.
+5. **Superadmin.** Abre **Cursos → Revisiones**, entra al curso y revisa la ficha y las lecciones. Puedes devolver el borrador con observaciones o aprobarlo y publicarlo. Al aprobarlo, aparece en el catálogo de Academia.
+6. **Alumno y profesor.** El alumno envía su respuesta desde la clase publicada. El profesor entra en **Entregas**, selecciona la actividad y aprueba o solicita cambios. Una aprobación guarda el avance y los XP una sola vez.
+
+Se probó el recorrido completo con datos aislados en 390 × 844 y 1440 × 900. La prueba creó la ficha y el temario, guardó un enlace de video y un material, verificó el acceso privado a la vista previa, devolvió y publicó el curso, y aprobó una respuesta corregida. El reproductor externo se simuló y el material fue un enlace de ejemplo. La carga a Blob y la reproducción con proveedores configurados se verifican en la vista previa de despliegue.
+
+El temario usa el patrón de abrir cada editor desde su módulo. Dentro de la clase, los controles de video, actividad y materiales se agrupan por función. [Secciones y clases de Teachable](https://support.teachable.com/en/articles/11682453-sections-and-lessons) · [Editor de lecciones de Teachable](https://support.teachable.com/en/articles/11682455-add-lesson-content)
+
+### Biblioteca y aula del alumno
+
+1. En **Mis cursos**, busca por título o profesor y filtra entre **En curso**, **Sin empezar** y **Completados**. **Continuar curso** abre la primera clase pendiente según el temario actual. Puedes repasar las clases terminadas aunque cambie su posición.
+2. En el aula, el temario identifica la clase actual, las completadas y las bloqueadas. En móvil se abre con **Temario** y se cierra con su botón o con Escape. Usa los accesos de la clase para llegar al resumen, los materiales o la actividad.
+3. En **Mis notas**, escribe y guarda una nota privada por clase. Se sincroniza al entrar con la misma cuenta. Para quitarla, vacía el campo y guarda. Si otra sesión cambió la nota, se avisa antes de sobrescribirla.
+4. **Completar y continuar** registra el avance y abre la siguiente clase. Los cuestionarios y las tareas pendientes mantienen su requisito de aprobación. Al completar el curso, queda disponible para repaso desde la biblioteca.
+
+El acceso directo a la primera clase pendiente sigue la convención de Teachable. Las notas quedan junto al contenido de la clase y se guardan con la cuenta, siguiendo el principio de privacidad de las notas de Udemy. [Navegación de Teachable](https://support.teachable.com/en/articles/11682425-navigate-and-view-course-content) · [Notas de Udemy](https://about.udemy.com/udemy-news/announcing-udemy-notes/)
+
+El recorrido pasó en 390 × 844 y 1440 × 900 con dos cuentas de prueba. Se verificaron la búsqueda, los filtros, el acceso al material, la reanudación, la privacidad de notas y el repaso al finalizar. Se simuló el reproductor de video externo.
+
+### Constancias de finalización
+
+1. Completa todas las clases y aprueba los cuestionarios, listas de pasos y tareas que correspondan. Abre **Obtener constancia** desde la ficha del curso o desde **Mis cursos → Completados**. Si falta tu nombre, guárdalo primero en **Mi perfil**.
+2. Consulta lo emitido en **Mis cursos → Mis constancias**. Cada constancia tiene un folio único. Conserva el nombre, el título, la fecha de finalización y la cantidad de clases registrados al emitirla, aunque después cambie el curso.
+3. Usa **Imprimir o guardar PDF**. En el cuadro de impresión del navegador, elige una impresora o la opción para guardar como PDF.
+4. Si quieres compartirla, selecciona **Activar enlace público**. El enlace muestra el nombre y los datos de la constancia a quien lo reciba. Puedes desactivarlo. Si vuelves a activar la verificación, se crea un enlace diferente.
+
+La acción aparece al completar el curso, como en Teachable. Las opciones de guardar y compartir están junto al documento, como en Udemy. [Constancias en Teachable](https://support.teachable.com/en/articles/11682466-certificates-of-completion) · [Finalización en Udemy](https://support.udemy.com/hc/en-us/articles/34345830524183-Udemy-s-new-course-experience-Frequently-asked-questions)
+
+Se verificaron emisión única, aislamiento entre alumnos, consulta pública por consentimiento y retiro del enlace en 390 × 844 y 1440 × 900. El navegador generó una sola página A4 en ambos casos.
+
+### Entrega y acceso
+
+- La venta de curso, la matrícula y la cola de correo se confirman juntas. Stripe marca los pagos verificados y reintenta los pendientes desde el cron. Un reembolso impide volver a entregar el pedido. Finanzas conserva el número de operación de una transferencia confirmada mientras se reintenta su entrega desde **Por entregar**.
+- La recuperación busca transferencias previamente aprobadas con referencia bancaria y sin indicios de devolución. Una membresía recuperada conserva como inicio la fecha de confirmación original. Si una transferencia figura pendiente, vencida o rechazada y tiene una venta asociada, Finanzas debe verificarla contra el banco antes de cambiar su estado.
+- Matricular un contacto vincula su correo con la cuenta de Academia. La migración de producción reconcilia matrículas históricas por correo normalizado y conserva notas y progreso. **Mis cursos** incluye los cursos del nivel de membresía vigente y muestra los cursos retirados sin enlace al aula.
+- Las cargas de materiales usan un Blob privado separado de las portadas. Configura `ACADEMIA_PRIVATE_BLOB_READ_WRITE_TOKEN` con el token del almacén privado. Las rutas de descarga vuelven a comprobar el acceso y, para una clase, su desbloqueo. Los enlaces de terceros y Blob públicos antiguos conservan su accesibilidad fuera de Academia y deben reemplazarse si necesitan protección.
+
 `npm run test:lms` ejecuta las pruebas de acceso, planes, pagos simulados, reembolsos, retos, permisos, correos y seguridad en un esquema PostgreSQL temporal. El esquema se elimina al terminar; los correos y las pasarelas se interceptan. Necesita `DATABASE_URL` con permiso de crear esquemas. No procesa contactos ni ventas reales.
 
 El webhook de Stripe se registra en `https://www.cluster.marketing/api/academia/stripe`, con los ocho eventos de la tabla anterior y `STRIPE_WEBHOOK_SECRET` en producción.
 
 ### Preparar una prueba operativa
 
-1. **Preview.** Usar una base de prueba. Verificar primero qué base resuelve el despliegue, porque el conector `neon/clustercrm` tiene prioridad sobre `DATABASE_URL`. Configurar `STRIPE_SECRET_KEY` en modo de pruebas, con el `STRIPE_WEBHOOK_SECRET` del endpoint `/api/academia/stripe` de esa misma vista previa. Registrar los ocho eventos de la tabla. La URL debe ser accesible para Stripe. Configurar también el correo de prueba y un almacén Blob privado para comprobantes.
+1. **Preview.** Usar una base de prueba. Verificar primero qué base resuelve el despliegue, porque el conector `neon/clustercrm` tiene prioridad sobre `DATABASE_URL`. Configurar `STRIPE_SECRET_KEY` en modo de pruebas, con el `STRIPE_WEBHOOK_SECRET` del endpoint `/api/academia/stripe` de esa misma vista previa. Registrar los ocho eventos de la tabla. La URL debe ser accesible para Stripe. Configurar también el correo de prueba y los almacenes Blob privados para comprobantes y materiales.
 2. **Profesor y video.** Crear un profesor de prueba en Equipo y, desde su cuenta, crear un borrador. En Bunny, configurar la autenticación por token y permitir el dominio de la vista previa. Añadir el ID de biblioteca y la clave de firma de `.env.example`. Como profesor, guardar `bunny:<id del video>` en una lección y pedir revisión. Como superadmin, aprobar y publicar. Como alumno inscrito, reproducir el video y completar la lección.
 3. **Transferencia.** Dejar vacío el campo Comisión → Datos para transferencia hasta disponer de las instrucciones aprobadas para producción. El campo muestra un ejemplo sin guardarlo. En la vista previa se puede guardar un banco ficticio y usar un PDF de prueba. Comprobar que subirlo no da acceso y que el rol Finanzas, al aprobar con un número de operación, habilita el curso una sola vez.
 4. **Tarjeta.** Completar una compra en HNL con una tarjeta de pruebas. Cerrar la pestaña antes de regresar a la Academia, comprobar que Stripe recibió un 200 y verificar el curso y el recibo en la cuenta del alumno. Repetir las comprobaciones autenticadas con vistas de 390 × 844 y 1440 × 900.
 
 La suite aislada incluye datos ficticios para probar permisos del profesor al guardar la URL de una lección y la aprobación de transferencias sin cobros ni instrucciones bancarias reales.
+
+En una vista previa local con datos aislados se comprobó la inscripción, la biblioteca y la vista de una clase en 390 × 844 y 1440 × 900. Un alumno activo pudo abrir la primera clase y acceder a su material. El recurso de una clase bloqueada devolvió 404 y la ficha de una cuenta suspendida ocultó el pago. Queda comprobar el cobro, la recepción de correo y el almacén Blob con los servicios configurados en una vista previa.
 
 Pendientes por decisión del propietario: datos bancarios, biblioteca y clave de Bunny Stream, videos y nuevos cursos. Transferencias permanece oculta sin banco configurado. La compra real con tarjeta de prueba requiere credenciales del entorno de pruebas de Stripe; la clave disponible es de producción.
 

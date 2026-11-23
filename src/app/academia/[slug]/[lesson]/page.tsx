@@ -1,20 +1,27 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { Heading } from '@astryxdesign/core/Heading';
+import { VStack } from '@astryxdesign/core/VStack';
 import { academiaPersonId } from '@/lib/valux/session';
 import { completeLesson, submitMission } from '@/lib/valux/actions';
 import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/valux/data';
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
 import { trackEvent } from '@/lib/valux/events';
-import { lessonEmbed } from '@/lib/valux/video';
+import { directLessonVideo, lessonEmbed } from '@/lib/valux/video';
 import { LessonText } from '@/components/academia/ui';
+import { LessonAssignment } from '@/components/academia/LessonAssignment';
+import { LessonNotes } from '@/components/academia/LessonNotes';
+import { MobileSyllabus } from '@/components/academia/MobileSyllabus';
+import { getLessonNote } from '@/lib/valux/lesson-notes';
+import { SubmitButton } from '@/components/ui/SubmitButton';
 import { ScrollTop } from '@/components/academia/ScrollTop';
 import { Icon } from '@/components/ui/Icon';
 
 type Item = { id: string; slug: string; title: string; section_id: string; duration_min: number | null };
 
-const primaryClass = 'inline-flex items-center justify-center gap-2 bg-brand px-5 py-3 text-sm font-medium text-ink transition-opacity hover:opacity-90';
-const secondaryClass = 'inline-flex items-center justify-center gap-2 border border-black/15 bg-white px-4 py-3 text-sm transition-colors hover:border-ink';
+const primaryClass = 'inline-flex min-h-11 items-center justify-center gap-2 bg-brand px-4 py-2 text-sm font-semibold text-ink hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+const secondaryClass = 'inline-flex min-h-11 items-center justify-center gap-2 border border-black/15 bg-white px-4 py-2 text-sm font-medium hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 
 function missionNote(code: string, kind: 'quiz' | 'checklist') {
   if (code === 'pendiente') return 'Responde la misión para completar esta clase.';
@@ -42,7 +49,7 @@ function Status({ done, current, locked }: { done: boolean; current: boolean; lo
       </span>
     );
   }
-  return <span className={`mt-0.5 h-[18px] w-[18px] shrink-0 border-2 ${current ? 'border-brand' : 'border-white/25'}`} />;
+  return <span className={`mt-0.5 size-4 shrink-0 border-2 ${current ? 'border-brand' : 'border-black/25'}`} aria-hidden="true" />;
 }
 
 function Syllabus({
@@ -61,40 +68,41 @@ function Syllabus({
   summary: string;
 }) {
   return (
-    <nav aria-label="Contenido del curso">
-      <div className="border-b border-white/10 px-4 py-4">
-        <p className="text-sm font-medium text-white">Contenido del curso</p>
-        <p className="mt-0.5 text-xs text-white/50">{summary}</p>
-      </div>
+    <nav aria-label="Contenido del curso" className="bg-white text-ink">
+      <header className="border-b border-black/10 px-5 py-4">
+        <p className="font-semibold">Contenido del curso</p>
+        <p className="mt-1 text-sm text-ink/70">{summary}</p>
+      </header>
       {groups.map((group) => (
-        <section key={group.id} className="pb-2">
-          <div className="flex items-baseline justify-between gap-3 px-4 pb-2 pt-5 text-xs">
-            <span className="font-medium text-white/80">{group.title}</span>
-            <span className="shrink-0 tabular-nums text-white/45">
+        <section key={group.id} className="border-b border-black/10 pb-2">
+          <header className="flex items-baseline justify-between gap-3 bg-paper px-5 py-3 text-sm">
+            <h2 className="min-w-0 break-words font-semibold normal-case">{group.title}</h2>
+            <span className="shrink-0 tabular-nums text-ink/65">
               {group.lessons.filter((item) => done.has(item.id)).length}/{group.lessons.length}
             </span>
-          </div>
+          </header>
           <ol>
             {group.lessons.map((item) => {
               const isCurrent = item.slug === current;
-              const locked = !isCurrent && isLocked(item);
+              const locked = isLocked(item);
               const body = (
                 <>
                   <Status done={done.has(item.id)} current={isCurrent} locked={locked} />
-                  <span className="min-w-0 flex-1">{item.title}</span>
-                  {item.duration_min ? <span className="shrink-0 text-xs tabular-nums text-white/40">{item.duration_min} min</span> : null}
+                  <span className="min-w-0 flex-1 break-words">{item.title}</span>
+                  {item.duration_min ? <span className="shrink-0 text-xs tabular-nums text-ink/65">{item.duration_min} min</span> : null}
                 </>
               );
               const row = 'flex items-start gap-3 px-4 py-3 text-sm transition-colors duration-150';
               return (
                 <li key={item.id}>
                   {locked ? (
-                    <div className={`${row} cursor-not-allowed text-white/40`} title="Se abre al completar la clase anterior">{body}</div>
+                    <p className={`${row} text-ink/65`} aria-current={isCurrent ? 'page' : undefined}>{body}</p>
                   ) : (
                     <Link
                       href={href(item)}
+                      prefetch={false}
                       aria-current={isCurrent ? 'page' : undefined}
-                      className={`${row} ${isCurrent ? 'bg-white/10 font-medium text-white' : 'text-white/75 hover:bg-white/5 hover:text-white'}`}
+                      className={`${row} border-l-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset ${isCurrent ? 'border-brand bg-paper-soft font-semibold' : 'border-transparent hover:bg-paper'}`}
                     >
                       {body}
                     </Link>
@@ -116,39 +124,37 @@ export default async function LessonPlayer({
   params: Promise<{ slug: string; lesson: string }>;
   searchParams: Promise<{ mision?: string; r?: string }>;
 }) {
-  const { slug, lesson: lessonSlug } = await params;
-  const { mision, r } = await searchParams;
+  const [{ slug, lesson: lessonSlug }, { mision, r }, personId] = await Promise.all([params, searchParams, academiaPersonId()]);
   // Respuestas del intento anterior, para volver a marcarlas.
   const picks = (r || '').split('.');
   const detail = await publishedLesson(slug, lessonSlug);
   if (!detail) notFound();
   const { course, lesson } = detail;
-  const personId = await academiaPersonId();
-  const canRead = await canReadCourse(personId, course);
-  const access = await lessonAccess(personId, course);
-  const { done, order } = access;
+  const [canRead, access] = await Promise.all([canReadCourse(personId, course), lessonAccess(personId, course)]);
+  const { done, order, pending } = access;
   const locked = canRead && !access.unlocked.has(lesson.id);
   const open = canRead && !locked;
-  if (open && personId) {
-    await trackEvent('lesson_started', { id: `lesson_started:${personId}:${lesson.id}`, personId, data: { lesson: lesson.id, course: course.id } });
-  }
-  const mission = parseMission(lesson.mission).mission;
+  const signedIn = access.person?.is_active === true;
+  const [note, xp] = await Promise.all([
+    open && signedIn ? getLessonNote(personId, lesson.id) : null,
+    mision === 'ok' && done.has(lesson.id) ? personXp(personId) : 0,
+    open && signedIn ? trackEvent('lesson_started', { id: `lesson_started:${personId}:${lesson.id}`, personId, data: { lesson: lesson.id, course: course.id } }) : null,
+  ]);
+  const mission = open ? parseMission(lesson.mission).mission : null;
   const shown = mission ? publicMission(mission) : null;
   const approved = mision === 'ok';
-  const xp = approved ? await personXp(personId) : 0;
   const index = order.findIndex((item) => item.slug === lessonSlug);
-  const previous = order[index - 1];
+  const previous = order[index - 1] && canRead && access.unlocked.has(order[index - 1].id) ? order[index - 1] : null;
   const next = order[index + 1];
   const isDone = done.has(lesson.id);
   const doneCount = order.filter((item) => done.has(item.id)).length;
   const pct = order.length ? Math.round((doneCount / order.length) * 100) : 0;
-  // La primera clase abierta sin terminar: a donde mandar a quien llega a una clase cerrada.
-  const pending = order.find((item) => access.unlocked.has(item.id) && !done.has(item.id));
   const href = (item: { slug: string }) => `/academia/${slug}/${item.slug}`;
-  const nextHref = next ? href(next) : `/academia/${slug}?terminado=1`;
-  const nextLabel = next ? 'Siguiente clase' : 'Terminar el curso';
+  const reviewTarget = next && access.unlocked.has(next.id) ? next : pending;
+  const nextLabel = next || (pending && pending.id !== lesson.id) ? 'Completar y continuar' : 'Completar curso';
   // El enlace firmado solo se genera para quien puede ver la clase.
   const video = open ? lessonEmbed(lesson.video_url) : '';
+  const directVideo = open && !video ? directLessonVideo(lesson.video_url) : '';
   const known = new Set(course.sections.map((section) => section.id));
   const loose = order.filter((item) => !known.has(item.section_id));
   const groups = [
@@ -166,32 +172,36 @@ export default async function LessonPlayer({
   const arrow = <Icon name="arrow-right" size={16} aria-hidden="true" />;
   let primary: ReactNode = null;
   let status = '';
-  if (!canRead) {
+  if (!canRead && access.person && !signedIn) {
+    status = 'Acceso suspendido';
+  } else if (!canRead) {
     primary = <Link href={`/academia/${slug}?inscripcion=1`} className={primaryClass}>Inscribirme al curso {arrow}</Link>;
-  } else if (!personId) {
+  } else if (!signedIn) {
     primary = <Link href={`/academia/entrar?modo=registro&curso=${encodeURIComponent(slug)}`} className={primaryClass}>Entra para guardar tu avance</Link>;
   } else if (locked) {
     primary = pending ? <Link href={href(pending)} className={primaryClass}>Ir a la clase pendiente {arrow}</Link> : null;
   } else if (shown && !isDone) {
-    primary = <a href="#mision" className={primaryClass}>Responder la misión</a>;
-    status = 'Aprueba la misión para abrir la siguiente clase.';
+    primary = <a href="#mision" className={primaryClass}>{shown.kind === 'assignment' ? 'Ver tarea' : 'Responder la misión'}</a>;
+    status = shown.kind === 'assignment' ? 'La siguiente clase se abre cuando tu profesor apruebe la tarea.' : 'Aprueba la misión para abrir la siguiente clase.';
   } else if (isDone) {
-    primary = <Link href={nextHref} className={primaryClass}>{nextLabel} {arrow}</Link>;
+    primary = <Link href={reviewTarget ? href(reviewTarget) : `/academia/${slug}?terminado=1`} prefetch={false} className={primaryClass}>
+      {reviewTarget ? (reviewTarget.id === next?.id ? 'Siguiente clase' : 'Retomar avance') : 'Ver curso completado'} {arrow}
+    </Link>;
     status = 'Clase completada';
   } else {
     primary = (
       <form action={completeLesson}>
         <input type="hidden" name="lesson_id" value={lesson.id} />
-        <button type="submit" className={primaryClass}>{nextLabel} {arrow}</button>
+        <SubmitButton pending="Guardando avance…" className="px-4 text-sm font-semibold sm:w-auto">{nextLabel} {arrow}</SubmitButton>
       </form>
     );
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink">
+    <VStack gap={0} className="min-h-screen bg-paper text-ink">
       <ScrollTop key={`${lessonSlug}?${mision || ''}${r || ''}`} />
       <header className="sticky top-0 z-30 flex h-14 items-center gap-3 bg-ink px-4 text-white">
-        <Link href={`/academia/${slug}`} className="flex min-w-0 items-center gap-2 text-sm transition-colors hover:text-brand">
+        <Link href={`/academia/${slug}`} aria-label={`Volver al curso: ${course.title}`} className="flex min-h-11 min-w-0 items-center gap-2 text-sm transition-colors hover:text-brand focus-visible:outline focus-visible:outline-2">
           <Icon name="arrow-right" size={16} className="shrink-0 rotate-180" />
           <span className="truncate">{course.title}</span>
         </Link>
@@ -212,22 +222,18 @@ export default async function LessonPlayer({
             </div>
           ) : null}
           {/* Celular: el temario se abre como hoja completa bajo la barra. Se cierra solo al cambiar de clase. */}
-          <details key={lessonSlug} className="group lg:hidden">
-            <summary className="flex cursor-pointer list-none items-center gap-1 border border-white/20 px-3 py-1.5 text-sm [&::-webkit-details-marker]:hidden">
-              Temario
-              <Icon name="chevron-down" size={16} className="transition-transform duration-150 group-open:rotate-180" />
-            </summary>
-            <div className="t-sheet fixed inset-x-0 bottom-0 top-14 overflow-y-auto border-t border-white/10 bg-ink">{syllabus}</div>
-          </details>
+          <MobileSyllabus key={lessonSlug}>{syllabus}</MobileSyllabus>
         </div>
       </header>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_360px]">
-        <main className="flex min-h-[calc(100vh-3.5rem)] min-w-0 flex-col">
+      <section className="lg:grid lg:grid-cols-4">
+        <main className="flex min-h-[calc(100vh-3.5rem)] min-w-0 flex-col lg:col-span-3">
           {video ? (
             <div className="bg-black">
               <iframe className="aspect-video w-full" src={video} title={lesson.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
             </div>
+          ) : directVideo ? (
+            <video className="aspect-video w-full bg-black" src={directVideo} controls playsInline preload="metadata" aria-label={lesson.title} />
           ) : null}
 
           <div className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 pt-8 md:px-8">
@@ -235,27 +241,37 @@ export default async function LessonPlayer({
               {sectionTitle ? `${sectionTitle} · ` : ''}Clase {index + 1} de {order.length}
               {lesson.duration_min ? ` · ${lesson.duration_min} min` : ''}
             </p>
-            <h1 className="mt-3 text-4xl tracking-wide md:text-5xl">{lesson.title}</h1>
+            <Heading level={1} className="mt-3 break-words font-brand text-3xl font-semibold normal-case leading-tight sm:text-4xl">{lesson.title}</Heading>
+            {open && (lesson.resources.length || shown || signedIn) ? (
+              <nav aria-label="Secciones de la clase" className="mt-4 flex flex-wrap gap-2 border-b border-black/10 pb-3">
+                <a href="#resumen-clase" className={secondaryClass}>Resumen</a>
+                {lesson.resources.length ? <a href="#materiales-clase" className={secondaryClass}>Materiales</a> : null}
+                {shown ? <a href="#mision" className={secondaryClass}>{shown.kind === 'assignment' ? 'Tarea' : 'Actividad'}</a> : null}
+                {signedIn ? <a href="#mis-notas" className={secondaryClass}>Mis notas</a> : null}
+              </nav>
+            ) : null}
 
             {open ? (
-              <div className="mt-8 space-y-10">
-                {!video && lesson.video_url && !lesson.video_url.startsWith('bunny:') && !lesson.video_url.includes('mediadelivery.net') ? (
+              <VStack gap={8} className="mt-8">
+                <section id="resumen-clase" aria-label="Resumen de la clase" className="scroll-mt-24 space-y-4">
+                {!video && !directVideo && lesson.video_url.startsWith('https://') && !lesson.video_url.includes('mediadelivery.net') ? (
                   <a className={secondaryClass} href={lesson.video_url} target="_blank" rel="noopener noreferrer">
                     <Icon name="play" size={16} /> Abrir video
                   </a>
                 ) : null}
-                {lesson.content ? <LessonText text={lesson.content} /> : null}
+                {lesson.content ? <LessonText text={lesson.content} /> : <p className="text-sm text-ink/65">Esta clase no tiene texto adicional.</p>}
+                </section>
 
                 {lesson.resources.length > 0 ? (
-                  <section>
-                    <h2 className="text-lg font-semibold">Recursos</h2>
+                  <section id="materiales-clase" className="scroll-mt-24">
+                    <h2 className="text-lg font-semibold">Materiales</h2>
                     <ul className="mt-3 divide-y divide-black/10 border border-black/10 bg-white">
                       {lesson.resources.map((resource) => (
                         <li key={resource.id} className="flex items-start gap-3 px-4 py-3 text-sm">
                           <Icon name={resource.url ? 'link' : 'pen'} size={16} className="mt-0.5 shrink-0 text-black/45" />
                           <div className="min-w-0">
                             {resource.url ? (
-                              <a className="font-medium underline-offset-2 hover:underline" href={resource.url} target="_blank" rel="noopener noreferrer">{resource.title}</a>
+                              <a className="font-medium underline-offset-2 hover:underline" href={`/api/academia/descargas/recurso/${encodeURIComponent(resource.id)}`} target="_blank" rel="noopener noreferrer">{resource.title}</a>
                             ) : (
                               <span className="font-medium">{resource.title}</span>
                             )}
@@ -268,7 +284,9 @@ export default async function LessonPlayer({
                   </section>
                 ) : null}
 
-                {shown ? (
+                {shown?.kind === 'assignment' ? (
+                  <LessonAssignment lessonId={lesson.id} personId={personId} instructions={shown.instructions} done={isDone} error={mision === 'respuesta'} points={lesson.points} />
+                ) : shown ? (
                   <section id="mision" className="scroll-mt-20 border border-black/10 bg-white">
                     <div className="flex items-baseline justify-between gap-3 border-b border-black/10 px-5 py-4">
                       <h2 className="text-lg font-semibold">Misión</h2>
@@ -327,15 +345,16 @@ export default async function LessonPlayer({
                     </div>
                   </section>
                 ) : null}
-              </div>
+                {signedIn ? <LessonNotes key={lesson.id} lessonId={lesson.id} note={note} /> : null}
+              </VStack>
             ) : (
               <div className="mt-8 border border-black/10 bg-white p-5">
                 <p className="flex items-center gap-2 font-medium">
                   <Icon name="lock" size={16} />
-                  {!canRead ? 'Esta clase es parte de un curso de pago' : personId ? 'Esta clase todavía está cerrada' : 'Entra para seguir el curso'}
+                  {status === 'Acceso suspendido' ? status : !canRead ? 'Esta clase es parte de un curso de pago' : signedIn ? 'Esta clase todavía está cerrada' : 'Entra para seguir el curso'}
                 </p>
                 <p className="mt-2 text-sm text-black/65">
-                  {!canRead
+                  {status === 'Acceso suspendido' ? 'Contacta al equipo de Academia para recuperar tu acceso.' : !canRead
                     ? 'Inscríbete para ver el video, las notas y la misión.'
                     : personId
                       ? <>Las clases se abren en orden.{pending ? <> Completa «{pending.title}» para seguir.</> : null}</>
@@ -363,10 +382,10 @@ export default async function LessonPlayer({
           </div>
         </main>
 
-        <aside className="hidden border-l border-white/10 bg-ink lg:sticky lg:top-14 lg:block lg:h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
+        <aside className="hidden min-w-0 border-l border-black/10 bg-white lg:sticky lg:top-14 lg:block lg:h-[calc(100vh-3.5rem)] lg:overflow-y-auto">
           {syllabus}
         </aside>
-      </div>
-    </div>
+      </section>
+    </VStack>
   );
 }

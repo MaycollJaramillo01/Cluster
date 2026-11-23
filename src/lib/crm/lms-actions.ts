@@ -2,11 +2,16 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { storedFile } from '@/lib/valux/upload';
+import { storedFile, storedPrivateAsset } from '@/lib/valux/upload';
 import { crm } from './db';
 import { requireCourseEditor } from './course-access';
 import { requireDashboard } from './session';
 import { FEATURED_KEY } from '@/lib/valux/catalog';
+import { parseMission } from '@/lib/valux/mission';
+import { validLessonVideo } from '@/lib/valux/video';
+import { getCourse } from './lms';
+import { courseReviewIssues } from './course-review';
+import type { NeonQueryFunctionInTransaction, NeonQueryInTransaction } from '@neondatabase/serverless';
 
 function field(formData: FormData, key: string) {
   return String(formData.get(key) ?? '').trim();
@@ -66,14 +71,74 @@ async function lessonCourse(lessonId: string) {
   return String((rows[0] as { course_id?: string } | undefined)?.course_id || '');
 }
 
+type AuthoringSql = NeonQueryFunctionInTransaction<false, false>;
+
+async function mutateCourse(courseId: string, back: string, mutate: (tx: AuthoringSql, allowed: NeonQueryInTransaction) => NeonQueryInTransaction) {
+  const { teacherId } = await requireCourseEditor(courseId);
+  const sql = await crm();
+  const [course, work] = await sql.transaction((tx) => {
+    const editable = tx`id = ${courseId} AND (${teacherId}::text IS NULL OR
+      (teacher_id = ${teacherId} AND NOT published AND review_requested_at IS NULL))`;
+    return [
+      tx`UPDATE lms_courses SET authoring_version = authoring_version + 1,
+        review_requested_at = CASE WHEN NOT published THEN NULL ELSE review_requested_at END
+        WHERE ${editable} RETURNING id`,
+      mutate(tx, tx`EXISTS (SELECT FROM lms_courses WHERE ${editable})`),
+    ];
+  });
+  if (!course.length) redirect(`${back}${back.includes('?') ? '&' : '?'}error=estado`);
+  return work;
+}
+
+async function checkEditableBeforeUpload(courseId: string, back: string) {
+  const { teacher } = await requireCourseEditor(courseId);
+  if (!teacher) return;
+  const sql = await crm();
+  const [course] = await sql`SELECT published, review_requested_at FROM lms_courses WHERE id = ${courseId}`;
+  if (course?.published || course?.review_requested_at) redirect(`${back}?error=estado`);
+}
+
 // El profesor pide revisión y el superadmin publica desde la ficha del curso.
 export async function requestReview(formData: FormData) {
   const courseId = field(formData, 'course_id');
   if (!courseId) return;
-  await requireCourseEditor(courseId);
+  const { teacherId } = await requireCourseEditor(courseId);
+  const path = `/dashboard/cursos/${courseId}?vista=revision`;
+  const detail = await getCourse(courseId);
+  if (!detail || courseReviewIssues(detail).length) redirect(`${path}&error=revision#revision`);
   const sql = await crm();
-  await sql`UPDATE lms_courses SET review_requested_at = now() WHERE id = ${courseId}`;
+  const requested = await sql`UPDATE lms_courses SET review_requested_at = COALESCE(review_requested_at, now())
+    WHERE id = ${courseId} AND NOT published AND authoring_version = ${detail.course.authoring_version}
+      AND (${teacherId}::text IS NULL OR teacher_id = ${teacherId}) RETURNING id`;
+  if (!requested.length) redirect(`${path}&error=revision#revision`);
   refresh();
+}
+
+export async function updateCoursePresentation(formData: FormData) {
+  const id = field(formData, 'course_id');
+  const title = field(formData, 'title');
+  const description = field(formData, 'description');
+  if (!id || !title || !description) return;
+  const back = `/dashboard/cursos/${id}`;
+  await checkEditableBeforeUpload(id, back);
+  const cover = await storedFile(formData, 'cover', 'cover_url', true).catch(() => {
+    redirect(`${back}?error=portada#ficha`);
+  });
+  await mutateCourse(id, back, (tx, allowed) => tx`
+    UPDATE lms_courses SET title = ${title}, description = ${description}, cover_url = ${cover},
+      learning_outcomes = ${field(formData, 'learning_outcomes')}, audience = ${field(formData, 'audience')},
+      prerequisites = ${field(formData, 'prerequisites')} WHERE id = ${id} AND ${allowed}
+  `);
+  refresh();
+  redirect(`${back}?guardado=ficha#ficha`);
+}
+
+async function courseSection(courseId: string, sectionId: string, back: string) {
+  if (!sectionId) return null;
+  const sql = await crm();
+  const rows = await sql`SELECT id FROM lms_sections WHERE id=${sectionId} AND course_id=${courseId}`;
+  if (!rows.length) redirect(`${back}${back.includes('?') ? '&' : '?'}error=seccion`);
+  return sectionId;
 }
 
 async function uniqueCourseSlug(title: string) {
@@ -88,57 +153,39 @@ async function uniqueCourseSlug(title: string) {
   return slug;
 }
 
-async function uniqueLessonSlug(courseId: string, title: string) {
-  const sql = await crm();
-  const base = slugify(title);
-  let slug = base;
-  let n = 1;
-  while ((await sql`SELECT id FROM lms_lessons WHERE course_id = ${courseId} AND slug = ${slug}`).length) {
-    n += 1;
-    slug = `${base.slice(0, 54)}-${n}`;
-  }
-  return slug;
-}
-
 export async function createCourse(formData: FormData) {
   const session = await requireDashboard('curso');
   const teacherDraft = session.role === 'profesor';
   const title = field(formData, 'title');
   const description = field(formData, 'description');
-  if (!title || !description) redirect(teacherDraft ? '/dashboard/profesor?error=curso' : '/dashboard/cursos?error=curso');
+  const back = `${teacherDraft ? '/dashboard/profesor' : '/dashboard/cursos'}?vista=nuevo`;
+  if (!title || !description) redirect(`${back}&error=curso`);
+  const video = field(formData, 'video_url');
+  if (video && !validLessonVideo(video)) redirect(`${back}&error=video`);
+  const cover = await storedFile(formData, 'cover', 'cover_url', true).catch(() => redirect(`${back}&error=portada`));
   const sql = await crm();
   const id = crypto.randomUUID();
   const slug = await uniqueCourseSlug(title);
-  const publish = session.role === 'superadmin' && field(formData, 'published') === 'on';
-  if (teacherDraft) {
-    await sql`
+  const created = await sql`
       WITH teacher AS (
         INSERT INTO valux_people (id, name, email, role)
-        VALUES (${crypto.randomUUID()}, ${session.name}, ${session.email}, 'profesor')
+        SELECT ${crypto.randomUUID()}, ${session.name}, ${session.email}, 'profesor' WHERE ${teacherDraft}::boolean
         ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
         RETURNING id
+      ), course AS (
+        INSERT INTO lms_courses (id, slug, title, description, price_cents, cover_url, teacher_id,
+          learning_outcomes, audience, prerequisites)
+        VALUES (${id}, ${slug}, ${title}, ${description}, ${teacherDraft ? 0 : cents(formData, 'price')}, ${cover},
+          CASE WHEN ${teacherDraft}::boolean THEN (SELECT id FROM teacher) ELSE ${field(formData, 'teacher_id') || null} END,
+          ${field(formData, 'learning_outcomes')}, ${field(formData, 'audience')}, ${field(formData, 'prerequisites')})
+        ON CONFLICT (slug) DO NOTHING RETURNING id
+      ), introduction AS (
+        INSERT INTO lms_lessons (id, course_id, slug, title, content, video_url, sort_order)
+        SELECT ${crypto.randomUUID()}, id, 'introduccion', 'Introducción', '', ${video}, 1 FROM course WHERE ${video} <> ''
       )
-      INSERT INTO lms_courses (id, slug, title, description, teacher_id)
-      SELECT ${id}, ${slug}, ${title}, ${description}, id FROM teacher
-    `;
-    refresh();
-    redirect(`/dashboard/cursos/${id}`);
-  }
-  const cover = await storedFile(formData, 'cover', 'cover_url');
-  await sql`
-    INSERT INTO lms_courses (id, slug, title, description, price_cents, published, cover_url, teacher_id)
-    VALUES (
-      ${id}, ${slug}, ${title}, ${description}, ${cents(formData, 'price')},
-      ${publish}, ${cover}, ${field(formData, 'teacher_id') || null}
-    )
+      SELECT id FROM course
   `;
-  const video = field(formData, 'video_url');
-  if (video) {
-    await sql`
-      INSERT INTO lms_lessons (id, course_id, slug, title, content, video_url, sort_order)
-      VALUES (${crypto.randomUUID()}, ${id}, 'introduccion', 'Introducción', 'Primera lección del curso.', ${video}, 1)
-    `;
-  }
+  if (!created.length) redirect(`${back}&error=curso`);
   refresh();
   redirect(`/dashboard/cursos/${id}`);
 }
@@ -148,8 +195,35 @@ export async function setCoursePublication(formData: FormData) {
   const id = field(formData, 'id');
   const state = field(formData, 'publication');
   if (!id || (state !== 'publish' && state !== 'draft')) return;
+  const path = `/dashboard/cursos/${id}?vista=revision`;
   const sql = await crm();
-  await sql`UPDATE lms_courses SET published = ${state === 'publish'}, review_requested_at = NULL WHERE id = ${id}`;
+  if (state === 'publish') {
+    const detail = await getCourse(id);
+    if (detail?.course.published) return;
+    if (!detail || courseReviewIssues(detail).length || (detail.course.teacher_id && !detail.course.review_requested_at)) {
+      redirect(`${path}&error=revision#revision`);
+    }
+    const published = await sql`UPDATE lms_courses SET published = true, review_requested_at = NULL, review_feedback = ''
+      WHERE id = ${id} AND authoring_version = ${detail.course.authoring_version} AND NOT published
+        AND (teacher_id IS NULL OR review_requested_at IS NOT NULL) RETURNING id`;
+    if (!published.length) redirect(`${path}&error=publicacion#revision`);
+  } else {
+    await sql`UPDATE lms_courses SET published = false, review_requested_at = NULL WHERE id = ${id}`;
+  }
+  refresh();
+}
+
+export async function returnCourseReview(formData: FormData) {
+  await requireDashboard();
+  const id = field(formData, 'id');
+  const feedback = field(formData, 'feedback');
+  if (!id) return;
+  const path = `/dashboard/cursos/${id}?vista=revision`;
+  if (!feedback || feedback.length > 4000) redirect(`${path}&error=feedback#revision`);
+  const sql = await crm();
+  const updated = await sql`UPDATE lms_courses SET review_requested_at = NULL, review_feedback = ${feedback}
+    WHERE id = ${id} AND review_requested_at IS NOT NULL AND NOT published RETURNING id`;
+  if (!updated.length) redirect(`${path}&error=publicacion#revision`);
   refresh();
 }
 
@@ -169,22 +243,26 @@ export async function createLesson(formData: FormData) {
   const title = field(formData, 'title');
   if (!courseId || !title) return;
   await requireCourseEditor(courseId);
-  const sql = await crm();
-  const orderRows = await sql`
-    SELECT COALESCE(max(sort_order), 0) AS n FROM lms_lessons WHERE course_id = ${courseId}
-  `;
-  const next = Number((orderRows[0] as { n?: unknown } | undefined)?.n || 0) + 1;
+  const back = `/dashboard/cursos/${courseId}?vista=temario`;
+  const id = crypto.randomUUID();
+  const section = await courseSection(courseId, field(formData, 'section_id'), back);
+  const video = field(formData, 'video_url');
+  if (video && !validLessonVideo(video)) redirect(`${back}&error=video`);
+  const base = slugify(title);
   const points = positive(field(formData, 'points')) || 10;
-  await sql`
+  const created = await mutateCourse(courseId, back, (tx, allowed) => tx`
     INSERT INTO lms_lessons (id, course_id, section_id, slug, title, content, video_url, points, duration_min, sort_order)
-    VALUES (
-      ${crypto.randomUUID()}, ${courseId}, ${field(formData, 'section_id') || null},
-      ${await uniqueLessonSlug(courseId, title)}, ${title},
-      ${field(formData, 'content')}, ${field(formData, 'video_url') || null},
-      ${points}, ${positive(field(formData, 'duration_min'))}, ${next}
-    )
-  `;
+    SELECT ${id}, ${courseId}, ${section}, CASE WHEN EXISTS (
+      SELECT FROM lms_lessons WHERE course_id = ${courseId} AND slug = ${base}
+    ) THEN ${`${base.slice(0, 50)}-${id.slice(0, 8)}`} ELSE ${base} END,
+      ${title}, ${field(formData, 'content')}, ${video || null}, ${points}, ${positive(field(formData, 'duration_min'))},
+      (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_lessons WHERE course_id = ${courseId})
+    WHERE ${allowed} AND (${section}::text IS NULL OR EXISTS (SELECT FROM lms_sections WHERE id = ${section} AND course_id = ${courseId}))
+    RETURNING id
+  `);
+  if (!created.length) redirect(`${back}&error=seccion`);
   refresh();
+  if (field(formData, 'editor') === '1') redirect(`/dashboard/cursos/${courseId}/lecciones/${id}`);
 }
 
 export async function updateLesson(formData: FormData) {
@@ -193,20 +271,33 @@ export async function updateLesson(formData: FormData) {
   const title = field(formData, 'title');
   if (!id || !courseId || !title) return;
   await requireCourseEditor(courseId);
-  const sql = await crm();
+  const back = `/dashboard/cursos/${courseId}/lecciones/${id}`;
+  const section = await courseSection(courseId, field(formData, 'section_id'), back);
+  const video = field(formData, 'video_url');
+  if (video && !validLessonVideo(video)) redirect(`${back}?error=video`);
+  const mission = String(formData.get('mission') ?? '').trim();
+  if (mission.length > 24000 || parseMission(mission).errors.length) redirect(`${back}?error=mision`);
   const points = positive(field(formData, 'points')) || 10;
-  await sql`
-    UPDATE lms_lessons
+  const saved = await mutateCourse(courseId, back, (tx, allowed) => tx`
+    UPDATE lms_lessons l
     SET title = ${title},
       content = ${field(formData, 'content')},
-      video_url = ${field(formData, 'video_url') || null},
-      section_id = ${field(formData, 'section_id') || null},
+      video_url = ${video || null},
+      section_id = ${section},
       points = ${points},
       duration_min = ${positive(field(formData, 'duration_min'))},
-      mission = ${String(formData.get('mission') ?? '')}
-    WHERE id = ${id} AND course_id = ${courseId}
-  `;
+      mission = ${mission},
+      sort_order = CASE WHEN section_id IS DISTINCT FROM ${section}::text THEN
+        (SELECT COALESCE(max(other.sort_order), 0) + 1 FROM lms_lessons other
+          WHERE other.course_id = l.course_id AND other.section_id IS NOT DISTINCT FROM ${section}::text)
+        ELSE sort_order END
+    WHERE l.id = ${id} AND l.course_id = ${courseId} AND ${allowed}
+      AND (${section}::text IS NULL OR EXISTS (SELECT FROM lms_sections WHERE id = ${section} AND course_id = ${courseId}))
+    RETURNING l.id
+  `);
+  if (!saved.length) redirect(`${back}?error=seccion`);
   refresh();
+  if (field(formData, 'editor') === '1') redirect(`/dashboard/cursos/${courseId}/lecciones/${id}?guardado=1`);
   redirect(`/dashboard/cursos/${courseId}`);
 }
 
@@ -214,32 +305,27 @@ export async function deleteLesson(formData: FormData) {
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   if (!id || !courseId) return;
-  await requireCourseEditor(courseId);
-  const sql = await crm();
-  await sql`DELETE FROM lms_lessons WHERE id = ${id} AND course_id = ${courseId}`;
+  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) =>
+    tx`DELETE FROM lms_lessons WHERE id = ${id} AND course_id = ${courseId} AND ${allowed}`);
   refresh();
-  if (courseId) redirect(`/dashboard/cursos/${courseId}`);
+  redirect(`/dashboard/cursos/${courseId}?vista=temario`);
 }
 
 export async function updateCourseMeta(formData: FormData) {
   await requireDashboard('contenido');
   const id = field(formData, 'id');
   if (!id) return;
-  const sql = await crm();
-  const cover = await storedFile(formData, 'cover', 'cover_url');
-  await sql`
+  await mutateCourse(id, `/dashboard/cursos/${id}?vista=ajustes`, (tx, allowed) => tx`
     UPDATE lms_courses
-    SET cover_url = ${cover},
-      teacher_id = ${field(formData, 'teacher_id') || null},
-      description = ${field(formData, 'description')},
+    SET teacher_id = ${field(formData, 'teacher_id') || null},
       price_cents = ${cents(formData, 'price')},
       plan_level = ${Math.max(0, Math.min(3, Math.round(Number(field(formData, 'plan_level')) || 0)))},
       bump_course_id = ${field(formData, 'bump_course_id') || null},
       bump_cents = ${cents(formData, 'bump_price')},
       upsell_course_id = ${field(formData, 'upsell_course_id') || null},
       upsell_cents = ${cents(formData, 'upsell_price')}
-    WHERE id = ${id}
-  `;
+    WHERE id = ${id} AND ${allowed}
+  `);
   refresh();
 }
 
@@ -247,25 +333,72 @@ export async function createSection(formData: FormData) {
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
   if (!courseId || !title) return;
-  await requireCourseEditor(courseId);
-  const sql = await crm();
-  const orderRows = await sql`SELECT COALESCE(max(sort_order), 0) AS n FROM lms_sections WHERE course_id = ${courseId}`;
-  const next = Number((orderRows[0] as { n?: unknown } | undefined)?.n || 0) + 1;
-  await sql`
+  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) => tx`
     INSERT INTO lms_sections (id, course_id, title, sort_order)
-    VALUES (${crypto.randomUUID()}, ${courseId}, ${title}, ${next})
-  `;
+    SELECT ${crypto.randomUUID()}, ${courseId}, ${title},
+      (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_sections WHERE course_id = ${courseId}) WHERE ${allowed}
+  `);
   refresh();
+}
+
+export async function renameCourseSection(formData: FormData) {
+  const id = field(formData, 'id');
+  const courseId = field(formData, 'course_id');
+  const title = field(formData, 'title');
+  if (!id || !courseId || !title) return;
+  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) =>
+    tx`UPDATE lms_sections SET title = ${title} WHERE id = ${id} AND course_id = ${courseId} AND ${allowed}`);
+  refresh();
+}
+
+async function moveCurriculumItem(formData: FormData, lesson: boolean) {
+  const id = field(formData, 'id');
+  const courseId = field(formData, 'course_id');
+  const direction = field(formData, 'direction');
+  if (!id || !courseId || (direction !== 'up' && direction !== 'down')) return;
+  const delta = direction === 'up' ? -1 : 1;
+  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) => {
+    const table = lesson ? tx`lms_lessons` : tx`lms_sections`;
+    const scope = lesson ? tx`AND section_id IS NOT DISTINCT FROM
+      (SELECT section_id FROM lms_lessons WHERE course_id = ${courseId} AND id = ${id})` : tx``;
+    return tx`
+      WITH ordered AS (
+        SELECT id, sort_order, row_number() OVER (ORDER BY sort_order, title, id) AS position
+        FROM ${table} WHERE course_id = ${courseId} ${scope}
+      ), current_item AS (
+        SELECT position, sort_order FROM ordered WHERE id = ${id}
+      ), destination AS (
+        SELECT ordered.* FROM ordered JOIN current_item ON ordered.position = current_item.position + ${delta}::integer
+      ), positions AS (
+        SELECT ordered.id, ordered.position, current_item.position AS from_pos, destination.position AS to_pos,
+          (SELECT min(sort_order) FROM ordered) AS first_position
+        FROM ordered CROSS JOIN current_item CROSS JOIN destination
+      )
+      UPDATE ${table} item SET sort_order = positions.first_position - 1 + CASE
+        WHEN positions.position = positions.from_pos THEN positions.to_pos
+        WHEN positions.position = positions.to_pos THEN positions.from_pos ELSE positions.position END
+      FROM positions WHERE item.id = positions.id AND ${allowed}
+    `;
+  });
+  refresh();
+}
+
+export async function moveCourseSection(formData: FormData) {
+  await moveCurriculumItem(formData, false);
+}
+
+export async function moveCourseLesson(formData: FormData) {
+  await moveCurriculumItem(formData, true);
 }
 
 export async function deleteSection(formData: FormData) {
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   if (!id || !courseId) return;
-  await requireCourseEditor(courseId);
-  const sql = await crm();
-  const gone = await sql`DELETE FROM lms_sections WHERE id = ${id} AND course_id = ${courseId} RETURNING id`;
-  if (gone.length) await sql`UPDATE lms_lessons SET section_id = NULL WHERE section_id = ${id}`;
+  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) => tx`
+    WITH removed AS (DELETE FROM lms_sections WHERE id = ${id} AND course_id = ${courseId} AND ${allowed} RETURNING id)
+    UPDATE lms_lessons SET section_id = NULL WHERE course_id = ${courseId} AND section_id IN (SELECT id FROM removed)
+  `);
   refresh();
 }
 
@@ -274,18 +407,23 @@ export async function createResource(formData: FormData) {
   const title = field(formData, 'title');
   const kind = field(formData, 'kind') || 'enlace';
   if (!lessonId || !title) return;
-  await requireCourseEditor(await lessonCourse(lessonId));
+  const courseId = await lessonCourse(lessonId);
+  const back = `/dashboard/cursos/${courseId}/lecciones/${lessonId}`;
+  await checkEditableBeforeUpload(courseId, back);
   const allowed = ['video', 'pdf', 'imagen', 'enlace', 'texto'];
-  const sql = await crm();
-  const url = await storedFile(formData, 'file', 'url');
-  await sql`
+  const url = await storedPrivateAsset(formData, 'file', 'url').catch(() => {
+    redirect(`${back}?error=archivo#materiales`);
+  });
+  const content = field(formData, 'content');
+  if (!url && !content) redirect(`${back}?error=recurso#materiales`);
+  await mutateCourse(courseId, back, (tx, editable) => tx`
     INSERT INTO lms_resources (id, lesson_id, kind, title, url, content, sort_order)
-    VALUES (
-      ${crypto.randomUUID()}, ${lessonId}, ${allowed.includes(kind) ? kind : 'enlace'}, ${title},
-      ${url}, ${field(formData, 'content') || null}, 0
-    )
-  `;
+    SELECT ${crypto.randomUUID()}, l.id, ${allowed.includes(kind) ? kind : 'enlace'}, ${title}, ${url}, ${content || null},
+      (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_resources WHERE lesson_id = ${lessonId})
+    FROM lms_lessons l WHERE l.id = ${lessonId} AND l.course_id = ${courseId} AND ${editable}
+  `);
   refresh();
+  redirect(`${back}?guardado=recurso#materiales`);
 }
 
 export async function deleteResource(formData: FormData) {
@@ -293,9 +431,12 @@ export async function deleteResource(formData: FormData) {
   if (!id) return;
   const sql = await crm();
   const owner = await sql`SELECT lesson_id FROM lms_resources WHERE id = ${id}`;
-  await requireCourseEditor(await lessonCourse(String((owner[0] as { lesson_id?: string } | undefined)?.lesson_id || '')));
-  await sql`DELETE FROM lms_resources WHERE id = ${id}`;
+  const lessonId = String(owner[0]?.lesson_id || '');
+  const courseId = await lessonCourse(lessonId);
+  const back = `/dashboard/cursos/${courseId}/lecciones/${lessonId}`;
+  await mutateCourse(courseId, back, (tx, allowed) => tx`DELETE FROM lms_resources WHERE id = ${id} AND lesson_id = ${lessonId} AND ${allowed}`);
   refresh();
+  redirect(`${back}?guardado=recurso#materiales`);
 }
 
 export async function saveChallenge(formData: FormData) {
@@ -343,15 +484,11 @@ export async function enrollPerson(formData: FormData) {
   const personId = field(formData, 'person_id');
   if (!courseId || !personId) return;
   const sql = await crm();
-  const existing = await sql`
-    SELECT id FROM lms_enrollments WHERE course_id = ${courseId} AND person_id = ${personId}
+  await sql`
+    INSERT INTO lms_enrollments (id, course_id, person_id, manual_access)
+    SELECT ${crypto.randomUUID()}, ${courseId}, id, true FROM valux_people WHERE id = ${personId}
+    ON CONFLICT (course_id, person_id) WHERE person_id IS NOT NULL DO UPDATE SET manual_access = true
   `;
-  if (!existing.length) {
-    await sql`
-      INSERT INTO lms_enrollments (id, course_id, person_id)
-      VALUES (${crypto.randomUUID()}, ${courseId}, ${personId})
-    `;
-  }
   refresh();
 }
 
@@ -361,11 +498,29 @@ export async function enrollContact(formData: FormData) {
   const contactId = field(formData, 'contact_id');
   if (!courseId || !contactId) return;
   const sql = await crm();
-  await sql`
-    INSERT INTO lms_enrollments (id, course_id, contact_id)
-    VALUES (${crypto.randomUUID()}, ${courseId}, ${contactId})
-    ON CONFLICT (course_id, contact_id) DO NOTHING
-  `;
+  const [, [result]] = await sql.transaction((tx) => [tx`SELECT id FROM contacts WHERE id = ${contactId} FOR UPDATE`, tx`
+    WITH contact AS (
+      SELECT id, lower(btrim(email)) AS email, COALESCE(NULLIF(btrim(name), ''), lower(btrim(email))) AS name
+      FROM contacts WHERE id = ${contactId} AND lower(btrim(email)) ~ '^[^[:space:]@]+@[^[:space:]@]+$'
+    ), conflict AS (
+      SELECT FROM lms_enrollments e JOIN valux_people p ON p.id = e.person_id CROSS JOIN contact
+      WHERE e.course_id = ${courseId} AND e.contact_id = contact.id AND p.email <> contact.email
+    ), learner AS (
+      INSERT INTO valux_people (id, name, email)
+      SELECT ${crypto.randomUUID()}, name, email FROM contact WHERE NOT EXISTS (SELECT FROM conflict)
+      ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
+      RETURNING id
+    ), enrolled AS (
+    INSERT INTO lms_enrollments (id, course_id, person_id, contact_id, manual_access)
+    SELECT ${crypto.randomUUID()}, ${courseId}, learner.id, contact.id, true FROM learner CROSS JOIN contact
+    ON CONFLICT (course_id, person_id) WHERE person_id IS NOT NULL DO UPDATE SET
+      manual_access = true, contact_id = COALESCE(lms_enrollments.contact_id, EXCLUDED.contact_id)
+    RETURNING id
+    )
+    SELECT EXISTS (SELECT FROM enrolled) AS enrolled, EXISTS (SELECT FROM conflict) AS conflict
+  `]);
+  if (result.conflict) redirect(`/dashboard/cursos/${courseId}?error=identidad-contacto`);
+  if (!result.enrolled) redirect(`/dashboard/cursos/${courseId}?error=correo-contacto`);
   refresh();
 }
 
@@ -374,7 +529,20 @@ export async function removeEnrollment(formData: FormData) {
   const id = field(formData, 'id');
   if (!id) return;
   const sql = await crm();
-  await sql`DELETE FROM lms_enrollments WHERE id = ${id}`;
+  // Quitar una matrícula manual no revoca un curso con una venta vigente.
+  await sql.transaction((tx) => [tx`
+    SELECT pg_advisory_xact_lock(hashtextextended('academia:curso:' || course_id || ':' || person_id, 0))
+    FROM lms_enrollments WHERE id = ${id} AND person_id IS NOT NULL
+  `, tx`
+    WITH retained AS (
+      UPDATE lms_enrollments e SET manual_access = false, contact_id = NULL
+      WHERE e.id = ${id} AND EXISTS (
+        SELECT FROM valux_sales s WHERE s.buyer_id = e.person_id AND s.course_id = e.course_id AND s.refunded_at IS NULL
+      )
+      RETURNING e.id
+    )
+    DELETE FROM lms_enrollments WHERE id = ${id} AND NOT EXISTS (SELECT FROM retained)
+  `]);
   refresh();
 }
 
@@ -393,13 +561,22 @@ export async function saveFinalGrade(formData: FormData) {
 
 export async function saveLessonScore(formData: FormData) {
   const contactId = field(formData, 'contact_id');
-  const personId = field(formData, 'person_id');
+  const submittedPersonId = field(formData, 'person_id');
   const lessonId = field(formData, 'lesson_id');
-  if (!lessonId || (!contactId && !personId)) return;
-  await requireCourseEditor(await lessonCourse(lessonId));
+  if (!lessonId || (!contactId && !submittedPersonId)) return;
+  const courseId = await lessonCourse(lessonId);
+  await requireCourseEditor(courseId);
   const score = grade(field(formData, 'score'));
   const when = score == null ? null : new Date().toISOString();
   const sql = await crm();
+  const [enrollment] = await sql`
+    SELECT e.person_id FROM lms_enrollments e JOIN lms_lessons l ON l.course_id = e.course_id
+    WHERE e.course_id = ${courseId} AND l.id = ${lessonId} AND btrim(l.mission) = ''
+      AND ((${submittedPersonId} <> '' AND e.person_id = ${submittedPersonId})
+        OR (${submittedPersonId} = '' AND e.contact_id = ${contactId}))
+  `;
+  if (!enrollment) return;
+  const personId = enrollment.person_id ? String(enrollment.person_id) : '';
   if (personId) {
     await sql`
       INSERT INTO lms_progress (id, person_id, lesson_id, score, graded_at, completed_at)

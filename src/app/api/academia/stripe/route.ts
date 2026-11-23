@@ -38,22 +38,29 @@ export async function POST(request: Request) {
     switch (event.type) {
       case 'checkout.session.completed':
       case 'checkout.session.async_payment_succeeded':
-        await fulfillStripeSession(ref(item.id));
+        await fulfillStripeSession(ref(item.id), event.type);
         break;
       case 'invoice.paid': {
-        if (String(item.currency).toUpperCase() !== CURRENCY) throw new Error('Moneda de factura incorrecta');
-        const parent = item.parent as { subscription_details?: { subscription?: unknown } } | undefined;
+        type SubscriptionDetails = { subscription?: unknown; metadata?: Record<string, string> };
+        const parent = item.parent as { subscription_details?: SubscriptionDetails } | undefined;
         const subscriptionId = ref(item.subscription) || ref(parent?.subscription_details?.subscription);
+        if (!subscriptionId) break;
+        const metadata = parent?.subscription_details?.metadata ?? (item.subscription_details as SubscriptionDetails | undefined)?.metadata;
+        const owned = metadata?.kind === 'suscripcion' && Boolean(metadata.buyer_email);
+        if (!owned) {
+          const [known] = await sql`SELECT 1 FROM valux_subscriptions WHERE gateway_id = ${subscriptionId}`;
+          if (!known) break;
+        }
+        if (String(item.currency).toUpperCase() !== CURRENCY) throw new Error('Moneda de factura incorrecta');
         const lines = item.lines as { data?: { period?: { end?: number } }[] } | undefined;
         const end = Number(lines?.data?.[0]?.period?.end) || 0;
-        if (subscriptionId) {
-          await recordSubscriptionPayment({
-            gatewayId: subscriptionId,
-            paymentId: ref(item.id),
-            amountCents: Number(item.amount_paid) || 0,
-            periodEnd: end ? new Date(end * 1000) : null,
-          });
-        }
+        const recorded = await recordSubscriptionPayment({
+          gatewayId: subscriptionId,
+          paymentId: ref(item.id),
+          amountCents: Number(item.amount_paid) || 0,
+          periodEnd: end ? new Date(end * 1000) : null,
+        });
+        if (!recorded) throw new Error('La factura llegó antes que el alta de la suscripción');
         break;
       }
       case 'customer.subscription.updated':

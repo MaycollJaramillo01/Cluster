@@ -22,6 +22,7 @@ async function main() {
 
   // Misiones (puro).
   const quiz = parseMission('¿Uno?\n- a\n* b\n\n¿Dos?\n* c\n- d');
+  if (quiz.mission?.kind !== 'quiz') throw new Error('No se pudo preparar el quiz de prueba');
   check('quiz se lee', quiz.mission?.kind === 'quiz' && quiz.mission.questions.length === 2);
   const answers: Record<string, string> = { q0: '1', q1: '0' };
   check('quiz correcto aprueba', gradeMission(quiz.mission!, (key) => answers[key] || '').passed);
@@ -29,6 +30,7 @@ async function main() {
   check('el alumno no recibe la respuesta', !JSON.stringify(publicMission(quiz.mission!)).includes('answer'));
   check('pregunta sin correcta da error', parseMission('¿X?\n- a\n- b').errors.length === 1);
   const list = parseMission('[ ] uno\n[ ] dos');
+  if (list.mission?.kind !== 'checklist') throw new Error('No se pudo preparar la checklist de prueba');
   check('checklist incompleta no aprueba', !gradeMission(list.mission!, (key) => (key === 'item0' ? '1' : '')).passed);
   check('checklist completa aprueba', gradeMission(list.mission!, () => '1').passed);
 

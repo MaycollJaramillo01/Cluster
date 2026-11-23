@@ -8,13 +8,15 @@ import { Empty, Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/
 const FILTERS = [
   { status: 'pendiente', label: 'Pendientes' },
   { status: 'vencida', label: 'Vencidas' },
+  { status: 'aprobando', label: 'Por entregar' },
   { status: 'aprobada', label: 'Aprobadas' },
+  { status: 'reembolsada', label: 'Reembolsadas' },
   { status: 'rechazada', label: 'Rechazadas' },
 ];
 
 const ERRORS: Record<string, string> = {
   banco: 'Anotá el número de operación del banco antes de aprobar.',
-  acceso: 'No se pudo dar el acceso. La transferencia volvió a pendiente.',
+  acceso: 'El depósito quedó confirmado. El sistema volverá a intentar la entrega. También puedes reintentar aquí.',
 };
 
 export default async function TransferenciasPage({
@@ -43,7 +45,7 @@ export default async function TransferenciasPage({
           </Link>
         ))}
       </nav>
-      {query.ok ? <p className="text-sm text-brand">Transferencia aprobada y acceso enviado.</p> : null}
+      {query.ok ? <p role="status" className="text-sm text-brand">Transferencia aprobada. Se habilitó el acceso.</p> : null}
       {query.error && ERRORS[query.error] ? <p className="text-sm">{ERRORS[query.error]}</p> : null}
 
       {transfers.length === 0 ? (
@@ -72,7 +74,12 @@ export default async function TransferenciasPage({
                   <span className="text-xs text-black/40">Sin comprobante</span>
                 )}
               </div>
-              {['pendiente', 'vencida'].includes(item.status) ? (
+              {item.status === 'aprobando' ? (
+                <form action={approveTransfer}>
+                  <input type="hidden" name="id" value={item.id} />
+                  <button className={btn} type="submit">Reintentar entrega</button>
+                </form>
+              ) : ['pendiente', 'vencida'].includes(item.status) ? (
                 <div className="flex flex-wrap items-end gap-3">
                   <form action={approveTransfer} className="flex flex-wrap items-end gap-2">
                     <input type="hidden" name="id" value={item.id} />

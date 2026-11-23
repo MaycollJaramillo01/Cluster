@@ -389,6 +389,7 @@ export async function publishedCourse(slug: string) {
   const rows = await sql`
     SELECT c.id, c.slug, c.title, c.description, c.price_cents, c.cover_url, c.teacher_id, c.published, v.name AS teacher_name,
       (SELECT count(*) FROM lms_enrollments e WHERE e.course_id = c.id) AS students,
+      c.learning_outcomes, c.audience, c.prerequisites, c.plan_level,
       c.bump_cents, b.id AS bump_id, b.title AS bump_title,
       c.upsell_cents, u.id AS upsell_id, u.slug AS upsell_slug, u.title AS upsell_title
     FROM lms_courses c
@@ -401,11 +402,11 @@ export async function publishedCourse(slug: string) {
   if (!entry || !bool(entry.published)) return null;
   const courseId = text(entry.id);
   const sections = await sql`
-    SELECT id, title, sort_order FROM lms_sections WHERE course_id = ${courseId} ORDER BY sort_order, title
+    SELECT id, title, sort_order FROM lms_sections WHERE course_id = ${courseId} ORDER BY sort_order, title, id
   `;
   const lessons = await sql`
     SELECT id, slug, title, section_id, duration_min, sort_order
-    FROM lms_lessons WHERE course_id = ${courseId} ORDER BY sort_order, title
+    FROM lms_lessons WHERE course_id = ${courseId} ORDER BY sort_order, title, id
   `;
   return {
     id: courseId,
@@ -417,6 +418,10 @@ export async function publishedCourse(slug: string) {
     teacher_id: text(entry.teacher_id),
     teacher_name: text(entry.teacher_name),
     students: num(entry.students),
+    learning_outcomes: text(entry.learning_outcomes).split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    audience: text(entry.audience),
+    prerequisites: text(entry.prerequisites),
+    plan_level: num(entry.plan_level),
     // Solo se ofrecen si el curso destino está publicado y tiene precio de oferta.
     bump: text(entry.bump_id) && num(entry.bump_cents) > 0
       ? { id: text(entry.bump_id), title: text(entry.bump_title), cents: num(entry.bump_cents) }
@@ -518,16 +523,19 @@ export async function ownsCourse(personId: string, courseId: string) {
 }
 
 // Lo comprado queda para siempre; la membresía solo abre los cursos de su nivel mientras esté vigente.
-export async function canReadCourse(personId: string, course: { id: string; price_cents: number; teacher_id: string }) {
+export async function canReadCourse(personId: string, course: { id: string; price_cents: number; teacher_id: string; plan_level?: number }) {
   if (course.price_cents <= 0) return true;
   const person = await getPerson(personId);
   if (!person || !person.is_active) return false;
   if (person.role === 'junta') return true;
   if (person.role === 'profesor' && person.id === course.teacher_id) return true;
   if (await ownsCourse(person.id, course.id)) return true;
-  const sql = await crm();
-  const rows = await sql`SELECT plan_level FROM lms_courses WHERE id = ${course.id}`;
-  const needed = num((rows[0] as { plan_level?: unknown } | undefined)?.plan_level);
+  let needed = course.plan_level;
+  if (needed === undefined) {
+    const sql = await crm();
+    const [record] = await sql`SELECT plan_level FROM lms_courses WHERE id = ${course.id}`;
+    needed = num(record?.plan_level);
+  }
   return needed > 0 && (await planLevel(person.id, person.role)) >= needed;
 }
 
@@ -573,20 +581,31 @@ export async function getPlan(id: string) {
 
 export async function myCourses(personId: string) {
   if (!personId) return [];
+  const person = await getPerson(personId);
+  if (!person) return [];
+  const level = person.is_active ? await planLevel(personId, person.role) : 0;
   const sql = await crm();
   const rows = await sql`
-    SELECT c.slug, c.title, c.cover_url, v.name AS teacher_name,
-      (SELECT count(*) FROM lms_lessons l WHERE l.course_id = c.id) AS lessons,
-      (
-        SELECT count(*) FROM lms_progress p
-        JOIN lms_lessons l ON l.id = p.lesson_id
-        WHERE l.course_id = c.id AND p.person_id = ${personId} AND p.completed_at IS NOT NULL
-      ) AS done
-    FROM lms_enrollments e
-    JOIN lms_courses c ON c.id = e.course_id
+    SELECT c.slug, c.title, c.cover_url, c.published, c.price_cents, e.id IS NOT NULL AS enrolled, v.name AS teacher_name,
+      study.lessons, study.done, study.activity, study.next_slug, study.next_title
+    FROM lms_courses c
+    LEFT JOIN lms_enrollments e ON e.course_id = c.id AND e.person_id = ${personId}
     LEFT JOIN valux_people v ON v.id = c.teacher_id
-    WHERE e.person_id = ${personId}
-    ORDER BY e.created_at DESC
+    CROSS JOIN LATERAL (
+      SELECT count(*) AS lessons, count(p.completed_at) AS done,
+        max(GREATEST(p.completed_at, started.created_at)) AS activity,
+        (array_agg(l.slug ORDER BY s.sort_order NULLS LAST, s.title, s.id, l.sort_order, l.title, l.id)
+          FILTER (WHERE p.completed_at IS NULL))[1] AS next_slug,
+        (array_agg(l.title ORDER BY s.sort_order NULLS LAST, s.title, s.id, l.sort_order, l.title, l.id)
+          FILTER (WHERE p.completed_at IS NULL))[1] AS next_title
+      FROM lms_lessons l
+      LEFT JOIN lms_sections s ON s.id = l.section_id AND s.course_id = c.id
+      LEFT JOIN lms_progress p ON p.lesson_id = l.id AND p.person_id = ${personId}
+      LEFT JOIN academia_events started ON started.id = 'lesson_started:' || ${personId} || ':' || l.id
+      WHERE l.course_id = c.id
+    ) study
+    WHERE e.id IS NOT NULL OR (c.published AND c.price_cents > 0 AND c.plan_level BETWEEN 1 AND ${level})
+    ORDER BY study.activity DESC NULLS LAST, e.created_at DESC NULLS LAST, c.created_at DESC, c.id
   `;
   return rows.map((row) => {
     const entry = row as Record<string, unknown>;
@@ -595,8 +614,13 @@ export async function myCourses(personId: string) {
       title: text(entry.title),
       cover_url: text(entry.cover_url),
       teacher_name: text(entry.teacher_name),
+      enrolled: bool(entry.enrolled),
+      available: bool(entry.published) && (num(entry.price_cents) <= 0 || person.is_active),
+      availability: !bool(entry.published) ? 'Curso no disponible' : !person.is_active && num(entry.price_cents) > 0 ? 'Acceso suspendido' : '',
       lessons: num(entry.lessons),
       done: num(entry.done),
+      started: Boolean(entry.activity),
+      nextLesson: entry.next_slug ? { slug: text(entry.next_slug), title: text(entry.next_title) } : null,
     };
   });
 }
@@ -656,11 +680,12 @@ export async function lessonAccess<L extends { id: string; section_id: string }>
   course: { id: string; teacher_id: string; sections: { id: string }[]; lessons: L[] },
 ) {
   const order = lessonOrder(course.sections, course.lessons);
-  const done = new Set(personId ? await completedLessonIds(personId, course.id) : []);
-  const person = personId ? await getPerson(personId) : null;
-  const free = person?.role === 'junta' || (person?.role === 'profesor' && person.id === course.teacher_id);
-  const unlocked = new Set(order.filter((lesson, index) => free || index === 0 || done.has(order[index - 1].id)).map((lesson) => lesson.id));
-  return { order, done, unlocked };
+  const [ids, person] = await Promise.all([completedLessonIds(personId, course.id), getPerson(personId)]);
+  const done = new Set(ids);
+  const free = person?.is_active && (person.role === 'junta' || (person.role === 'profesor' && person.id === course.teacher_id));
+  const pending = order.find((lesson) => !done.has(lesson.id));
+  const unlocked = new Set(order.filter((lesson, index) => free || done.has(lesson.id) || index === 0 || done.has(order[index - 1].id)).map((lesson) => lesson.id));
+  return { order, done, unlocked, pending, person };
 }
 
 export async function personXp(personId: string) {

@@ -18,6 +18,11 @@ export type LmsCourseRow = {
   upsell_course_id: string | null;
   upsell_cents: number;
   review_requested_at: string | null;
+  review_feedback: string;
+  learning_outcomes: string;
+  audience: string;
+  prerequisites: string;
+  authoring_version: number;
 };
 
 export type LmsSection = {
@@ -49,6 +54,7 @@ export type LmsLesson = {
   section_id: string | null;
   sort_order: number;
   mission: string;
+  resources_count: number;
 };
 
 export type LmsEnrollment = {
@@ -103,6 +109,11 @@ function mapCourse(row: Record<string, unknown>): LmsCourseRow {
     upsell_course_id: row.upsell_course_id ? text(row.upsell_course_id) : null,
     upsell_cents: num(row.upsell_cents),
     review_requested_at: row.review_requested_at ? text(row.review_requested_at) : null,
+    review_feedback: text(row.review_feedback),
+    learning_outcomes: text(row.learning_outcomes),
+    audience: text(row.audience),
+    prerequisites: text(row.prerequisites),
+    authoring_version: num(row.authoring_version),
   };
 }
 
@@ -116,6 +127,18 @@ export async function listCourses() {
     ORDER BY c.created_at DESC
   `;
   return rows.map((row) => mapCourse(row as Record<string, unknown>));
+}
+
+export async function listCourseReviewRequests() {
+  const sql = await crm();
+  const rows = await sql`
+    SELECT c.id, c.title, c.review_requested_at, COALESCE(v.name, '') AS teacher_name,
+      (SELECT count(*) FROM lms_lessons l WHERE l.course_id = c.id) AS lessons
+    FROM lms_courses c LEFT JOIN valux_people v ON v.id = c.teacher_id
+    WHERE c.review_requested_at IS NOT NULL AND NOT c.published
+    ORDER BY c.review_requested_at, c.id
+  `;
+  return rows.map((row) => ({ id: text(row.id), title: text(row.title), teacher: text(row.teacher_name), requestedAt: text(row.review_requested_at), lessons: num(row.lessons) }));
 }
 
 export async function getCourse(id: string) {
@@ -137,10 +160,11 @@ export async function getCourse(id: string) {
     ORDER BY sort_order, title
   `;
   const lessons = await sql`
-    SELECT id, course_id, slug, title, content, video_url, points, duration_min, section_id, sort_order
-    FROM lms_lessons
-    WHERE course_id = ${id}
-    ORDER BY sort_order, title
+    SELECT l.*, (SELECT count(*) FROM lms_resources r WHERE r.lesson_id = l.id
+      AND (btrim(COALESCE(r.url, '')) <> '' OR btrim(COALESCE(r.content, '')) <> '')) AS resources_count
+    FROM lms_lessons l
+    WHERE l.course_id = ${id}
+    ORDER BY l.sort_order, l.title, l.id
   `;
   const enrollments = await sql`
     SELECT e.id, e.course_id, e.contact_id, e.person_id,
@@ -207,7 +231,7 @@ export async function getLesson(courseId: string, lessonId: string) {
     ORDER BY sort_order, title
   `;
   return {
-    ...mapLesson(entry),
+    ...mapLesson({ ...entry, resources_count: resources.length }),
     resources: resources.map((row) => mapResource(row as Record<string, unknown>)),
   };
 }
@@ -234,6 +258,7 @@ function mapLesson(entry: Record<string, unknown>): LmsLesson {
     section_id: entry.section_id == null ? null : text(entry.section_id),
     sort_order: num(entry.sort_order),
     mission: text(entry.mission),
+    resources_count: num(entry.resources_count),
   };
 }
 

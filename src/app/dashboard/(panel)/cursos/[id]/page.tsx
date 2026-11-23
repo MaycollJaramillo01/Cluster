@@ -1,37 +1,47 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
+import { Heading } from '@astryxdesign/core/Heading';
 import {
-  createLesson,
-  createSection,
   deleteCourse,
-  deleteSection,
   enrollContact,
   enrollPerson,
   removeEnrollment,
-  requestReview,
   saveFinalGrade,
   saveLessonScore,
-  setCoursePublication,
   updateCourseMeta,
 } from '@/lib/crm/lms-actions';
 import { getCourse, listCourses } from '@/lib/crm/lms';
-import { academyMoney as money } from '@/lib/valux/money';
+import { courseReviewIssues } from '@/lib/crm/course-review';
 import { listContacts } from '@/lib/crm/queries';
 import { listPeople, listPlans } from '@/lib/valux/data';
 import { requireCourseEditor } from '@/lib/crm/course-access';
-import { formatDate } from '@/lib/crm/format';
-import { Field, PageTitle, btn, btnGhost, btnTiny, fieldClass } from '@/components/dashboard/ui';
+import { parseMission } from '@/lib/valux/mission';
+import { Field, btn, btnGhost, btnTiny, fieldClass } from '@/components/dashboard/ui';
 import { SubmitButton } from '@/components/ui/SubmitButton';
+import { TeacherCourseBuilder, type CourseWorkspaceView } from '@/components/dashboard/TeacherCourseBuilder';
 
-export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
+function workspaceView(vista: string | undefined, teacher: boolean, error?: string): CourseWorkspaceView {
+  if (error === 'correo-contacto' || error === 'identidad-contacto') return 'alumnos';
+  if (vista === 'temario' || vista === 'revision' || vista === 'alumnos') return vista;
+  if (vista === 'ajustes' && !teacher) return vista;
+  return 'ficha';
+}
+
+export default async function CoursePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ vista?: string; error?: string; guardado?: string }> }) {
   const { id } = await params;
+  const status = await searchParams;
   const { session, teacher } = await requireCourseEditor(id);
+  const view = workspaceView(status.vista, teacher, status.error);
+  const roster = view === 'alumnos' && !teacher;
+  const settings = view === 'ajustes';
   const [detail, contacts, people, courses, plans] = await Promise.all([
     getCourse(id),
-    teacher ? Promise.resolve([]) : listContacts({}),
-    teacher ? Promise.resolve([]) : listPeople(),
-    teacher ? Promise.resolve([]) : listCourses(),
-    teacher ? Promise.resolve([]) : listPlans(),
+    roster ? listContacts({}) : [],
+    roster || settings ? listPeople() : [],
+    settings ? listCourses() : [],
+    settings ? listPlans() : [],
   ]);
   if (!detail) notFound();
   const others = courses.filter((item) => item.id !== id);
@@ -40,53 +50,14 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
   const enrolledPeople = new Set(enrollments.map((item) => item.person_id).filter(Boolean));
   const available = contacts.filter((contact) => !enrolledContacts.has(contact.id));
   const availablePeople = people.filter((person) => !enrolledPeople.has(person.id));
-  const loose = lessons.filter((lesson) => !lesson.section_id);
 
   return (
-    <div className="space-y-8">
-      <PageTitle
-        title={course.title}
-        action={
-          <span className="flex gap-3">
-            {course.published ? <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href={`/academia/${course.slug}`}>Ver en el catálogo</Link> : null}
-            <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href={teacher ? '/dashboard/profesor' : '/dashboard/cursos'}>Volver</Link>
-          </span>
-        }
-      />
-      <div className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white p-4">
-        <p className="text-sm text-black/60">
-          {course.published ? 'Publicado' : course.review_requested_at ? 'Revisión pendiente' : 'Borrador'} · {lessons.length} {lessons.length === 1 ? 'lección' : 'lecciones'} · {enrollments.length} {enrollments.length === 1 ? 'alumno' : 'alumnos'} · {money(course.price_cents)}
-          {course.review_requested_at ? ` · revisión pedida el ${formatDate(course.review_requested_at)}` : ''}
-        </p>
-        {teacher ? (
-          <form action={requestReview}>
-            <input type="hidden" name="course_id" value={course.id} />
-            <button className={btnGhost} type="submit">{course.review_requested_at ? 'Volver a pedir revisión' : 'Pedir revisión para publicar'}</button>
-          </form>
-        ) : (
-        <div className="flex gap-2">
-          {session.role === 'superadmin' ? (
-            <form action={setCoursePublication}>
-              <input type="hidden" name="id" value={course.id} />
-              <input type="hidden" name="publication" value={course.published ? 'draft' : 'publish'} />
-              {course.published ? <button className={btnGhost} type="submit">Pasar a borrador</button> : <SubmitButton pending="Publicando…">Aprobar y publicar</SubmitButton>}
-            </form>
-          ) : null}
-          <form action={deleteCourse}>
-            <input type="hidden" name="id" value={course.id} />
-            <button className={btnTiny} type="submit">Eliminar curso</button>
-          </form>
-        </div>
-        )}
-      </div>
-
-      {teacher ? null : (
+    <TeacherCourseBuilder course={course} sections={sections} lessons={lessons} status={status} role={session.role} view={view} issues={view === 'revision' ? courseReviewIssues(detail) : []}>
+      {settings ? <VStack as="section" gap={4}>
+      <Heading level={2} className="font-brand text-xl font-semibold">Configuración comercial</Heading>
       <form action={updateCourseMeta} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <input type="hidden" name="id" value={course.id} />
-        <Field label="Descripción"><textarea className={fieldClass} name="description" rows={3} defaultValue={course.description} /></Field>
         <Field label="Precio (L)"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue={(course.price_cents / 100).toFixed(2)} /></Field>
-        <Field label="Portada"><input className={fieldClass} name="cover_url" defaultValue={course.cover_url || ''} placeholder="https://" /></Field>
-        <Field label="O sube la portada"><input className={fieldClass} name="cover" type="file" accept="image/*" /></Field>
         <Field label="Profesor">
           <select className={fieldClass} name="teacher_id" defaultValue={course.teacher_id || ''}>
             <option value="">Sin profesor</option>
@@ -99,7 +70,8 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             {plans.map((plan) => <option key={plan.id} value={plan.level}>Desde {plan.name}</option>)}
           </select>
         </Field>
-        <div />
+        <fieldset className="contents">
+          <legend className="sr-only">Ofertas del curso</legend>
         <Field label="Order bump: curso ofrecido en el checkout">
           <select className={fieldClass} name="bump_course_id" defaultValue={detail.course.bump_course_id || ''}>
             <option value="">Sin bump</option>
@@ -118,60 +90,28 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
         <Field label="Precio del upsell (L)">
           <input className={fieldClass} name="upsell_price" type="number" min="0" step="0.01" defaultValue={(detail.course.upsell_cents / 100).toFixed(2)} />
         </Field>
-        <button className={btn} type="submit">Guardar ficha</button>
+        </fieldset>
+        <SubmitButton pending="Guardando configuración…" className="justify-self-start">Guardar configuración</SubmitButton>
       </form>
-      )}
-
-      <section className="space-y-4">
-        <h2 className="font-display text-3xl tracking-wide">Secciones</h2>
-        {sections.map((section) => (
-          <div key={section.id} className="flex items-center justify-between border border-black/10 bg-white px-4 py-3">
-            <p className="text-sm">{section.title}</p>
-            <form action={deleteSection}>
-              <input type="hidden" name="id" value={section.id} />
-              <input type="hidden" name="course_id" value={course.id} />
-              <button className={btnTiny} type="submit">Quitar</button>
-            </form>
-          </div>
-        ))}
-        <form action={createSection} className="flex flex-wrap items-end gap-2 border border-black/10 bg-white p-4">
-          <input type="hidden" name="course_id" value={course.id} />
-          <Field label="Nueva sección"><input className={fieldClass} name="title" required /></Field>
-          <button className={btn} type="submit">Agregar</button>
+      <details className="border border-black/10 bg-white p-4">
+        <summary className="min-h-11 cursor-pointer py-3 text-sm font-semibold">Eliminar curso</summary>
+        <form action={deleteCourse} className="space-y-3">
+          <input type="hidden" name="id" value={course.id} />
+          <p className="text-sm text-black/75">Se eliminarán el temario, las matrículas y el progreso del curso.</p>
+          <button className={`${btnGhost} text-red-800`} type="submit">Eliminar definitivamente</button>
         </form>
-      </section>
+      </details>
+      </VStack> : null}
 
-      <section className="space-y-4">
-        <h2 className="font-display text-3xl tracking-wide">Temario</h2>
-        {sections.map((section) => (
-          <div key={section.id} className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-black/40">{section.title}</p>
-            <LessonList courseId={course.id} lessons={lessons.filter((lesson) => lesson.section_id === section.id)} />
-          </div>
-        ))}
-        {loose.length > 0 ? <LessonList courseId={course.id} lessons={loose} /> : null}
-        {lessons.length === 0 ? <p className="text-sm text-black/50">Todavía no hay lecciones.</p> : null}
-        <form action={createLesson} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
-          <input type="hidden" name="course_id" value={course.id} />
-          <Field label="Nueva lección"><input className={fieldClass} name="title" required /></Field>
-          <Field label="Sección">
-            <select className={fieldClass} name="section_id" defaultValue="">
-              <option value="">Sin sección</option>
-              {sections.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}
-            </select>
-          </Field>
-          <Field label="Video"><input className={fieldClass} name="video_url" placeholder="https://" /></Field>
-          <Field label="Minutos"><input className={fieldClass} name="duration_min" type="number" min="1" /></Field>
-          <Field label="Puntos"><input className={fieldClass} name="points" type="number" min="1" defaultValue="10" /></Field>
-          <Field label="Contenido"><textarea className={fieldClass} name="content" rows={3} /></Field>
-          <div className="flex items-end"><button className={btn} type="submit">Agregar</button></div>
-        </form>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="font-display text-3xl tracking-wide">Alumnos</h2>
+      {view === 'alumnos' ? <VStack as="section" gap={4}>
+        <HStack gap={3} justify="between" align="center" wrap="wrap">
+          <Heading level={2} className="font-brand text-xl font-semibold">Alumnos</Heading>
+          <Link className={`${btnGhost} min-h-11`} href={`/dashboard/cursos/${id}/entregas`}>Entregas de tareas</Link>
+        </HStack>
+        {status.error === 'correo-contacto' ? <p role="alert" className="text-sm text-red-800">El contacto necesita un correo válido para entrar a la Academia.</p> : null}
+        {status.error === 'identidad-contacto' ? <p role="alert" className="text-sm text-red-800">El contacto ya está vinculado a otra cuenta en este curso. Verifica el correo antes de matricularlo.</p> : null}
         {teacher ? null : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <section className="grid gap-3 md:grid-cols-2" aria-label="Matricular alumnos">
           <form action={enrollContact} className="flex flex-wrap items-end gap-2 border border-black/10 bg-white p-4">
             <input type="hidden" name="course_id" value={course.id} />
             <Field label="Inscribir contacto">
@@ -196,7 +136,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             </Field>
             <button className={btn} type="submit" disabled={availablePeople.length === 0}>Inscribir</button>
           </form>
-        </div>
+        </section>
         )}
         {enrollments.length === 0 ? <p className="text-sm text-black/50">Nadie está inscrito.</p> : enrollments.map((enrollment) => {
           const mine = progress.filter((item) =>
@@ -207,25 +147,34 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
           const pct = lessons.length ? Math.round((done / lessons.length) * 100) : 0;
           return (
             <article key={enrollment.id} className="space-y-4 border border-black/10 bg-white p-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <div>
+              <HStack gap={3} justify="between" wrap="wrap">
+                <VStack gap={1} className="min-w-0 break-words">
                   <p className="font-medium">{enrollment.contact_name}</p>
                   {teacher ? null : <p className="text-xs text-black/45">{enrollment.email}</p>}
-                </div>
+                </VStack>
                 <p className="font-mono text-xs text-black/50">Progreso {pct}%{enrollment.final_grade != null ? ` · ${enrollment.final_grade}/100` : ''}</p>
-              </div>
-              <div className="h-1 bg-black/10"><span className="block h-1 bg-brand" style={{ width: `${pct}%` }} /></div>
+              </HStack>
+              <progress className="block h-2 w-full accent-brand" aria-label={`Progreso de ${enrollment.contact_name}`} max={100} value={pct} />
               {lessons.map((lesson) => {
                 const mark = mine.find((item) => item.lesson_id === lesson.id);
+                const completion = mark?.completed_at ? 'Completada' : 'Pendiente';
+                if (lesson.mission.trim()) {
+                  const assignment = parseMission(lesson.mission).mission?.kind === 'assignment';
+                  return <HStack key={lesson.id} wrap="wrap" justify="between" align="center" gap={2} className="border-b border-black/10 py-2">
+                    <p className="min-w-0 break-words text-sm">{lesson.title}</p>
+                    <p className="text-xs text-black/65">{completion}</p>
+                    {assignment ? <Link className="inline-flex min-h-11 items-center text-sm underline underline-offset-4" href={`/dashboard/cursos/${id}/entregas?leccion=${encodeURIComponent(lesson.id)}`}>Revisar entregas</Link> : null}
+                  </HStack>;
+                }
                 return (
                   <form key={lesson.id} action={saveLessonScore} className="flex flex-wrap items-center gap-2">
                     <input type="hidden" name="contact_id" value={enrollment.contact_id} />
                     <input type="hidden" name="person_id" value={enrollment.person_id || ''} />
                     <input type="hidden" name="lesson_id" value={lesson.id} />
-                    <span className="min-w-40 flex-1 text-sm">{lesson.title}</span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-black/40">{mark?.completed_at ? 'Completada' : 'Pendiente'}</span>
-                    <input className={`${fieldClass} w-20`} name="score" type="number" min="0" max="100" defaultValue={mark?.score ?? ''} placeholder="Nota" />
-                    <button className={btnTiny} type="submit">Guardar</button>
+                    <p className="min-w-32 flex-1 break-words text-sm">{lesson.title}</p>
+                    <p className="text-xs text-black/65">{completion}</p>
+                    <input className={`${fieldClass} min-h-11 max-w-24`} name="score" aria-label={`Nota de ${lesson.title}`} type="number" min="0" max="100" defaultValue={mark?.score ?? ''} placeholder="Nota" />
+                    <button className={`${btnTiny} min-h-11`} type="submit">Guardar</button>
                   </form>
                 );
               })}
@@ -235,7 +184,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
                 <input type="hidden" name="id" value={enrollment.id} />
                 <Field label="Nota final"><input className={fieldClass} name="final_grade" type="number" min="0" max="100" defaultValue={enrollment.final_grade ?? ''} /></Field>
                 <Field label="Notas"><input className={fieldClass} name="notes" defaultValue={enrollment.notes || ''} /></Field>
-                <div className="flex items-end"><button className={btnGhost} type="submit">Guardar</button></div>
+                <button className={`${btnGhost} self-end`} type="submit">Guardar</button>
               </form>
               <form action={removeEnrollment}>
                 <input type="hidden" name="id" value={enrollment.id} />
@@ -246,25 +195,7 @@ export default async function CoursePage({ params }: { params: Promise<{ id: str
             </article>
           );
         })}
-      </section>
-    </div>
-  );
-}
-
-function LessonList({ courseId, lessons }: { courseId: string; lessons: { id: string; title: string; duration_min: number | null }[] }) {
-  if (lessons.length === 0) return null;
-  return (
-    <ol className="space-y-2">
-      {lessons.map((lesson, index) => (
-        <li key={lesson.id} className="flex items-center justify-between gap-3 border border-black/10 bg-white px-4 py-3">
-          <p className="text-sm">
-            <span className="mr-2 font-mono text-[10px] uppercase tracking-[0.14em] text-brand">{index + 1}</span>
-            {lesson.title}
-            {lesson.duration_min ? <span className="ml-2 text-xs text-black/40">{lesson.duration_min} min</span> : null}
-          </p>
-          <Link className={btnTiny} href={`/dashboard/cursos/${courseId}/lecciones/${lesson.id}`}>Editar</Link>
-        </li>
-      ))}
-    </ol>
+      </VStack> : null}
+    </TeacherCourseBuilder>
   );
 }

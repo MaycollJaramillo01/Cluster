@@ -1,6 +1,7 @@
 import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 import { connection } from 'next/server';
 import { migrateAcademiaCurrency } from '@/lib/valux/currency-migration';
+import { migrateCrmEnrollments } from './lms-enrollment';
 
 export type Sql = NeonQueryFunction<false, false>;
 
@@ -425,6 +426,7 @@ const STATEMENTS = [
   `ALTER TABLE lms_lessons ADD COLUMN IF NOT EXISTS section_id TEXT`,
   `ALTER TABLE lms_lessons ADD COLUMN IF NOT EXISTS duration_min INTEGER`,
   `ALTER TABLE lms_enrollments ADD COLUMN IF NOT EXISTS person_id TEXT`,
+  `ALTER TABLE lms_enrollments ADD COLUMN IF NOT EXISTS manual_access BOOLEAN NOT NULL DEFAULT false`,
   `ALTER TABLE lms_enrollments ALTER COLUMN contact_id DROP NOT NULL`,
   `ALTER TABLE lms_progress ADD COLUMN IF NOT EXISTS person_id TEXT`,
   `ALTER TABLE lms_progress ALTER COLUMN contact_id DROP NOT NULL`,
@@ -567,6 +569,43 @@ const STATEMENTS = [
   `ALTER TABLE valux_payouts ADD COLUMN IF NOT EXISTS carry_cents INTEGER NOT NULL DEFAULT 0`,
   // Revisión editorial: el profesor pide revisión y contenido publica.
   `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS review_requested_at TIMESTAMPTZ`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS review_feedback TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS learning_outcomes TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS audience TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS prerequisites TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE lms_courses ADD COLUMN IF NOT EXISTS authoring_version INTEGER NOT NULL DEFAULT 0`,
+  `CREATE TABLE IF NOT EXISTS lms_assignment_submissions (
+    lesson_id TEXT NOT NULL REFERENCES lms_lessons(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
+    response TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pendiente' CHECK (status IN ('pendiente', 'cambios', 'aprobada')),
+    feedback TEXT NOT NULL DEFAULT '',
+    submitted_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    reviewed_at TIMESTAMPTZ,
+    reviewed_by TEXT,
+    attempt INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (lesson_id, person_id)
+  )`,
+  `CREATE INDEX IF NOT EXISTS lms_assignment_review_idx ON lms_assignment_submissions (lesson_id, status, submitted_at)`,
+  `CREATE TABLE IF NOT EXISTS lms_lesson_notes (
+    lesson_id TEXT NOT NULL REFERENCES lms_lessons(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
+    body TEXT NOT NULL CHECK (char_length(body) BETWEEN 1 AND 6000),
+    version TEXT NOT NULL,
+    PRIMARY KEY (person_id, lesson_id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS lms_course_certificates (
+    id UUID PRIMARY KEY,
+    person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
+    course_id TEXT NOT NULL,
+    course_title TEXT NOT NULL,
+    student_name TEXT NOT NULL,
+    lesson_count INTEGER NOT NULL CHECK (lesson_count > 0),
+    completed_at TIMESTAMPTZ NOT NULL,
+    issued_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    share_code UUID UNIQUE,
+    UNIQUE (person_id, course_id)
+  )`,
   // Lead: fuente, UTM, consentimientos y etapa del embudo.
   `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS source TEXT`,
   `ALTER TABLE valux_people ADD COLUMN IF NOT EXISTS utm TEXT`,
@@ -648,6 +687,18 @@ const STATEMENTS = [
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
   `CREATE INDEX IF NOT EXISTS academia_followups_email_idx ON academia_followups (email, kind, sent_at)`,
+  `ALTER TABLE valux_sales ADD COLUMN IF NOT EXISTS entitlement_applied_at TIMESTAMPTZ`,
+  `CREATE TABLE IF NOT EXISTS valux_revoked_orders (
+    order_id TEXT PRIMARY KEY,
+    reason TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `ALTER TABLE valux_intents ADD COLUMN IF NOT EXISTS payment_validated_at TIMESTAMPTZ`,
+  `ALTER TABLE valux_intents ADD COLUMN IF NOT EXISTS fulfilled_at TIMESTAMPTZ`,
+  `ALTER TABLE valux_intents ADD COLUMN IF NOT EXISTS fulfillment_attempted_at TIMESTAMPTZ`,
+  `ALTER TABLE valux_transfers ADD COLUMN IF NOT EXISTS fulfillment_attempted_at TIMESTAMPTZ`,
+  `CREATE INDEX IF NOT EXISTS valux_intents_pending_fulfillment_idx ON valux_intents (payment_validated_at)
+    WHERE payment_validated_at IS NOT NULL AND fulfilled_at IS NULL`,
 ];
 
 let client: Sql | null = null;
@@ -702,10 +753,16 @@ async function migrate(sql: Sql) {
     await sql`DELETE FROM crm_meta WHERE key = 'seeded'`;
   }
   // La base local puede ser la de producción: el cambio se hace con el despliegue.
-  if (process.env.NODE_ENV === 'production') await migrateAcademiaCurrency(sql);
+  if (process.env.NODE_ENV === 'production') {
+    await migrateAcademiaCurrency(sql);
+    await migrateCrmEnrollments(sql);
+  }
 }
 
 const STORED_TABLES = [
+  'lms_course_certificates',
+  'lms_lesson_notes',
+  'lms_assignment_submissions',
   'lms_resources',
   'lms_progress',
   'lms_enrollments',

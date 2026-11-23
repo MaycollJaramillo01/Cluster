@@ -4,12 +4,14 @@ import { academyMoney as money } from '@/lib/valux/money';
 import { listPeople, listProducts } from '@/lib/valux/data';
 import { Field, PageTitle, btn, btnTiny, fieldClass } from '@/components/dashboard/ui';
 
-export default async function MarketplaceAdmin() {
-  const [products, people] = await Promise.all([listProducts(), listPeople()]);
+export default async function MarketplaceAdmin({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const [products, people, query] = await Promise.all([listProducts(), listPeople(), searchParams]);
 
   return (
     <div className="space-y-6">
       <PageTitle title="Marketplace" action={<Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/45" href="/academia/marketplace">Ver catálogo</Link>} />
+      {query.error === 'archivo' ? <p role="alert" className="text-sm text-red-800">No se pudo guardar la descarga. Verifica el enlace o el almacenamiento privado y el límite de 8 MB.</p> : null}
+      {query.error === 'archivo-privado' ? <p role="alert" className="text-sm text-red-800">Sube el archivo del producto de pago para proteger la descarga.</p> : null}
       <form action={createProduct} className="grid gap-3 border border-black/10 bg-white p-4 md:grid-cols-2">
         <Field label="Título"><input className={fieldClass} name="title" required /></Field>
         <Field label="Precio (L)"><input className={fieldClass} name="price" type="number" min="0" step="0.01" defaultValue="0" /></Field>

@@ -6,8 +6,9 @@ import { redirect } from 'next/navigation';
 import { crm } from '@/lib/crm/db';
 import { requireDashboard } from '@/lib/crm/session';
 import { site } from '@/lib/site';
-import { getPersonByEmail, getPerson, getPlan, lessonAccess, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
-import { gradeMission, parseMission } from './mission';
+import { getPersonByEmail, getPerson, getPlan, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
+import { gradeMission } from './mission';
+import { lessonContext } from './lesson-progress';
 import { challengeProgress, getChallenge } from './challenges';
 import { applyCoupon, cleanCode } from './coupons';
 import { computePayouts, ensurePerson, grantAccess, revokeSales, subscriptionCanceled, type GrantKind } from './fulfill';
@@ -20,7 +21,7 @@ import { courseLoginQuery, loginCourse } from './login-course';
 import { cancelStripeSubscription, createStripeCheckout, stripeConfigured } from './stripe';
 import { sendAcademiaMail } from './mail';
 import { advanceStage, trackEvent, type Lead } from './events';
-import { storedFile } from './upload';
+import { isPrivateAcademiaAsset, storedFile, storedPrivateAsset } from './upload';
 
 function field(formData: FormData, key: string) {
   return String(formData.get(key) ?? '').trim();
@@ -134,6 +135,13 @@ async function checkout(input: {
 async function coursePurchase(formData: FormData, inlineErrors: boolean) {
   const course = await publishedCourse(field(formData, 'slug'));
   if (!course) return 'curso';
+  const path = `/academia/${course.slug}`;
+  const person = await getPerson(await academiaPersonId());
+  if (person && !person.is_active) {
+    if (inlineErrors) return 'suspendido';
+    redirect(`${path}?error=suspendido`);
+  }
+  if (person && (course.price_cents > 0 ? await canReadCourse(person.id, course) : await ownsCourse(person.id, course.id))) redirect(path);
   // El descuento se calcula aquí con el precio de la base; el navegador solo manda el código.
   let price = course.price_cents;
   let couponCode: string | null = null;
@@ -431,14 +439,18 @@ export async function createProduct(formData: FormData) {
   const title = field(formData, 'title');
   if (!title) return;
   const direct = field(formData, 'published') === 'on' ? 'publicado' : 'pendiente';
+  const price = cents(field(formData, 'price'));
   const sql = await crm();
+  const download = await storedPrivateAsset(formData, 'file', 'download_url').catch(() => {
+    redirect('/dashboard/cursos/marketplace?error=archivo');
+  });
+  if (price > 0 && (!download || !isPrivateAcademiaAsset(download))) redirect('/dashboard/cursos/marketplace?error=archivo-privado');
   const cover = await storedFile(formData, 'cover', 'cover_url');
-  const download = await storedFile(formData, 'file', 'download_url');
   await sql`
     INSERT INTO valux_products (id, creator_id, title, description, price_cents, cover_url, download_url, review_status)
     VALUES (
       ${crypto.randomUUID()}, ${field(formData, 'creator_id') || null}, ${title}, ${field(formData, 'description')},
-      ${cents(field(formData, 'price'))}, ${cover}, ${download}, ${direct}
+      ${price}, ${cover}, ${download || ''}, ${direct}
     )
   `;
   refresh();
@@ -450,6 +462,12 @@ export async function reviewProduct(formData: FormData) {
   const status = field(formData, 'status');
   if (!id || !['publicado', 'rechazado', 'pendiente'].includes(status)) return;
   const sql = await crm();
+  if (status === 'publicado') {
+    const [product] = await sql`SELECT price_cents, download_url FROM valux_products WHERE id = ${id}`;
+    if (product && Number(product.price_cents) > 0 && !isPrivateAcademiaAsset(String(product.download_url || ''))) {
+      redirect('/dashboard/cursos/marketplace?error=archivo-privado');
+    }
+  }
   await sql`
     UPDATE valux_products
     SET review_status = ${status}, rejection_reason = ${field(formData, 'reason') || null}
@@ -702,47 +720,18 @@ export async function markPayout(formData: FormData) {
   refresh();
 }
 
-// Contexto de una clase para quien la quiere completar: permiso, desbloqueo y misión.
-async function lessonContext(lessonId: string, personId: string) {
+async function markComplete(personId: string, lessonId: string, course: { courseId: string; free: boolean }, missionPoints: number | null = null) {
   const sql = await crm();
-  const rows = await sql`
-    SELECT l.slug AS lesson_slug, l.points, l.mission, c.slug AS course_slug
-    FROM lms_lessons l JOIN lms_courses c ON c.id = l.course_id
-    WHERE l.id = ${lessonId}
-  `;
-  const row = rows[0] as { lesson_slug: string; points: unknown; mission: string | null; course_slug: string } | undefined;
-  if (!row) return null;
-  const course = await publishedCourse(row.course_slug);
-  if (!course) return null;
-  const url = `/academia/${course.slug}/${row.lesson_slug}`;
-  const open = await canReadCourse(personId, course);
-  const access = await lessonAccess(personId, course);
-  const index = access.order.findIndex((lesson) => lesson.id === lessonId);
-  const next = access.order[index + 1];
-  return {
-    url,
-    nextUrl: next ? `/academia/${course.slug}/${next.slug}` : `/academia/${course.slug}?terminado=1`,
-    courseId: course.id,
-    free: course.price_cents <= 0,
-    allowed: open && access.unlocked.has(lessonId),
-    done: access.done.has(lessonId),
-    points: Math.max(0, Number(row.points) || 0),
-    mission: parseMission(row.mission || '').mission,
-  };
-}
-
-async function markComplete(personId: string, lessonId: string, course: { courseId: string; free: boolean }) {
-  const sql = await crm();
-  // Curso gratis: quien avanza queda inscrito aunque no haya pulsado "Empezar gratis",
-  // así su profesor lo ve y la ficha del curso muestra su avance. Sin venta, correo ni etapa de comprador.
-  if (course.free) {
-    await sql`
-      INSERT INTO lms_enrollments (id, course_id, person_id)
-      VALUES (${crypto.randomUUID()}, ${course.courseId}, ${personId})
-      ON CONFLICT (course_id, person_id) WHERE person_id IS NOT NULL DO NOTHING
-    `;
-  }
   await sql`
+    WITH enrollment AS (
+      INSERT INTO lms_enrollments (id, course_id, person_id)
+      SELECT ${crypto.randomUUID()}, ${course.courseId}, ${personId} WHERE ${course.free}::boolean
+      ON CONFLICT (course_id, person_id) WHERE person_id IS NOT NULL DO NOTHING
+    ), award AS (
+      INSERT INTO lms_xp (person_id, lesson_id, xp)
+      SELECT ${personId}, ${lessonId}, ${missionPoints}::integer WHERE ${missionPoints}::integer IS NOT NULL
+      ON CONFLICT (person_id, lesson_id) DO NOTHING
+    )
     INSERT INTO lms_progress (id, person_id, lesson_id, completed_at)
     VALUES (${crypto.randomUUID()}, ${personId}, ${lessonId}, now())
     ON CONFLICT (person_id, lesson_id) WHERE person_id IS NOT NULL DO UPDATE SET
@@ -757,7 +746,7 @@ export async function completeLesson(formData: FormData) {
   if (!personId || !lessonId) redirect('/academia/entrar');
   const lesson = await lessonContext(lessonId, personId);
   if (!lesson) redirect('/academia');
-  if (!lesson.allowed) redirect(lesson.url);
+  if (!lesson.allowed || !lesson.active) redirect(lesson.url);
   // Con misión, solo aprobarla completa la clase.
   if (lesson.mission && !lesson.done) redirect(`${lesson.url}?mision=pendiente#mision`);
   await markComplete(personId, lessonId, lesson);
@@ -771,7 +760,8 @@ export async function submitMission(formData: FormData) {
   if (!personId || !lessonId) redirect('/academia/entrar');
   const lesson = await lessonContext(lessonId, personId);
   if (!lesson?.mission) redirect(lesson?.url || '/academia');
-  if (!lesson.allowed) redirect(lesson.url);
+  if (!lesson.allowed || !lesson.active) redirect(lesson.url);
+  if (lesson.mission.kind === 'assignment') redirect(`${lesson.url}#mision`);
   const result = gradeMission(lesson.mission, (key) => field(formData, key));
   await trackEvent('mission_submitted', { personId, data: { lesson: lessonId, correct: result.correct, total: result.total } });
   if (!result.passed) {
@@ -782,13 +772,7 @@ export async function submitMission(formData: FormData) {
       : mission.items.map((_, index) => (field(formData, `item${index}`) === '1' ? '1' : '0')).join('.');
     redirect(`${lesson.url}?mision=${result.correct}-${result.total}&r=${encodeURIComponent(picks)}#mision`);
   }
-  await markComplete(personId, lessonId, lesson);
-  // Evento único: la llave (persona, clase) impide sumar XP dos veces.
-  const sql = await crm();
-  await sql`
-    INSERT INTO lms_xp (person_id, lesson_id, xp) VALUES (${personId}, ${lessonId}, ${lesson.points})
-    ON CONFLICT (person_id, lesson_id) DO NOTHING
-  `;
+  await markComplete(personId, lessonId, lesson, lesson.points);
   await trackEvent('mission_validated', { id: `mission_validated:${personId}:${lessonId}`, personId, data: { lesson: lessonId, xp: lesson.points } });
   refresh();
   redirect(`${lesson.url}?mision=ok#mision`);

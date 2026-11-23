@@ -19,7 +19,7 @@ export type Transfer = {
   buyer_email: string;
   amount_cents: number;
   months: number;
-  status: 'pendiente' | 'aprobada' | 'rechazada' | 'vencida';
+  status: 'pendiente' | 'aprobando' | 'aprobada' | 'rechazada' | 'vencida' | 'reembolsada';
   receipt_url: string;
   bank_ref: string;
   note: string;

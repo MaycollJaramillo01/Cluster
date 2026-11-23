@@ -93,6 +93,7 @@ async function main() {
   const draftId = draftPath.split('/').pop()!;
   const [draft] = await sql`SELECT c.published, c.price_cents, p.email, p.role FROM lms_courses c JOIN valux_people p ON p.id=c.teacher_id WHERE c.id=${draftId}`;
   assert.deepEqual(draft, { published: false, price_cents: 0, email: 'new-teacher@example.test', role: 'profesor' });
+  await sql`INSERT INTO lms_lessons(id,course_id,slug,title,content) VALUES ('review-lesson',${draftId},'intro','Introducción','Contenido de prueba')`;
   await requestReview(form({ course_id: draftId }));
   assert.ok((await sql`SELECT review_requested_at FROM lms_courses WHERE id=${draftId}`)[0].review_requested_at);
   const approve = () => setCoursePublication(form({ id: draftId, publication: 'publish' }));
@@ -126,10 +127,13 @@ async function main() {
   await sql`INSERT INTO lms_lessons(id,course_id,slug,title,sort_order) VALUES ('paid-first','paid','first','Video de prueba',1)`;
   jar.set(SESSION_COOKIE, issueSession('teacher@example.test', 'Profesor', 'profesor'));
   const video = 'https://iframe.mediadelivery.net/embed/123456/11111111-2222-4333-8444-555555555555';
+  assert.match(await redirect(() => updateLesson(form({ id:'paid-first', course_id:'paid', title:'Video de prueba', video_url:video }))), /error=estado/);
+  await sql`UPDATE lms_courses SET published=false WHERE id='paid'`;
   await redirect(() => updateLesson(form({ id:'paid-first', course_id:'paid', title:'Video de prueba', video_url:video })));
+  await sql`UPDATE lms_courses SET published=true WHERE id='paid'`;
   assert.equal((await sql`SELECT video_url FROM lms_lessons WHERE id='paid-first'`)[0].video_url, video);
   assert.equal(await redirect(() => updateLesson(form({ id:'first', course_id:'free', title:'Ajena', video_url:video }))), '/dashboard/profesor');
-  ok('el profesor puede guardar un video en su curso y no puede editar un curso ajeno');
+  ok('el profesor puede guardar un video en su borrador y se respeta el estado de publicación y la propiedad');
   assert.equal((await paymentOptions()).transfer, false);
   await sql`UPDATE valux_settings SET bank_details='Banco ficticio para pruebas' WHERE id='valux'`;
   assert.equal((await paymentOptions()).transfer, true);

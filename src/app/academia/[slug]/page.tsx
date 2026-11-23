@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Cover, LessonMark, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
 import { CourseCheckoutForm } from '@/components/academia/CourseCheckoutForm';
+import { CertificateRequest } from '@/components/academia/CertificateRequest';
 import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse, buyUpsell } from '@/lib/valux/actions';
 import { canReadCourse, getPerson, lessonAccess, ownsCourse, publishedCourse } from '@/lib/valux/data';
@@ -19,7 +20,7 @@ export default async function CourseCatalogPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ok?: string; error?: string; terminado?: string; inscripcion?: string }>;
+  searchParams: Promise<{ ok?: string; error?: string; terminado?: string; inscripcion?: string; constancia?: string }>;
 }) {
   const { slug } = await params;
   const query = await searchParams;
@@ -37,17 +38,18 @@ export default async function CourseCatalogPage({
   const lessonCount = course.lessons.length;
   // Inscrito, o con acceso a un curso de pago por membresía o rol: ve su avance en vez del checkout.
   const enrolled = await ownsCourse(personId, course.id);
-  const hasAccess = Boolean(personId) && (enrolled || (course.price_cents > 0 && (await canReadCourse(personId, course))));
+  const hasAccess = Boolean(personId) && (course.price_cents <= 0 ? enrolled : await canReadCourse(personId, course));
   const coursePath = `/academia/${course.slug}`;
   const checkoutPath = `${coursePath}?inscripcion=1`;
   const paid = course.price_cents > 0;
   const priceLabel = paid ? money(course.price_cents) : 'Gratis';
   const bump = payReady(pay) ? course.bump : null;
   const registration = `/academia/entrar?modo=registro&curso=${encodeURIComponent(course.slug)}`;
-  const person = !hasAccess && (query.inscripcion === '1' || !paid) ? await getPerson(personId) : null;
+  const person = !hasAccess ? await getPerson(personId) : null;
+  const suspended = person?.is_active === false;
   const contact = person?.is_active ? { name: person.name || person.email, email: person.email } : undefined;
 
-  if (!hasAccess && (query.inscripcion === '1' || (paid && query.error))) {
+  if (!hasAccess && !suspended && (query.inscripcion === '1' || (paid && query.error && query.error !== 'reembolso'))) {
     return (
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
         <Link href={coursePath} className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">← Volver al curso</Link>
@@ -89,7 +91,7 @@ export default async function CourseCatalogPage({
   }
   const access = hasAccess ? await lessonAccess(personId, course) : null;
   const doneCount = access ? access.order.filter((lesson) => access.done.has(lesson.id)).length : 0;
-  const nextLesson = access?.order.find((lesson) => !access.done.has(lesson.id));
+  const nextLesson = access?.pending;
   const finished = Boolean(access) && lessonCount > 0 && !nextLesson;
   const pct = lessonCount ? Math.round((doneCount / lessonCount) * 100) : 0;
   const lessonUrl = (lesson: { slug: string }) => `/academia/${course.slug}/${lesson.slug}`;
@@ -118,12 +120,17 @@ export default async function CourseCatalogPage({
         </section>
 
       <article className="order-3 space-y-8 lg:col-span-2">
-        {query.ok ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo.</p> : null}
+        {query.ok && hasAccess ? <p className="border border-brand/40 bg-white px-4 py-3 text-sm">Acceso listo.</p> : null}
         {query.terminado && finished ? (
           <p className="border border-brand/40 bg-white px-4 py-3 text-sm">
             Terminaste el curso: completaste {lessonCount === 1 ? 'la clase' : `las ${lessonCount} clases`}.
           </p>
         ) : null}
+        {query.constancia === 'nombre' ? <p role="alert" className="border border-black/15 bg-white p-4 text-sm">
+          Guarda tu nombre en <Link href="/academia/perfil" className="font-semibold underline underline-offset-4">Mi perfil</Link> tal como quieres que aparezca en la constancia.
+        </p> : null}
+        {query.constancia === 'acceso' ? <p role="alert" className="border border-black/15 bg-white p-4 text-sm">Necesitas una cuenta activa y acceso al curso para emitir la constancia.</p> : null}
+        {query.constancia === 'incompleto' ? <p role="alert" className="border border-black/15 bg-white p-4 text-sm">Completa todas las clases y aprueba sus actividades para emitir la constancia.</p> : null}
         {upsell ? (
           <form action={buyUpsell} className="space-y-3 border-2 border-brand bg-white p-5">
             <input type="hidden" name="slug" value={course.slug} />
@@ -142,6 +149,13 @@ export default async function CourseCatalogPage({
           </form>
         ) : null}
         {query.error && query.error !== 'acepto' ? <p className="border border-black/10 bg-white px-4 py-3 text-sm">{payNote(query.error)}</p> : null}
+
+        {course.learning_outcomes.length ? <section className="space-y-3">
+          <h2 className="text-xl font-medium">Qué aprenderás</h2>
+          <ul className="list-disc space-y-2 border border-black/10 bg-white py-4 pl-9 pr-5 text-sm leading-relaxed">
+            {course.learning_outcomes.map((outcome, index) => <li className="break-words" key={index}>{outcome}</li>)}
+          </ul>
+        </section> : null}
 
         <section className="space-y-3">
           <div className="flex items-baseline justify-between gap-3">
@@ -172,7 +186,7 @@ export default async function CourseCatalogPage({
                     return (
                       <li key={lesson.id} className="border-b border-black/5 last:border-0">
                         {locked ? <p className={`${row} text-black/70`}>{contents}</p> : (
-                          <Link href={lessonUrl(lesson)} className={`${row} hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset`}>{contents}</Link>
+                          <Link prefetch={false} href={lessonUrl(lesson)} className={`${row} hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset`}>{contents}</Link>
                         )}
                       </li>
                     );
@@ -183,6 +197,10 @@ export default async function CourseCatalogPage({
           })}
         </section>
 
+        {course.audience || course.prerequisites ? <section className="space-y-5">
+          {course.audience ? <section className="space-y-2"><h2 className="text-xl font-medium">Para quién es</h2><p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{course.audience}</p></section> : null}
+          {course.prerequisites ? <section className="space-y-2"><h2 className="text-xl font-medium">Requisitos</h2><p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{course.prerequisites}</p></section> : null}
+        </section> : null}
       </article>
 
       <aside className="border border-black/10 bg-white lg:sticky lg:top-24 lg:col-start-3 lg:row-span-2 lg:row-start-1">
@@ -198,12 +216,12 @@ export default async function CourseCatalogPage({
             </div>
             {finished ? (
               <>
-                <Link href="/academia" className="block w-full bg-brand px-4 py-3 text-center text-sm font-medium text-ink">Ver más cursos</Link>
-                <Link href={lessonUrl(access.order[0])} className="block text-center text-sm text-black/55 underline">Repasar desde la primera clase</Link>
+                {access.person?.is_active ? <CertificateRequest slug={course.slug} /> : null}
+                <Link prefetch={false} href={lessonUrl(access.order[0])} className="block text-center text-sm text-black/55 underline">Repasar desde la primera clase</Link>
               </>
             ) : nextLesson ? (
               <>
-                <Link href={lessonUrl(nextLesson)} className="block w-full bg-brand px-4 py-3 text-center text-sm font-medium text-ink">
+                <Link prefetch={false} href={lessonUrl(nextLesson)} className="block w-full bg-brand px-4 py-3 text-center text-sm font-medium text-ink">
                   {doneCount ? 'Continuar' : 'Empezar el curso'}
                 </Link>
                 <p className="text-sm text-black/55">{doneCount ? 'Sigue' : 'Primera clase'}: {nextLesson.title}</p>
@@ -213,7 +231,9 @@ export default async function CourseCatalogPage({
         ) : (
         <section aria-label="Inscripción al curso" className="space-y-4 p-5 sm:p-6">
           <p className="font-display text-4xl tracking-wide sm:text-5xl">{priceLabel}</p>
-          {paid && !payReady(pay) ? (
+          {suspended ? (
+            <p role="status" className="text-sm leading-relaxed text-black/70">{payNote('suspendido')}</p>
+          ) : paid && !payReady(pay) ? (
             <p className="text-sm leading-relaxed text-black/70">{payNote('pasarela')}</p>
           ) : !paid && contact && !bump ? (
             <form action={buyCourse}>

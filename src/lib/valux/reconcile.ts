@@ -2,6 +2,33 @@ import { crm } from '@/lib/crm/db';
 import { fulfillStripeSession } from './fulfill';
 import { listPaidStripeSessions, stripeConfigured } from './stripe';
 
+export async function retryPendingStripePayments() {
+  const result = { delivered: 0, failed: 0 };
+  if (!stripeConfigured()) return result;
+  const sql = await crm();
+  const rows = await sql`
+    WITH pending AS (
+      SELECT id FROM valux_intents
+      WHERE payment_validated_at IS NOT NULL AND fulfilled_at IS NULL
+        AND (fulfillment_attempted_at IS NULL OR fulfillment_attempted_at < now() - interval '5 minutes')
+      ORDER BY fulfillment_attempted_at NULLS FIRST, payment_validated_at LIMIT 25
+      FOR UPDATE SKIP LOCKED
+    )
+    UPDATE valux_intents i SET fulfillment_attempted_at = now()
+    FROM pending WHERE i.id = pending.id RETURNING i.paypal_order_id
+  `;
+  for (const row of rows) {
+    try {
+      if (await fulfillStripeSession(String(row.paypal_order_id))) result.delivered += 1;
+      else result.failed += 1;
+    } catch (error) {
+      result.failed += 1;
+      console.error('[academia] reintento de pago:', row.paypal_order_id, error);
+    }
+  }
+  return result;
+}
+
 // Cierre nocturno: una vez al día, después de las 3 a. m. de Honduras.
 // Vuelve a entregar cualquier pago de Stripe de las últimas 48 h cuyo webhook no llegó o falló
 // (la entrega es idempotente) y marca como inactivos a los miembros sin membresía vigente.
@@ -25,10 +52,23 @@ export async function runReconcile(now = new Date()) {
   const result = { checked: 0, granted: 0, failed: 0, inactive: 0, eventErrors: 0 };
   if (stripeConfigured()) {
     const since = Math.floor(now.getTime() / 1000) - 48 * 3600;
-    for (const id of await listPaidStripeSessions(since)) {
+    // Intenciones verificadas que quedaron incompletas se reintentan aun pasadas 48 h.
+    const pending = await sql`
+      SELECT i.paypal_order_id FROM valux_intents i
+      WHERE i.paypal_order_id LIKE 'cs_%' AND i.fulfilled_at IS NULL AND (
+        i.payment_validated_at IS NOT NULL OR EXISTS (
+          SELECT FROM valux_sales s WHERE s.paypal_order_id = i.paypal_order_id AND s.refunded_at IS NULL
+            AND (s.entitlement_applied_at IS NULL OR (
+              i.bump_item_id IS NOT NULL AND NOT EXISTS (SELECT FROM valux_sales b WHERE b.paypal_order_id = i.paypal_order_id || ':bump')
+            ))
+        )
+      ) ORDER BY i.payment_validated_at NULLS LAST, i.created_at LIMIT 100
+    `;
+    const sessions = new Set([...pending.map((row) => String(row.paypal_order_id)), ...await listPaidStripeSessions(since)]);
+    for (const id of sessions) {
       result.checked += 1;
       try {
-        const known = await sql`SELECT 1 FROM valux_sales WHERE paypal_order_id = ${id}`;
+        const known = await sql`SELECT 1 FROM valux_intents WHERE paypal_order_id = ${id} AND fulfilled_at IS NOT NULL`;
         if (known.length) continue;
         if (await fulfillStripeSession(id)) result.granted += 1;
       } catch (error) {
