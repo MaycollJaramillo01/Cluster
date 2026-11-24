@@ -1,82 +1,96 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@astryxdesign/core/Button';
-import { VStack } from '@astryxdesign/core/VStack';
-import { HStack } from '@astryxdesign/core/HStack';
 import { Grid } from '@astryxdesign/core/Grid';
 import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
 import { Text } from '@astryxdesign/core/Text';
-import { AcademySurface } from '@/components/academia/AcademySurface';
-import { payNote } from '@/components/academia/ui';
+import { VStack } from '@astryxdesign/core/VStack';
+import { AcademyHome, AcademySearch, academyCatalogPath } from '@/components/academia/AcademyHome';
 import { CourseTile } from '@/components/academia/CourseTile';
+import { payNote } from '@/components/academia/ui';
 import { Icon } from '@/components/ui/Icon';
+import { catalogCourseRatings, catalogSearchText, courseTopics, featuredCourseIds, matchesCourseTopic, selectFeatured } from '@/lib/valux/catalog';
+import { site } from '@/lib/site';
 import { publishedCourses } from '@/lib/valux/data';
-import { featuredCourseIds, selectFeatured } from '@/lib/valux/catalog';
 
-export default async function AcademiaHome({ searchParams }: { searchParams: Promise<{ error?: string; q?: string; tipo?: string }> }) {
+export const metadata: Metadata = {
+  title: 'Academia Cluster | Cursos de marketing, diseño y tecnología',
+  description: 'Explora los cursos de Academia Cluster y aprende a tu ritmo con clases, actividades y recursos para tu negocio.',
+  alternates: { canonical: `${site.url}/academia` },
+};
+
+type CourseSearch = { error?: string; q?: string; tipo?: string; categoria?: string; vista?: string };
+
+export default async function AcademiaHomePage({ searchParams }: { searchParams: Promise<CourseSearch> }) {
   const query = await searchParams;
   const q = typeof query.q === 'string' ? query.q.trim() : '';
-  const all = await publishedCourses();
-  const featured = selectFeatured(all, await featuredCourseIds());
   const type = query.tipo === 'gratis' || query.tipo === 'pago' ? query.tipo : '';
+  const topic = courseTopics.find((item) => item.id === query.categoria);
+  const isCatalog = Boolean(q || type || topic || query.vista === 'catalogo' || query.error);
+  const [all, featuredConfig] = await Promise.all([publishedCourses(), featuredCourseIds()]);
+  const featured = selectFeatured(all, featuredConfig);
+  const topics = courseTopics.map((item) => ({ ...item, count: all.filter((course) => matchesCourseTopic(course, item)).length })).filter((item) => item.count);
+
+  if (!isCatalog) {
+    const freeCourse = all.find((course) => course.price_cents === 0 && course.slug === 'meta-ads-negocios-locales') ?? all.find((course) => course.price_cents === 0);
+    const ratings = await catalogCourseRatings(featured.map((course) => course.id));
+    return <AcademyHome featured={featured} topics={topics} freeCourse={freeCourse} ratings={ratings} />;
+  }
+
   const featuredIds = new Set(featured.map((course) => course.id));
   const ordered = [...featured, ...all.filter((course) => !featuredIds.has(course.id))];
-  const courses = ordered.filter((course) => (!type || (type === 'gratis' ? course.price_cents === 0 : course.price_cents > 0)) && [course.title, course.teacher_name, course.description].join(' ').toLocaleLowerCase('es').includes(q.toLocaleLowerCase('es')));
-  const filterHref = (value: string) => `/academia?${new URLSearchParams({ ...(q ? { q } : {}), ...(value ? { tipo: value } : {}) })}#catalogo`;
+  const search = catalogSearchText(q).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  const courses = ordered.filter((course) => {
+    if (type && (type === 'gratis' ? course.price_cents > 0 : course.price_cents === 0)) return false;
+    if (topic && !matchesCourseTopic(course, topic)) return false;
+    if (!search.length) return true;
+    const labels = topics.filter((item) => matchesCourseTopic(course, item)).map((item) => item.label);
+    const words = catalogSearchText([course.title, course.teacher_name, course.description, ...labels].join(' ')).split(/[^\p{L}\p{N}]+/u);
+    return search.every((term) => words.some((word) => term.length <= 2 ? word === term : word.startsWith(term)));
+  });
+  const ratings = await catalogCourseRatings(courses.map((course) => course.id));
+  const filterHref = (category: string, price: string) => {
+    const params = new URLSearchParams({ vista: 'catalogo' });
+    if (q) params.set('q', q);
+    if (category) params.set('categoria', category);
+    if (price) params.set('tipo', price);
+    return `/academia?${params}#catalogo`;
+  };
 
   return (
-    <AcademySurface>
-      <VStack as="main" gap={8} className="academy-page">
-        {q || type ? <Heading level={1} className="academy-title">Cursos</Heading> : (
-          <section aria-labelledby="academy-hero-title" className="academy-hero grid overflow-hidden rounded-academy-xl lg:grid-cols-2">
-            <VStack gap={5} justify="center" className="p-6 sm:p-10 lg:p-12">
-              <Heading id="academy-hero-title" level={1} className="max-w-xl text-balance text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">Aprende a hacer crecer tu negocio.</Heading>
-              <Text as="p" className="max-w-md text-base leading-relaxed text-white/80 sm:text-lg">Cursos prácticos de marketing, ventas y tecnología para aplicar en tu negocio, a tu ritmo.</Text>
-              <HStack gap={3} wrap="wrap" className="pt-2">
-                <Link href="#catalogo" className="academy-action academy-action-inverse">Explorar cursos <Icon name="arrow-right" size={18} aria-hidden="true" /></Link>
-                <Link href="/academia/mis-cursos" className="academy-action academy-action-on-dark">Mis cursos</Link>
-              </HStack>
-            </VStack>
-            <figure className="relative min-h-48 sm:min-h-56">
-              <Image src="/assets/stock/creative.jpg" alt="" fill priority sizes="(min-width: 1024px) 600px, 100vw" className="object-cover" />
-            </figure>
-          </section>
-        )}
-        {query.error ? <Text as="p" role="alert" className="academy-notice">{payNote(query.error)}</Text> : null}
-        <VStack as="section" id="catalogo" gap={5} className="scroll-mt-24" aria-label="Catálogo de cursos">
-          <HStack justify="between" wrap="wrap" align="center" gap={3}>
-            <Heading level={2} className="academy-section-title">Explora los cursos</Heading>
-            <Text as="p" className="text-sm text-academy-muted">{courses.length} {courses.length === 1 ? 'curso disponible' : 'cursos disponibles'}</Text>
-          </HStack>
-          <HStack gap={4} wrap="wrap" justify="between" align="center">
-            <form action="/academia#catalogo" role="search" className="flex w-full max-w-lg items-center gap-2">
-              {type ? <input type="hidden" name="tipo" value={type} /> : null}
-              <label htmlFor="course-search" className="sr-only">Buscar cursos</label>
-              <input id="course-search" type="search" name="q" defaultValue={q} placeholder="Busca por curso o tema" className="academy-field min-w-0 flex-1" />
-              <Button type="submit" variant="primary" size="lg" label="Buscar" icon={<Icon name="search" size={17} aria-hidden="true" />} />
-            </form>
-            <nav aria-label="Filtrar cursos" className="flex flex-wrap gap-2">
-              {[['', 'Todos'], ['gratis', 'Gratis'], ['pago', 'De pago']].map(([value, label]) => <Link key={label} href={filterHref(value)} aria-current={type === value ? 'page' : undefined} className="academy-filter academy-focus">{label}</Link>)}
-            </nav>
-          </HStack>
-          {courses.length ? <Grid columns={{ minWidth: 260, max: 3 }} gap={5}>{courses.map((course) => <CourseTile key={course.id} course={course} />)}</Grid> : (
-            <VStack gap={3} padding={8} className="academy-panel">
-              <Heading level={3}>{q || type ? 'No encontramos cursos con esos filtros' : 'Estamos preparando los próximos cursos'}</Heading>
-              <Text as="p" color="secondary">{q || type ? 'Prueba otro nombre o vuelve al catálogo completo.' : 'Los cursos publicados aparecerán aquí.'}</Text>
-              {q || type ? <Link href="/academia#catalogo" className="w-fit text-sm font-medium underline underline-offset-4">Limpiar filtros</Link> : null}
-            </VStack>
-          )}
-        </VStack>
-        <section className="academy-panel bg-academy-tint p-6 md:p-8">
-          <HStack gap={6} justify="between" align="center" wrap="wrap">
-            <VStack gap={2}>
-              <Heading level={2} className="academy-section-title">Marketplace</Heading>
-              <Text as="p" color="secondary">Encuentra recursos para aplicar lo que aprendiste.</Text>
-            </VStack>
-            <Link href="/academia/marketplace" className="academy-action academy-action-secondary">Explorar Marketplace <Icon name="arrow-right" size={17} aria-hidden="true" /></Link>
-          </HStack>
-        </section>
+    <VStack as="main" id="catalogo" gap={6} className="academy-page scroll-mt-20">
+      <Link href="/academia" className="academy-nav academy-focus w-fit"><Icon name="arrow-right" size={17} className="rotate-180" aria-hidden="true" /> Inicio de Academia</Link>
+      <VStack gap={2}>
+        <Heading level={1} className="academy-title">{topic?.label || 'Catálogo de cursos'}</Heading>
+        <Text as="p" className="text-academy-muted">{courses.length} {courses.length === 1 ? 'curso' : 'cursos'}{q ? ` para «${q}»` : ' disponibles'}</Text>
       </VStack>
-    </AcademySurface>
+      {query.error ? <Text as="p" role="alert" className="academy-notice">{payNote(query.error)}</Text> : null}
+      <VStack as="section" aria-label="Búsqueda y filtros" gap={4} className="academy-panel p-4 sm:p-5">
+        <HStack gap={4} wrap="wrap" justify="between" align="center">
+          <AcademySearch q={q} type={type} category={topic?.id} />
+          <nav aria-label="Filtrar por precio" className="flex flex-wrap gap-2">
+            {[['', 'Cualquier precio'], ['gratis', 'Gratis'], ['pago', 'De pago']].map(([value, label]) => (
+              <Link key={label} href={filterHref(topic?.id || '', value)} prefetch={false} aria-current={type === value ? 'page' : undefined} className="academy-filter academy-focus">{label}</Link>
+            ))}
+          </nav>
+        </HStack>
+        {topics.length ? (
+          <nav aria-label="Filtrar por tema" className="flex flex-wrap gap-2 border-t border-academy-line pt-3">
+            <Link href={filterHref('', type)} prefetch={false} aria-current={!topic ? 'page' : undefined} className="academy-filter academy-focus">Todos los temas</Link>
+            {topics.map((item) => <Link key={item.id} href={filterHref(item.id, type)} prefetch={false} aria-current={topic?.id === item.id ? 'page' : undefined} className="academy-filter academy-focus">{item.label}</Link>)}
+          </nav>
+        ) : null}
+      </VStack>
+      {courses.length ? (
+        <Grid columns={{ minWidth: 248, max: 4 }} gap={5}>{courses.map((course) => <CourseTile key={course.id} course={course} headingLevel={2} rating={ratings.get(course.id)} />)}</Grid>
+      ) : (
+        <VStack gap={3} padding={8} className="academy-panel">
+          <Heading level={2}>{q || type || topic ? 'No encontramos cursos con esos filtros' : 'Estamos preparando los próximos cursos'}</Heading>
+          <Text as="p" color="secondary">{q || type || topic ? 'Prueba otro nombre o vuelve al catálogo completo.' : 'Los cursos publicados aparecerán aquí.'}</Text>
+          {q || type || topic ? <Button as={Link} href={academyCatalogPath} label="Limpiar filtros" variant="secondary" className="w-fit" /> : null}
+        </VStack>
+      )}
+    </VStack>
   );
 }

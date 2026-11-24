@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '@astryxdesign/core/Button';
 import { HStack } from '@astryxdesign/core/HStack';
@@ -13,7 +13,8 @@ import { leaveAcademia } from '@/lib/valux/actions';
 import { AcademyTheme } from './AcademySurface';
 
 const links = [
-  ['/academia', 'Cursos'],
+  ['/academia', 'Inicio'],
+  ['/academia?vista=catalogo#catalogo', 'Catálogo'],
   ['/academia/marketplace', 'Marketplace'],
   ['/academia/blog', 'Blog'],
   ['/academia/retos', 'Retos'],
@@ -34,11 +35,13 @@ function AcademyBrand() {
 
 export function Frame({ children, signedIn }: { children: ReactNode; signedIn: boolean }) {
   const path = usePathname();
+  const query = useSearchParams();
   const previousPath = useRef(path);
   const menu = useRef<HTMLElement>(null);
   const parts = path.split('/').filter(Boolean);
   const coursePath = parts[0] === 'academia' && parts.length >= 2 && !reserved.has(parts[1]);
   const classroom = coursePath && parts.length >= 3;
+  const browsing = path === '/academia' && (query.get('vista') === 'catalogo' || ['q', 'tipo', 'categoria', 'error'].some((key) => query.get(key)));
   const printing = path.startsWith('/academia/constancias/') || path.startsWith('/academia/recibos/');
 
   function closeMenu() {
@@ -50,7 +53,11 @@ export function Frame({ children, signedIn }: { children: ReactNode; signedIn: b
     previousPath.current = path;
   }, [path]);
 
-  const isCurrent = (href: string) => path === href || (href === '/academia' ? coursePath : path.startsWith(`${href}/`));
+  const isCurrent = (href: string) => {
+    if (href === '/academia') return path === href && !browsing;
+    if (href.startsWith('/academia?')) return coursePath || browsing;
+    return path === href || path.startsWith(`${href}/`);
+  };
   const nav = links.map(([href, label]) => (
     <Link key={href} href={href} aria-current={isCurrent(href) ? 'page' : undefined} className="academy-nav academy-focus" onClick={closeMenu}>{label}</Link>
   ));
