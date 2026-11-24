@@ -405,8 +405,11 @@ export async function publishedCourse(slug: string) {
     SELECT id, title, sort_order FROM lms_sections WHERE course_id = ${courseId} ORDER BY sort_order, title, id
   `;
   const lessons = await sql`
-    SELECT id, slug, title, section_id, duration_min, sort_order, preview_public
-    FROM lms_lessons WHERE course_id = ${courseId} ORDER BY sort_order, title, id
+    SELECT l.id, l.slug, l.title, l.section_id, l.duration_min, l.sort_order, l.preview_public,
+      NULLIF(btrim(l.video_url), '') IS NOT NULL AS has_video,
+      NULLIF(btrim(l.mission), '') IS NOT NULL AS has_activity,
+      (SELECT count(*) FROM lms_resources r WHERE r.lesson_id = l.id) AS resource_count
+    FROM lms_lessons l WHERE l.course_id = ${courseId} ORDER BY l.sort_order, l.title, l.id
   `;
   return {
     id: courseId,
@@ -442,6 +445,9 @@ export async function publishedCourse(slug: string) {
         section_id: text(lesson.section_id),
         duration_min: lesson.duration_min == null ? null : num(lesson.duration_min),
         preview_public: bool(lesson.preview_public),
+        has_video: bool(lesson.has_video),
+        has_activity: bool(lesson.has_activity),
+        resource_count: num(lesson.resource_count),
       };
     }),
   };

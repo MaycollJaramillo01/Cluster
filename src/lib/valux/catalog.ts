@@ -1,4 +1,5 @@
 import { crm } from '@/lib/crm/db';
+import { publishedCourses } from './data';
 
 export const FEATURED_KEY = 'academia_featured_courses';
 
@@ -15,6 +16,33 @@ export function catalogSearchText(value: string) {
 
 export function matchesCourseTopic(course: { slug: string; title: string }, topic: (typeof courseTopics)[number]) {
   return topic.match.test(catalogSearchText(`${course.slug.replace(/-/g, ' ')} ${course.title}`));
+}
+
+export function catalogTopicsFor(course: { slug: string; title: string }) {
+  return courseTopics.filter((topic) => matchesCourseTopic(course, topic));
+}
+
+const adsCourses = new Set(['meta-ads-negocios-locales', 'publicidad-facebook-instagram']);
+const adsComplements = new Map([
+  ['diseno-contenido-canva', 'Diseña las piezas de tu campaña.'],
+  ['ventas-por-whatsapp', 'Da seguimiento a las consultas que generen tus anuncios.'],
+]);
+
+export async function relatedCatalogCourses(course: { id: string; slug: string; title: string }, personId: string) {
+  const topics = catalogTopicsFor(course);
+  const editorial = adsCourses.has(course.slug) ? adsComplements : null;
+  if (!topics.length && !editorial) return [];
+  const [catalog, enrollments] = await Promise.all([
+    publishedCourses(),
+    personId ? crm().then((sql) => sql`SELECT course_id FROM lms_enrollments WHERE person_id = ${personId}`) : [],
+  ]);
+  const excluded = new Set([course.id, ...enrollments.map((row) => String(row.course_id))]);
+  return catalog.flatMap((candidate) => {
+    if (excluded.has(candidate.id)) return [];
+    const shared = topics.filter((topic) => matchesCourseTopic(candidate, topic));
+    const reason = shared.length ? shared[0].label : editorial?.get(candidate.slug);
+    return reason ? [{ course: candidate, reason, shared: shared.length }] : [];
+  }).sort((left, right) => right.shared - left.shared).slice(0, 3);
 }
 
 export async function catalogCourseRatings(courseIds: string[]) {

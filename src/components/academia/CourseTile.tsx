@@ -11,7 +11,7 @@ import type {publishedCourses} from '@/lib/valux/data';
 
 type Course = Awaited<ReturnType<typeof publishedCourses>>[number];
 
-export function CourseTile({ course, wide = false, headingLevel = 3, rating }: { course: Course; wide?: boolean; headingLevel?: 2 | 3; rating?: { average: number; count: number } }) {
+export function CourseTile({ course, wide = false, headingLevel = 3, rating, reason }: { course: Course; wide?: boolean; headingLevel?: 2 | 3; rating?: { average: number; count: number }; reason?: string }) {
   return (
     <Link href={`/academia/${course.slug}`} className="academy-focus group block h-full min-w-0 rounded-academy-lg">
       <Card padding={0} className={`h-full overflow-hidden border-academy-line transition-shadow motion-safe:group-hover:shadow-md ${wide ? 'grid md:grid-cols-2' : 'flex flex-col'}`}>
@@ -19,7 +19,7 @@ export function CourseTile({ course, wide = false, headingLevel = 3, rating }: {
         <VStack gap={3} className="flex-1 p-5 sm:p-6">
           <Heading level={headingLevel} className="text-balance break-words text-xl font-bold leading-snug group-hover:text-academy-primary">{course.title}</Heading>
           <Text as="p" className="text-xs font-semibold text-academy-muted">{course.teacher_name || 'Academia Cluster'}</Text>
-          <Text as="p" type="supporting" maxLines={2} className="text-academy-muted">{course.description}</Text>
+          <Text as="p" type="supporting" maxLines={2} className="text-academy-muted">{reason || course.description}</Text>
           {rating ? (
             <HStack gap={2} align="center" className="text-academy-primary">
               <Icon name="star" size={16} fill="currentColor" aria-hidden="true" />

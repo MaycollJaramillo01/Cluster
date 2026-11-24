@@ -18,6 +18,13 @@ type Rating = { average: number; count: number };
 
 export const academyCatalogPath = '/academia?vista=catalogo#catalogo';
 
+const topicArt: Record<Topic['id'], string> = {
+  marketing: '/assets/stock/analytics.jpg',
+  diseno: '/assets/stock/office.jpg',
+  ventas: '/assets/stock/meeting.jpg',
+  tecnologia: '/assets/videos/agent-ia/hero-automation-poster.webp',
+};
+
 const learning = [
   { icon: 'video', title: 'Aprende a tu ritmo', body: 'Entra desde el celular o la computadora y retoma donde quedaste.' },
   { icon: 'target', title: 'Pon la teoría en práctica', body: 'Aplica lo aprendido con ejercicios, misiones y materiales según el curso.' },
@@ -65,15 +72,19 @@ export function AcademyHome({ featured, topics, freeCourse, ratings }: { feature
       {topics.length ? (
         <VStack as="section" gap={3} aria-labelledby="academy-topics-title" className="mx-auto w-full max-w-7xl px-4 pt-6 sm:px-6 sm:pt-8 lg:px-8">
           <Heading level={2} id="academy-topics-title" className="academy-section-title">Explora por tema</Heading>
-          <nav aria-labelledby="academy-topics-title" className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+          <nav aria-labelledby="academy-topics-title" className="grid min-w-0 grid-flow-col auto-cols-[46%] snap-x snap-mandatory gap-3 overflow-x-auto px-1 pb-2 pt-1 sm:gap-4 md:grid-flow-row md:grid-cols-4 md:snap-none md:overflow-visible">
             {topics.map((topic) => (
-              <Link href={`/academia?categoria=${topic.id}#catalogo`} prefetch={false} key={topic.id} className="academy-focus group flex min-h-16 items-center gap-2 rounded-academy-lg border border-academy-line px-2.5 py-2 transition-colors hover:border-academy-primary hover:bg-academy-tint sm:gap-3 sm:px-3.5">
-                <HStack align="center" justify="center" className="size-9 shrink-0 rounded-academy bg-academy-tint text-academy-primary sm:size-11"><Icon name={topic.icon} size={21} aria-hidden="true" /></HStack>
-                <VStack gap={0} className="min-w-0 flex-1">
-                  <Text className="break-words text-sm font-bold sm:text-base">{topic.label}</Text>
-                  <Text className="text-xs text-academy-muted">{topic.count} {topic.count === 1 ? 'curso' : 'cursos'}</Text>
-                </VStack>
-                <Icon name="arrow-right" size={17} className="hidden shrink-0 text-academy-primary lg:block" aria-hidden="true" />
+              <Link href={`/academia?categoria=${topic.id}#catalogo`} prefetch={false} key={topic.id} className="academy-focus group flex min-w-0 snap-start flex-col overflow-hidden rounded-academy-lg border border-academy-line transition-colors hover:border-academy-primary">
+                <figure className="relative aspect-[2/1] overflow-hidden bg-academy-tint">
+                  <Image src={topicArt[topic.id]} alt="" fill sizes="(min-width: 1280px) 290px, (min-width: 768px) 24vw, 46vw" className="object-cover motion-safe:transition-transform motion-safe:group-hover:scale-105" />
+                </figure>
+                <HStack gap={2} align="center" className="flex-1 px-3 py-3 sm:px-4">
+                  <VStack gap={0} className="min-w-0 flex-1">
+                    <Text className="break-words text-sm font-bold sm:text-base">{topic.label}</Text>
+                    <Text className="text-xs text-academy-muted">{topic.count} {topic.count === 1 ? 'curso' : 'cursos'}</Text>
+                  </VStack>
+                  <Icon name="arrow-right" size={17} className="shrink-0 text-academy-primary" aria-hidden="true" />
+                </HStack>
               </Link>
             ))}
           </nav>

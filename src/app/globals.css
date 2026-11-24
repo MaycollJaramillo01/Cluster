@@ -337,6 +337,25 @@
     background-color: var(--academy-deep);
   }
 
+  .academy-course-masthead {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .academy-course-masthead::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: var(--academy-deep);
+    box-shadow: 0 0 0 100vmax var(--academy-deep);
+    clip-path: inset(0 -100vmax);
+  }
+
+  .academy-course-masthead :where(a):focus-visible {
+    outline-color: currentColor;
+  }
+
   .academy-classroom {
     min-height: calc(100dvh - var(--academy-header-size));
   }

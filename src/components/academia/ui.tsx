@@ -67,15 +67,17 @@ const courseArt: Record<string, string> = {
   'diseno-contenido-canva': '/assets/stock/workspace.jpg',
   'ventas-por-whatsapp': '/assets/stock/retail.jpg',
   'ia-automatizacion-negocios': '/assets/stock/laptop.jpg',
-  'meta-ads-negocios-locales': '/assets/stock/analytics.jpg',
+  'meta-ads-negocios-locales': '/assets/academia/meta-ads-locales.webp',
 };
 
-export function Cover({ url, title, slug = '', eager = false }: { url: string; title: string; slug?: string; eager?: boolean }) {
-  const defaultCover = !url || url.startsWith('/assets/videos/services/') || (slug === 'publicidad-facebook-instagram' && url === '/assets/stock/social.jpg');
+export function Cover({ url, title, slug = '', eager = false, aspect = 'aspect-video' }: { url: string; title: string; slug?: string; eager?: boolean; aspect?: string }) {
+  const defaultCover = !url || url.startsWith('/assets/videos/services/')
+    || (slug === 'publicidad-facebook-instagram' && url === '/assets/stock/social.jpg')
+    || (slug === 'meta-ads-negocios-locales' && url === '/assets/stock/analytics.jpg');
   const image = defaultCover && courseArt[slug] ? courseArt[slug] : url;
-  if (image) return <img src={image} alt="" width={640} height={360} loading={eager ? 'eager' : 'lazy'} className="aspect-video w-full bg-academy-deep object-cover" />;
+  if (image) return <img src={image} alt="" width={640} height={360} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : undefined} className={`${aspect} w-full bg-academy-deep object-cover`} />;
   return (
-    <figure aria-hidden="true" className="academy-hero grid aspect-video place-items-center text-white">
+    <figure aria-hidden="true" className={`academy-hero grid ${aspect} place-items-center text-white`}>
       <Icon name={title ? 'play' : 'pen'} size={46} strokeWidth={1.25} />
     </figure>
   );
