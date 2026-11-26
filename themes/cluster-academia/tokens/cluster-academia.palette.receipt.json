@@ -3,7 +3,7 @@
   "recipe": "astryx-oklch-v1",
   "generatorVersion": "palette-generator-v1",
   "candidateFormatVersion": "palette-typescript-v1",
-  "candidateSha256": "032e39f9731f6c766f7d0b1d17f579cbca765abc53ffa6a0061a1f8a5c2fda86",
+  "candidateSha256": "da71621006b77c06fad8e7f2b8d183c8ef44dcaf02e2307af3d788560f4db28c",
   "request": {
     "recipe": "astryx-oklch-v1",
     "vibrancy": 50,
@@ -36,13 +36,13 @@
       {
         "id": "accent",
         "name": "Accent",
-        "seed": "#007d65",
+        "seed": "#4f46e5",
         "kind": "chromatic",
         "anchors": [
           {
             "mode": "light",
             "stop": 45,
-            "color": "#007d65",
+            "color": "#4f46e5",
             "policy": "exact"
           }
         ]
@@ -54,50 +54,46 @@
       "accent": {
         "light": {
           "monotonic": true,
-          "minimumAdjacentDeltaE": 4.1952509917994725,
-          "maximumAdjacentDeltaE": 18.15677389805662,
-          "maximumHueDrift": 1.9970877881165734,
+          "minimumAdjacentDeltaE": 3.9047370480112824,
+          "maximumAdjacentDeltaE": 20.32210014126293,
+          "maximumHueDrift": 0.5006607891507429,
           "hueIdentityRisk": null,
           "gamutMappedStops": [
-            5,
-            10,
-            15,
-            20,
-            25,
-            30,
-            35,
-            40,
-            45,
-            50,
-            55,
+            60,
+            65,
+            70,
+            75,
+            80,
+            85,
+            90,
+            95,
             100
           ],
           "anchors": [
             {
               "mode": "light",
               "stop": 45,
-              "color": "#007d65",
+              "color": "#4f46e5",
               "policy": "exact",
-              "generatedColor": "#007d65",
+              "generatedColor": "#4f46e5",
               "deltaE": 0
             }
           ]
         },
         "dark": {
           "monotonic": true,
-          "minimumAdjacentDeltaE": 4.244724757456572,
-          "maximumAdjacentDeltaE": 18.15677389805662,
-          "maximumHueDrift": 2.036465473412477,
+          "minimumAdjacentDeltaE": 4.256451954407826,
+          "maximumAdjacentDeltaE": 19.675175492066124,
+          "maximumHueDrift": 0.3655800538319909,
           "hueIdentityRisk": null,
           "gamutMappedStops": [
-            5,
-            10,
-            15,
-            20,
-            25,
-            30,
-            35,
-            40,
+            65,
+            70,
+            75,
+            80,
+            85,
+            90,
+            95,
             100
           ],
           "anchors": []

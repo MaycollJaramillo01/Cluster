@@ -63,15 +63,15 @@ export function Page({ children, className = '' }: { children: ReactNode; classN
 }
 
 const courseArt: Record<string, string> = {
-  'publicidad-facebook-instagram': '/assets/stock/strategy.jpg',
-  'diseno-contenido-canva': '/assets/stock/workspace.jpg',
-  'ventas-por-whatsapp': '/assets/stock/retail.jpg',
-  'ia-automatizacion-negocios': '/assets/stock/laptop.jpg',
+  'publicidad-facebook-instagram': '/assets/academia/stitch/marketing.webp',
+  'diseno-contenido-canva': '/assets/academia/stitch/diseno.webp',
+  'ventas-por-whatsapp': '/assets/academia/stitch/ventas.webp',
+  'ia-automatizacion-negocios': '/assets/academia/stitch/tecnologia.webp',
   'meta-ads-negocios-locales': '/assets/academia/meta-ads-locales.webp',
 };
 
 export function Cover({ url, title, slug = '', eager = false, aspect = 'aspect-video' }: { url: string; title: string; slug?: string; eager?: boolean; aspect?: string }) {
-  const defaultCover = !url || url.startsWith('/assets/videos/services/')
+  const defaultCover = !url || url.startsWith('/assets/videos/services/') || url.startsWith('/assets/stock/')
     || (slug === 'publicidad-facebook-instagram' && url === '/assets/stock/social.jpg')
     || (slug === 'meta-ads-negocios-locales' && url === '/assets/stock/analytics.jpg');
   const image = defaultCover && courseArt[slug] ? courseArt[slug] : url;

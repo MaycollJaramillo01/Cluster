@@ -4,8 +4,8 @@
 // prettier-ignore
 export const clusterAcademiaPaletteRefs = {
   accent: {
-    light: {35: '#00614e', 45: '#007d65', 85: '#a7e4d0'},
-    dark: {30: '#005443', 70: '#6dbea6', 80: '#99d5c2'},
+    light: {40: '#4538d3', 45: '#4f46e5', 85: '#c9d1ff'},
+    dark: {30: '#363697', 70: '#96a2ff', 80: '#b8c2ff'},
   },
   white: '#ffffff',
   black: '#000000',

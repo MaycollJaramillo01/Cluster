@@ -1,19 +1,88 @@
 {
   "name": "cluster-academia",
   "like": "neutral",
-  "mode": "both",
+  "mode": "light-only",
   "settings": [
     {
       "thing": "accent",
-      "value": "#007d65",
+      "value": "#4f46e5",
       "source": "dial"
     },
     {
       "thing": "corners",
-      "value": "large",
+      "value": "medium",
       "source": "dial"
+    },
+    {
+      "thing": "--font-family-body",
+      "value": "var(--font-academy-body, Inter), Arial, sans-serif",
+      "source": "token"
+    },
+    {
+      "thing": "--font-family-heading",
+      "value": "var(--font-academy-heading, Arial), sans-serif",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-element",
+      "value": "0.5rem",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-container",
+      "value": "1rem",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-page",
+      "value": "1.5rem",
+      "source": "token"
+    },
+    {
+      "thing": "--color-text-secondary",
+      "value": "#4b5870",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-border",
+      "value": "#e2e8f0",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-background-body",
+      "value": "#fafafc",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "#0f172a",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-background-surface",
+      "value": "#ffffff",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "var(--color-on-dark)",
+      "source": "token",
+      "on": "toast",
+      "note": "feeds color on toast, color on button inside toast (when variant=ghost), color on button inside toast (when variant=secondary)"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "var(--color-on-dark)",
+      "source": "token",
+      "on": "lightbox",
+      "note": "feeds color on lightbox, color on button inside lightbox (when variant=ghost), color on button inside lightbox (when variant=secondary), color on text inside lightbox (when color=primary)"
     }
   ],
   "lifted": [],
-  "palette": "18fe2697e25ba99b870475b9c843501285abff427cf19c59c6c097b1cd0191a8"
+  "palette": "7f31b4ff17ba3a7d5ef7f0379365925f9c0a950ad89dead9fe395a1d5ce4c30a"
 }

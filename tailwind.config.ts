@@ -53,6 +53,8 @@ const config: Config = {
         },
       },
       fontFamily: {
+        'academy-heading': ['var(--font-family-heading)', 'Arial', 'sans-serif'],
+        'academy-body': ['var(--font-family-body)', 'Arial', 'sans-serif'],
         display: ['var(--font-display)', 'Arial Narrow', 'Impact', 'sans-serif'],
         brand: ['var(--font-brand)', 'Montserrat', 'Arial', 'sans-serif'],
         sans: ['var(--font-body)', 'Georgia', 'serif'],
@@ -70,6 +72,7 @@ const config: Config = {
         academy: 'var(--radius-element)',
         'academy-lg': 'var(--radius-container)',
         'academy-xl': 'var(--radius-page)',
+        'academy-full': '9999px',
         none: '0',
         sm: '0',
         DEFAULT: '0',

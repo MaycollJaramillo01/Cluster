@@ -95,10 +95,10 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
               </VStack>
               <Button as={Link} href={`/dashboard/cursos/${course.id}?vista=${course.review_requested_at || course.review_feedback ? 'revision' : 'temario'}`} label="Abrir editor" icon={<Icon name="pen" size={16} />} />
             </HStack>
-            {mine.length === 0 ? <p className="text-sm text-black/50">Sin alumnos todavía.</p> : (
+            {mine.length === 0 ? <p className="text-sm text-academy-muted">Sin alumnos todavía.</p> : (
               <section className="academy-panel overflow-x-auto" aria-label={`Alumnos de ${course.title}`} tabIndex={0}>
               <table className="w-full min-w-max text-left text-sm">
-                <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Alumno</th><th className="px-4 py-2 font-medium">Desde</th><th className="px-4 py-2 font-medium">Avance</th><th className="px-4 py-2 font-medium">XP</th></tr></thead>
+                <thead><tr className="border-b border-black/10 text-xs text-academy-muted"><th className="px-4 py-2 font-medium">Alumno</th><th className="px-4 py-2 font-medium">Desde</th><th className="px-4 py-2 font-medium">Avance</th><th className="px-4 py-2 font-medium">XP</th></tr></thead>
                 <tbody>
                   {mine.map((student, index) => (
                     <tr key={index} className="border-b border-black/5">
@@ -118,10 +118,10 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
 
       <section className="space-y-2">
         <h2 className="text-xl font-medium">Ventas</h2>
-        {sales.length === 0 ? <p className="text-sm text-black/50">Sin ventas todavía.</p> : (
+        {sales.length === 0 ? <p className="text-sm text-academy-muted">Sin ventas todavía.</p> : (
           <section className="academy-panel overflow-x-auto" aria-label="Detalle de ventas" tabIndex={0}>
           <table className="w-full min-w-max text-left text-sm">
-            <thead><tr className="border-b border-black/10 text-xs text-black/50"><th className="px-4 py-2 font-medium">Fecha</th><th className="px-4 py-2 font-medium">Curso</th><th className="px-4 py-2 font-medium">Total</th><th className="px-4 py-2 font-medium">Tu parte</th></tr></thead>
+            <thead><tr className="border-b border-black/10 text-xs text-academy-muted"><th className="px-4 py-2 font-medium">Fecha</th><th className="px-4 py-2 font-medium">Curso</th><th className="px-4 py-2 font-medium">Total</th><th className="px-4 py-2 font-medium">Tu parte</th></tr></thead>
             <tbody>
               {sales.map((sale, index) => (
                 <tr key={index} className={`border-b border-black/5 ${sale.refunded_at ? 'text-black/40 line-through' : ''}`}>
@@ -139,7 +139,7 @@ export default async function ProfesorPage({ searchParams }: { searchParams: Pro
 
       <section className="space-y-2">
         <h2 className="text-xl font-medium">Liquidaciones</h2>
-        {payouts.length === 0 ? <p className="text-sm text-black/50">Sin liquidaciones todavía.</p> : (
+        {payouts.length === 0 ? <p className="text-sm text-academy-muted">Sin liquidaciones todavía.</p> : (
           <ul className="space-y-1 text-sm">
             {payouts.map((payout) => <li key={payout.period_ym}>{payout.period_ym}: {money(Number(payout.amount_cents))} · {payout.status}</li>)}
           </ul>
