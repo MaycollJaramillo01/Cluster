@@ -26,7 +26,7 @@ const reserved = new Set(['marketplace', 'blog', 'paypal', 'stripe', 'entrar', '
 function AcademyBrand() {
   return (
     <Link href="/academia" className="academy-focus flex shrink-0 items-center gap-2.5" aria-label="Academia Cluster">
-      <HStack align="center" justify="center" className="size-10 shrink-0 rounded-academy bg-academy-action shadow-sm">
+      <HStack align="center" justify="center" className="size-10 shrink-0 rounded-academy bg-academy-deep shadow-sm">
         <Image src="/assets/logo-white.webp" alt="" width={28} height={18} className="h-auto w-7" />
       </HStack>
       <VStack gap={0}>

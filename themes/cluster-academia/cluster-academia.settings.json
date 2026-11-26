@@ -4,11 +4,6 @@
   "mode": "light-only",
   "settings": [
     {
-      "thing": "accent",
-      "value": "#4f46e5",
-      "source": "dial"
-    },
-    {
       "thing": "corners",
       "value": "medium",
       "source": "dial"
@@ -39,30 +34,6 @@
       "source": "token"
     },
     {
-      "thing": "--color-text-secondary",
-      "value": "#4b5870",
-      "source": "token",
-      "mode": "light"
-    },
-    {
-      "thing": "--color-border",
-      "value": "#e2e8f0",
-      "source": "token",
-      "mode": "light"
-    },
-    {
-      "thing": "--color-background-body",
-      "value": "#fafafc",
-      "source": "token",
-      "mode": "light"
-    },
-    {
-      "thing": "--color-text-primary",
-      "value": "#0f172a",
-      "source": "token",
-      "mode": "light"
-    },
-    {
       "thing": "--color-background-surface",
       "value": "#ffffff",
       "source": "token",
@@ -81,8 +52,38 @@
       "source": "token",
       "on": "lightbox",
       "note": "feeds color on lightbox, color on button inside lightbox (when variant=ghost), color on button inside lightbox (when variant=secondary), color on text inside lightbox (when color=primary)"
+    },
+    {
+      "thing": "accent",
+      "value": "#02C39A",
+      "source": "dial"
+    },
+    {
+      "thing": "neutral",
+      "value": "#171717",
+      "source": "dial"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "#111111",
+      "source": "token"
+    },
+    {
+      "thing": "--color-text-secondary",
+      "value": "#525252",
+      "source": "token"
+    },
+    {
+      "thing": "--color-border",
+      "value": "#e2e5e2",
+      "source": "token"
+    },
+    {
+      "thing": "--color-background-body",
+      "value": "#fafbf9",
+      "source": "token"
     }
   ],
   "lifted": [],
-  "palette": "7f31b4ff17ba3a7d5ef7f0379365925f9c0a950ad89dead9fe395a1d5ce4c30a"
+  "palette": "487dd2e0e411d2c3d438e8e2304f5a9209b842e3a281820d9e5881e84d6c832e"
 }

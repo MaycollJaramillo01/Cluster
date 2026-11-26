@@ -72,7 +72,7 @@ export function AcademyHome({ featured, topics, freeCourse, ratings, heroProgres
           <VStack gap={6} className="min-w-0 items-start">
             <HStack align="center" gap={2} className="w-fit rounded-academy-full bg-academy-tint px-3 py-1.5 text-academy-primary"><Text aria-hidden="true" className="text-sm leading-none">●</Text><Text className="text-xs font-semibold uppercase tracking-wide">Academia Cluster · Aprendizaje digital</Text></HStack>
             <VStack gap={3}>
-              <Heading id="academy-hero-title" level={1} className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl xl:text-6xl">Aprende hoy.<Text type="inherit" className="block bg-gradient-to-r from-academy-primary to-academy-hero-end bg-clip-text font-academy-heading text-transparent">Transforma tu futuro.</Text></Heading>
+              <Heading id="academy-hero-title" level={1} className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl xl:text-6xl">Aprende hoy.<Text type="inherit" className="block font-academy-heading text-academy-primary">Transforma tu futuro.</Text></Heading>
               <Text as="p" className="max-w-xl text-base leading-relaxed text-academy-muted sm:text-lg">Domina las habilidades digitales que están transformando los negocios. Aprende marketing, diseño, inteligencia artificial, ventas y tecnología con cursos prácticos diseñados para aplicar tus conocimientos desde el primer día.</Text>
             </VStack>
             <HStack gap={4} wrap="wrap">

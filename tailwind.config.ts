@@ -20,7 +20,6 @@ const config: Config = {
           'action-text': 'var(--color-on-accent)',
           deep: 'var(--academy-deep)',
           success: 'var(--color-text-success)',
-          'hero-end': 'var(--color-data-teal-4)',
         },
         // Paleta editorial: tinta #111111 (negro neutro) + papel #F9F9F9
         ink: {
