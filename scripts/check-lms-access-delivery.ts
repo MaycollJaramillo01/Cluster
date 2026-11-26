@@ -139,9 +139,10 @@ async function main() {
   console.log('OK Compra y reembolsos simultáneos conservan un resultado coherente');
 
   const { POST } = await import('@/app/api/academia/stripe/route');
-  const sendInvoice = (paymentId = 'in_fase1', subscription = 'sub_fase1', owned = true) => {
-    const payload = JSON.stringify({ id: `evt_${paymentId}`, type: 'invoice.paid', data: { object: {
-      id: paymentId, subscription, currency: owned ? 'hnl' : 'usd', amount_paid: 10000,
+  const sendInvoice = (paymentId = 'in_fase1', subscription = 'sub_fase1', owned = true, type = 'invoice.paid', currency = owned ? 'hnl' : 'usd') => {
+    const payload = JSON.stringify({ id: `evt_${paymentId}`, type, data: { object: {
+      id: paymentId, subscription, currency, amount_paid: 10000, amount_due: 10000,
+      customer_email: 'renew-fase1@example.test',
       subscription_details: { metadata: owned ? { kind: 'suscripcion', buyer_email: 'renew-fase1@example.test' } : {} },
     } } });
     const timestamp = Math.floor(Date.now() / 1000);
@@ -159,6 +160,14 @@ async function main() {
   assert.equal((await sendInvoice('in_fase1_external', 'sub_fase1_external', false)).status, 200);
   assert.equal((await sql`SELECT id FROM valux_sales WHERE paypal_order_id='in_fase1_external'`).length, 0);
   console.log('OK Una factura adelantada de Stripe se reintenta cuando existe la membresía');
+
+  const sendFailedInvoice = () => sendInvoice('in_failed_academy', 'sub_fase1', true, 'invoice.payment_failed', 'usd');
+  assert.equal((await sendFailedInvoice()).status, 200);
+  assert.deepEqual(await (await sendFailedInvoice()).json(), { received: true, duplicate: true });
+  assert.equal((await sendInvoice('in_failed_external', 'sub_fase1_external', false, 'invoice.payment_failed')).status, 200);
+  const failedNotices = await sql`SELECT key, delivered FROM academia_followups WHERE key IN ('cobro:in_failed_academy', 'cobro:in_failed_external')`;
+  assert.deepEqual(failedNotices.map(({ key, delivered }) => ({ key, delivered })), [{ key: 'cobro:in_failed_academy', delivered: true }]);
+  console.log('OK Un cobro fallido en USD avisa una sola vez y una factura ajena no avisa');
 
   await sql`INSERT INTO valux_intents(id,paypal_order_id,kind,item_id,buyer_name,buyer_email,amount_cents)
     VALUES ('phase1-expired','cs_fase1_expired','suscripcion','pro','Anterior','expired-fase1@example.test',35000)`;

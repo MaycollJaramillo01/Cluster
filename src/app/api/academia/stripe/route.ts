@@ -40,7 +40,8 @@ export async function POST(request: Request) {
       case 'checkout.session.async_payment_succeeded':
         await fulfillStripeSession(ref(item.id), event.type);
         break;
-      case 'invoice.paid': {
+      case 'invoice.paid':
+      case 'invoice.payment_failed': {
         type SubscriptionDetails = { subscription?: unknown; metadata?: Record<string, string> };
         const parent = item.parent as { subscription_details?: SubscriptionDetails } | undefined;
         const subscriptionId = ref(item.subscription) || ref(parent?.subscription_details?.subscription);
@@ -51,7 +52,17 @@ export async function POST(request: Request) {
           const [known] = await sql`SELECT 1 FROM valux_subscriptions WHERE gateway_id = ${subscriptionId}`;
           if (!known) break;
         }
-        if (String(item.currency).toUpperCase() !== CURRENCY) throw new Error('Moneda de factura incorrecta');
+        const isAcademyCurrency = String(item.currency).toUpperCase() === CURRENCY;
+        if (event.type === 'invoice.payment_failed') {
+          await sendPaymentFailed({
+            invoiceId: ref(item.id),
+            email: String(item.customer_email || ''),
+            amountCents: isAcademyCurrency ? Number(item.amount_due) || 0 : null,
+            payUrl: String(item.hosted_invoice_url || ''),
+          });
+          break;
+        }
+        if (!isAcademyCurrency) throw new Error('Moneda de factura incorrecta');
         const lines = item.lines as { data?: { period?: { end?: number } }[] } | undefined;
         const end = Number(lines?.data?.[0]?.period?.end) || 0;
         const recorded = await recordSubscriptionPayment({
@@ -72,16 +83,6 @@ export async function POST(request: Request) {
       case 'charge.refunded':
         // ponytail: un reembolso parcial no quita acceso; se decide a mano desde Ventas.
         if (item.refunded) await revokeCharge(ref(item.payment_intent), ref(item.invoice), 'reembolso');
-        break;
-      case 'invoice.payment_failed':
-        if (String(item.currency).toUpperCase() !== CURRENCY) throw new Error('Moneda de factura incorrecta');
-        // Renovación rechazada: aviso al alumno con el enlace de Stripe para pagar con otra tarjeta.
-        await sendPaymentFailed({
-          invoiceId: ref(item.id),
-          email: String(item.customer_email || ''),
-          amountCents: Number(item.amount_due) || 0,
-          payUrl: String(item.hosted_invoice_url || ''),
-        });
         break;
       case 'charge.dispute.created':
         await revokeCharge(ref(item.payment_intent), '', 'disputa');

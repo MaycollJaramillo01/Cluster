@@ -164,15 +164,16 @@ export async function sendExpiringMemberships() {
 }
 
 // Webhook invoice.payment_failed: un aviso por factura con el enlace de Stripe para pagar con otra tarjeta.
-export async function sendPaymentFailed(input: { invoiceId: string; email: string; amountCents: number; payUrl: string }) {
+export async function sendPaymentFailed(input: { invoiceId: string; email: string; amountCents: number | null; payUrl: string }) {
   const email = input.email.trim().toLowerCase();
   if (!input.invoiceId || !email.includes('@')) return false;
+  const payment = input.amountCents === null ? 'el pago' : academyMoney(input.amountCents);
   return sendFollowup(`cobro:${input.invoiceId}`, email, 'cobro',
     'No pudimos cobrar tu membresía',
     [
       'Hola,',
       '',
-      `Stripe no pudo cobrar ${academyMoney(input.amountCents)} de tu membresía de la academia. Puede ser una tarjeta vencida o sin fondos.`,
+      `Stripe no pudo cobrar ${payment} de tu membresía de la academia. Puede ser una tarjeta vencida o sin fondos.`,
       input.payUrl ? `Puedes pagar con otra tarjeta aquí: ${input.payUrl}` : `Revisa tu membresía aquí: ${base()}/academia/suscripcion`,
       '',
       'Stripe vuelve a intentar el cobro en los próximos días. Si no se cobra, la membresía se cierra.',
