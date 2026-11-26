@@ -12,7 +12,8 @@ import { payNote } from '@/components/academia/ui';
 import { Icon } from '@/components/ui/Icon';
 import { catalogCourseRatings, catalogSearchText, courseTopics, featuredCourseIds, matchesCourseTopic, selectFeatured } from '@/lib/valux/catalog';
 import { site } from '@/lib/site';
-import { publishedCourses } from '@/lib/valux/data';
+import { myCourses, publishedCourses } from '@/lib/valux/data';
+import { academiaPersonId } from '@/lib/valux/session';
 
 export const metadata: Metadata = {
   title: 'Academia Cluster | Cursos de marketing, diseño y tecnología',
@@ -34,8 +35,12 @@ export default async function AcademiaHomePage({ searchParams }: { searchParams:
 
   if (!isCatalog) {
     const freeCourse = all.find((course) => course.price_cents === 0 && course.slug === 'meta-ads-negocios-locales') ?? all.find((course) => course.price_cents === 0);
-    const ratings = await catalogCourseRatings(featured.map((course) => course.id));
-    return <AcademyHome featured={featured} topics={topics} freeCourse={freeCourse} ratings={ratings} />;
+    const [ratings, enrolled] = await Promise.all([
+      catalogCourseRatings([...new Set([...featured.map((course) => course.id), ...(freeCourse ? [freeCourse.id] : [])])]),
+      academiaPersonId().then(myCourses),
+    ]);
+    const heroProgress = enrolled.find((course) => course.available && course.slug === (freeCourse ?? featured[0])?.slug);
+    return <AcademyHome featured={featured} topics={topics} freeCourse={freeCourse} ratings={ratings} heroProgress={heroProgress} />;
   }
 
   const featuredIds = new Set(featured.map((course) => course.id));

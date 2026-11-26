@@ -19,6 +19,8 @@ const config: Config = {
           action: 'var(--color-accent)',
           'action-text': 'var(--color-on-accent)',
           deep: 'var(--academy-deep)',
+          success: 'var(--color-text-success)',
+          'hero-end': 'var(--color-icon-teal)',
         },
         // Paleta editorial: tinta #111111 (negro neutro) + papel #F9F9F9
         ink: {
@@ -91,6 +93,7 @@ const config: Config = {
         panel: '0 30px 80px -20px rgba(0,0,0,0.45)',
       },
       backgroundImage: {
+        'academy-hero': 'radial-gradient(ellipse at 85% 20%, color-mix(in srgb, var(--color-accent-muted) 45%, transparent), transparent 50%), radial-gradient(ellipse at 8% 95%, color-mix(in srgb, var(--color-accent-muted) 30%, transparent), transparent 42%)',
         'grid-fade':
           'linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)',
       },

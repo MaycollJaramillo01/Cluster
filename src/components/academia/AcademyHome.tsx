@@ -4,6 +4,7 @@ import { Button } from '@astryxdesign/core/Button';
 import { Grid } from '@astryxdesign/core/Grid';
 import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
+import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { Icon } from '@/components/ui/Icon';
@@ -45,50 +46,65 @@ const questions = [
 export function AcademySearch({ q = '', type, category, hero = false }: { q?: string; type?: string; category?: string; hero?: boolean }) {
   const id = hero ? 'hero-course-search' : 'course-search';
   return (
-    <form action="/academia#catalogo" role="search" aria-label={hero ? 'Buscar en Academia' : 'Buscar en el catálogo'} className={hero ? 'flex w-full items-center gap-2 rounded-academy-lg border border-academy-line bg-academy-surface p-2 shadow-sm' : 'flex w-full max-w-lg items-center gap-2'}>
+    <form action="/academia#catalogo" role="search" aria-label={hero ? 'Buscar en Academia' : 'Buscar en el catálogo'} className={hero ? 'flex w-full max-w-xl items-center gap-2 rounded-academy border border-academy-surface bg-academy-surface p-2 shadow-sm' : 'flex w-full max-w-lg items-center gap-2'}>
       <input type="hidden" name="vista" value="catalogo" />
       {type ? <input type="hidden" name="tipo" value={type} /> : null}
       {category ? <input type="hidden" name="categoria" value={category} /> : null}
-      {hero ? <Icon name="search" size={19} className="ml-2 shrink-0 text-academy-primary" aria-hidden="true" /> : null}
+      {hero ? <HStack align="center" justify="center" className="size-10 shrink-0 rounded-academy bg-academy-tint text-academy-primary"><Icon name="search" size={19} aria-hidden="true" /></HStack> : null}
       <label htmlFor={id} className="sr-only">Buscar cursos</label>
-      <input id={id} type="search" name="q" autoComplete="off" defaultValue={q} placeholder={hero ? '¿Qué quieres aprender hoy?' : 'Busca por curso o tema…'} className={hero ? 'min-h-11 min-w-0 flex-1 scroll-mt-24 bg-transparent px-1 text-base text-academy-ink placeholder:text-academy-muted' : 'academy-field min-w-0 flex-1 scroll-mt-24'} />
-      <Button type="submit" variant="primary" size={hero ? 'md' : 'lg'} label="Buscar" />
+      <input id={id} type="search" name="q" autoComplete="off" defaultValue={q} placeholder={hero ? '¿Qué quieres aprender hoy? (ej. Facebook Ads, IA, Canva…)' : 'Busca por curso o tema…'} className={hero ? 'min-h-11 min-w-0 flex-1 scroll-mt-24 bg-transparent px-1 text-sm text-academy-ink placeholder:text-academy-muted' : 'academy-field min-w-0 flex-1 scroll-mt-24'} />
+      <Button type="submit" variant="primary" size={hero ? 'sm' : 'lg'} label="Buscar" />
     </form>
   );
 }
 
-export function AcademyHome({ featured, topics, freeCourse, ratings }: { featured: Course[]; topics: Topic[]; freeCourse?: Course; ratings: Map<string, Rating> }) {
+export function AcademyHome({ featured, topics, freeCourse, ratings, heroProgress }: { featured: Course[]; topics: Topic[]; freeCourse?: Course; ratings: Map<string, Rating>; heroProgress?: { done: number; lessons: number; nextLesson: { slug: string; title: string } | null } }) {
   const heroCourse = freeCourse ?? featured[0];
+  const heroRating = heroCourse ? ratings.get(heroCourse.id) : undefined;
+  const done = heroProgress?.done ?? 0;
+  const lessons = heroProgress?.lessons ?? heroCourse?.lessons ?? 0;
+  const percent = lessons ? Math.min(100, Math.round(done / lessons * 100)) : 0;
+  const heroHref = heroProgress?.nextLesson && heroCourse ? `/academia/${heroCourse.slug}/${heroProgress.nextLesson.slug}` : heroCourse ? `/academia/${heroCourse.slug}` : academyCatalogPath;
   return (
     <VStack as="main" gap={0} className="bg-academy-page">
-      <VStack as="section" aria-labelledby="academy-hero-title" className="border-b border-academy-line bg-gradient-to-br from-academy-page via-academy-surface to-academy-tint">
-        <Grid columns={{ minWidth: 360, max: 2 }} gap={10} align="center" className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
-          <VStack gap={6}>
-            <HStack align="center" gap={2} className="w-fit rounded-academy-full bg-academy-tint px-3 py-2 text-academy-primary"><Icon name="sparkles" size={15} aria-hidden="true" /><Text className="text-xs font-semibold sm:text-sm">Academia Cluster · Aprendizaje digital</Text></HStack>
-            <Heading id="academy-hero-title" level={1} textWrap="balance" className="text-4xl font-extrabold tracking-tight sm:text-5xl">Aprende hoy.<Text type="inherit" className="block font-academy-heading text-academy-primary">Transforma tu futuro.</Text></Heading>
-            <Text as="p" className="max-w-xl text-base leading-relaxed text-academy-muted sm:text-lg">Domina habilidades digitales que puedes aplicar desde el primer día. Aprende marketing, diseño, inteligencia artificial y ventas con cursos prácticos para tu negocio.</Text>
-            <HStack gap={3} wrap="wrap">
-              <Button as={Link} href={academyCatalogPath} label="Explorar cursos" variant="primary" size="lg" icon={<Icon name="arrow-right" size={18} aria-hidden="true" />} />
-              <Button as={Link} href={freeCourse ? `/academia/${freeCourse.slug}` : '/academia?tipo=gratis#catalogo'} label="Empezar gratis" variant="secondary" size="lg" icon={<Icon name="play" size={16} aria-hidden="true" />} />
+      <VStack as="section" aria-labelledby="academy-hero-title" className="border-b border-academy-line bg-academy-page bg-academy-hero">
+        <Grid columns={{ minWidth: 360, max: 2 }} gap={10} align="center" className="mx-auto w-full max-w-screen-2xl px-4 py-12 sm:px-6 sm:py-16 lg:px-12 lg:py-20">
+          <VStack gap={6} className="min-w-0 items-start">
+            <HStack align="center" gap={2} className="w-fit rounded-academy-full bg-academy-tint px-3 py-1.5 text-academy-primary"><Text aria-hidden="true" className="text-sm leading-none">●</Text><Text className="text-xs font-semibold uppercase tracking-wide">Academia Cluster · Aprendizaje digital</Text></HStack>
+            <VStack gap={3}>
+              <Heading id="academy-hero-title" level={1} className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl xl:text-6xl">Aprende hoy.<Text type="inherit" className="block bg-gradient-to-r from-academy-primary to-academy-hero-end bg-clip-text font-academy-heading text-transparent">Transforma tu futuro.</Text></Heading>
+              <Text as="p" className="max-w-xl text-base leading-relaxed text-academy-muted sm:text-lg">Domina las habilidades digitales que están transformando los negocios. Aprende marketing, diseño, inteligencia artificial, ventas y tecnología con cursos prácticos diseñados para aplicar tus conocimientos desde el primer día.</Text>
+            </VStack>
+            <HStack gap={4} wrap="wrap">
+              <Button as={Link} href={academyCatalogPath} label="Explorar cursos" variant="primary" size="lg" className="shadow-lg" icon={<Icon name="arrow-right" size={17} aria-hidden="true" />} />
+              <Button as={Link} href={freeCourse ? `/academia/${freeCourse.slug}` : '/academia?tipo=gratis#catalogo'} label="Empezar gratis" variant="secondary" size="lg" className="bg-academy-tint" icon={<Icon name="play" size={16} className="text-academy-success" aria-hidden="true" />} />
             </HStack>
             <AcademySearch hero />
-            <HStack gap={5} wrap="wrap" className="text-academy-muted">
-              <HStack gap={2} align="center"><Icon name="check" size={16} className="text-academy-primary" aria-hidden="true" /><Text className="text-sm">Clases a tu ritmo</Text></HStack>
-              <HStack gap={2} align="center"><Icon name="target" size={16} className="text-academy-primary" aria-hidden="true" /><Text className="text-sm">Ejercicios para aplicar</Text></HStack>
+            <HStack gap={6} align="center" wrap="wrap" className="pt-2">
+              <HStack gap={3} align="center">
+                <HStack gap={0} aria-hidden="true" className="-space-x-2">
+                  {(['megaphone', 'pen', 'bot'] as const).map((icon) => <HStack key={icon} align="center" justify="center" className="size-9 rounded-academy-full border-2 border-academy-page bg-academy-tint text-academy-primary"><Icon name={icon} size={16} /></HStack>)}
+                </HStack>
+                <VStack gap={0}>
+                  {heroRating ? <><Text className="text-sm font-bold text-academy-primary">★ {heroRating.average.toLocaleString('es', { maximumFractionDigits: 1 })} / 5</Text><Text className="text-xs text-academy-muted">{heroRating.count} {heroRating.count === 1 ? 'reseña de estudiantes' : 'reseñas de estudiantes'}</Text></> : <><Text className="text-sm font-bold">Habilidades digitales</Text><Text className="text-xs text-academy-muted">Para tu próximo paso</Text></>}
+                </VStack>
+              </HStack>
+              <VStack gap={0} className="border-l border-academy-line pl-6"><Text className="text-lg font-bold">Aprende haciendo</Text><Text className="text-xs text-academy-muted">Con ejercicios guiados</Text></VStack>
             </HStack>
           </VStack>
-          <VStack gap={4} className="mx-auto w-full max-w-xl rounded-academy-xl border border-academy-line bg-academy-surface p-3 shadow-xl sm:p-4">
-            <Link href={heroCourse ? `/academia/${heroCourse.slug}` : academyCatalogPath} className="academy-focus group relative overflow-hidden rounded-academy-lg" aria-label={heroCourse ? `Conocer el curso ${heroCourse.title}` : 'Conocer los cursos de Academia'}>
-              <Image src="/assets/academia/stitch/hero.webp" width={1200} height={675} priority sizes="(min-width: 1280px) 560px, (min-width: 800px) 48vw, 100vw" alt="Espacio de aprendizaje digital con una estudiante preparando una campaña" className="aspect-video w-full object-cover" />
+          <VStack gap={4} className="mx-auto w-full max-w-lg rounded-academy-lg border border-academy-surface bg-academy-surface p-4 shadow-xl lg:mr-0">
+            <Link href={heroHref} className="academy-focus group relative overflow-hidden rounded-academy" aria-label={heroCourse ? `Conocer el curso ${heroCourse.title}` : 'Conocer los cursos de Academia'}>
+              <Image src="/assets/academia/stitch/hero.webp" width={1200} height={675} priority sizes="(min-width: 1024px) 480px, (min-width: 800px) 44vw, 100vw" alt="Espacio de aprendizaje digital con una estudiante preparando una campaña" className="aspect-video w-full object-cover" />
               <VStack gap={0} align="center" justify="center" className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent"><HStack gap={0} align="center" justify="center" className="size-14 rounded-academy-full bg-academy-action text-academy-action-text shadow-lg motion-safe:transition-transform motion-safe:group-hover:scale-105"><Icon name="play" size={23} aria-hidden="true" /></HStack></VStack>
-              {heroCourse ? <Text className="absolute bottom-4 left-4 right-4 text-balance text-lg font-bold text-white">{heroCourse.title}</Text> : null}
+              <Text color="inherit" className="absolute left-3 top-3 rounded-academy-full bg-black/75 px-3 py-1 text-xs font-medium text-white">Clases a tu ritmo · Formación práctica</Text>
+              {heroCourse ? <Text color="inherit" className="absolute bottom-3 left-3 right-3 text-lg font-bold text-white">{heroCourse.title}</Text> : null}
             </Link>
-            <VStack gap={3} className="rounded-academy-lg bg-academy-page p-4">
-              <HStack gap={3} align="center"><Icon name="video" size={21} className="text-academy-primary" aria-hidden="true" /><Heading level={2} className="text-lg font-bold">Tu próxima habilidad empieza aquí</Heading></HStack>
-              <Text as="p" className="text-sm leading-relaxed text-academy-muted">Descubre el temario, los materiales y las clases disponibles antes de comenzar.</Text>
-              {heroCourse ? <HStack gap={4} wrap="wrap" className="text-academy-muted"><Text className="text-sm">{heroCourse.lessons} {heroCourse.lessons === 1 ? 'clase' : 'clases'}</Text>{heroCourse.minutes ? <Text className="text-sm">{durationLabel(heroCourse.minutes)}</Text> : null}</HStack> : null}
+            <VStack gap={3} className="rounded-academy bg-academy-page p-4">
+              <HStack gap={2} align="center" justify="between"><HStack gap={2} align="center"><Icon name="target" size={19} className="text-academy-primary" aria-hidden="true" /><Heading level={2} className="text-base font-bold">{heroProgress ? 'Tu ruta en progreso' : 'Tu ruta empieza aquí'}</Heading></HStack><Text className="text-xs font-bold tabular-nums text-academy-primary">{percent}%</Text></HStack>
+              <ProgressBar label="Avance en el curso destacado" value={percent} isLabelHidden />
+              <HStack gap={2} justify="between" wrap="wrap"><Text className="text-xs text-academy-muted">{heroProgress ? `${done} de ${lessons} clases completadas` : `${lessons} clases para comenzar`}</Text><Text className="text-xs font-medium text-academy-success">{heroProgress?.nextLesson ? 'Continúa a tu ritmo' : 'Ejercicios prácticos'}</Text></HStack>
             </VStack>
-            <HStack gap={3} align="center" justify="between" className="px-1 pb-1"><Text className="text-sm text-academy-muted">{heroCourse?.teacher_name || 'Academia Cluster'}</Text>{heroCourse ? <Text className="text-lg font-bold tabular-nums text-academy-primary">{heroCourse.price_cents > 0 ? academyMoney(heroCourse.price_cents) : 'Gratis'}</Text> : null}</HStack>
+            <HStack gap={3} align="center" justify="between" className="px-1 pb-1"><HStack gap={3} align="center"><HStack align="center" justify="center" className="size-10 shrink-0 rounded-academy-full bg-academy-tint text-academy-primary"><Icon name="shield" size={20} aria-hidden="true" /></HStack><VStack gap={0}><Text className="text-sm font-semibold">Acceso al curso</Text><Text className="text-xs text-academy-muted">{heroCourse?.minutes ? `${lessons} clases · ${durationLabel(heroCourse.minutes)}` : 'Clases y actividades prácticas'}</Text></VStack></HStack>{heroCourse ? <Text className="text-xl font-bold tabular-nums text-academy-primary">{heroCourse.price_cents > 0 ? academyMoney(heroCourse.price_cents) : 'Gratis'}</Text> : null}</HStack>
           </VStack>
         </Grid>
       </VStack>
