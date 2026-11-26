@@ -1,20 +1,22 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import { redirect } from 'next/navigation';
+import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
 import { enterAcademia } from '@/lib/valux/actions';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
-import { LoginForm } from '@/components/dashboard/LoginForm';
 import { AccessTabs } from '@/components/academia/AccessTabs';
-import { Cover } from '@/components/academia/ui';
-import { VStack } from '@astryxdesign/core/VStack';
-import { Heading } from '@astryxdesign/core/Heading';
+import { AuthError, AuthShell } from '@/components/academia/AuthShell';
+import { LoginForm } from '@/components/dashboard/LoginForm';
+import { Icon } from '@/components/ui/Icon';
 import { dashboardSession, googleConfigured } from '@/lib/crm/session';
 import { homeFor } from '@/lib/crm/roles';
-import { redirect } from 'next/navigation';
 import { publishedCourse } from '@/lib/valux/data';
 import { courseLoginQuery, loginCourse } from '@/lib/valux/login-course';
 
 const input = 'academy-field w-full';
 const label = 'mb-2 block text-sm font-semibold';
+
 export default async function EntrarPage({ searchParams }: { searchParams: Promise<{ error?: string; modo?: string; acceso?: string; curso?: string }> }) {
   const query = await searchParams;
   const teacher = query.acceso === 'maestros';
@@ -35,77 +37,81 @@ export default async function EntrarPage({ searchParams }: { searchParams: Promi
       : query.error === 'correo'
         ? 'No pudimos enviar el código. Intenta de nuevo en unos minutos.'
         : '';
+  const modeLink = (mode: 'entrar' | 'registro') => `/academia/entrar?modo=${mode}${context}`;
 
   return (
-    <main className="academy-page max-w-5xl">
-    <section className="academy-panel grid overflow-hidden lg:grid-cols-2">
-      <aside className="academy-hero relative hidden flex-col justify-end overflow-hidden text-white lg:flex" aria-label={course ? 'Curso seleccionado' : 'Academia Cluster'}>
-        {course ? <Cover url={course.cover_url} title={course.title} slug={course.slug} /> : (
-          <figure className="relative min-h-64 flex-1">
-            <Image src="/assets/stock/workspace.jpg" alt="" fill sizes="480px" className="object-cover" />
-          </figure>
-        )}
-        <VStack gap={2} className="p-8">
-          <Heading level={2} className="text-3xl font-bold text-white">{course?.title || (teacher ? 'Panel docente' : 'Tu espacio de aprendizaje')}</Heading>
-          <p className="text-sm leading-relaxed text-white/80">{course ? 'Entra o crea una cuenta para seguir con el curso.' : teacher ? 'Accede al editor, a tus alumnos y al avance de tus cursos.' : 'Retoma tus cursos y guarda tu avance con tu correo.'}</p>
-        </VStack>
-      </aside>
-      <VStack gap={0} className="min-w-0 p-5 sm:p-8 lg:p-10">
-      <Heading level={1} className="academy-title mb-4">{teacher ? 'Acceso para maestros' : register ? 'Crea tu cuenta' : 'Entra a la academia'}</Heading>
-      {course ? <p className="mb-4 text-sm text-black/70">Para continuar con <Link href={`/academia/${course.slug}`} className="font-semibold text-ink underline underline-offset-4">{course.title}</Link>.</p> : <AccessTabs teacher={teacher} />}
+    <AuthShell step={1} course={course} teacher={teacher}>
+      {course ? null : <AccessTabs teacher={teacher} />}
       {teacher ? (
-        <VStack gap={5} className="pt-5">
+        <VStack gap={6}>
+          <VStack gap={2}>
+            <Heading level={1} className="academy-title">Acceso para maestros</Heading>
+            <p className="text-academy-muted">Accede al editor, a tus alumnos y al avance de tus cursos.</p>
+          </VStack>
           <LoginForm initialError={query.error || ''} />
-          {googleConfigured() ? <Link href="/dashboard/auth/google" className="flex h-12 items-center justify-center border border-black/20 text-sm hover:border-ink">Entrar con Google</Link> : null}
+          {googleConfigured() ? <Link href="/dashboard/auth/google" className="academy-action academy-action-secondary justify-center">Entrar con Google</Link> : null}
         </VStack>
-      ) : <>
-      {error ? (
-        <p role="alert" className="mt-6 rounded-academy border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</p>
-      ) : null}
-
-      <form action={enterAcademia} className="mt-5 space-y-4">
-        <input type="hidden" name="modo" value={register ? 'registro' : 'entrar'} />
-        <input type="hidden" name="curso" value={course?.slug || ''} />
-        {register ? (
-          <>
+      ) : (
+        <VStack gap={6}>
+          <nav aria-label="Tengo cuenta o soy nuevo" className="flex w-fit gap-1 rounded-academy border border-academy-line bg-academy-page p-1">
+            <Link href={modeLink('entrar')} aria-current={register ? undefined : 'page'} className="academy-focus inline-flex min-h-10 items-center rounded-academy px-4 text-sm font-semibold text-academy-muted aria-[current=page]:bg-academy-surface aria-[current=page]:text-academy-ink aria-[current=page]:shadow-sm">Entrar</Link>
+            <Link href={modeLink('registro')} aria-current={register ? 'page' : undefined} className="academy-focus inline-flex min-h-10 items-center rounded-academy px-4 text-sm font-semibold text-academy-muted aria-[current=page]:bg-academy-surface aria-[current=page]:text-academy-ink aria-[current=page]:shadow-sm">Crear cuenta</Link>
+          </nav>
+          <VStack gap={2}>
+            <Heading level={1} className="academy-title">{register ? 'Crea tu cuenta' : 'Entra a la academia'}</Heading>
+            <p className="text-academy-muted">
+              {course
+                ? <>Para continuar con <Link href={`/academia/${course.slug}`} className="font-semibold text-academy-ink underline underline-offset-4">{course.title}</Link>.</>
+                : register ? 'Con tu cuenta guardas el avance de tus cursos y tus constancias.' : 'Escribe tu correo y te enviamos un código de acceso de 6 dígitos.'}
+            </p>
+          </VStack>
+          {error ? <AuthError>{error}</AuthError> : null}
+          <form action={enterAcademia} className="space-y-5">
+            <input type="hidden" name="modo" value={register ? 'registro' : 'entrar'} />
+            <input type="hidden" name="curso" value={course?.slug || ''} />
+            {register ? (
+              <section className="grid gap-5 sm:grid-cols-2">
+                <VStack gap={0}>
+                  <label htmlFor="name" className={label}>Nombre</label>
+                  <input id="name" name="name" required autoComplete="name" className={input} />
+                </VStack>
+                <VStack gap={0}>
+                  <label htmlFor="phone" className={label}>WhatsApp</label>
+                  <input id="phone" name="phone" type="tel" required autoComplete="tel" placeholder="+504 9999 9999" aria-describedby="phone-hint" className={input} />
+                  <small id="phone-hint" className="mt-1.5 text-xs text-academy-muted">Con código de país.</small>
+                </VStack>
+              </section>
+            ) : null}
             <VStack gap={0}>
-              <label htmlFor="name" className={label}>Nombre</label>
-              <input id="name" name="name" required autoComplete="name" className={input} />
+              <label htmlFor="email" className={label}>Correo</label>
+              <HStack as="span" align="center" className="relative">
+                <Icon name="mail" size={18} aria-hidden="true" className="pointer-events-none absolute left-3 text-academy-muted" />
+                <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" spellCheck={false} placeholder="tu@correo.com" className={`${input} pl-10`} />
+              </HStack>
             </VStack>
-            <VStack gap={0}>
-              <label htmlFor="phone" className={label}>WhatsApp</label>
-              <input id="phone" name="phone" type="tel" required autoComplete="tel" placeholder="+504 9999 9999" className={input} />
-            </VStack>
-          </>
-        ) : null}
-        <VStack gap={0}>
-          <label htmlFor="email" className={label}>Correo</label>
-          <input id="email" name="email" type="email" required autoComplete="email" inputMode="email" spellCheck={false} placeholder="tu@correo.com" className={input} />
+            {register ? (
+              <details className="rounded-academy border border-academy-line px-4">
+                <summary className="academy-focus flex min-h-11 cursor-pointer items-center text-sm font-semibold text-academy-ink">Preferencias de avisos (opcional)</summary>
+                <fieldset aria-label="Preferencias de avisos" className="space-y-3 pb-4">
+                  <label className="flex items-start gap-3 text-sm text-academy-muted">
+                    <input name="consent_whatsapp" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0" />
+                    Acepto recibir mensajes de la academia por WhatsApp.
+                  </label>
+                  <label className="flex items-start gap-3 text-sm text-academy-muted">
+                    <input name="consent_email" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0" />
+                    Acepto recibir novedades y ofertas por correo.
+                  </label>
+                </fieldset>
+              </details>
+            ) : null}
+            <AcademySubmit pending="Enviando…" label={register ? 'Crear cuenta' : 'Enviarme un código'} fullWidth />
+          </form>
+          <p className="border-t border-academy-line pt-5 text-sm text-academy-muted">
+            {register ? '¿Ya tienes cuenta? ' : '¿Es tu primera vez? '}
+            <Link href={modeLink(register ? 'entrar' : 'registro')} className="font-semibold text-academy-ink underline underline-offset-4">{register ? 'Entrar' : 'Crear cuenta'}</Link>
+          </p>
         </VStack>
-        {register ? (
-          <details>
-            <summary className="cursor-pointer py-2 text-sm text-black/70">Preferencias de avisos (opcional)</summary>
-            <fieldset aria-label="Preferencias de avisos" className="space-y-3 pb-2">
-            <label className="flex items-start gap-3 text-sm text-black/75">
-              <input name="consent_whatsapp" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0" />
-              Acepto recibir mensajes de la academia por WhatsApp.
-            </label>
-            <label className="flex items-start gap-3 text-sm text-black/75">
-              <input name="consent_email" type="checkbox" value="1" className="mt-0.5 h-4 w-4 shrink-0" />
-              Acepto recibir novedades y ofertas por correo.
-            </label>
-            </fieldset>
-          </details>
-        ) : null}
-        <AcademySubmit pending="Enviando…" label={register ? 'Crear cuenta' : 'Enviarme un código'} fullWidth />
-      </form>
-      <p className="mt-4 text-sm text-black/70">
-        {register ? '¿Ya tienes cuenta? ' : '¿Es tu primera vez? '}
-        <Link href={`/academia/entrar?modo=${register ? 'entrar' : 'registro'}${context}`} className="font-semibold text-ink underline underline-offset-4">{register ? 'Entrar' : 'Crear cuenta'}</Link>
-      </p>
-      </>}
-      </VStack>
-    </section>
-    </main>
+      )}
+    </AuthShell>
   );
 }
