@@ -227,11 +227,24 @@ export async function buyProduct(formData: FormData) {
   });
 }
 
-export async function buySubscription(formData: FormData) {
+// Los formularios de membresía y donación muestran el error en la misma página y conservan lo escrito.
+function payFeedback(formData: FormData, attempt: number, error?: string) {
+  return {
+    error,
+    attempt,
+    name: field(formData, 'name'),
+    email: field(formData, 'email'),
+    method: field(formData, 'metodo'),
+    plan: field(formData, 'plan'),
+    monthly: field(formData, 'monthly'),
+    months: field(formData, 'months'),
+  };
+}
+
+export async function buySubscription(previous: { attempt: number }, formData: FormData) {
   const plan = await getPlan(field(formData, 'plan'));
-  if (!plan?.active) redirect('/academia/suscripcion?error=plan');
   // Cobro mensual recurrente; sin precio, un mes sin cobro.
-  await checkout({
+  const error = !plan?.active ? 'plan' : await checkout({
     kind: 'suscripcion',
     itemId: plan.id,
     name: field(formData, 'name'),
@@ -241,7 +254,9 @@ export async function buySubscription(formData: FormData) {
     description: `Membresía ${plan.name} (mensual)`,
     method: field(formData, 'metodo'),
     failPath: '/academia/suscripcion',
+    inlineErrors: true,
   });
+  return payFeedback(formData, previous.attempt + 1, error);
 }
 
 async function stopRenewal(gatewayId: string, immediately: boolean) {
@@ -270,10 +285,11 @@ export async function cancelMySubscription() {
   redirect('/academia/suscripcion?cancelada=1');
 }
 
-export async function donate(formData: FormData) {
+export async function donate(previous: { attempt: number }, formData: FormData) {
   const months = Math.max(1, Math.min(24, Number(field(formData, 'months')) || 1));
   const monthly = cents(field(formData, 'monthly'));
-  await checkout({
+  // Un aporte en cero no es una donación: no se registra.
+  const error = monthly < 100 ? 'monto' : await checkout({
     kind: 'donacion',
     name: field(formData, 'name'),
     email: field(formData, 'email'),
@@ -283,7 +299,9 @@ export async function donate(formData: FormData) {
     description: 'Donación a la academia',
     method: field(formData, 'metodo'),
     failPath: '/academia/apoyar',
+    inlineErrors: true,
   });
+  return payFeedback(formData, previous.attempt + 1, error);
 }
 
 // Registro y entrada usan lo mismo: un código o enlace por correo, de un solo uso.

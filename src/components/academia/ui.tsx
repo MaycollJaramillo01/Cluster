@@ -95,6 +95,8 @@ export function payNote(code?: string) {
   if (code === 'suspendido') return 'Tu cuenta está suspendida. Contacta al equipo de Academia para recuperar el acceso.';
   if (code === 'pasarela') return 'El pago no está disponible en este momento.';
   if (code === 'datos') return 'Faltan el nombre y el correo.';
+  if (code === 'plan') return 'Elige un plan disponible.';
+  if (code === 'monto') return 'Escribe un aporte de al menos L 1.00.';
   if (code === 'curso') return 'Este curso ya no está disponible. Vuelve al catálogo para elegir otro.';
   if (code?.startsWith('cupon-')) return COUPON_ERRORS[code.slice(6)] || 'Ese cupón no aplica.';
   if (code) return 'No se pudo completar el pago.';
@@ -103,19 +105,37 @@ export function payNote(code?: string) {
 
 export type PayOptions = { card: boolean; transfer: boolean };
 
-// Tarjeta (Stripe) o transferencia. Con un solo método disponible no se pregunta.
-export function PayMethod({ options, method }: { options?: PayOptions; method?: string }) {
+const METHODS = {
+  tarjeta: { label: 'Tarjeta', detail: 'Pagas en la pasarela segura de Stripe.' },
+  transferencia: { label: 'Transferencia bancaria', detail: 'Te damos una referencia y los datos de la cuenta. El acceso llega cuando confirmamos el depósito.' },
+} as const;
+
+// Tarjeta (Stripe) o transferencia. Con un solo método disponible no se pregunta, pero se dice cuál es.
+export function PayMethod({ options, method, quiet = false }: { options?: PayOptions; method?: string; quiet?: boolean }) {
   if (!options) return null;
   if (options.card && options.transfer) {
     return (
       <fieldset className="space-y-2 text-sm">
-        <legend className="mb-2 font-semibold text-academy-ink">Forma de pago</legend>
-        <label className="academy-panel flex min-h-12 cursor-pointer items-center gap-3 px-3 has-[:checked]:border-academy-primary has-[:checked]:bg-academy-tint"><input type="radio" name="metodo" value="tarjeta" defaultChecked={method !== 'transferencia'} /> Tarjeta</label>
-        <label className="academy-panel flex min-h-12 cursor-pointer items-center gap-3 px-3 has-[:checked]:border-academy-primary has-[:checked]:bg-academy-tint"><input type="radio" name="metodo" value="transferencia" defaultChecked={method === 'transferencia'} /> Transferencia bancaria</label>
+        <legend className={quiet ? 'sr-only' : 'mb-3 font-semibold text-academy-ink'}>Forma de pago</legend>
+        {(['tarjeta', 'transferencia'] as const).map((value) => (
+          <label key={value} className="academy-panel flex min-h-14 cursor-pointer items-start gap-3 p-4 transition-colors hover:border-academy-ink has-[:checked]:border-academy-action has-[:checked]:bg-academy-tint has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-academy-action">
+            <input type="radio" name="metodo" value={value} defaultChecked={value === 'transferencia' ? method === 'transferencia' : method !== 'transferencia'} className="mt-0.5 h-4 w-4 shrink-0" />
+            <VStack as="span" gap={0.5}>
+              <strong className="font-semibold text-academy-ink">{METHODS[value].label}</strong>
+              <small className="text-sm text-academy-muted">{METHODS[value].detail}</small>
+            </VStack>
+          </label>
+        ))}
       </fieldset>
     );
   }
-  return <input type="hidden" name="metodo" value={options.card ? 'tarjeta' : 'transferencia'} />;
+  const only = options.card ? 'tarjeta' : 'transferencia';
+  return (
+    <>
+      <input type="hidden" name="metodo" value={only} />
+      <p className="rounded-academy border border-academy-line bg-academy-page p-4 text-sm"><strong className="font-semibold">{METHODS[only].label}.</strong> <small className="text-sm text-academy-muted">{METHODS[only].detail}</small></p>
+    </>
+  );
 }
 
 export function payReady(options: PayOptions) {
@@ -123,9 +143,9 @@ export function payReady(options: PayOptions) {
 }
 
 export function payHint(options: PayOptions) {
-  if (options.card && options.transfer) return 'Pagás con tarjeta o por transferencia.';
-  if (options.card) return 'Pagás con tarjeta.';
-  return 'Pagás por transferencia; el acceso llega al confirmar el depósito.';
+  if (options.card && options.transfer) return 'Pagas con tarjeta o por transferencia.';
+  if (options.card) return 'Pagas con tarjeta.';
+  return 'Pagas por transferencia; el acceso llega al confirmar el depósito.';
 }
 
 export function Checkout({
@@ -138,6 +158,8 @@ export function Checkout({
   coupon,
   contact,
   feedback,
+  id,
+  start = 1,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   hidden?: Record<string, string>;
@@ -150,45 +172,61 @@ export function Checkout({
   coupon?: boolean;
   contact?: { name: string; email: string };
   feedback?: { error?: string; coupon: string; method: string; bump: boolean };
+  // Campos fuera del formulario (plan, monto) se asocian con form={id}; start numera los pasos después de ellos.
+  id?: string;
+  start?: number;
 }) {
   const field = 'academy-field w-full';
   const couponError = feedback?.error?.startsWith('cupon-') ? payNote(feedback.error) : '';
+  const step = 'grid size-7 shrink-0 place-items-center rounded-academy bg-academy-deep text-xs font-bold text-white';
   return (
-    <form action={action} className="space-y-4 [color-scheme:light]">
-      {feedback?.error && !couponError ? <p role="alert" tabIndex={-1} data-checkout-error className="border border-black/15 bg-paper p-3 text-sm">{payNote(feedback.error)} Revisa los datos o intenta de nuevo.</p> : null}
+    <form id={id} action={action} className="space-y-6 [color-scheme:light]">
+      {feedback?.error && !couponError ? <p role="alert" tabIndex={-1} data-checkout-error className="rounded-academy border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{payNote(feedback.error)} Revisa los datos o intenta de nuevo.</p> : null}
       {Object.entries(hidden || {}).map(([key, value]) => (
         <input key={key} type="hidden" name={key} value={value} />
       ))}
-      <label className="block space-y-2 text-sm font-semibold">
-        Nombre
-        <input name="name" autoComplete="name" defaultValue={contact?.name} required className={field} />
-      </label>
-      <label className="block space-y-2 text-sm font-semibold">
-        Correo
-        <input name="email" type="email" autoComplete="email" spellCheck={false} defaultValue={contact?.email} required className={field} />
-      </label>
+      <fieldset className="space-y-4">
+        <legend className="mb-4 flex items-center gap-3 text-base font-bold text-academy-ink"><strong aria-hidden="true" className={step}>{start}</strong>Tus datos</legend>
+        <section className="grid gap-4 sm:grid-cols-2">
+          <label className="block space-y-2 text-sm font-semibold">
+            Nombre
+            <input name="name" autoComplete="name" defaultValue={contact?.name} required className={field} />
+          </label>
+          <label className="block space-y-2 text-sm font-semibold">
+            Correo
+            <input name="email" type="email" autoComplete="email" spellCheck={false} defaultValue={contact?.email} required className={field} />
+          </label>
+        </section>
+        {coupon ? (
+          <details open={Boolean(feedback?.coupon || couponError) || undefined}>
+            <summary className="academy-focus w-fit cursor-pointer rounded-academy py-1 text-sm font-semibold underline underline-offset-4">Tengo un cupón</summary>
+            <label className="mt-3 block max-w-xs space-y-2 text-sm font-semibold">
+              Código del cupón
+              <input name="cupon" autoComplete="off" spellCheck={false} defaultValue={feedback?.coupon} aria-invalid={Boolean(couponError) || undefined} aria-describedby={couponError ? 'checkout-coupon-error' : undefined} data-checkout-error={couponError ? '' : undefined} className={`${field} uppercase`} />
+            </label>
+            {couponError ? <p id="checkout-coupon-error" role="alert" className="mt-2 text-sm text-red-800">{couponError} Revisa el código o continúa sin cupón.</p> : null}
+          </details>
+        ) : null}
+      </fieldset>
       {bump ? (
-        <label className="flex items-start gap-3 border border-dashed border-brand bg-brand/5 p-3 text-sm">
-          <input type="checkbox" name="bump" value="1" defaultChecked={feedback?.bump} className="mt-1" />
+        <label className="flex cursor-pointer items-start gap-3 rounded-academy border border-dashed border-academy-action bg-academy-tint p-4 text-sm">
+          <input type="checkbox" name="bump" value="1" defaultChecked={feedback?.bump} className="mt-0.5 h-4 w-4 shrink-0" />
           <VStack as="span" gap={1}>
-            <strong className="font-medium">Agrega {bump.title} por {academyMoney(bump.cents)}</strong>
+            <strong className="font-semibold">Agrega {bump.title} por {academyMoney(bump.cents)}</strong>
             <small className="text-xs text-academy-muted">Opcional. Se suma a este mismo pago.</small>
           </VStack>
         </label>
       ) : null}
-      {coupon ? (
-        <details open={Boolean(feedback?.coupon || couponError) || undefined}>
-          <summary className="w-fit cursor-pointer text-sm font-medium underline underline-offset-4">Tengo un cupón</summary>
-          <label className="mt-3 block space-y-2 text-sm font-semibold">
-            Código del cupón
-            <input name="cupon" autoComplete="off" spellCheck={false} defaultValue={feedback?.coupon} aria-invalid={Boolean(couponError) || undefined} aria-describedby={couponError ? 'checkout-coupon-error' : undefined} data-checkout-error={couponError ? '' : undefined} className={`${field} uppercase`} />
-          </label>
-          {couponError ? <p id="checkout-coupon-error" role="alert" className="mt-2 text-sm text-red-800">{couponError} Revisa el código o continúa sin cupón.</p> : null}
-        </details>
+      {pay ? (
+        <section className="space-y-4 border-t border-academy-line pt-6">
+          <p className="flex items-center gap-3 text-base font-bold text-academy-ink"><strong aria-hidden="true" className={step}>{start + 1}</strong>Forma de pago</p>
+          <PayMethod options={pay} method={feedback?.method} quiet />
+        </section>
       ) : null}
-      <PayMethod options={pay} method={feedback?.method} />
-      <AcademySubmit pending="Procesando…" label={label} fullWidth />
-      {note ? <p className="text-center text-xs text-black/45">{note}</p> : null}
+      <VStack gap={2}>
+        <AcademySubmit pending="Procesando…" label={label} fullWidth />
+        {note ? <p className="text-center text-xs text-academy-muted">{note}</p> : null}
+      </VStack>
     </form>
   );
 }

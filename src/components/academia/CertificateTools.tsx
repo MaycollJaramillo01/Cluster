@@ -8,6 +8,23 @@ export function PrintCertificate() {
   return <Button label="Imprimir o guardar PDF" onClick={() => window.print()} className="print:hidden" />;
 }
 
+// Copia un texto corto (referencia de pago). Si el navegador lo impide, el texto sigue visible para copiarlo a mano.
+export function CopyValue({ value, label = 'Copiar' }: { value: string; label?: string }) {
+  const [message, setMessage] = useState('');
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(value);
+      setMessage('Copiado.');
+    } catch {
+      setMessage('Selecciona el texto y cópialo.');
+    }
+  }
+  return <>
+    <Button label={label} onClick={copy} size="sm" icon={<Icon name="link" size={15} />} />
+    <small role="status" className="text-xs text-academy-muted">{message}</small>
+  </>;
+}
+
 export function CopyCertificateLink({ path }: { path: string }) {
   const [message, setMessage] = useState('');
   async function copy() {
