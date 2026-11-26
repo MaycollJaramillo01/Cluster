@@ -23,9 +23,9 @@ export type Certificate = {
 export async function listCertificates(personId: string) {
   if (!personId) return [];
   const sql = await crm();
-  const rows = await sql`SELECT id, course_title, lesson_count, completed_at, issued_at FROM lms_course_certificates
+  const rows = await sql`SELECT id, course_title, lesson_count, completed_at, issued_at, share_code IS NOT NULL AS shared FROM lms_course_certificates
     WHERE person_id = ${personId} ORDER BY issued_at DESC, id`;
-  return rows as Pick<Certificate, 'id' | 'course_title' | 'lesson_count' | 'completed_at' | 'issued_at'>[];
+  return rows as (Pick<Certificate, 'id' | 'course_title' | 'lesson_count' | 'completed_at' | 'issued_at'> & { shared: boolean })[];
 }
 
 export async function ownedCertificate(personId: string, id: string) {

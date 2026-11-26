@@ -11,10 +11,10 @@ const links = [
   ['/academia/suscripcion', 'Membresía'],
 ] as const;
 
-// Navegación del área de cuenta: columna en escritorio, fila desplazable en móvil.
+// Navegación del área de cuenta: columna en escritorio; en móvil las opciones pasan a otra línea, ninguna queda oculta.
 export function AccountNav({ current }: { current: (typeof links)[number][0] }) {
   return (
-    <VStack as="nav" aria-label="Mi cuenta" gap={1} className="academy-panel min-w-0 flex-row overflow-x-auto p-1.5 lg:flex-col lg:overflow-visible lg:p-2">
+    <VStack as="nav" aria-label="Mi cuenta" gap={1} className="academy-panel min-w-0 flex-row flex-wrap p-1.5 lg:flex-col lg:flex-nowrap lg:p-2">
       {links.map(([href, label]) => (
         <Link key={href} href={href} aria-current={href === current ? 'page' : undefined} className="academy-nav academy-focus shrink-0 whitespace-nowrap lg:w-full">{label}</Link>
       ))}
