@@ -12,9 +12,33 @@ async function main() {
   require('next/cache').revalidatePath = () => {};
   const network = globalThis.fetch;
   let stripeList = ['cs_fase1'];
+  const canceledSubscriptions: string[] = [];
+  let failCancellation = true;
   const endsInThePast = Math.floor(Date.now() / 1000) - 86400;
   globalThis.fetch = (async (url, init) => {
     if (String(url).includes('api.resend.com')) return new Response('{}');
+    if (String(url).includes('api.stripe.com/v1/invoices/in_refund_')) {
+      const owned = String(url).endsWith('_owned');
+      return Response.json({ parent: { subscription_details: {
+        subscription: owned ? 'sub_refund_owned' : String(url).endsWith('_known') ? 'sub_refund_known' : 'sub_refund_external',
+        metadata: owned ? { kind: 'suscripcion', buyer_email: 'refund-fase1@example.test' } : {},
+      } } });
+    }
+    if (String(url).includes('api.stripe.com/v1/subscriptions/sub_refund_') && init?.method === 'DELETE') {
+      if (failCancellation) {
+        failCancellation = false;
+        return Response.json({ error: 'unavailable' }, { status: 503 });
+      }
+      canceledSubscriptions.push(String(url).split('/').pop()!);
+      return Response.json({ status: 'canceled' });
+    }
+    if (String(url).includes('api.stripe.com/v1/subscriptions/sub_refund_')) {
+      return Response.json({ status: canceledSubscriptions.includes(String(url).split('/').pop()!) ? 'canceled' : 'active' });
+    }
+    if (String(url).includes('api.stripe.com/v1/checkout/sessions?payment_intent=pi_refund_intent')) {
+      return Response.json({ data: [{ id: 'cs_refund_intent' }] });
+    }
+    if (String(url).includes('api.stripe.com/v1/invoice_payments?')) return Response.json({ data: [] });
     if (String(url) === 'https://api.stripe.com/v1/checkout/sessions/cs_fase1') {
       return Response.json({ payment_status: 'paid', currency: 'hnl', amount_total: 10000 });
     }
@@ -139,16 +163,17 @@ async function main() {
   console.log('OK Compra y reembolsos simultáneos conservan un resultado coherente');
 
   const { POST } = await import('@/app/api/academia/stripe/route');
-  const sendInvoice = (paymentId = 'in_fase1', subscription = 'sub_fase1', owned = true, type = 'invoice.paid', currency = owned ? 'hnl' : 'usd') => {
-    const payload = JSON.stringify({ id: `evt_${paymentId}`, type, data: { object: {
-      id: paymentId, subscription, currency, amount_paid: 10000, amount_due: 10000,
-      customer_email: 'renew-fase1@example.test',
-      subscription_details: { metadata: owned ? { kind: 'suscripcion', buyer_email: 'renew-fase1@example.test' } : {} },
-    } } });
+  const sendEvent = (id: string, type: string, object: Record<string, unknown>) => {
+    const payload = JSON.stringify({ id, type, data: { object } });
     const timestamp = Math.floor(Date.now() / 1000);
     const signature = createHmac('sha256', process.env.STRIPE_WEBHOOK_SECRET!).update(`${timestamp}.${payload}`).digest('hex');
     return POST(new Request('http://localhost/api/academia/stripe', { method: 'POST', body: payload, headers: { 'stripe-signature': `t=${timestamp},v1=${signature}` } }));
   };
+  const sendInvoice = (paymentId = 'in_fase1', subscription = 'sub_fase1', owned = true, type = 'invoice.paid', currency = owned ? 'hnl' : 'usd') => sendEvent(`evt_${paymentId}`, type, {
+    id: paymentId, subscription, currency, amount_paid: 10000, amount_due: 10000,
+    customer_email: 'renew-fase1@example.test',
+    subscription_details: { metadata: owned ? { kind: 'suscripcion', buyer_email: 'renew-fase1@example.test' } : {} },
+  });
   assert.equal((await sendInvoice()).status, 500);
   await activateSubscription({ gatewayId: 'sub_fase1', email: 'renew-fase1@example.test', name: 'Renovación', planId: 'pro', periodEnd: null });
   assert.equal((await sendInvoice()).status, 200);
@@ -168,6 +193,31 @@ async function main() {
   const failedNotices = await sql`SELECT key, delivered FROM academia_followups WHERE key IN ('cobro:in_failed_academy', 'cobro:in_failed_external')`;
   assert.deepEqual(failedNotices.map(({ key, delivered }) => ({ key, delivered })), [{ key: 'cobro:in_failed_academy', delivered: true }]);
   console.log('OK Un cobro fallido en USD avisa una sola vez y una factura ajena no avisa');
+
+  assert.equal((await sendEvent('evt_external_refund', 'charge.refunded', { refunded: true, invoice: 'in_refund_external' })).status, 200);
+  assert.equal((await sendEvent('evt_external_dispute', 'charge.dispute.created', { invoice: 'in_refund_external' })).status, 200);
+  assert.deepEqual(canceledSubscriptions, []);
+  assert.equal((await sql`SELECT order_id FROM valux_revoked_orders WHERE order_id='sub_refund_external'`).length, 0);
+  assert.equal((await sendEvent('evt_owned_partial', 'charge.refunded', { refunded: false, invoice: 'in_refund_owned' })).status, 200);
+  assert.deepEqual(canceledSubscriptions, []);
+  const refundOwned = () => sendEvent('evt_owned_refund', 'charge.refunded', { refunded: true, invoice: 'in_refund_owned' });
+  assert.equal((await refundOwned()).status, 500);
+  assert.equal((await sql`SELECT processed_at FROM stripe_events WHERE id='evt_owned_refund'`)[0].processed_at, null);
+  assert.equal((await refundOwned()).status, 200);
+  assert.equal((await refundOwned()).status, 200);
+  assert.deepEqual(canceledSubscriptions, ['sub_refund_owned']);
+  assert.equal((await sendEvent('evt_owned_dispute', 'charge.dispute.created', { invoice: 'in_refund_owned' })).status, 200);
+  assert.deepEqual(canceledSubscriptions, ['sub_refund_owned']);
+  assert.equal(await activateSubscription({ gatewayId: 'sub_refund_owned', email: 'refund-fase1@example.test', name: 'Reembolso anticipado', planId: 'pro', periodEnd: null }), '');
+  await activateSubscription({ gatewayId: 'sub_refund_known', email: 'refund-known@example.test', name: 'Membresía conocida', planId: 'pro', periodEnd: null });
+  assert.equal((await sendEvent('evt_known_refund', 'charge.refunded', { refunded: true, invoice: 'in_refund_known' })).status, 200);
+  assert.equal((await sql`SELECT status FROM valux_subscriptions WHERE gateway_id='sub_refund_known'`)[0].status, 'cancelada');
+  assert.deepEqual(canceledSubscriptions, ['sub_refund_owned', 'sub_refund_known']);
+  await sql`INSERT INTO valux_intents(id,paypal_order_id,kind,item_id,buyer_name,buyer_email,amount_cents)
+    VALUES ('refund-intent','cs_refund_intent','curso','phase1-paid','Reembolso','refund-intent@example.test',10000)`;
+  assert.equal((await sendEvent('evt_refund_intent', 'charge.refunded', { refunded: true, payment_intent: 'pi_refund_intent' })).status, 200);
+  assert.equal((await sql`SELECT order_id FROM valux_revoked_orders WHERE order_id='cs_refund_intent'`).length, 1);
+  console.log('OK Reembolsos y disputas ajenos no cancelan suscripciones; el reembolso propio anterior al alta impide reactivarla');
 
   await sql`INSERT INTO valux_intents(id,paypal_order_id,kind,item_id,buyer_name,buyer_email,amount_cents)
     VALUES ('phase1-expired','cs_fase1_expired','suscripcion','pro','Anterior','expired-fase1@example.test',35000)`;

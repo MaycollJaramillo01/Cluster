@@ -16,9 +16,17 @@ function ref(value: unknown) {
 
 // Reembolso total o disputa abierta: se quita el acceso y la membresía deja de cobrarse.
 async function revokeCharge(paymentIntent: string, invoice: string, reason: string) {
-  const { refs, subscriptionId } = await stripePaymentRefs(paymentIntent, invoice);
+  const { refs, subscriptionId, academySubscription } = await stripePaymentRefs(paymentIntent, invoice);
+  const sql = await crm();
+  const [known] = await sql`
+    SELECT 1 WHERE
+      EXISTS (SELECT FROM valux_sales WHERE paypal_order_id = ANY(${refs}::text[])) OR
+      EXISTS (SELECT FROM valux_intents WHERE paypal_order_id = ANY(${refs}::text[])) OR
+      EXISTS (SELECT FROM valux_subscriptions WHERE gateway_id = ANY(${refs}::text[]))
+  `;
+  if (!known && !academySubscription) return;
   await revokeSales(refs, reason);
-  if (subscriptionId) await cancelStripeSubscription(subscriptionId, false).catch(() => undefined);
+  if (subscriptionId) await cancelStripeSubscription(subscriptionId, false);
 }
 
 // Webhook de Stripe: entrega aunque el alumno cierre la pestaña y lleva las renovaciones.

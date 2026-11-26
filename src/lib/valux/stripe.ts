@@ -116,6 +116,7 @@ export async function cancelStripeSubscription(id: string, atPeriodEnd: boolean)
   if (atPeriodEnd) {
     await stripeApi(path, { body: new URLSearchParams({ cancel_at_period_end: 'true' }) });
   } else {
+    if ((await readStripeSubscription(id)).status === 'canceled') return;
     await stripeApi(path, { method: 'DELETE' });
   }
 }
@@ -145,15 +146,19 @@ export async function stripePaymentRefs(paymentIntent: string, invoiceId = '') {
     }
   }
   let subscriptionId = '';
+  let academySubscription = false;
   if (invoice) {
     refs.push(invoice);
-    const data = await stripeApi<{ subscription?: unknown; parent?: { subscription_details?: { subscription?: unknown } } }>(
+    type SubscriptionDetails = { subscription?: unknown; metadata?: Record<string, string> };
+    const data = await stripeApi<{ subscription?: unknown; parent?: { subscription_details?: SubscriptionDetails }; subscription_details?: SubscriptionDetails }>(
       `invoices/${encodeURIComponent(invoice)}`,
     );
     subscriptionId = stripeRef(data.subscription) || stripeRef(data.parent?.subscription_details?.subscription);
+    const metadata = data.parent?.subscription_details?.metadata ?? data.subscription_details?.metadata;
+    academySubscription = metadata?.kind === 'suscripcion' && Boolean(metadata.buyer_email);
     if (subscriptionId) refs.push(subscriptionId);
   }
-  return { refs, subscriptionId };
+  return { refs, subscriptionId, academySubscription };
 }
 
 export type StripeEvent = { id: string; type: string; data: { object: Record<string, unknown> } };
