@@ -98,6 +98,7 @@ export function payNote(code?: string) {
   if (code === 'plan') return 'Elige un plan disponible.';
   if (code === 'monto') return 'Escribe un aporte de al menos L 1.00.';
   if (code === 'curso') return 'Este curso ya no está disponible. Vuelve al catálogo para elegir otro.';
+  if (code === 'producto') return 'Este recurso ya no está disponible.';
   if (code?.startsWith('cupon-')) return COUPON_ERRORS[code.slice(6)] || 'Ese cupón no aplica.';
   if (code) return 'No se pudo completar el pago.';
   return '';
@@ -160,6 +161,7 @@ export function Checkout({
   feedback,
   id,
   start = 1,
+  stacked = false,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   hidden?: Record<string, string>;
@@ -175,6 +177,8 @@ export function Checkout({
   // Campos fuera del formulario (plan, monto) se asocian con form={id}; start numera los pasos después de ellos.
   id?: string;
   start?: number;
+  // En columnas angostas nombre y correo van uno debajo del otro.
+  stacked?: boolean;
 }) {
   const field = 'academy-field w-full';
   const couponError = feedback?.error?.startsWith('cupon-') ? payNote(feedback.error) : '';
@@ -187,7 +191,7 @@ export function Checkout({
       ))}
       <fieldset className="space-y-4">
         <legend className="mb-4 flex items-center gap-3 text-base font-bold text-academy-ink"><strong aria-hidden="true" className={step}>{start}</strong>Tus datos</legend>
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className={stacked ? 'grid gap-4' : 'grid gap-4 sm:grid-cols-2'}>
           <label className="block space-y-2 text-sm font-semibold">
             Nombre
             <input name="name" autoComplete="name" defaultValue={contact?.name} required className={field} />

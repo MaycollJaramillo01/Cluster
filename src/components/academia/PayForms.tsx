@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { VStack } from '@astryxdesign/core/VStack';
-import { buySubscription, donate } from '@/lib/valux/actions';
+import { buyProduct, buySubscription, donate } from '@/lib/valux/actions';
 import { academyMoney } from '@/lib/valux/money';
 import { Icon } from '@/components/ui/Icon';
 import { Checkout, payNote, type PayOptions } from './ui';
@@ -135,6 +135,16 @@ export function DonationForm({ pay, contact }: { pay: PayOptions; contact?: Cont
         </dl>
         <p className="text-xs leading-relaxed text-academy-muted">Se cobra una sola vez por el total. La donación queda en el registro de la junta.</p>
       </VStack>
+    </section>
+  );
+}
+
+export function ProductForm({ id, label, pay, contact }: { id: string; label: string; pay?: PayOptions; contact?: Contact }) {
+  const [state, action] = useActionState(buyProduct, initial);
+  const region = useErrorFocus(state);
+  return (
+    <section ref={region} aria-label="Obtener el recurso">
+      <Checkout key={state.attempt} action={action} hidden={{ id }} label={label} pay={pay} stacked contact={state.attempt ? state : contact} feedback={feedback(state)} />
     </section>
   );
 }

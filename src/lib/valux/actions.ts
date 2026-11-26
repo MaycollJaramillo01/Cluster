@@ -212,10 +212,9 @@ export async function buyUpsell(formData: FormData) {
   });
 }
 
-export async function buyProduct(formData: FormData) {
+export async function buyProduct(previous: { attempt: number }, formData: FormData) {
   const product = await getProduct(field(formData, 'id'));
-  if (!product || product.review_status !== 'publicado') return;
-  await checkout({
+  const error = !product || product.review_status !== 'publicado' ? 'producto' : await checkout({
     kind: 'producto',
     itemId: product.id,
     name: field(formData, 'name'),
@@ -224,10 +223,12 @@ export async function buyProduct(formData: FormData) {
     description: product.title,
     method: field(formData, 'metodo'),
     failPath: `/academia/marketplace/${product.id}`,
+    inlineErrors: true,
   });
+  return payFeedback(formData, previous.attempt + 1, error);
 }
 
-// Los formularios de membresía y donación muestran el error en la misma página y conservan lo escrito.
+// Los formularios de compra (recurso, membresía, donación) muestran el error en la misma página y conservan lo escrito.
 function payFeedback(formData: FormData, attempt: number, error?: string) {
   return {
     error,
@@ -390,9 +391,9 @@ export async function updateProfile(formData: FormData) {
   redirect('/academia/perfil?guardado=1#guardar-perfil');
 }
 
-export async function subscribeNewsletter(formData: FormData) {
+export async function subscribeNewsletter(_previous: { status: string }, formData: FormData) {
   const email = field(formData, 'email').toLowerCase();
-  if (!email.includes('@')) return;
+  if (!email.includes('@')) return { status: 'error', email };
   const sql = await crm();
   await sql`
     INSERT INTO valux_newsletter (id, email)
@@ -400,6 +401,7 @@ export async function subscribeNewsletter(formData: FormData) {
     ON CONFLICT (email) DO UPDATE SET unsubscribed_at = NULL
   `;
   refresh();
+  return { status: 'ok', email };
 }
 
 export async function saveSettings(formData: FormData) {
