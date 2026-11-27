@@ -110,7 +110,22 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.rewrite(target);
   }
 
-  return intlMiddleware(request);
+  const isSpanishLegalRoute = pathname === '/es/terminos' || pathname === '/es/privacidad';
+  if (isSpanishLegalRoute && request.nextUrl.searchParams.get('__legal') === '1') {
+    return NextResponse.next();
+  }
+
+  const response = intlMiddleware(request);
+  const rewrite = response.headers.get('x-middleware-rewrite');
+  if (rewrite && (pathname === '/terminos' || pathname === '/privacidad')) {
+    const target = new URL(rewrite);
+    // Preserve locale negotiation and let the second middleware pass reach the legal page.
+    if (target.pathname === '/es' + pathname) {
+      target.searchParams.set('__legal', '1');
+      response.headers.set('x-middleware-rewrite', target.href);
+    }
+  }
+  return response;
 }
 
 export const config = {

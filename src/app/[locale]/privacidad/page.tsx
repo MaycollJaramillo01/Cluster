@@ -74,6 +74,15 @@ export default async function PrivacidadPage({ params }: PageParams) {
           {sections.contactText.replace('{email}', site.email)}
         </p>
       </div>
+      <section id="academia" className="scroll-mt-24 space-y-3">
+        <header>
+          <h2>{t('academy.title')}</h2>
+          <p><strong>{t('academy.draft')}</strong></p>
+        </header>
+        <p>{t('academy.account')}</p>
+        <p>{t('academy.purchase')}</p>
+        <p>{t('academy.cert')}</p>
+      </section>
     </LegalLayout>
   );
 }

@@ -15,6 +15,7 @@ export type IconName =
   | 'phone'
   | 'pin'
   | 'menu'
+  | 'grid'
   | 'close'
   | 'chevron-down'
   | 'instagram'
@@ -40,6 +41,7 @@ export type IconName =
   | 'lock';
 
 const paths: Record<IconName, React.ReactNode> = {
+  grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
   sparkles: (
     <path d="M12 3l1.9 4.6L18.5 9.5 13.9 11.4 12 16l-1.9-4.6L5.5 9.5 10.1 7.6 12 3zm6.5 9l.95 2.3L21.75 15l-2.3.95L18.5 18l-.95-2.05L15.25 15l2.3-.7L18.5 12zM5.5 14l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8.8-1.9z" />
   ),

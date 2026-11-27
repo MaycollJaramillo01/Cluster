@@ -1,8 +1,12 @@
+import { Grid } from '@astryxdesign/core/Grid';
+import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
 import { listCourses } from '@/lib/crm/lms';
 import { academyAnalytics } from '@/lib/valux/analytics';
 import { STAGES } from '@/lib/valux/events';
 import { academyMoney as money } from '@/lib/valux/money';
-import { Field, PageTitle, btn, fieldClass } from '@/components/dashboard/ui';
+import { Field, PageTitle, SectionTitle, Stat, btnGhost, capitalize, fieldClass, periodLabel } from '@/components/dashboard/StaffUi';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,16 +19,7 @@ function validDay(value: string | undefined, fallback: string) {
 }
 
 const pct = (value: number | null) => (value == null ? '—' : `${Math.round(value * 100)}%`);
-
-function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
-  return (
-    <div className="border border-black/10 bg-white p-4">
-      <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-black/45">{label}</p>
-      <p className="mt-1 font-display text-3xl">{value}</p>
-      {note ? <p className="text-xs text-black/45">{note}</p> : null}
-    </div>
-  );
-}
+const row = 'flex items-center justify-between gap-3 py-2 text-sm';
 
 export default async function AnaliticaPage({ searchParams }: { searchParams: Promise<{ desde?: string; hasta?: string; curso?: string }> }) {
   const query = await searchParams;
@@ -37,9 +32,9 @@ export default async function AnaliticaPage({ searchParams }: { searchParams: Pr
   const [data, courses] = await Promise.all([academyAnalytics(filter), listCourses()]);
 
   return (
-    <div className="space-y-6">
-      <PageTitle title="Analítica" />
-      <form className="flex flex-wrap items-end gap-3 border border-black/10 bg-white p-4">
+    <VStack gap={8} className="mx-auto w-full max-w-6xl">
+      <PageTitle eyebrow="Operación" title="Analítica" description="Ventas, aprendizaje y membresías en el rango que elijas. Por defecto, los últimos 30 días." />
+      <form className="academy-panel grid items-end gap-4 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-[theme(spacing.44)_theme(spacing.44)_minmax(0,1fr)_auto]">
         <Field label="Desde"><input className={fieldClass} name="desde" type="date" defaultValue={filter.from} /></Field>
         <Field label="Hasta"><input className={fieldClass} name="hasta" type="date" defaultValue={filter.to} /></Field>
         <Field label="Curso">
@@ -48,62 +43,77 @@ export default async function AnaliticaPage({ searchParams }: { searchParams: Pr
             {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
           </select>
         </Field>
-        <button className={btn} type="submit">Filtrar</button>
+        <button className={btnGhost} type="submit">Filtrar</button>
       </form>
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Ingresos" value={money(data.revenue)} note={`${money(data.fees)} de comisión`} />
-        <Stat label="Pedidos" value={String(data.orders)} note={`${data.sales} ventas con bumps`} />
-        <Stat label="Ticket promedio" value={money(data.aov)} />
-        <Stat label="Reembolsos" value={String(data.refunds.count)} note={money(data.refunds.cents)} />
-        <Stat label="Conversión checkout" value={pct(data.conversion)} note={`${data.purchases} de ${data.checkouts} checkouts`} />
-        <Stat label="Bumps aceptados" value={String(data.bumps)} />
-        <Stat label="Alumnos activos" value={String(data.activeStudents)} note="completaron una clase en el rango" />
-        <Stat label="Finalización" value={pct(data.completion)} note={`${data.finished} de ${data.started} que empezaron`} />
-        <Stat label="Activación D1" value={pct(data.activation)} note={`${data.activationActive} de ${data.activationBuyers} compras con una clase en 24 h`} />
-      </section>
+      <VStack as="section" gap={4} aria-labelledby="ventas-cifras">
+        <SectionTitle id="ventas-cifras" title="Ventas" />
+        <Grid columns={{ minWidth: 200, max: 4 }} gap={4}>
+          <Stat label="Ingresos" value={money(data.revenue)} hint={`${money(data.fees)} de comisión`} />
+          <Stat label="Pedidos" value={data.orders} hint={`${data.sales} ventas con bumps`} />
+          <Stat label="Ticket promedio" value={money(data.aov)} />
+          <Stat label="Reembolsos" value={data.refunds.count} hint={money(data.refunds.cents)} />
+          <Stat label="Conversión del checkout" value={pct(data.conversion)} hint={`${data.purchases} de ${data.checkouts} checkouts`} />
+          <Stat label="Bumps aceptados" value={data.bumps} />
+        </Grid>
+      </VStack>
 
-      <section className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-2 border border-black/10 bg-white p-4">
-          <h2 className="font-medium">Membresías vigentes · MRR {money(data.mrr)}</h2>
-          <p className="text-xs text-black/45">{data.newSubscriptions} nuevas en el rango. El MRR usa el precio actual de cada plan.</p>
-          <p className="pt-2 text-xs text-black/45">Retención: de quienes tenían membresía al empezar el mes, cuántos la siguen al empezar el siguiente.</p>
-          <ul className="text-sm">
-            {data.retention.map((row) => (
-              <li key={row.month} className="flex justify-between border-b border-black/5 py-1">
-                <span>{row.month}</span><span className="font-mono">{row.kept}/{row.members} · {pct(row.rate)}</span>
-              </li>
-            ))}
-          </ul>
-          {data.plans.length === 0 ? <p className="text-sm text-black/50">Sin membresías vigentes.</p> : (
-            <ul className="text-sm">
-              {data.plans.map((row) => (
-                <li key={row.plan} className="flex justify-between border-b border-black/5 py-1">
-                  <span>{row.plan}</span><span className="font-mono">{row.active} · {money(row.mrr)}</span>
-                </li>
+      <VStack as="section" gap={4} aria-labelledby="aprendizaje-cifras">
+        <SectionTitle id="aprendizaje-cifras" title="Aprendizaje" />
+        <Grid columns={{ minWidth: 200, max: 3 }} gap={4}>
+          <Stat label="Alumnos activos" value={data.activeStudents} hint="Completaron una clase en el rango" />
+          <Stat label="Finalización" value={pct(data.completion)} hint={`${data.finished} de ${data.started} que empezaron`} />
+          <Stat label="Activación en 24 horas" value={pct(data.activation)} hint={`${data.activationActive} de ${data.activationBuyers} compras con una clase en 24 h`} />
+        </Grid>
+      </VStack>
+
+      <Grid columns={{ minWidth: 300, max: 2 }} gap={4}>
+        <VStack as="section" gap={4} aria-labelledby="membresias" className="academy-panel p-5 sm:p-6">
+          <VStack gap={1}>
+            <Heading id="membresias" level={2} className="text-xl font-bold">Membresías vigentes</Heading>
+            <p className="font-academy-heading text-3xl font-bold tabular-nums">{money(data.mrr)} <small className="text-sm font-semibold text-academy-muted">al mes</small></p>
+            <p className="text-sm text-academy-muted">{data.newSubscriptions} nuevas en el rango. El ingreso mensual usa el precio actual de cada plan.</p>
+          </VStack>
+          {data.plans.length === 0 ? <p className="text-sm text-academy-muted">Sin membresías vigentes.</p> : (
+            <ul className="divide-y divide-academy-line border-y border-academy-line" aria-label="Membresías por plan">
+              {data.plans.map((item) => (
+                <li key={item.plan} className={row}><p>{item.plan}</p><p className="tabular-nums">{item.active} · {money(item.mrr)}</p></li>
               ))}
             </ul>
           )}
-        </div>
-        <div className="space-y-2 border border-black/10 bg-white p-4">
-          <h2 className="font-medium">Leads nuevos · {data.leads}</h2>
-          <p className="text-xs text-black/45">Etapa actual de las personas registradas en el rango, y de dónde llegaron.</p>
-          <ul className="flex flex-wrap gap-2 text-xs">
+          <VStack gap={2}>
+            <Heading level={3} className="text-sm font-bold">Retención mensual</Heading>
+            <p className="text-xs text-academy-muted">De quienes tenían membresía al empezar el mes, cuántos la siguen al empezar el siguiente.</p>
+            <ul className="divide-y divide-academy-line border-y border-academy-line">
+              {data.retention.map((item) => (
+                <li key={item.month} className={row}><p>{periodLabel(item.month)}</p><p className="tabular-nums">{item.kept} de {item.members} · {pct(item.rate)}</p></li>
+              ))}
+            </ul>
+          </VStack>
+        </VStack>
+
+        <VStack as="section" gap={4} aria-labelledby="leads" className="academy-panel p-5 sm:p-6">
+          <VStack gap={1}>
+            <Heading id="leads" level={2} className="text-xl font-bold">Leads nuevos</Heading>
+            <p className="font-academy-heading text-3xl font-bold tabular-nums">{data.leads}</p>
+            <p className="text-sm text-academy-muted">Etapa actual de las personas registradas en el rango, y de dónde llegaron.</p>
+          </VStack>
+          <HStack as="ul" gap={2} wrap="wrap" aria-label="Leads por etapa">
             {STAGES.map((stage) => (
-              <li key={stage} className="border border-black/10 px-2 py-1">
-                {stage} {data.stages.find((row) => row.stage === stage)?.count || 0}
+              <li key={stage} className="rounded-academy-full border border-academy-line px-3 py-1 text-sm">
+                {capitalize(stage)} <strong className="tabular-nums">{data.stages.find((item) => item.stage === stage)?.count || 0}</strong>
               </li>
             ))}
-          </ul>
-          <ul className="text-sm">
-            {data.sources.map((row) => (
-              <li key={row.source} className="flex justify-between border-b border-black/5 py-1">
-                <span className="truncate">{row.source}</span><span className="font-mono">{row.count}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </div>
+          </HStack>
+          {data.sources.length ? (
+            <ul className="divide-y divide-academy-line border-y border-academy-line" aria-label="Leads por origen">
+              {data.sources.map((item) => (
+                <li key={item.source} className={row}><p className="min-w-0 truncate">{item.source}</p><p className="tabular-nums">{item.count}</p></li>
+              ))}
+            </ul>
+          ) : null}
+        </VStack>
+      </Grid>
+    </VStack>
   );
 }

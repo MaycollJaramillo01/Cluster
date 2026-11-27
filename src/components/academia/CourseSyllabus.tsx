@@ -37,7 +37,7 @@ export function CourseSyllabus({ course, open, done, sample, next }: {
         </Text>
       </HStack>
       {!groups.length ? <p className="academy-notice">Este curso todavía no tiene clases.</p> : (
-        <VStack gap={0} className="divide-y divide-academy-line border-y border-academy-line">
+        <VStack gap={0} className="academy-panel divide-y divide-academy-line px-4 sm:px-5">
           {groups.map((group, index) => {
             const minutes = group.lessons.reduce((sum, lesson) => sum + (lesson.duration_min || 0), 0);
             return (

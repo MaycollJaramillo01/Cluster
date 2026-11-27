@@ -3,10 +3,12 @@
 // theme ships no shade it does not use.
 // prettier-ignore
 export const clusterAcademiaPaletteRefs = {
-  accent: {
-    light: {35: '#00614e', 45: '#007d65', 85: '#a7e4d0'},
-    dark: {30: '#005443', 70: '#6dbea6', 80: '#99d5c2'},
+  neutral: {
+    light: {0: '#000000', 5: '#0f0f0f', 45: '#6a6a6a', 60: '#919191', 85: '#d4d4d4', 95: '#f1f1f1', 100: '#ffffff'},
+    dark: {0: '#000000', 5: '#0f0f0f', 45: '#6a6a6a', 60: '#919191', 85: '#d4d4d4', 95: '#f1f1f1', 100: '#ffffff'},
   },
-  white: '#ffffff',
-  black: '#000000',
+  accent: {
+    light: {35: '#00624b', 55: '#009978', 70: '#02c39a', 85: '#99e6cb'},
+    dark: {35: '#00624b', 55: '#25997a', 85: '#abe2cf'},
+  },
 };

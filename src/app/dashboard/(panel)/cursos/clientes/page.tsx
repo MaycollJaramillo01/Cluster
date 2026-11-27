@@ -1,35 +1,25 @@
+import { VStack } from '@astryxdesign/core/VStack';
 import { academyMoney as money } from '@/lib/valux/money';
 import { listClients } from '@/lib/valux/data';
-import { PageTitle } from '@/components/dashboard/ui';
+import { Empty, PageTitle, Table, cell } from '@/components/dashboard/StaffUi';
 
 export default async function ClientesPage() {
   const clients = await listClients();
 
   return (
-    <div className="space-y-4">
-      <PageTitle title="Clientes" />
-      {clients.length === 0 ? <p className="text-sm text-black/50">Todavía no hay compras.</p> : (
-        <div className="overflow-x-auto border border-black/10 bg-white">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-black/10 font-mono text-[10px] uppercase tracking-[0.14em] text-black/45">
-                <th className="px-4 py-3 font-medium">Cliente</th>
-                <th className="px-4 py-3 font-medium">Compras</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map((client) => (
-                <tr key={client.id} className="border-b border-black/5">
-                  <td className="px-4 py-3">{client.name}<span className="ml-2 text-xs text-black/40">{client.email}</span></td>
-                  <td className="px-4 py-3">{client.purchases}</td>
-                  <td className="px-4 py-3">{money(client.spent)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+    <VStack gap={8} className="mx-auto w-full max-w-5xl">
+      <PageTitle eyebrow="Alumnos" title="Clientes" description="Personas que compraron algo en la academia, con su número de compras y el total pagado." />
+      {clients.length === 0 ? <Empty title="Todavía no hay compras." /> : (
+        <Table label="Clientes" head={['Cliente', 'Compras', 'Total']}>
+          {clients.map((client) => (
+            <tr key={client.id}>
+              <td className={cell}><p className="font-semibold">{client.name}</p><small className="break-all text-xs text-academy-muted">{client.email}</small></td>
+              <td className={`${cell} tabular-nums`}>{client.purchases}</td>
+              <td className={`${cell} whitespace-nowrap font-semibold tabular-nums`}>{money(client.spent)}</td>
+            </tr>
+          ))}
+        </Table>
       )}
-    </div>
+    </VStack>
   );
 }

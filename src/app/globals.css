@@ -295,9 +295,9 @@
 
 @layer components {
   .academy-theme {
-    --academy-page: color-mix(in srgb, var(--color-background-body) 90%, var(--color-accent-muted));
-    --academy-tint: color-mix(in srgb, var(--color-background-surface) 72%, var(--color-accent-muted));
-    --academy-deep: color-mix(in srgb, var(--color-text-primary) 78%, var(--color-accent));
+    --academy-page: var(--color-background-body);
+    --academy-tint: color-mix(in srgb, var(--color-background-surface) 80%, var(--color-accent-muted));
+    --academy-deep: var(--color-text-primary);
     --academy-header-size: theme('spacing.16');
     background-color: var(--academy-page);
     color: var(--color-text-primary);
@@ -337,31 +337,12 @@
     background-color: var(--academy-deep);
   }
 
-  .academy-course-masthead {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .academy-course-masthead::before {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    inset: 0;
-    background: var(--academy-deep);
-    box-shadow: 0 0 0 100vmax var(--academy-deep);
-    clip-path: inset(0 -100vmax);
-  }
-
-  .academy-course-masthead :where(a):focus-visible {
-    outline-color: currentColor;
-  }
-
   .academy-classroom {
     min-height: calc(100dvh - var(--academy-header-size));
   }
 
   .academy-classroom-sidebar {
-    height: calc(100dvh - var(--academy-header-size));
+    height: calc(100dvh - var(--academy-header-size) - theme('spacing.12'));
   }
 
   .academy-popover {

@@ -898,6 +898,13 @@
     "subtitle": "Book your diagnostic call. No commitment: we review your business and propose the best path."
   },
   "Privacy": {
+    "academy": {
+      "title": "Academia Cluster data",
+      "draft": "Draft pending legal review.",
+      "account": "We use your name, email and any contact details you provide to manage your account, send sign-in codes and respond to requests. We record enrollment, progress, submissions and certificates to provide the service and help authorized staff support your learning.",
+      "purchase": "We retain order amounts, references and statuses to confirm payments, issue receipts and handle refunds. Stripe processes card data. If you pay by bank transfer, authorized staff review the payment receipt you submit.",
+      "cert": "Your certificate is available in your account. If you turn on sharing, anyone with the verification link can see your name, the course and issuance details. You can turn off the link from My certificates."
+    },
     "metaTitle": "Privacy Policy",
     "metaDescription": "Cluster Media privacy policy.",
     "title": "Privacy Policy",
@@ -922,6 +929,18 @@
     }
   },
   "Terms": {
+    "academy": {
+      "title": "Purchases at Academia Cluster",
+      "draft": "Draft pending legal review.",
+      "purchase": "The price and scope of each course or membership are shown before payment. Courses are one-time purchases. Access is tied to the purchase email and starts once payment is confirmed. Bank transfer requests expire after 72 hours. Access starts once your payment receipt is verified.",
+      "membershipTitle": "Memberships and cancellation",
+      "membership": "Paid memberships renew monthly. To stop renewal, sign in, open Subscriptions and select Cancel renewal. Plan access continues until the end of the paid period.",
+      "refundTitle": "Refund policy",
+      "refundRequest": "You can request a refund within 3 days of payment confirmation. Email {email} from your purchase email address and include your order reference. Your rights under applicable law still apply.",
+      "refundEffect": "When Stripe confirms a full refund, the Academy removes the access granted by that payment, including order add-ons and any associated membership. A refunded order is not fulfilled again even if another payment notification arrives.",
+      "certTitle": "Certificates",
+      "cert": "To receive a new certificate, you must have course access and complete the required lessons and activities. Previously issued certificates remain available in your account after cancellation or a refund. The public verification link stays active until you turn off sharing."
+    },
     "metaTitle": "Terms and Conditions",
     "metaDescription": "Terms and conditions for Cluster Media services.",
     "title": "Terms and Conditions",

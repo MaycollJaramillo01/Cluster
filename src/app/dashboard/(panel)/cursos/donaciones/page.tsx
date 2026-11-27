@@ -1,40 +1,37 @@
+import Link from 'next/link';
+import { VStack } from '@astryxdesign/core/VStack';
 import { formatDate } from '@/lib/crm/format';
 import { academyMoney as money } from '@/lib/valux/money';
 import { listDonations } from '@/lib/valux/data';
-import { PageTitle } from '@/components/dashboard/ui';
+import { Empty, PageTitle, Pill, Stat, Table, capitalize, cell } from '@/components/dashboard/StaffUi';
 
 export default async function DonacionesPage() {
   const donations = await listDonations();
 
   return (
-    <div className="space-y-4">
-      <PageTitle title="Donaciones" action={<span className="font-mono text-xs text-black/40">{money(donations.reduce((sum, item) => sum + item.total_cents, 0))}</span>} />
-      {donations.length === 0 ? <p className="text-sm text-black/50">Todavía no hay donaciones. El formulario público está en /academia/apoyar.</p> : (
-        <div className="overflow-x-auto border border-black/10 bg-white">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-black/10 font-mono text-[10px] uppercase tracking-[0.14em] text-black/45">
-                <th className="px-4 py-3 font-medium">Persona</th>
-                <th className="px-4 py-3 font-medium">Mensual</th>
-                <th className="px-4 py-3 font-medium">Meses</th>
-                <th className="px-4 py-3 font-medium">Total</th>
-                <th className="px-4 py-3 font-medium">Estado</th>
+    <VStack gap={8} className="mx-auto w-full max-w-6xl">
+      <PageTitle eyebrow="Operación" title="Donaciones" description="Aportes de quienes apoyan la academia desde el formulario público." />
+      {donations.length === 0 ? (
+        <Empty title="Todavía no hay donaciones.">El formulario público está en <Link href="/academia/apoyar" className="font-semibold text-academy-primary underline underline-offset-4">/academia/apoyar</Link>.</Empty>
+      ) : (
+        <>
+          <VStack className="sm:max-w-xs"><Stat label="Total registrado" value={money(donations.reduce((sum, item) => sum + item.total_cents, 0))} hint={`${donations.length} ${donations.length === 1 ? 'donación' : 'donaciones'}`} /></VStack>
+          <Table label="Donaciones" head={['Persona', 'Mensual', 'Meses', 'Total', 'Estado']}>
+            {donations.map((item) => (
+              <tr key={item.id}>
+                <td className={cell}><p className="font-semibold">{item.payer_name}</p><small className="break-all text-xs text-academy-muted">{item.payer_email}</small></td>
+                <td className={`${cell} whitespace-nowrap tabular-nums`}>{money(item.monthly_cents)}</td>
+                <td className={`${cell} tabular-nums`}>{item.months}</td>
+                <td className={`${cell} whitespace-nowrap font-semibold tabular-nums`}>{money(item.total_cents)}</td>
+                <td className={cell}>
+                  <Pill tone={item.paid_at ? 'ok' : 'wait'}>{capitalize(item.status)}</Pill>
+                  {item.paid_at ? <small className="mt-1 block text-xs text-academy-muted">{formatDate(item.paid_at)}</small> : null}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {donations.map((item) => (
-                <tr key={item.id} className="border-b border-black/5">
-                  <td className="px-4 py-3">{item.payer_name}<span className="ml-2 text-xs text-black/40">{item.payer_email}</span></td>
-                  <td className="px-4 py-3">{money(item.monthly_cents)}</td>
-                  <td className="px-4 py-3">{item.months}</td>
-                  <td className="px-4 py-3">{money(item.total_cents)}</td>
-                  <td className="px-4 py-3">{item.status}{item.paid_at ? ` · ${formatDate(item.paid_at)}` : ''}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </Table>
+        </>
       )}
-    </div>
+    </VStack>
   );
 }

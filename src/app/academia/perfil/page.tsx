@@ -10,10 +10,10 @@ export default async function PerfilPage({ searchParams }: { searchParams: Promi
   const person = await getPerson(await academiaPersonId());
   if (!person) {
     return (
-      <main className="mx-auto w-full max-w-lg px-4 py-12">
-        <VStack gap={4} className="academy-panel items-start p-6 sm:p-8">
+      <main className="academy-page max-w-xl">
+        <VStack gap={4} className="academy-panel items-start p-6 sm:p-10">
           <Heading level={1} className="academy-title">Mi perfil</Heading>
-          <p className="text-sm text-academy-muted">Entra con tu correo para ver los datos de tu cuenta.</p>
+          <p className="text-academy-muted">Entra con tu correo para ver los datos de tu cuenta, tus constancias y tus recibos.</p>
           <Button as={Link} href="/academia/entrar" label="Entrar a la Academia" variant="primary" />
         </VStack>
       </main>

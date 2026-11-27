@@ -66,6 +66,26 @@ export default async function TerminosPage({ params }: PageParams) {
         <h2>{sections.contactTitle}</h2>
         <p>{sections.contactText.replace('{email}', site.email)}</p>
       </div>
+      <section id="academia" className="scroll-mt-24 space-y-6">
+        <header>
+          <h2>{t('academy.title')}</h2>
+          <p><strong>{t('academy.draft')}</strong></p>
+        </header>
+        <p>{t('academy.purchase')}</p>
+        <section>
+          <h3 className="mb-2 font-semibold text-fg">{t('academy.membershipTitle')}</h3>
+          <p>{t('academy.membership')}</p>
+        </section>
+        <section id="reembolsos" className="scroll-mt-24 space-y-2">
+          <h3 className="font-semibold text-fg">{t('academy.refundTitle')}</h3>
+          <p>{t('academy.refundRequest', { email: site.email })}</p>
+          <p>{t('academy.refundEffect')}</p>
+        </section>
+        <section>
+          <h3 className="mb-2 font-semibold text-fg">{t('academy.certTitle')}</h3>
+          <p>{t('academy.cert')}</p>
+        </section>
+      </section>
     </LegalLayout>
   );
 }

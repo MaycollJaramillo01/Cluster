@@ -67,8 +67,6 @@ export type LmsEnrollment = {
   person_id: string | null;
   contact_name: string;
   email: string;
-  final_grade: number | null;
-  notes: string | null;
   created_at: string;
 };
 
@@ -76,7 +74,6 @@ export type LmsProgress = {
   contact_id: string;
   person_id: string | null;
   lesson_id: string;
-  score: number | null;
   completed_at: string | null;
 };
 
@@ -175,7 +172,7 @@ export async function getCourse(id: string) {
     SELECT e.id, e.course_id, e.contact_id, e.person_id,
       COALESCE(p.name, v.name, '') AS contact_name,
       COALESCE(p.email, v.email, '') AS email,
-      e.final_grade, e.notes, e.created_at
+      e.created_at
     FROM lms_enrollments e
     LEFT JOIN contacts p ON p.id = e.contact_id
     LEFT JOIN valux_people v ON v.id = e.person_id
@@ -183,7 +180,7 @@ export async function getCourse(id: string) {
     ORDER BY e.created_at
   `;
   const progress = await sql`
-    SELECT g.contact_id, g.person_id, g.lesson_id, g.score, g.completed_at
+    SELECT g.contact_id, g.person_id, g.lesson_id, g.completed_at
     FROM lms_progress g
     JOIN lms_lessons l ON l.id = g.lesson_id
     WHERE l.course_id = ${id}
@@ -202,8 +199,6 @@ export async function getCourse(id: string) {
         person_id: entry.person_id == null ? null : text(entry.person_id),
         contact_name: text(entry.contact_name),
         email: text(entry.email),
-        final_grade: entry.final_grade == null ? null : num(entry.final_grade),
-        notes: entry.notes == null ? null : text(entry.notes),
         created_at: text(entry.created_at),
       } satisfies LmsEnrollment;
     }),
@@ -213,7 +208,6 @@ export async function getCourse(id: string) {
         contact_id: entry.contact_id == null ? '' : text(entry.contact_id),
         person_id: entry.person_id == null ? null : text(entry.person_id),
         lesson_id: text(entry.lesson_id),
-        score: entry.score == null ? null : num(entry.score),
         completed_at: entry.completed_at == null ? null : text(entry.completed_at),
       } satisfies LmsProgress;
     }),

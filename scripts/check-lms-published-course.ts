@@ -30,10 +30,12 @@ async function main() {
   const { ACADEMIA_COOKIE, academiaCookieValue } = await import('@/lib/valux/session');
   const { createCourseRevision, publishCourseRevision } = await import('@/lib/crm/course-revisions');
   const { deleteLesson, requestReview, setCoursePublication, startCourseRevision } = await import('@/lib/crm/lms-actions');
-  const { publishedCourse } = await import('@/lib/valux/data');
+  const { canReadCourse, myCourses, ownsCourse, publishedCourse } = await import('@/lib/valux/data');
   const { postLessonQuestion, answerLessonQuestion, saveCourseReview, moderateCourseReview } = await import('@/lib/valux/community-actions');
   const { getLessonQuestions, getCourseReviews, listReviewsForModeration } = await import('@/lib/valux/course-community');
-  const { courseLessonReports, courseStudentProgress, progressCsv } = await import('@/lib/crm/course-reports');
+  const { courseAccessRequests } = await import('@/lib/crm/course-access-requests');
+  const { requestCourseAccessChange, resolveCourseAccessChange } = await import('@/lib/crm/course-access-request-actions');
+  const { courseLessonReports, courseQuizAttempts, courseStudentProgress, progressCsv } = await import('@/lib/crm/course-reports');
   const { GET: download } = await import('@/app/api/academia/descargas/[kind]/[id]/route');
 
   const teacher = 'versiones-profesor@example.test';
@@ -137,7 +139,53 @@ async function main() {
   const [first] = await courseLessonReports('versiones-curso');
   assert.deepEqual([first.started, first.finished, first.stalled, first.attempts, first.participants, first.passed, first.average], [2, 1, 1, 2, 1, 1, 50]);
   assert.match(progressCsv(await courseStudentProgress('versiones-curso')), /"'=Fórmula QA".*"1","2","50"/);
-  console.log('OK Abandono, resultados e integridad del CSV');
+  const attempts = await courseQuizAttempts('versiones-curso', 'versiones-a', 0);
+  assert.deepEqual(attempts.map(({ student, correct, total }) => [student, correct, total]), [['=Fórmula QA', 0, 2], ['=Fórmula QA', 2, 2]]);
+  assert.equal((await courseQuizAttempts('versiones-curso', 'versiones-b', 0)).length, 0);
+  assert.equal((await courseQuizAttempts('curso-ajeno', 'versiones-a', 0)).length, 0);
+  console.log('OK Abandono, intentos por alumno e integridad del CSV');
+
+  const courseId = 'versiones-curso';
+  const personId = 'versiones-a';
+  const sendAccess = (action: 'pause' | 'resume', target = personId) => requestCourseAccessChange(form({
+    course_id: courseId, person_id: target, action, reason: 'Motivo de prueba',
+  }));
+  const resolveAccess = (requestId: string, decision = 'approved') => resolveCourseAccessChange(form({
+    course_id: courseId, person_id: personId, request_id: requestId, decision,
+  }));
+  const currentRequest = async () => (await courseAccessRequests(courseId))[0].request_id;
+  signIn('profesor', otherTeacher);
+  assert.equal(await redirected(() => sendAccess('pause')), '/dashboard/profesor');
+  signIn('profesor', teacher);
+  assert.match(await redirected(() => sendAccess('pause', 'versiones-b')), /error=estado-acceso/);
+  assert.match(await redirected(() => sendAccess('resume')), /error=estado-acceso/);
+  assert.match(await redirected(() => sendAccess('pause')), /guardado=solicitud-acceso/);
+  const pause = await currentRequest();
+  assert.match(await redirected(() => sendAccess('pause')), /error=estado-acceso/);
+  assert.equal(await redirected(() => resolveAccess(pause)), '/dashboard/profesor');
+  assert.equal((await request()).status, 200);
+  signIn('superadmin', PRIMARY_ADMIN);
+  assert.match(await redirected(() => resolveAccess(pause)), /guardado=solicitud-resuelta/);
+  assert.equal((await request()).status, 404);
+  assert.equal(await ownsCourse(personId, courseId), true);
+  assert.equal((await myCourses(personId)).find((course) => course.slug === 'versiones-qa')?.availability, 'Acceso al curso pausado');
+  assert.equal(await canReadCourse(personId, { id: courseId, price_cents: 0, teacher_id: 'versiones-teacher' }), false);
+  assert.equal(await canReadCourse('', { id: courseId, price_cents: 0, teacher_id: 'versiones-teacher' }), true);
+  signIn('profesor', teacher);
+  assert.match(await redirected(() => sendAccess('resume')), /guardado=solicitud-acceso/);
+  const rejectedResume = await currentRequest();
+  assert.notEqual(rejectedResume, pause);
+  signIn('superadmin', PRIMARY_ADMIN);
+  assert.match(await redirected(() => resolveAccess(pause)), /error=estado-acceso/);
+  assert.match(await redirected(() => resolveAccess(rejectedResume, 'rejected')), /guardado=solicitud-resuelta/);
+  assert.equal((await request()).status, 404);
+  signIn('profesor', teacher);
+  assert.match(await redirected(() => sendAccess('resume')), /guardado=solicitud-acceso/);
+  signIn('superadmin', PRIMARY_ADMIN);
+  assert.match(await redirected(async () => resolveAccess(await currentRequest())), /guardado=solicitud-resuelta/);
+  assert.equal((await request()).status, 200);
+  assert.equal((await sql`SELECT id FROM lms_progress WHERE id = 'versiones-done'`).length, 1);
+  console.log('OK Solicitudes de acceso con aprobación, permisos, rechazo, descarga y conservación de la matrícula');
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });

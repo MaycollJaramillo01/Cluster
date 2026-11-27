@@ -1,14 +1,18 @@
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
 import { VStack } from '@astryxdesign/core/VStack';
-import { SubmitButton } from '@/components/ui/SubmitButton';
-import { courseField, courseLabel } from '@/components/dashboard/TeacherCourseForm';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
+import { Empty, Notice, PageTitle, Pill, SectionTitle, Tabs, btn, btnGhost, fieldClass, labelClass } from '@/components/dashboard/StaffUi';
 import { requireCourseEditor } from '@/lib/crm/course-access';
 import { crm } from '@/lib/crm/db';
 import { canDo } from '@/lib/crm/roles';
 import { listLessonQuestions, listReviewsForModeration } from '@/lib/valux/course-community';
 import { answerLessonQuestion, moderateCourseReview } from '@/lib/valux/community-actions';
+
+const REVIEW: Record<string, { label: string; tone: 'ok' | 'wait' | 'off' }> = {
+  publicada: { label: 'Publicada', tone: 'ok' },
+  oculta: { label: 'Oculta', tone: 'off' },
+};
 
 export default async function CourseCommunity({ params, searchParams }: {
   params: Promise<{ id: string }>;
@@ -28,47 +32,63 @@ export default async function CourseCommunity({ params, searchParams }: {
   ]);
   const base = `/dashboard/cursos/${id}`;
   return (
-    <VStack as="section" aria-labelledby="curso-comunidad" gap={5} className="mx-auto w-full max-w-5xl [color-scheme:light]">
-      <Link href={base} className="text-sm font-medium underline">← {course.title}</Link>
-      <Heading id="curso-comunidad" level={1} className="academy-title">Comunidad del curso</Heading>
-      {resultado === 'error' ? <p role="alert" className="text-sm text-red-800">Comprueba el texto o vuelve a abrir el elemento. Su estado pudo haber cambiado.</p> : null}
-      {resultado === 'ok' ? <p role="status" className="text-sm font-semibold">Respuesta guardada.</p> : null}
-      {resultado === 'resena' ? <p role="status" className="text-sm font-semibold">Estado de la reseña actualizado.</p> : null}
-      <section aria-labelledby="bandeja" className="space-y-4">
-        <h2 id="bandeja" className="text-xl font-semibold">Preguntas por lección</h2>
-        <nav aria-label="Filtrar preguntas" className="flex flex-wrap gap-2">
-          {['pendientes', 'respondidas'].map((value) => <Link key={value} aria-current={filter === value ? 'page' : undefined} href={`${base}/comunidad?filtro=${value}`} className="academy-filter academy-focus capitalize">{value}</Link>)}
-        </nav>
-        {questions.length ? <ul className="divide-y divide-black/10 border border-black/10 bg-white">
-          {questions.map((item) => <li key={item.id} className="space-y-3 p-4">
-            <p className="break-words text-sm text-black/70">{item.lesson_title} · {item.student || 'Alumno'}</p>
-            <p className="whitespace-pre-wrap break-words font-medium">{item.question}</p>
-            <form action={answerLessonQuestion} className="space-y-3">
-              <input type="hidden" name="course_id" value={id} />
-              <input type="hidden" name="question_id" value={item.id} />
-              <label className={courseLabel}>Respuesta<textarea name="answer" required maxLength={4000} rows={3} className={courseField} defaultValue={item.answer} /></label>
-              <SubmitButton pending="Guardando…" className="sm:w-auto">{item.answer ? 'Actualizar respuesta' : 'Responder'}</SubmitButton>
-            </form>
-          </li>)}
-        </ul> : <p className="border border-black/10 bg-white p-4 text-sm">No hay preguntas {filter}.</p>}
-      </section>
+    <VStack gap={8} className="mx-auto w-full max-w-5xl">
+      <PageTitle back={{ href: base, label: String(course.title) }} eyebrow="Comunidad" title="Comunidad del curso" description="Responde las preguntas que dejan los alumnos en cada clase y modera las reseñas." />
+      {resultado === 'error' ? <Notice tone="error">Comprueba el texto o vuelve a abrir el elemento. Su estado pudo haber cambiado.</Notice> : null}
+      {resultado === 'ok' ? <Notice tone="ok">Respuesta guardada.</Notice> : null}
+      {resultado === 'resena' ? <Notice tone="ok">Estado de la reseña actualizado.</Notice> : null}
+
+      <VStack as="section" gap={4} aria-labelledby="bandeja">
+        <SectionTitle id="bandeja" title="Preguntas por clase" />
+        <Tabs label="Filtrar preguntas" items={['pendientes', 'respondidas'].map((value) => ({ href: `${base}/comunidad?filtro=${value}`, label: value === 'pendientes' ? 'Pendientes' : 'Respondidas', current: filter === value }))} />
+        {questions.length ? (
+          <ul className="academy-panel divide-y divide-academy-line overflow-hidden">
+            {questions.map((item) => (
+              <li key={item.id} className="space-y-4 p-4 sm:p-5">
+                <VStack gap={1}>
+                  <p className="break-words text-sm text-academy-muted">{item.lesson_title} · {item.student || 'Alumno'}</p>
+                  <p className="whitespace-pre-wrap break-words font-semibold">{item.question}</p>
+                </VStack>
+                <form action={answerLessonQuestion} className="space-y-3">
+                  <input type="hidden" name="course_id" value={id} />
+                  <input type="hidden" name="question_id" value={item.id} />
+                  <label className={labelClass}>Respuesta<textarea name="answer" required maxLength={4000} rows={3} className={fieldClass} defaultValue={item.answer} /></label>
+                  <AcademySubmit label={item.answer ? 'Actualizar respuesta' : 'Responder'} pending="Guardando…" />
+                </form>
+              </li>
+            ))}
+          </ul>
+        ) : <Empty title={`No hay preguntas ${filter}.`} />}
+      </VStack>
+
       {canModerate ? (
-        <section id="moderacion" className="space-y-4">
-          <h2 className="text-xl font-semibold">Moderar reseñas</h2>
-          {reviews.length ? <ul className="divide-y divide-black/10 border border-black/10 bg-white">
-            {reviews.map((review) => <li className="space-y-3 p-4" key={review.person_id}>
-              <p className="break-words text-sm font-semibold">{review.student || 'Alumno'} · {review.rating} de 5 · {review.status}</p>
-              {review.body ? <p className="whitespace-pre-wrap break-words text-sm">{review.body}</p> : null}
-              <form action={moderateCourseReview} className="flex flex-wrap gap-2">
-                <input type="hidden" name="course_id" value={id} />
-                <input type="hidden" name="person_id" value={review.person_id} />
-                <input type="hidden" name="version" value={review.version} />
-                {review.status !== 'publicada' ? <button name="status" value="publicada" className="min-h-11 bg-brand px-4 text-sm font-semibold">Publicar reseña</button> : null}
-                {review.status !== 'oculta' ? <button name="status" value="oculta" className="min-h-11 border border-black/20 px-4 text-sm font-semibold">Ocultar reseña</button> : null}
-              </form>
-            </li>)}
-          </ul> : <p className="border border-black/10 bg-white p-4 text-sm">Aún no hay reseñas.</p>}
-        </section>
+        <VStack as="section" id="moderacion" gap={4} aria-labelledby="moderar">
+          <SectionTitle id="moderar" title="Moderar reseñas" />
+          {reviews.length ? (
+            <ul className="academy-panel divide-y divide-academy-line overflow-hidden">
+              {reviews.map((review) => {
+                const status = REVIEW[review.status] || { label: review.status, tone: 'wait' as const };
+                return (
+                  <li className="space-y-3 p-4 sm:p-5" key={review.person_id}>
+                    <HStack gap={3} align="center" wrap="wrap">
+                      <p className="break-words font-semibold">{review.student || 'Alumno'}</p>
+                      <p className="text-sm text-academy-muted">{review.rating} de 5</p>
+                      <Pill tone={status.tone}>{status.label}</Pill>
+                    </HStack>
+                    {review.body ? <p className="whitespace-pre-wrap break-words text-sm">{review.body}</p> : null}
+                    <form action={moderateCourseReview} className="flex flex-wrap gap-2">
+                      <input type="hidden" name="course_id" value={id} />
+                      <input type="hidden" name="person_id" value={review.person_id} />
+                      <input type="hidden" name="version" value={review.version} />
+                      {review.status !== 'publicada' ? <button name="status" value="publicada" className={btn}>Publicar reseña</button> : null}
+                      {review.status !== 'oculta' ? <button name="status" value="oculta" className={btnGhost}>Ocultar reseña</button> : null}
+                    </form>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : <Empty title="Aún no hay reseñas." />}
+        </VStack>
       ) : null}
     </VStack>
   );

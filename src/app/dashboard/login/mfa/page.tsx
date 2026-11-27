@@ -1,11 +1,17 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import QRCode from 'qrcode';
+import { Heading } from '@astryxdesign/core/Heading';
+import { HStack } from '@astryxdesign/core/HStack';
+import { VStack } from '@astryxdesign/core/VStack';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
+import { AcademyTheme } from '@/components/academia/AcademySurface';
+import { AuthShell } from '@/components/academia/AuthShell';
 import { confirmMfa } from '@/lib/crm/access';
 import { mfaEnrolled, pendingSecret } from '@/lib/crm/mfa';
 import { pendingLogin } from '@/lib/crm/session';
 import { otpauthUrl } from '@/lib/crm/totp';
-import { SubmitButton } from '@/components/ui/SubmitButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,8 +35,8 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
 
   const codeForm = (
     <form action={confirmMfa} className="space-y-5">
-      <div>
-        <label htmlFor="code" className="mb-1.5 block text-sm font-medium">Código de 6 dígitos</label>
+      <VStack gap={2}>
+        <label htmlFor="code" className="text-sm font-semibold">Código de 6 dígitos</label>
         <input
           id="code"
           name="code"
@@ -41,64 +47,68 @@ export default async function MfaPage({ searchParams }: { searchParams: Promise<
           maxLength={7}
           autoFocus={enrolled}
           aria-invalid={Boolean(message) || undefined}
-          aria-describedby={message ? 'code-error' : undefined}
-          className={`t-input h-16 w-full border bg-white text-center font-mono text-3xl tracking-[0.45em] outline-none transition-colors duration-150 focus:ring-1 ${message ? 'is-shaking border-[#b42318] focus:border-[#b42318] focus:ring-[#b42318]' : 'border-black/20 focus:border-ink focus:ring-ink'}`}
+          aria-describedby={message ? 'code-error code-help' : 'code-help'}
+          className={`academy-field t-input h-16 w-full text-center font-mono text-3xl tracking-widest ${message ? 'is-shaking' : ''}`}
         />
-        {message ? <p id="code-error" role="alert" className="mt-2 text-sm text-[#b42318]">{message}</p> : null}
-      </div>
-      <SubmitButton pending="Verificando…">{enrolled ? 'Verificar' : 'Activar y entrar'}</SubmitButton>
+        {message ? <p id="code-error" role="alert" className="text-sm font-medium text-red-800">{message}</p> : null}
+        <small id="code-help" className="text-sm text-academy-muted">La app cambia el código cada 30 segundos.</small>
+      </VStack>
+      <AcademySubmit pending="Verificando…" label={enrolled ? 'Verificar y entrar' : 'Activar y entrar'} fullWidth />
     </form>
   );
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ink px-4 py-12 text-white">
-      <div className="w-full max-w-md">
-        <p className="font-brand text-sm font-extrabold uppercase tracking-[0.22em]">Cluster</p>
-        <div className="mt-6 bg-paper p-6 text-ink sm:p-8">
-          <h1 className="font-display text-5xl tracking-wide">{enrolled ? 'Segundo paso' : 'Protege tu cuenta'}</h1>
-          {enrolled ? (
-            <div className="mt-8">{codeForm}</div>
-          ) : (
-            <>
-              <ol className="mt-8 space-y-8">
-                <li>
-                  <p className="text-sm font-medium">1. Escanea el código QR con tu app de autenticación</p>
-                  <div className="mt-4 flex justify-center border border-black/10 bg-white p-3">
-                    <div
-                      role="img"
-                      aria-label="Código QR para agregar Cluster a tu app de autenticación"
-                      className="h-56 w-56 [&>svg]:h-full [&>svg]:w-full"
-                      dangerouslySetInnerHTML={{ __html: qr }}
-                    />
-                  </div>
-                  <a
-                    href={link}
-                    className="mt-3 flex min-h-12 w-full items-center justify-center border border-black/20 bg-white px-4 py-2 text-center text-base transition-colors duration-150 hover:border-ink"
-                  >
-                    Abrir en mi app de autenticación
-                  </a>
-                  <details className="group mt-3 text-sm">
-                    <summary className="cursor-pointer list-none text-black/60 underline underline-offset-2 hover:text-ink [&::-webkit-details-marker]:hidden">
-                      ¿No puedes escanearlo? Escribe la clave a mano
-                    </summary>
-                    <div className="t-sheet mt-3 border border-black/10 bg-white px-4 py-3">
-                      <p className="break-words font-mono text-base tracking-[0.12em]">{secret.match(/.{1,4}/g)?.join(' ')}</p>
-                      <p className="mt-2 text-xs text-black/55">Cuenta: Cluster · Tipo: basada en tiempo · 6 dígitos</p>
-                    </div>
-                  </details>
-                </li>
-                <li>
-                  <p className="mb-4 text-sm font-medium">2. Escribe el código que muestra la app</p>
-                  {codeForm}
-                </li>
-              </ol>
-            </>
-          )}
-          <p className="mt-8 text-sm">
-            <Link className="font-medium text-ink underline underline-offset-2" href="/dashboard/login">Volver</Link>
-          </p>
-        </div>
-      </div>
-    </main>
+    <AcademyTheme className="min-h-screen">
+      <HStack as="header" gap={3} align="center" className="h-16 border-b border-academy-line bg-academy-surface px-4 sm:px-6">
+        <HStack align="center" justify="center" className="size-10 shrink-0 rounded-academy bg-academy-ink">
+          <Image src="/assets/logo-white.webp" alt="" width={28} height={18} />
+        </HStack>
+        <p className="text-base font-bold">Academia</p>
+        <p className="border-l border-academy-line pl-3 text-sm font-medium text-academy-muted">Acceso del equipo</p>
+      </HStack>
+      <AuthShell step={2} teacher>
+        <VStack gap={2}>
+          <p className="w-fit rounded-academy-full bg-academy-tint px-3 py-1 text-xs font-semibold text-academy-primary">Paso 2 de 3</p>
+          <Heading level={1} className="academy-title">{enrolled ? 'Verificación en dos pasos' : 'Protege tu cuenta'}</Heading>
+          <p className="text-academy-muted">{enrolled ? 'Abre tu aplicación de autenticación y escribe el código que muestra para Cluster.' : 'Activa la verificación en dos pasos con una aplicación de autenticación. Solo se hace una vez.'}</p>
+        </VStack>
+        {enrolled ? codeForm : (
+          <ol className="space-y-8">
+            <li className="space-y-4">
+              <HStack gap={3} align="center">
+                <strong className="grid size-7 shrink-0 place-items-center rounded-academy-full bg-academy-ink text-sm text-academy-surface">1</strong>
+                <Heading level={2} className="text-base font-bold">Escanea el código QR con tu app</Heading>
+              </HStack>
+              <HStack justify="center" className="rounded-academy-lg border border-academy-line bg-academy-surface p-3">
+                <figure
+                  role="img"
+                  aria-label="Código QR para agregar Cluster a tu app de autenticación"
+                  className="size-56 [&>svg]:size-full"
+                  dangerouslySetInnerHTML={{ __html: qr }}
+                />
+              </HStack>
+              <a href={link} className="academy-action academy-action-secondary w-full">Abrir en mi app de autenticación</a>
+              <details className="text-sm">
+                <summary className="academy-focus cursor-pointer font-semibold text-academy-muted underline underline-offset-4 hover:text-academy-ink">¿No puedes escanearlo? Escribe la clave a mano</summary>
+                <VStack gap={2} className="t-sheet mt-3 rounded-academy border border-academy-line bg-academy-page px-4 py-3">
+                  <p className="break-words font-mono text-base tracking-wider">{secret.match(/.{1,4}/g)?.join(' ')}</p>
+                  <p className="text-xs text-academy-muted">Cuenta: Cluster · Tipo: basada en tiempo · 6 dígitos</p>
+                </VStack>
+              </details>
+            </li>
+            <li className="space-y-4">
+              <HStack gap={3} align="center">
+                <strong className="grid size-7 shrink-0 place-items-center rounded-academy-full bg-academy-ink text-sm text-academy-surface">2</strong>
+                <Heading level={2} className="text-base font-bold">Escribe el código que muestra la app</Heading>
+              </HStack>
+              {codeForm}
+            </li>
+          </ol>
+        )}
+        <p className="border-t border-academy-line pt-5 text-sm">
+          <Link className="font-semibold text-academy-ink underline underline-offset-4" href="/dashboard/login">Volver</Link>
+        </p>
+      </AuthShell>
+    </AcademyTheme>
   );
 }
