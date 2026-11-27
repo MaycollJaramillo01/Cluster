@@ -92,8 +92,8 @@ export const clusterAcademiaTheme = {
     "--_astryx-pre-tempo-duration-slow": "700ms",
     "--_astryx-pre-tempo-duration-slow-max": "935ms",
     "--_astryx-motion-tempo": "1",
-    "--font-family-body": "Figtree, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
-    "--font-family-heading": "Figtree, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+    "--font-family-body": "var(--font-academy-body, Inter), Arial, sans-serif",
+    "--font-family-heading": "var(--font-academy-heading, Arial), sans-serif",
     "--font-family-code": "ui-monospace, \"SF Mono\", Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace",
     "--color-syntax-keyword": "light-dark(#6b187c, #efa8ff)",
     "--color-syntax-string": "light-dark(#0b5615, #a4d6a3)",
@@ -114,24 +114,24 @@ export const clusterAcademiaTheme = {
     "--color-syntax-diff-header": "transparent",
     "--color-syntax-added-marker": "var(--color-syntax-punctuation)",
     "--color-syntax-removed-marker": "var(--color-syntax-punctuation)",
-    "--color-background-surface": "light-dark(#ffffff, #262626)",
-    "--color-background-body": "light-dark(#f1f1f1, #1b1b1b)",
-    "--color-background-card": "light-dark(#ffffff, #1b1b1b)",
-    "--color-background-popover": "light-dark(#ffffff, #1b1b1b)",
-    "--color-background-muted": "light-dark(#f1f1f1, #1b1b1b)",
-    "--color-accent": "light-dark(#007d65, #6dbea6)",
-    "--color-accent-muted": "light-dark(#a7e4d0, #005443)",
+    "--color-background-surface": "light-dark(#ffffff, #ffffff)",
+    "--color-background-body": "#fafbf9",
+    "--color-background-card": "light-dark(#ffffff, #ffffff)",
+    "--color-background-popover": "light-dark(#ffffff, #ffffff)",
+    "--color-background-muted": "light-dark(#f1f1f1, #f1f1f1)",
+    "--color-accent": "light-dark(#02c39a, #25997a)",
+    "--color-accent-muted": "light-dark(#99e6cb, #abe2cf)",
     "--color-neutral": "light-dark(#0000000F, #ffffff1A)",
     "--color-overlay": "light-dark(#00000080, #000000CC)",
-    "--color-overlay-hover": "light-dark(#0000000D, #ffffff0D)",
-    "--color-overlay-pressed": "light-dark(#0000001A, #ffffff1A)",
-    "--color-text-primary": "light-dark(#000000, #ffffff)",
-    "--color-text-secondary": "light-dark(#474747, #9e9e9e)",
-    "--color-text-disabled": "light-dark(#919191, #525252)",
-    "--color-text-accent": "light-dark(#00614e, #99d5c2)",
+    "--color-overlay-hover": "light-dark(#0000000d, #0000000d)",
+    "--color-overlay-pressed": "light-dark(#0000001a, #0000001a)",
+    "--color-text-primary": "#111111",
+    "--color-text-secondary": "#525252",
+    "--color-text-disabled": "light-dark(#919191, #919191)",
+    "--color-text-accent": "light-dark(#00624b, #00624b)",
     "--color-on-dark": "#ffffff",
     "--color-on-light": "#111111",
-    "--color-on-accent": "light-dark(#ffffff, #000000)",
+    "--color-on-accent": "light-dark(#0f0f0f, #0f0f0f)",
     "--color-on-success": "light-dark(#ffffff, #111111)",
     "--color-on-error": "light-dark(#ffffff, #111111)",
     "--color-on-warning": "#111111",
@@ -146,19 +146,19 @@ export const clusterAcademiaTheme = {
     "--color-on-success-muted": "light-dark(#00490b, #90ca90)",
     "--color-on-warning-muted": "light-dark(#4b3900, #eec448)",
     "--color-on-error-muted": "light-dark(#76000c, #ffaea7)",
-    "--color-icon-accent": "light-dark(#00614e, #99d5c2)",
-    "--color-icon-primary": "light-dark(#000000, #ffffff)",
-    "--color-icon-secondary": "light-dark(#6a6a6a, #9e9e9e)",
-    "--color-icon-disabled": "light-dark(#919191, #525252)",
+    "--color-icon-accent": "light-dark(#00624b, #00624b)",
+    "--color-icon-primary": "light-dark(#000000, #000000)",
+    "--color-icon-secondary": "light-dark(#6a6a6a, #6a6a6a)",
+    "--color-icon-disabled": "light-dark(#919191, #919191)",
     "--color-success": "light-dark(#198100, #64af4c)",
     "--color-warning": "#ffce2f",
     "--color-error": "light-dark(#c9303a, #ff705d)",
     "--color-success-muted": "light-dark(#bce0bb, #90ca903D)",
     "--color-error-muted": "light-dark(#ffc4be, #ff98903D)",
     "--color-warning-muted": "light-dark(#fae19e, #e2b6233D)",
-    "--color-border": "light-dark(#00000014, #ffffff1A)",
-    "--color-border-emphasized": "light-dark(#d4d4d4, #525252)",
-    "--color-skeleton": "light-dark(#f1f1f1, #525252)",
+    "--color-border": "#e2e5e2",
+    "--color-border-emphasized": "light-dark(#d4d4d4, #d4d4d4)",
+    "--color-skeleton": "light-dark(#f1f1f1, #f1f1f1)",
     "--color-shadow": "light-dark(#0000001A, #0000004D)",
     "--color-tint-hover": "light-dark(#000000, #ffffff)",
     "--color-background-red": "light-dark(#ffc4be, #5b2b28)",
@@ -202,10 +202,10 @@ export const clusterAcademiaTheme = {
     "--color-icon-gray": "light-dark(#474747, #9e9e9e)",
     "--color-text-gray": "light-dark(#1b1b1b, #d4d4d4)",
     "--radius-none": "0px",
-    "--radius-inner": "7px",
-    "--radius-element": "12px",
-    "--radius-container": "14px",
-    "--radius-page": "34px",
+    "--radius-inner": "6px",
+    "--radius-element": "0.5rem",
+    "--radius-container": "1rem",
+    "--radius-page": "1.5rem",
     "--radius-full": "9999px",
     "--shadow-low": "0 2px 4px light-dark(oklch(0 0 0 / 5%), oklch(0 0 0 / 25%)), 0 4px 8px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 40%)), inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 8%))",
     "--shadow-med": "0 2px 4px light-dark(oklch(0 0 0 / 5%), oklch(0 0 0 / 35%)), 0 4px 12px light-dark(oklch(0 0 0 / 10%), oklch(0 0 0 / 50%)), inset 0 0 0 1px light-dark(transparent, oklch(1 0 0 / 12%))",
@@ -215,7 +215,7 @@ export const clusterAcademiaTheme = {
     "--shadow-inset-success": "inset 0px 0px 0px 2px #2f7d334D",
     "--shadow-inset-warning": "inset 0px 0px 0px 2px #f8d36a4D",
     "--shadow-inset-error": "inset 0px 0px 0px 2px #de47454D",
-    "--focus-outline-color": "light-dark(#007d65, #6dbea6)"
+    "--focus-outline-color": "light-dark(#009978, #25997a)"
   },
   localTokens: {
     "--astryx-theme-neutral-color-status-fill-accent": "light-dark(#0074e2, #6d9cfe)"
@@ -322,22 +322,22 @@ export const clusterAcademiaTheme = {
     },
     "item": {
       "selected": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#525252, #525252)"
       }
     },
     "tree-list-item": {
       "selected": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#525252, #525252)"
       }
     },
     "file-input": {
       "mode:dropzone": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#525252, #525252)"
       }
     },
     "citation": {
       "variant:number": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#525252, #525252)"
       }
     },
     "button": {
@@ -399,7 +399,7 @@ export const clusterAcademiaTheme = {
     },
     "segmented-control-item": {
       "base": {
-        "--color-text-secondary": "light-dark(#474747, #c6c6c6)"
+        "--color-text-secondary": "light-dark(#525252, #525252)"
       },
       "size:sm": {
         "height": "calc(var(--size-element-sm) - 8px)"
@@ -432,6 +432,16 @@ export const clusterAcademiaTheme = {
     "section": {
       "base": {
         "padding": "var(--spacing-3)"
+      }
+    },
+    "toast": {
+      "base": {
+        "--color-text-primary": "var(--color-on-dark)"
+      }
+    },
+    "lightbox": {
+      "base": {
+        "--color-text-primary": "var(--color-on-dark)"
       }
     }
   },
@@ -473,6 +483,20 @@ export const clusterAcademiaTheme = {
               "base": 16,
               "ratio": 1.1736
             }
+          }
+        }
+      },
+      {
+        "when": {
+          "pointer": "coarse",
+          "width": {
+            "below": "lg"
+          }
+        },
+        "value": {
+          "tokens": {
+            "--font-family-body": "var(--font-academy-body, Inter), Arial, sans-serif",
+            "--font-family-heading": "var(--font-academy-heading, Arial), sans-serif"
           }
         }
       }

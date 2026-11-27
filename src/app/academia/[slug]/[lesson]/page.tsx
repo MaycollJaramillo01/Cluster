@@ -4,10 +4,12 @@ import type { ReactNode } from 'react';
 import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
+import { Text } from '@astryxdesign/core/Text';
 import { VStack } from '@astryxdesign/core/VStack';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { academiaPersonId } from '@/lib/valux/session';
 import { completeLesson, submitMission } from '@/lib/valux/actions';
+import { courseAccessPaused } from '@/lib/crm/course-access-requests';
 import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/valux/data';
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
 import { trackEvent } from '@/lib/valux/events';
@@ -84,18 +86,18 @@ function Syllabus({
   summary: string;
 }) {
   return (
-    <nav aria-label="Contenido del curso" className="bg-academy-surface text-academy-ink">
+    <nav aria-label="Contenido del curso" className="overflow-hidden rounded-academy-lg bg-academy-surface text-academy-ink">
       <header className="border-b border-academy-line px-5 py-4">
         <Heading level={2} className="text-lg font-bold">Contenido del curso</Heading>
         <p className="mt-1 text-sm text-academy-muted">{summary}</p>
       </header>
       {groups.map((group) => (
         <section key={group.id} className="border-b border-academy-line pb-2">
-          <header className="flex items-baseline justify-between gap-3 bg-academy-page px-5 py-3 text-sm">
-            <h2 className="min-w-0 break-words font-semibold normal-case">{group.title}</h2>
-            <span className="shrink-0 tabular-nums text-ink/65">
+          <header className="flex items-baseline justify-between gap-3 px-5 py-3 text-sm">
+            <Heading level={3} className="min-w-0 break-words text-sm font-semibold">{group.title}</Heading>
+            <Text className="shrink-0 text-sm tabular-nums text-academy-muted">
               {group.lessons.filter((item) => done.has(item.id)).length}/{group.lessons.length}
-            </span>
+            </Text>
           </header>
           <ol>
             {group.lessons.map((item) => {
@@ -104,11 +106,11 @@ function Syllabus({
               const body = (
                 <>
                   <Status done={done.has(item.id)} current={isCurrent} locked={locked} />
-                  <span className="min-w-0 flex-1 break-words">{item.title}</span>
-                  {item.duration_min ? <span className="shrink-0 text-xs tabular-nums text-ink/65">{item.duration_min} min</span> : null}
+                  <Text type="inherit" className="min-w-0 flex-1 break-words">{item.title}</Text>
+                  {item.duration_min ? <Text className="shrink-0 text-xs tabular-nums text-academy-muted">{item.duration_min} min</Text> : null}
                 </>
               );
-              const row = 'flex items-start gap-3 px-4 py-3 text-sm transition-colors duration-150';
+              const row = 'mx-3 my-1 flex items-start gap-3 rounded-academy px-3 py-4 text-sm transition-colors duration-150';
               return (
                 <li key={item.id}>
                   {locked ? (
@@ -118,7 +120,7 @@ function Syllabus({
                       href={href(item)}
                       prefetch={false}
                       aria-current={isCurrent ? 'page' : undefined}
-                      className={`${row} border-l-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset ${isCurrent ? 'border-academy-primary bg-academy-tint font-semibold text-academy-primary' : 'border-transparent hover:bg-academy-tint'}`}
+                      className={`${row} border-l-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset ${isCurrent ? 'border-academy-primary bg-academy-tint font-semibold text-academy-primary' : 'border-transparent bg-academy-page hover:bg-academy-tint'}`}
                     >
                       {body}
                     </Link>
@@ -148,7 +150,8 @@ export default async function LessonPlayer({
   const { course, lesson } = detail;
   const [canRead, access] = await Promise.all([canReadCourse(personId, course), lessonAccess(personId, course)]);
   const { done, order, pending } = access;
-  if (!canRead && lesson.preview_public && course.price_cents > 0) {
+  const paused = !canRead && await courseAccessPaused(personId, course.id);
+  if (!canRead && !paused && lesson.preview_public && course.price_cents > 0) {
     const embed = bunnyVideo(lesson.video_url) ? '' : lessonEmbed(lesson.video_url);
     const direct = !embed && directLessonVideo(lesson.video_url);
     return (
@@ -207,7 +210,8 @@ export default async function LessonPlayer({
   const arrow = <Icon name="arrow-right" size={16} aria-hidden="true" />;
   let primary: ReactNode = null;
   let status = '';
-  if (!canRead && access.person && !signedIn) {
+  const suspended = paused || (!canRead && Boolean(access.person) && !signedIn);
+  if (suspended) {
     status = 'Acceso suspendido';
   } else if (!canRead) {
     primary = <Link href={`/academia/${slug}?inscripcion=1`} className={primaryClass}>Inscribirme al curso {arrow}</Link>;
@@ -253,24 +257,24 @@ export default async function LessonPlayer({
         </HStack>
       </HStack>
 
-      <section className="academy-classroom lg:grid lg:grid-cols-12">
-        <VStack as="main" gap={0} className="min-w-0 lg:col-span-9">
+      <section className="academy-classroom mx-auto w-full max-w-screen-2xl gap-6 p-4 sm:p-6 lg:grid lg:grid-cols-12">
+        <VStack as="main" gap={0} className="min-w-0 lg:col-span-8">
           {video ? (
-            <figure className="mx-auto w-full max-w-5xl lg:px-6 lg:pt-6">
-              <iframe className="block aspect-video w-full bg-black lg:rounded-academy-lg" src={video} title={lesson.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+            <figure className="mx-auto w-full max-w-5xl overflow-hidden rounded-academy-lg">
+              <iframe className="block aspect-video w-full bg-black" src={video} title={lesson.title} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture" allowFullScreen />
             </figure>
           ) : directVideo ? (
-            <figure className="mx-auto w-full max-w-5xl lg:px-6 lg:pt-6">
-              <video className="block aspect-video w-full bg-black lg:rounded-academy-lg" src={directVideo} controls playsInline preload="metadata" aria-label={lesson.title} />
+            <figure className="mx-auto w-full max-w-5xl overflow-hidden rounded-academy-lg">
+              <video className="block aspect-video w-full bg-black" src={directVideo} controls playsInline preload="metadata" aria-label={lesson.title} />
             </figure>
           ) : null}
 
-          <VStack gap={0} className="mx-auto w-full max-w-4xl flex-1 px-4 pb-10 pt-6 sm:px-8 sm:pt-8">
+          <VStack gap={0} className="academy-panel mx-auto mt-5 w-full max-w-4xl flex-1 px-4 pb-8 pt-5 sm:px-6 sm:pt-6">
             <p className="text-sm font-semibold text-academy-muted">
               {sectionTitle ? `${sectionTitle} · ` : ''}Clase {index + 1} de {order.length}
               {lesson.duration_min ? ` · ${lesson.duration_min} min` : ''}
             </p>
-            <Heading level={1} className="academy-title mt-2">{lesson.title}</Heading>
+            <Heading level={1} className="mt-2 text-balance text-2xl font-bold sm:text-3xl">{lesson.title}</Heading>
             {open && (lesson.resources.length || shown || signedIn) ? (
               <nav aria-label="Secciones de la clase" className="mt-4 flex flex-wrap gap-1 border-b border-academy-line pb-3">
                 <a href="#resumen-clase" className="academy-nav academy-focus">Resumen</a>
@@ -400,10 +404,10 @@ export default async function LessonPlayer({
               <section className="academy-panel mt-8 p-5">
                 <p className="flex items-center gap-2 font-medium">
                   <Icon name="lock" size={16} />
-                  {status === 'Acceso suspendido' ? status : !canRead ? 'Esta clase es parte de un curso de pago' : signedIn ? 'Esta clase todavía está cerrada' : 'Entra para seguir el curso'}
+                  {suspended ? status : !canRead ? 'Esta clase es parte de un curso de pago' : signedIn ? 'Esta clase todavía está cerrada' : 'Entra para seguir el curso'}
                 </p>
                 <p className="mt-2 text-sm text-black/65">
-                  {status === 'Acceso suspendido' ? 'Contacta al equipo de Academia para recuperar tu acceso.' : !canRead
+                  {suspended ? 'Contacta al equipo de Academia para recuperar tu acceso.' : !canRead
                     ? 'Inscríbete para ver el video, las notas y la misión.'
                     : personId
                       ? <>Las clases se abren en orden.{pending ? <> Completa «{pending.title}» para seguir.</> : null}</>
@@ -431,7 +435,7 @@ export default async function LessonPlayer({
           </footer>
         </VStack>
 
-        <aside className="academy-classroom-sidebar hidden min-w-0 border-l border-academy-line bg-academy-surface lg:sticky lg:top-[var(--academy-header-size)] lg:col-span-3 lg:block lg:overflow-y-auto">
+        <aside className="academy-classroom-sidebar hidden min-w-0 overflow-hidden rounded-academy-lg border border-academy-line bg-academy-surface lg:sticky lg:top-24 lg:col-span-4 lg:block lg:overflow-y-auto">
           {syllabus}
         </aside>
       </section>

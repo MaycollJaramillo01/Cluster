@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Cover, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { Cover, PayMethod, PurchaseLegalLinks, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
 import { CourseCheckoutForm } from '@/components/academia/CourseCheckoutForm';
 import { CertificateRequest } from '@/components/academia/CertificateRequest';
 import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse, buyUpsell } from '@/lib/valux/actions';
+import { courseAccessPaused } from '@/lib/crm/course-access-requests';
 import { canReadCourse, getPerson, lessonAccess, lessonOrder, ownsCourse, publishedCourse } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
 import { paymentOptions } from '@/lib/valux/transfers';
@@ -54,7 +55,9 @@ export default async function CourseCatalogPage({
   const lessonCount = course.lessons.length;
   // Inscrito, o con acceso a un curso de pago por membresía o rol: ve su avance en vez del checkout.
   const enrolled = await ownsCourse(personId, course.id);
-  const hasAccess = Boolean(personId) && (course.price_cents <= 0 ? enrolled : await canReadCourse(personId, course));
+  const canRead = await canReadCourse(personId, course);
+  const paused = !canRead && await courseAccessPaused(personId, course.id);
+  const hasAccess = Boolean(personId) && canRead && (course.price_cents > 0 || enrolled);
   const coursePath = `/academia/${course.slug}`;
   const checkoutPath = `${coursePath}?inscripcion=1`;
   const paid = course.price_cents > 0;
@@ -65,7 +68,7 @@ export default async function CourseCatalogPage({
   const suspended = person?.is_active === false;
   const contact = person?.is_active ? { name: person.name || person.email, email: person.email } : undefined;
 
-  if (!hasAccess && !suspended && (query.inscripcion === '1' || (paid && query.error && query.error !== 'reembolso'))) {
+  if (!hasAccess && !suspended && !paused && (query.inscripcion === '1' || (paid && query.error && query.error !== 'reembolso'))) {
     return (
       <main className="academy-page max-w-5xl">
         <Link href={coursePath} className="academy-nav academy-focus w-fit"><Icon name="arrow-right" size={16} className="rotate-180" /> Volver al curso</Link>
@@ -118,7 +121,7 @@ export default async function CourseCatalogPage({
   const pct = lessonCount ? Math.round((doneCount / lessonCount) * 100) : 0;
   const lessonUrl = (lesson: { slug: string }) => `/academia/${course.slug}/${lesson.slug}`;
   const [firstLesson] = lessonOrder(course.sections, course.lessons);
-  const sample = hasAccess ? undefined : paid ? course.lessons.find((lesson) => lesson.preview_public) : firstLesson;
+  const sample = hasAccess || paused ? undefined : paid ? course.lessons.find((lesson) => lesson.preview_public) : firstLesson;
   const openLessons = access?.unlocked ?? new Set(
     paid ? course.lessons.filter((lesson) => lesson.preview_public).map((lesson) => lesson.id) : firstLesson ? [firstLesson.id] : [],
   );
@@ -137,10 +140,10 @@ export default async function CourseCatalogPage({
   const includes = content.filter(({ count }) => count > 0);
 
   return (
-    <main className="overflow-x-clip bg-academy-surface">
+    <main className="overflow-x-clip bg-academy-page">
       <section className="mx-auto grid w-full max-w-7xl items-start gap-x-14 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-8">
-        <VStack as="header" gap={4} className="academy-course-masthead py-6 text-white sm:gap-6 sm:py-10 lg:col-start-1 lg:row-start-1 lg:py-12">
-          <nav aria-label="Ruta del curso" className="flex flex-wrap items-center gap-x-2 text-sm font-semibold text-white/80">
+        <VStack as="header" gap={4} className="py-6 sm:gap-6 sm:py-10 lg:col-start-1 lg:row-start-1 lg:py-12">
+          <nav aria-label="Ruta del curso" className="flex flex-wrap items-center gap-x-2 text-sm font-semibold text-academy-muted">
             <Link href={catalogPath} className="py-2 underline-offset-4 hover:underline">Catálogo</Link>
             {topic ? (
               <>
@@ -149,33 +152,34 @@ export default async function CourseCatalogPage({
               </>
             ) : null}
           </nav>
+          {topic ? <Text className="w-fit rounded-academy-full bg-academy-tint px-3 py-1.5 text-sm font-semibold text-academy-primary">{topic.label}</Text> : null}
 
           <VStack gap={4} className="min-w-0">
-            <Heading level={1} className="max-w-3xl text-pretty break-words text-4xl font-bold !leading-[1.02] text-white sm:text-6xl xl:text-7xl">{course.title}</Heading>
-            <Text as="p" className="max-w-2xl whitespace-pre-line text-base leading-relaxed text-white/85 sm:text-lg">{course.description}</Text>
+            <Heading level={1} className="max-w-3xl text-pretty break-words text-3xl font-bold text-academy-ink sm:text-4xl xl:text-5xl">{course.title}</Heading>
+            <Text as="p" className="max-w-2xl whitespace-pre-line text-base leading-relaxed text-academy-muted sm:text-lg">{course.description}</Text>
           </VStack>
 
-          <HStack gap={4} align="center" wrap="wrap" className="text-sm text-white/85">
-            <Link href="#docente" className="text-white/85 underline-offset-4 hover:underline">Por <strong className="text-white">{teacherName}</strong></Link>
+          <HStack gap={4} align="center" wrap="wrap" className="text-sm text-academy-muted">
+            <Link href="#docente" className="text-academy-muted underline-offset-4 hover:underline">Por <strong className="text-academy-ink">{teacherName}</strong></Link>
             {reviews.count ? (
-              <Link href="#resenas" className="inline-flex items-center gap-2 py-2 font-semibold text-white underline-offset-4 hover:underline">
+              <Link href="#resenas" className="inline-flex items-center gap-2 py-2 font-semibold text-academy-primary underline-offset-4 hover:underline">
                 <Icon name="star" size={16} fill="currentColor" aria-hidden="true" />
                 {reviews.average.toLocaleString('es-HN')} / 5 · {reviews.count} {reviews.count === 1 ? 'reseña' : 'reseñas'}
               </Link>
             ) : null}
           </HStack>
 
-          <dl className="flex flex-wrap gap-x-8 gap-y-3 border-t border-white/25 pt-4 sm:gap-x-10">
-            {course.sections.length ? <VStack gap={0}><dt className="text-xs font-semibold text-white/75">Módulos</dt><dd className="mt-0.5 text-2xl font-bold tabular-nums">{course.sections.length}</dd></VStack> : null}
-            <VStack gap={0}><dt className="text-xs font-semibold text-white/75">Clases</dt><dd className="mt-0.5 text-2xl font-bold tabular-nums">{lessonCount}</dd></VStack>
-            {minutes ? <VStack gap={0}><dt className="text-xs font-semibold text-white/75">Duración</dt><dd className="mt-0.5 text-2xl font-bold tabular-nums">{durationLabel(minutes)}</dd></VStack> : null}
+          <dl className="flex flex-wrap gap-3">
+            {course.sections.length ? <VStack gap={1} className="rounded-academy border border-academy-line bg-academy-surface px-5 py-3"><dt className="text-sm text-academy-muted">Módulos</dt><dd className="text-lg font-bold tabular-nums">{course.sections.length}</dd></VStack> : null}
+            <VStack gap={1} className="rounded-academy border border-academy-line bg-academy-surface px-5 py-3"><dt className="text-sm text-academy-muted">Clases</dt><dd className="text-lg font-bold tabular-nums">{lessonCount}</dd></VStack>
+            {minutes ? <VStack gap={1} className="rounded-academy border border-academy-line bg-academy-surface px-5 py-3"><dt className="text-sm text-academy-muted">Duración</dt><dd className="text-lg font-bold tabular-nums">{durationLabel(minutes)}</dd></VStack> : null}
           </dl>
         </VStack>
 
         <aside aria-label={access ? 'Tu acceso al curso' : 'Inscripción al curso'} className="academy-panel z-10 mt-5 min-w-0 overflow-hidden lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-11">
           {sample ? (
             <Link href={lessonUrl(sample)} className="group relative block focus-visible:-outline-offset-4" prefetch={false}>
-              <Cover url={course.cover_url} title={course.title} slug={course.slug} aspect="aspect-[2.2/1] sm:aspect-video lg:aspect-[4/3]" eager />
+              <Cover url={course.cover_url} title={course.title} slug={course.slug} aspect="aspect-video" eager />
               <HStack gap={0} align="center" justify="center" className="absolute inset-0 bg-black/20 transition-colors group-hover:bg-black/30">
                 <HStack gap={0} align="center" justify="center" className="size-14 rounded-academy-xl bg-academy-surface text-academy-ink shadow-md">
                   <Icon name={sample.has_video ? 'play' : 'arrow-right'} size={23} aria-hidden="true" />
@@ -185,7 +189,7 @@ export default async function CourseCatalogPage({
                 {paid ? 'Ver clase de muestra' : 'Ver primera clase'}
               </Text>
             </Link>
-          ) : <Cover url={course.cover_url} title={course.title} slug={course.slug} aspect="aspect-[2.2/1] sm:aspect-video lg:aspect-[4/3]" eager />}
+          ) : <Cover url={course.cover_url} title={course.title} slug={course.slug} aspect="aspect-video" eager />}
           <VStack gap={4} className="p-5 sm:p-6">
             {access ? (
               <>
@@ -211,8 +215,8 @@ export default async function CourseCatalogPage({
             ) : (
               <>
                 <Text as="p" className="text-4xl font-bold tracking-tight text-academy-ink">{priceLabel}</Text>
-                {suspended ? (
-                  <Text as="p" role="status" className="text-sm leading-relaxed text-academy-muted">{payNote('suspendido')}</Text>
+                {paused || suspended ? (
+                  <Text as="p" role="status" className="text-sm leading-relaxed text-academy-muted">{payNote(paused ? 'curso-pausado' : 'suspendido')}</Text>
                 ) : paid && !payReady(pay) ? (
                   <Text as="p" role="status" className="text-sm leading-relaxed text-academy-muted">{payNote('pasarela')}</Text>
                 ) : !paid && contact && !bump ? (
@@ -274,13 +278,14 @@ export default async function CourseCatalogPage({
               <HStack gap={3} wrap="wrap" align="center">
                 <AcademySubmit label="Sí, agregarlo" pending="Abriendo el pago…" />
                 <Link href={coursePath} className="academy-nav academy-focus">No, gracias</Link>
+                <PurchaseLegalLinks />
               </HStack>
             </form>
           ) : null}
           {query.error && query.error !== 'acepto' ? <p role="alert" className="academy-notice">{payNote(query.error)}</p> : null}
 
           {outcomes.length ? (
-            <VStack as="section" id="aprendizaje" gap={4} className="scroll-mt-24" aria-labelledby="outcomes-title">
+            <VStack as="section" id="aprendizaje" gap={4} className="academy-panel scroll-mt-24 p-5 sm:p-6" aria-labelledby="outcomes-title">
               <Heading level={2} id="outcomes-title" className="academy-section-title">Qué aprenderás</Heading>
               <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
                 {outcomes.map((outcome, index) => (

@@ -1,19 +1,89 @@
 {
   "name": "cluster-academia",
   "like": "neutral",
-  "mode": "both",
+  "mode": "light-only",
   "settings": [
     {
-      "thing": "accent",
-      "value": "#007d65",
+      "thing": "corners",
+      "value": "medium",
       "source": "dial"
     },
     {
-      "thing": "corners",
-      "value": "large",
+      "thing": "--font-family-body",
+      "value": "var(--font-academy-body, Inter), Arial, sans-serif",
+      "source": "token"
+    },
+    {
+      "thing": "--font-family-heading",
+      "value": "var(--font-academy-heading, Arial), sans-serif",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-element",
+      "value": "0.5rem",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-container",
+      "value": "1rem",
+      "source": "token"
+    },
+    {
+      "thing": "--radius-page",
+      "value": "1.5rem",
+      "source": "token"
+    },
+    {
+      "thing": "--color-background-surface",
+      "value": "#ffffff",
+      "source": "token",
+      "mode": "light"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "var(--color-on-dark)",
+      "source": "token",
+      "on": "toast",
+      "note": "feeds color on toast, color on button inside toast (when variant=ghost), color on button inside toast (when variant=secondary)"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "var(--color-on-dark)",
+      "source": "token",
+      "on": "lightbox",
+      "note": "feeds color on lightbox, color on button inside lightbox (when variant=ghost), color on button inside lightbox (when variant=secondary), color on text inside lightbox (when color=primary)"
+    },
+    {
+      "thing": "accent",
+      "value": "#02C39A",
       "source": "dial"
+    },
+    {
+      "thing": "neutral",
+      "value": "#171717",
+      "source": "dial"
+    },
+    {
+      "thing": "--color-text-primary",
+      "value": "#111111",
+      "source": "token"
+    },
+    {
+      "thing": "--color-text-secondary",
+      "value": "#525252",
+      "source": "token"
+    },
+    {
+      "thing": "--color-border",
+      "value": "#e2e5e2",
+      "source": "token"
+    },
+    {
+      "thing": "--color-background-body",
+      "value": "#fafbf9",
+      "source": "token"
     }
   ],
   "lifted": [],
-  "palette": "18fe2697e25ba99b870475b9c843501285abff427cf19c59c6c097b1cd0191a8"
+  "palette": "487dd2e0e411d2c3d438e8e2304f5a9209b842e3a281820d9e5881e84d6c832e"
 }

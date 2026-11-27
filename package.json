@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test:lms": "node scripts/check-lms-isolated.cjs"
   },
   "dependencies": {
@@ -27,11 +27,14 @@
   },
   "devDependencies": {
     "@astryxdesign/cli": "^0.7.16",
+    "@eslint/eslintrc": "^3.3.7",
     "@types/node": "22.10.7",
     "@types/qrcode": "^1.5.5",
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "autoprefixer": "10.4.20",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.29",
     "ffmpeg-static": "^5.3.0",
     "postcss": "^8.5.33",
     "tailwindcss": "3.4.17",

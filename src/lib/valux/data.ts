@@ -1,4 +1,5 @@
 import { crm } from '@/lib/crm/db';
+import { courseAccessPaused } from '@/lib/crm/course-access-requests';
 
 function num(value: unknown) {
   const parsed = Number(value);
@@ -532,6 +533,7 @@ export async function ownsCourse(personId: string, courseId: string) {
 
 // Lo comprado queda para siempre; la membresía solo abre los cursos de su nivel mientras esté vigente.
 export async function canReadCourse(personId: string, course: { id: string; price_cents: number; teacher_id: string; plan_level?: number }) {
+  if (await courseAccessPaused(personId, course.id)) return false;
   if (course.price_cents <= 0) return true;
   const person = await getPerson(personId);
   if (!person || !person.is_active) return false;
@@ -594,10 +596,11 @@ export async function myCourses(personId: string) {
   const level = person.is_active ? await planLevel(personId, person.role) : 0;
   const sql = await crm();
   const rows = await sql`
-    SELECT c.slug, c.title, c.cover_url, c.published, c.price_cents, e.id IS NOT NULL AS enrolled, v.name AS teacher_name,
+    SELECT c.slug, c.title, c.cover_url, c.published, c.price_cents, e.id IS NOT NULL AS enrolled, v.name AS teacher_name, access.paused,
       study.lessons, study.done, study.activity, study.next_slug, study.next_title
     FROM lms_courses c
     LEFT JOIN lms_enrollments e ON e.course_id = c.id AND e.person_id = ${personId}
+    LEFT JOIN lms_course_access_requests access ON access.course_id = c.id AND access.person_id = ${personId}
     LEFT JOIN valux_people v ON v.id = c.teacher_id
     CROSS JOIN LATERAL (
       SELECT count(*) AS lessons, count(p.completed_at) AS done,
@@ -623,8 +626,8 @@ export async function myCourses(personId: string) {
       cover_url: text(entry.cover_url),
       teacher_name: text(entry.teacher_name),
       enrolled: bool(entry.enrolled),
-      available: bool(entry.published) && (num(entry.price_cents) <= 0 || person.is_active),
-      availability: !bool(entry.published) ? 'Curso no disponible' : !person.is_active && num(entry.price_cents) > 0 ? 'Acceso suspendido' : '',
+      available: bool(entry.published) && !bool(entry.paused) && (num(entry.price_cents) <= 0 || person.is_active),
+      availability: !bool(entry.published) ? 'Curso no disponible' : bool(entry.paused) ? 'Acceso al curso pausado' : !person.is_active && num(entry.price_cents) > 0 ? 'Acceso suspendido' : '',
       lessons: num(entry.lessons),
       done: num(entry.done),
       started: Boolean(entry.activity),

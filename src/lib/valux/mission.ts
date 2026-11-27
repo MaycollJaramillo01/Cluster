@@ -17,6 +17,13 @@ export type Mission =
   | { kind: 'checklist'; items: string[] }
   | { kind: 'assignment'; instructions: string };
 
+// Nombres que ve el equipo al crear actividades (temario, editor de clase y selector).
+export const MISSION_LABELS: Record<Mission['kind'], string> = {
+  checklist: 'Lista de pasos',
+  quiz: 'Cuestionario autocorregible',
+  assignment: 'Tarea con entrega escrita',
+};
+
 const CHECK = /^\[\s?\]\s*/;
 
 export function parseMission(raw: string): { mission: Mission | null; errors: string[] } {

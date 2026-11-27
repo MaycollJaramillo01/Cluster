@@ -898,6 +898,13 @@
     "subtitle": "Reserva tu llamada de diagnóstico. Sin compromiso: revisamos tu negocio y te proponemos la mejor ruta."
   },
   "Privacy": {
+    "academy": {
+      "title": "Datos de Academia Cluster",
+      "draft": "Borrador pendiente de revisión legal.",
+      "account": "Usamos tu nombre, correo y los datos de contacto que proporciones para gestionar tu cuenta, enviarte códigos de acceso y atender solicitudes. Registramos matrículas, avance, entregas y constancias para prestar el servicio y permitir que el equipo autorizado acompañe tu aprendizaje.",
+      "purchase": "Conservamos el importe, la referencia y el estado del pedido para confirmar pagos, emitir recibos y gestionar reembolsos. Stripe procesa los datos de tarjeta. Si pagas por transferencia, el equipo autorizado revisa el comprobante que envías.",
+      "cert": "Tu constancia está disponible en tu cuenta. Si activas la opción de compartir, quien tenga el enlace de verificación podrá ver tu nombre, el curso y los datos de emisión. Puedes desactivar el enlace desde Mis constancias."
+    },
     "metaTitle": "Política de Privacidad",
     "metaDescription": "Política de privacidad de Cluster Media.",
     "title": "Política de Privacidad",
@@ -922,6 +929,18 @@
     }
   },
   "Terms": {
+    "academy": {
+      "title": "Compras en Academia Cluster",
+      "draft": "Borrador pendiente de revisión legal.",
+      "purchase": "El precio y el alcance de cada curso o membresía se muestran antes de pagar. Las compras de cursos son de pago único. El acceso se vincula con el correo de la compra y se habilita cuando se confirma el pago. Las solicitudes de transferencia vencen a las 72 horas y el acceso se habilita al validar el comprobante.",
+      "membershipTitle": "Membresías y cancelación",
+      "membership": "Las membresías de pago se renuevan mensualmente. Para detener la renovación, inicia sesión, abre Suscripciones y selecciona «Cancelar renovación». El acceso del plan se mantiene hasta el final del período pagado.",
+      "refundTitle": "Política de reembolsos",
+      "refundRequest": "Puedes solicitar un reembolso dentro de los 3 días posteriores a la confirmación del pago. Escribe a {email} desde el correo de la compra e incluye la referencia del pedido. Se respetan los derechos que correspondan conforme a la legislación aplicable.",
+      "refundEffect": "Cuando Stripe confirma un reembolso total, la Academia retira el acceso concedido por ese pago, incluidos los complementos del pedido y la membresía asociada, si corresponde. El pedido reembolsado no se vuelve a entregar aunque se reciba otra notificación de pago.",
+      "certTitle": "Constancias",
+      "cert": "Para emitir una constancia nueva debes tener acceso al curso y completar sus clases y actividades requeridas. Las constancias ya emitidas siguen disponibles en tu cuenta después de una cancelación o un reembolso. El enlace público de verificación sigue activo hasta que desactives la opción de compartir."
+    },
     "metaTitle": "Términos y Condiciones",
     "metaDescription": "Términos y condiciones de uso de los servicios de Cluster Media.",
     "title": "Términos y Condiciones",
