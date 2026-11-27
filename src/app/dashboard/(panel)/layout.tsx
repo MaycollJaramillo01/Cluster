@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { processDue } from '@/lib/crm/automations';
 import { dashboardSession } from '@/lib/crm/session';
 import { sidebarCounts } from '@/lib/crm/queries';
+import { KeepFormData } from '@/components/dashboard/KeepFormData';
 import { Setup, safeDbError } from '@/components/dashboard/Setup';
 import { Shell } from '@/components/dashboard/Shell';
 
@@ -21,6 +22,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     }
     return (
       <Suspense fallback={<p className="p-8 font-mono text-xs uppercase tracking-[0.16em] text-black/40">Cargando</p>}>
+        <KeepFormData />
         <Shell counts={counts} openAccess={false} role={session.role}>
           {children}
         </Shell>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { parseMission } from '@/lib/valux/mission';
 import { btnGhost, btnSmall, fieldClass as field, labelClass as label } from './StaffUi';
 
@@ -14,6 +14,24 @@ export function LessonActivityEditor({ value }: { value: string }) {
   const [tasks, setTasks] = useState(initial.mission?.kind === 'checklist' ? initial.mission.items.join('\n') : '');
   const [questions, setQuestions] = useState(initial.mission?.kind === 'quiz' ? initial.mission.questions : [blankQuestion()]);
   const [instructions, setInstructions] = useState(initial.mission?.kind === 'assignment' ? initial.mission.instructions : '');
+  const root = useRef<HTMLElement>(null);
+
+  // Si el servidor rechaza el guardado, KeepFormData devuelve la actividad enviada y aquí se vuelve a abrir.
+  // Layout effect: el oyente debe existir antes del siguiente cuadro, cuando KeepFormData restaura.
+  useLayoutEffect(() => {
+    const section = root.current;
+    const restore = (event: Event) => {
+      const { mission: sent, errors } = parseMission((event as CustomEvent<string>).detail);
+      if (errors.length) return;
+      setMode(sent?.kind || 'none');
+      if (sent?.kind === 'checklist') setTasks(sent.items.join('\n'));
+      if (sent?.kind === 'quiz') setQuestions(sent.questions);
+      if (sent?.kind === 'assignment') setInstructions(sent.instructions);
+    };
+    section?.addEventListener('keep:restore', restore);
+    return () => section?.removeEventListener('keep:restore', restore);
+  }, []);
+
   const mission = mode === 'checklist'
     ? tasks.split('\n').map((line) => line.trim()).filter(Boolean).map((line) => `[ ] ${line}`).join('\n')
     : mode === 'quiz'
@@ -32,7 +50,7 @@ export function LessonActivityEditor({ value }: { value: string }) {
   }
 
   return (
-    <section className="space-y-4">
+    <section ref={root} className="space-y-4">
       <label className={label}>Tipo de actividad
         <select className={field} value={mode} onChange={(event) => setMode(event.target.value as Mode)}>
           <option value="none">Sin actividad</option>
@@ -42,7 +60,7 @@ export function LessonActivityEditor({ value }: { value: string }) {
           {initial.errors.length ? <option value="legacy">Corregir actividad anterior</option> : null}
         </select>
       </label>
-      {mode !== 'legacy' ? <input type="hidden" name="mission" value={mission} /> : (
+      {mode !== 'legacy' ? <input type="hidden" name="mission" value={mission} data-keep /> : (
         <label className={label}>Texto de la actividad anterior
           <textarea name="mission" defaultValue={value} rows={6} className={field} />
         </label>
@@ -55,7 +73,7 @@ export function LessonActivityEditor({ value }: { value: string }) {
       ) : null}
       {mode === 'assignment' ? (
         <label className={label}>Instrucciones de la tarea
-          <textarea className={field} rows={5} value={instructions} onChange={(event) => setInstructions(event.target.value)} required />
+          <textarea className={field} rows={5} value={instructions} onChange={(event) => setInstructions(event.target.value)} maxLength={6000} required />
           <small className="block text-xs font-normal text-academy-muted">Indica qué debe entregar el alumno. Podrás revisar su respuesta desde el panel.</small>
         </label>
       ) : null}
