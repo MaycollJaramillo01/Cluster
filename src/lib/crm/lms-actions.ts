@@ -158,12 +158,9 @@ export async function createCourse(formData: FormData) {
   const session = await requireDashboard('curso');
   const teacherDraft = session.role === 'profesor';
   const title = field(formData, 'title');
-  const description = field(formData, 'description');
-  const back = `${teacherDraft ? '/dashboard/profesor' : '/dashboard/cursos'}?vista=nuevo`;
-  if (!title || !description) redirect(`${back}&error=curso`);
-  const video = field(formData, 'video_url');
-  if (video && !validLessonVideo(video)) redirect(`${back}&error=video`);
-  const cover = await storedFile(formData, 'cover', 'cover_url', true).catch(() => redirect(`${back}&error=portada`));
+  // Se crea con el título; la ficha se completa en el editor y la revisión exige la descripción.
+  const back = teacherDraft ? '/dashboard/profesor' : '/dashboard/cursos';
+  if (!title) redirect(`${back}?error=curso`);
   const sql = await crm();
   const id = crypto.randomUUID();
   const slug = await uniqueCourseSlug(title);
@@ -174,19 +171,13 @@ export async function createCourse(formData: FormData) {
         ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email
         RETURNING id
       ), course AS (
-        INSERT INTO lms_courses (id, slug, title, description, price_cents, cover_url, teacher_id,
-          learning_outcomes, audience, prerequisites)
-        VALUES (${id}, ${slug}, ${title}, ${description}, ${teacherDraft ? 0 : cents(formData, 'price')}, ${cover},
-          CASE WHEN ${teacherDraft}::boolean THEN (SELECT id FROM teacher) ELSE ${field(formData, 'teacher_id') || null} END,
-          ${field(formData, 'learning_outcomes')}, ${field(formData, 'audience')}, ${field(formData, 'prerequisites')})
+        INSERT INTO lms_courses (id, slug, title, description, teacher_id)
+        VALUES (${id}, ${slug}, ${title}, ${field(formData, 'description')}, (SELECT id FROM teacher))
         ON CONFLICT (slug) DO NOTHING RETURNING id
-      ), introduction AS (
-        INSERT INTO lms_lessons (id, course_id, slug, title, content, video_url, sort_order)
-        SELECT ${crypto.randomUUID()}, id, 'introduccion', 'Introducción', '', ${video}, 1 FROM course WHERE ${video} <> ''
       )
       SELECT id FROM course
   `;
-  if (!created.length) redirect(`${back}&error=curso`);
+  if (!created.length) redirect(`${back}?error=curso`);
   refresh();
   redirect(`/dashboard/cursos/${id}`);
 }
@@ -276,23 +267,21 @@ export async function createLesson(formData: FormData) {
   const back = `/dashboard/cursos/${courseId}?vista=temario`;
   const id = crypto.randomUUID();
   const section = await courseSection(courseId, field(formData, 'section_id'), back);
-  const video = field(formData, 'video_url');
-  if (video && !validLessonVideo(video)) redirect(`${back}&error=video`);
   const base = slugify(title);
-  const points = positive(field(formData, 'points')) || 10;
+  // Se crea con el título y se abre en su editor; contenido, video y actividad se completan ahí.
   const created = await mutateCourse(courseId, back, (tx, allowed) => tx`
-    INSERT INTO lms_lessons (id, course_id, section_id, slug, title, content, video_url, points, duration_min, sort_order)
+    INSERT INTO lms_lessons (id, course_id, section_id, slug, title, sort_order)
     SELECT ${id}, ${courseId}, ${section}, CASE WHEN EXISTS (
       SELECT FROM lms_lessons WHERE course_id = ${courseId} AND slug = ${base}
     ) THEN ${`${base.slice(0, 50)}-${id.slice(0, 8)}`} ELSE ${base} END,
-      ${title}, ${field(formData, 'content')}, ${video || null}, ${points}, ${positive(field(formData, 'duration_min'))},
+      ${title},
       (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_lessons WHERE course_id = ${courseId})
     WHERE ${allowed} AND (${section}::text IS NULL OR EXISTS (SELECT FROM lms_sections WHERE id = ${section} AND course_id = ${courseId}))
     RETURNING id
   `);
   if (!created.length) redirect(`${back}&error=seccion`);
   refresh();
-  if (field(formData, 'editor') === '1') redirect(`/dashboard/cursos/${courseId}/lecciones/${id}`);
+  redirect(`/dashboard/cursos/${courseId}/lecciones/${id}`);
 }
 
 export async function updateLesson(formData: FormData) {
@@ -318,7 +307,7 @@ export async function updateLesson(formData: FormData) {
       points = ${points},
       duration_min = ${positive(field(formData, 'duration_min'))},
       mission = ${mission},
-      preview_public = CASE WHEN ${field(formData, 'preview_settings') === '1'} THEN ${field(formData, 'preview_public') === '1'} ELSE l.preview_public END,
+      preview_public = ${field(formData, 'preview_public') === '1'},
       sort_order = CASE WHEN section_id IS DISTINCT FROM ${section}::text THEN
         (SELECT COALESCE(max(other.sort_order), 0) + 1 FROM lms_lessons other
           WHERE other.course_id = l.course_id AND other.section_id IS NOT DISTINCT FROM ${section}::text)
@@ -329,8 +318,7 @@ export async function updateLesson(formData: FormData) {
   `);
   if (!saved.length) redirect(`${back}?error=seccion`);
   refresh();
-  if (field(formData, 'editor') === '1') redirect(`/dashboard/cursos/${courseId}/lecciones/${id}?guardado=1`);
-  redirect(`/dashboard/cursos/${courseId}`);
+  redirect(`${back}?guardado=1`);
 }
 
 export async function deleteLesson(formData: FormData) {
@@ -438,24 +426,28 @@ export async function deleteSection(formData: FormData) {
 export async function createResource(formData: FormData) {
   const lessonId = field(formData, 'lesson_id');
   const title = field(formData, 'title');
-  const kind = field(formData, 'kind') || 'enlace';
   if (!lessonId || !title) return;
   const courseId = await lessonCourse(lessonId);
   const back = `/dashboard/cursos/${courseId}/lecciones/${lessonId}`;
   await checkEditableBeforeUpload(courseId, back);
-  const allowed = ['video', 'pdf', 'imagen', 'enlace', 'texto', TEXT_TEMPLATE_KIND];
+  const template = field(formData, 'kind') === TEXT_TEMPLATE_KIND;
   const content = field(formData, 'content');
   const file = formData.get('file');
-  if (kind === TEXT_TEMPLATE_KIND && (!content || content.length > 12000 || field(formData, 'url') || (file instanceof File && file.size))) {
+  if (template && (!content || content.length > 12000 || field(formData, 'url') || (file instanceof File && file.size))) {
     redirect(`${back}?error=plantilla#materiales`);
   }
-  const url = kind === TEXT_TEMPLATE_KIND ? null : await storedPrivateAsset(formData, 'file', 'url').catch(() => {
+  const url = template ? null : await storedPrivateAsset(formData, 'file', 'url').catch(() => {
     redirect(`${back}?error=archivo#materiales`);
   });
   if (!url && !content) redirect(`${back}?error=recurso#materiales`);
+  // El alumno ve el tipo como etiqueta, así que sale del archivo o enlace; solo la plantilla se marca a mano.
+  const path = String(url || '').toLowerCase().split(/[?#]/)[0];
+  const kind = template ? TEXT_TEMPLATE_KIND : !url ? 'texto' : path.endsWith('.pdf') ? 'pdf'
+    : /\.(png|jpe?g|gif|webp|avif|svg)$/.test(path) ? 'imagen'
+    : /\.(mp4|webm|mov)$/.test(path) || validLessonVideo(url) ? 'video' : 'enlace';
   await mutateCourse(courseId, back, (tx, editable) => tx`
     INSERT INTO lms_resources (id, lesson_id, kind, title, url, content, sort_order)
-    SELECT ${crypto.randomUUID()}, l.id, ${allowed.includes(kind) ? kind : 'enlace'}, ${title}, ${url}, ${content || null},
+    SELECT ${crypto.randomUUID()}, l.id, ${kind}, ${title}, ${url}, ${content || null},
       (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_resources WHERE lesson_id = ${lessonId})
     FROM lms_lessons l WHERE l.id = ${lessonId} AND l.course_id = ${courseId} AND ${editable}
   `);

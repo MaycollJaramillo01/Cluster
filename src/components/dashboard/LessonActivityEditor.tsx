@@ -1,7 +1,7 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState } from 'react';
-import { parseMission } from '@/lib/valux/mission';
+import { MISSION_LABELS, parseMission } from '@/lib/valux/mission';
 import { btnGhost, btnSmall, fieldClass as field, labelClass as label } from './StaffUi';
 
 type Question = { prompt: string; options: string[]; answer: number };
@@ -54,9 +54,9 @@ export function LessonActivityEditor({ value }: { value: string }) {
       <label className={label}>Tipo de actividad
         <select className={field} value={mode} onChange={(event) => setMode(event.target.value as Mode)}>
           <option value="none">Sin actividad</option>
-          <option value="checklist">Lista de pasos</option>
-          <option value="quiz">Cuestionario autocorregible</option>
-          <option value="assignment">Tarea con entrega escrita</option>
+          <option value="checklist">{MISSION_LABELS.checklist}</option>
+          <option value="quiz">{MISSION_LABELS.quiz}</option>
+          <option value="assignment">{MISSION_LABELS.assignment}</option>
           {initial.errors.length ? <option value="legacy">Corregir actividad anterior</option> : null}
         </select>
       </label>

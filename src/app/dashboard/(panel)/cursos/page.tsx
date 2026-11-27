@@ -1,23 +1,20 @@
 import Link from 'next/link';
 import { Badge } from '@astryxdesign/core/Badge';
 import { Grid } from '@astryxdesign/core/Grid';
-import { HStack } from '@astryxdesign/core/HStack';
 import { VStack } from '@astryxdesign/core/VStack';
 import { saveFeaturedCourses } from '@/lib/crm/lms-actions';
 import { listCourses } from '@/lib/crm/lms';
 import { academyMoney as money } from '@/lib/valux/money';
 import { featuredCourseIds, selectFeatured } from '@/lib/valux/catalog';
-import { CourseStatusPill } from '@/components/dashboard/TeacherCourseBuilder';
-import { TeacherCourseForm } from '@/components/dashboard/TeacherCourseForm';
-import { Empty, Field, Notice, PageTitle, SectionTitle, Stat, Table, btn, btnGhost, cell, fieldClass } from '@/components/dashboard/StaffUi';
+import { CourseStatusPill, NewCourseForm } from '@/components/dashboard/TeacherCourseBuilder';
+import { Empty, Field, Notice, PageTitle, SectionTitle, Stat, Table, btnGhost, cell, fieldClass } from '@/components/dashboard/StaffUi';
 import { requireDashboard } from '@/lib/crm/session';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { Icon } from '@/components/ui/Icon';
 
-export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ error?: string; guardado?: string; vista?: string }> }) {
+export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ error?: string; guardado?: string }> }) {
   await requireDashboard('contenido');
   const query = await searchParams;
-  if (query.vista === 'nuevo' || query.error === 'curso') return <TeacherCourseForm staff error={query.error} />;
   const [courses, selected] = await Promise.all([listCourses(), featuredCourseIds()]);
   courses.sort((a, b) => Number(Boolean(b.review_requested_at && !b.published)) - Number(Boolean(a.review_requested_at && !a.published)));
   const published = courses.filter((course) => course.published);
@@ -30,13 +27,9 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
         eyebrow="Contenido"
         title="Cursos"
         description="Crea cursos, revisa los que envían los profesores y elige cuáles destacan en la portada."
-        action={(
-          <HStack gap={2} wrap="wrap">
-            <Link href="/dashboard/cursos/revisiones" className={btnGhost}>Revisiones{toReview ? <Badge label={String(toReview)} /> : null}</Link>
-            <Link href="/dashboard/cursos?vista=nuevo" className={btn}><Icon name="pen" size={16} />Crear curso</Link>
-          </HStack>
-        )}
+        action={<Link href="/dashboard/cursos/revisiones" className={btnGhost}>Revisiones{toReview ? <Badge label={String(toReview)} /> : null}</Link>}
       />
+      <NewCourseForm error={query.error} />
       <Grid columns={{ minWidth: 160, max: 4 }} gap={4}>
         <Stat label="Cursos" value={courses.length} />
         <Stat label="Publicados" value={published.length} />
@@ -66,7 +59,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
               </tr>
             ))}
           </Table>
-        ) : <Empty title="Tu primer curso empieza aquí.">Crea un curso con su ficha; después organizas el temario y preparas cada clase.</Empty>}
+        ) : <Empty title="Tu primer curso empieza aquí.">Escribe su título arriba; después completas la ficha, organizas el temario y preparas cada clase.</Empty>}
       </VStack>
 
       <VStack as="section" gap={5} className="academy-panel p-5 sm:p-6" aria-labelledby="featured-settings">

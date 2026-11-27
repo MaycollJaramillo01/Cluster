@@ -176,14 +176,15 @@ async function main() {
     assert.equal(gradeMission(parsedChecklist, () => '1').passed, true);
     assert.deepEqual(publicMission(parsedQuiz), { kind: 'quiz', questions: [{ prompt: '¿Qué mide el CTR?', options: ['Ventas', 'Clics sobre impresiones'] }] });
 
-    assert.equal(await redirected(() => createResource(form({ lesson_id: firstLessonId, kind: 'pdf', title: 'Material vacío' }))), `${firstLessonPath}?error=recurso#materiales`);
+    assert.equal(await redirected(() => createResource(form({ lesson_id: firstLessonId, title: 'Material vacío' }))), `${firstLessonPath}?error=recurso#materiales`);
     const material = 'https://example.test/guia.pdf';
     assert.equal(await redirected(() => createResource(form({
-      lesson_id: firstLessonId, kind: 'pdf', title: 'Guía de práctica', url: material,
+      lesson_id: firstLessonId, title: 'Guía de práctica', url: material,
     }))), `${firstLessonPath}?guardado=recurso#materiales`);
     const [resource] = (await getLesson(courseId, firstLessonId))!.resources;
     assert.equal(resource.title, 'Guía de práctica');
     assert.equal(resource.url, material);
+    assert.equal(resource.kind, 'pdf', 'El tipo del material sale de su enlace');
 
     const assignmentId = await newLesson(courseId, sections[1].id, 'Entrega tu plan');
     const assignmentPath = `${path}/lecciones/${assignmentId}`;

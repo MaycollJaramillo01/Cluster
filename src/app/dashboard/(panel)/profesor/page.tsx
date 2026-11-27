@@ -10,21 +10,21 @@ import { formatDate } from '@/lib/crm/format';
 import { requireDashboard } from '@/lib/crm/session';
 import { getPersonByEmail } from '@/lib/valux/data';
 import { academyMoney as money } from '@/lib/valux/money';
-import { TeacherCourseForm } from '@/components/dashboard/TeacherCourseForm';
-import { CourseStatusPill } from '@/components/dashboard/TeacherCourseBuilder';
-import { Empty, PageTitle, PayoutStatus, Pill, SectionTitle, Stat, Table, btn, btnGhost, cell, periodLabel, rowClass } from '@/components/dashboard/StaffUi';
+import { CourseStatusPill, NewCourseForm } from '@/components/dashboard/TeacherCourseBuilder';
+import { Empty, PageTitle, PayoutStatus, Pill, SectionTitle, Stat, Table, btnGhost, cell, periodLabel, rowClass } from '@/components/dashboard/StaffUi';
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
 // Todo se filtra por la persona de la academia con el mismo correo: nunca ve cursos, alumnos ni ventas de otros.
-export default async function ProfesorPage({ searchParams }: { searchParams: Promise<{ error?: string; vista?: string }> }) {
+export default async function ProfesorPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const session = await requireDashboard('profesor');
-  const { error, vista } = await searchParams;
-  if (session.role === 'profesor' && (vista === 'nuevo' || error === 'curso')) return <TeacherCourseForm error={error} />;
-  const newCourse = session.role === 'profesor' ? (
-    <Link href="/dashboard/profesor?vista=nuevo" className={btn}><Icon name="pen" size={16} />Crear curso</Link>
-  ) : null;
-  const header = <PageTitle title="Mis cursos" description="Edita tus cursos y sigue el avance de tus alumnos y lo que te corresponde de las ventas." action={newCourse} />;
+  const { error } = await searchParams;
+  const header = (
+    <>
+      <PageTitle title="Mis cursos" description="Edita tus cursos y sigue el avance de tus alumnos y lo que te corresponde de las ventas." />
+      {session.role === 'profesor' ? <NewCourseForm error={error} /> : null}
+    </>
+  );
   const person = await getPersonByEmail(session.email);
   if (!person) {
     return (

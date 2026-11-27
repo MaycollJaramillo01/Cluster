@@ -8,14 +8,14 @@ import { Cover } from '@/components/academia/ui';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { Icon } from '@/components/ui/Icon';
 import {
-  createLesson, createSection, deleteSection, moveCourseLesson, moveCourseSection,
+  createCourse, createLesson, createSection, deleteSection, moveCourseLesson, moveCourseSection,
   renameCourseSection, requestReview, returnCourseReview, setCoursePublication, updateCoursePresentation,
   startCourseRevision, discardCourseRevision,
 } from '@/lib/crm/lms-actions';
 import type { LmsCourseRow, LmsLesson, LmsSection } from '@/lib/crm/lms';
 import { formatDate } from '@/lib/crm/format';
 import type { StaffRole } from '@/lib/crm/roles';
-import { parseMission } from '@/lib/valux/mission';
+import { MISSION_LABELS, parseMission } from '@/lib/valux/mission';
 import { Notice, Pill, SectionTitle, btn, btnDanger, btnGhost, fieldClass, labelClass } from './StaffUi';
 
 export type CourseWorkspaceView = 'ficha' | 'temario' | 'revision' | 'alumnos' | 'ajustes';
@@ -29,6 +29,19 @@ export function courseStatusLabel(course: StatusFields) {
 export function CourseStatusPill({ course }: { course: StatusFields }) {
   const tone = course.published ? 'ok' : course.review_requested_at ? 'wait' : course.review_feedback ? 'bad' : 'off';
   return <Pill tone={tone}><small aria-hidden="true" className="size-1.5 rounded-academy-full bg-current" />{courseStatusLabel(course)}</Pill>;
+}
+
+// Crear un curso pide solo el título; la ficha, el temario y la revisión se completan en el editor.
+export function NewCourseForm({ error }: { error?: string }) {
+  return (
+    <VStack gap={3}>
+      {error === 'curso' ? <Notice tone="error">Escribe el título del curso.</Notice> : null}
+      <form action={createCourse} className="grid items-end gap-3 rounded-academy-lg border border-dashed border-academy-line bg-academy-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:p-5">
+        <label className={labelClass}>Título del nuevo curso<input className={fieldClass} name="title" placeholder="Ej. Fotografía de productos con tu celular" required /></label>
+        <AcademySubmit label="Crear borrador" pending="Abriendo editor…" />
+      </form>
+    </VStack>
+  );
 }
 
 const tabClass = 'academy-focus inline-flex min-h-12 items-center gap-2 whitespace-nowrap border-b-2 border-transparent text-sm font-semibold text-academy-muted transition-colors hover:text-academy-ink aria-[current=page]:border-academy-action aria-[current=page]:text-academy-ink';
@@ -103,7 +116,6 @@ function NewLesson({ courseId, sectionId }: { courseId: string; sectionId?: stri
       <form action={createLesson} className="grid items-end gap-3 px-4 pb-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
         <input type="hidden" name="course_id" value={courseId} />
         <input type="hidden" name="section_id" value={sectionId || ''} />
-        <input type="hidden" name="editor" value="1" />
         <label className={labelClass}>Título de la clase<input className={fieldClass} name="title" required /></label>
         <AcademySubmit label="Crear clase" pending="Abriendo clase…" />
       </form>
@@ -120,8 +132,7 @@ function LessonRows({ courseId, lessons, readOnly }: { courseId: string; lessons
         const content = [
           lesson.video_url && 'Video', lesson.content.trim() && 'Texto',
           lesson.resources_count ? `${lesson.resources_count} ${lesson.resources_count === 1 ? 'material' : 'materiales'}` : '',
-          mission?.kind === 'quiz' && 'Misión',
-          (mission?.kind === 'checklist' || mission?.kind === 'assignment') && 'Tarea',
+          mission && MISSION_LABELS[mission.kind],
         ].filter(Boolean);
         return (
           <li key={lesson.id} className="flex items-center pr-1">
