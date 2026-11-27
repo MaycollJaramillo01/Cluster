@@ -36,7 +36,7 @@ async function main() {
   const {
     createCourse, createLesson, createResource, createSection, deleteResource,
     moveCourseLesson, moveCourseSection, renameCourseSection, requestReview, returnCourseReview,
-    setCoursePublication, updateCoursePresentation, updateLesson, saveLessonScore,
+    setCoursePublication, updateCoursePresentation, updateLesson,
   } = await import('@/lib/crm/lms-actions');
   const { getCourse, getLesson } = await import('@/lib/crm/lms');
   const { publishedCourse } = await import('@/lib/valux/data');
@@ -127,6 +127,7 @@ async function main() {
     assert.match(await redirected(() => createLesson(form({
       course_id: courseId, section_id: otherSection, title: 'Módulo cruzado', editor: '1',
     }))), /[?&]error=seccion(?:[&#]|$)/);
+    assert.match(await redirected(() => createLesson(form({ course_id: courseId, title: 'Clase sin módulo' }))), /[?&]error=seccion(?:[&#]|$)/);
     assert.equal((await getCourse(courseId))?.lessons.length, 0);
     const firstLessonId = await newLesson(courseId, sections[0].id, 'Comprueba tus conceptos');
     const secondLessonId = await newLesson(courseId, sections[0].id, 'Practica la técnica');
@@ -141,7 +142,7 @@ async function main() {
     const checklist = '[ ] Publiqué el anuncio\n[ ] Revisé el resultado';
     const saveQuiz = (mission: string) => updateLesson(form({
       id: firstLessonId, course_id: courseId, section_id: sections[0].id, title: 'Comprueba tus conceptos',
-      content: 'Define CTR y CPC.', video_url: 'https://youtu.be/iqTSX9cZ380', duration_min: '6', points: '15', mission, editor: '1',
+      content: 'Define CTR y CPC.', video_url: 'https://youtu.be/iqTSX9cZ380', duration_min: '6', mission, editor: '1',
     }));
     assert.equal(await redirected(() => saveQuiz(quiz)), `${firstLessonPath}?guardado=1`);
     assert.match(await redirected(() => updateLesson(form({
@@ -166,7 +167,7 @@ async function main() {
     assert.ok(first);
     assert.equal(first.video_url, 'https://youtu.be/iqTSX9cZ380');
     assert.equal(first.duration_min, 6);
-    assert.equal(first.points, 15);
+    assert.equal(first.points, 10, 'Cada actividad da 10 XP');
     const parsedQuiz = parseMission(first.mission).mission;
     const parsedChecklist = parseMission(syllabus.lessons[1].mission).mission;
     assert.equal(parsedQuiz?.kind, 'quiz');
@@ -190,7 +191,7 @@ async function main() {
     const assignmentPath = `${path}/lecciones/${assignmentId}`;
     const assignment = '[tarea]\r\nDescribe tu práctica y cómo medirás el resultado.';
     assert.equal(await redirected(() => updateLesson(form({ id: assignmentId, course_id: courseId,
-      section_id: sections[1].id, title: 'Entrega tu plan', mission: assignment, points: '17', editor: '1' }))), `${assignmentPath}?guardado=1`);
+      section_id: sections[1].id, title: 'Entrega tu plan', mission: assignment, editor: '1' }))), `${assignmentPath}?guardado=1`);
 
     cookie = issueSession(outsider, 'Otro maestro QA', 'profesor');
     assert.equal(await redirected(() => createLesson(form({ course_id: courseId, title: 'Ajena' }))), '/dashboard/profesor');
@@ -260,8 +261,6 @@ async function main() {
     cookie = issueSession(outsider, 'Otro maestro QA', 'profesor');
     assert.equal(await redirected(() => review('approve', '1')), '/dashboard/profesor');
     cookie = issueSession(teacher, 'Maestro QA', 'profesor');
-    await saveLessonScore(form({ lesson_id: assignmentId, person_id: learnerId, score: '100' }));
-    assert.equal((await sql`SELECT id FROM lms_progress WHERE lesson_id = ${assignmentId}`).length, 0);
     assert.match(await redirected(() => review('changes', '1')), /error=feedback/);
     assert.match(await redirected(() => review('changes', '1', 'Añade una métrica.')), /guardado=1/);
     assert.equal((await getAssignmentSubmission(assignmentId, learnerId))?.status, 'cambios');
@@ -273,7 +272,7 @@ async function main() {
     assert.match(await redirected(() => review('approve', '2', 'Aprobada.')), /guardado=1/);
     assert.match(await redirected(() => review('approve', '2')), /error=estado/);
     assert.equal((await getAssignmentSubmission(assignmentId, learnerId))?.status, 'aprobada');
-    assert.deepEqual(await sql`SELECT xp FROM lms_xp WHERE person_id = ${learnerId} AND lesson_id = ${assignmentId}`, [{ xp: 17 }]);
+    assert.deepEqual(await sql`SELECT xp FROM lms_xp WHERE person_id = ${learnerId} AND lesson_id = ${assignmentId}`, [{ xp: 10 }]);
     const completed = await sql`SELECT lesson_id FROM lms_progress WHERE person_id = ${learnerId} AND completed_at IS NOT NULL`;
     assert.deepEqual(new Set(completed.map(({ lesson_id }) => lesson_id)), new Set([firstLessonId, secondLessonId, assignmentId]));
     console.log('OK   profesor propietario, ficha, módulos, lecciones, tareas, misiones, materiales y publicación por superadmin');

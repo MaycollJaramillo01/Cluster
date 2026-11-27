@@ -31,13 +31,6 @@ function positive(raw: string) {
   return Math.round(value);
 }
 
-function grade(raw: string) {
-  if (!raw) return null;
-  const value = Number(raw);
-  if (!Number.isFinite(value)) return null;
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
-
 function slugify(value: string) {
   const slug = value
     .normalize('NFD')
@@ -267,6 +260,8 @@ export async function createLesson(formData: FormData) {
   const back = `/dashboard/cursos/${courseId}?vista=temario`;
   const id = crypto.randomUUID();
   const section = await courseSection(courseId, field(formData, 'section_id'), back);
+  // Cada clase vive en un módulo: así el temario y la vista del alumno tienen un solo orden.
+  if (!section) redirect(`${back}&error=seccion`);
   const base = slugify(title);
   // Se crea con el título y se abre en su editor; contenido, video y actividad se completan ahí.
   const created = await mutateCourse(courseId, back, (tx, allowed) => tx`
@@ -276,7 +271,7 @@ export async function createLesson(formData: FormData) {
     ) THEN ${`${base.slice(0, 50)}-${id.slice(0, 8)}`} ELSE ${base} END,
       ${title},
       (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_lessons WHERE course_id = ${courseId})
-    WHERE ${allowed} AND (${section}::text IS NULL OR EXISTS (SELECT FROM lms_sections WHERE id = ${section} AND course_id = ${courseId}))
+    WHERE ${allowed} AND EXISTS (SELECT FROM lms_sections WHERE id = ${section} AND course_id = ${courseId})
     RETURNING id
   `);
   if (!created.length) redirect(`${back}&error=seccion`);
@@ -297,14 +292,12 @@ export async function updateLesson(formData: FormData) {
   if (field(formData, 'preview_public') === '1' && bunnyVideo(video)) redirect(`${back}?error=muestra`);
   const mission = String(formData.get('mission') ?? '').trim();
   if (mission.length > 24000 || parseMission(mission).errors.length) redirect(`${back}?error=mision`);
-  const points = positive(field(formData, 'points')) || 10;
   const saved = await mutateCourse(courseId, back, (tx, allowed) => tx`
     UPDATE lms_lessons l
     SET title = ${title},
       content = ${field(formData, 'content')},
       video_url = ${video || null},
       section_id = ${section},
-      points = ${points},
       duration_min = ${positive(field(formData, 'duration_min'))},
       mission = ${mission},
       preview_public = ${field(formData, 'preview_public') === '1'},
@@ -572,58 +565,5 @@ export async function removeEnrollment(formData: FormData) {
     )
     DELETE FROM lms_enrollments WHERE id = ${id} AND NOT EXISTS (SELECT FROM retained)
   `]);
-  refresh();
-}
-
-export async function saveFinalGrade(formData: FormData) {
-  await requireDashboard('contenido');
-  const id = field(formData, 'id');
-  if (!id) return;
-  const sql = await crm();
-  await sql`
-    UPDATE lms_enrollments
-    SET final_grade = ${grade(field(formData, 'final_grade'))}, notes = ${field(formData, 'notes') || null}
-    WHERE id = ${id}
-  `;
-  refresh();
-}
-
-export async function saveLessonScore(formData: FormData) {
-  const contactId = field(formData, 'contact_id');
-  const submittedPersonId = field(formData, 'person_id');
-  const lessonId = field(formData, 'lesson_id');
-  if (!lessonId || (!contactId && !submittedPersonId)) return;
-  const courseId = await lessonCourse(lessonId);
-  await requireCourseEditor(courseId);
-  const score = grade(field(formData, 'score'));
-  const when = score == null ? null : new Date().toISOString();
-  const sql = await crm();
-  const [enrollment] = await sql`
-    SELECT e.person_id FROM lms_enrollments e JOIN lms_lessons l ON l.course_id = e.course_id
-    WHERE e.course_id = ${courseId} AND l.id = ${lessonId} AND btrim(l.mission) = ''
-      AND ((${submittedPersonId} <> '' AND e.person_id = ${submittedPersonId})
-        OR (${submittedPersonId} = '' AND e.contact_id = ${contactId}))
-  `;
-  if (!enrollment) return;
-  const personId = enrollment.person_id ? String(enrollment.person_id) : '';
-  if (personId) {
-    await sql`
-      INSERT INTO lms_progress (id, person_id, lesson_id, score, graded_at, completed_at)
-      VALUES (${crypto.randomUUID()}, ${personId}, ${lessonId}, ${score}, ${when}, ${when})
-      ON CONFLICT (person_id, lesson_id) WHERE person_id IS NOT NULL DO UPDATE SET
-        score = EXCLUDED.score,
-        graded_at = EXCLUDED.graded_at,
-        completed_at = COALESCE(lms_progress.completed_at, EXCLUDED.completed_at)
-    `;
-  } else {
-    await sql`
-      INSERT INTO lms_progress (id, contact_id, lesson_id, score, graded_at, completed_at)
-      VALUES (${crypto.randomUUID()}, ${contactId}, ${lessonId}, ${score}, ${when}, ${when})
-      ON CONFLICT (contact_id, lesson_id) DO UPDATE SET
-        score = EXCLUDED.score,
-        graded_at = EXCLUDED.graded_at,
-        completed_at = COALESCE(lms_progress.completed_at, EXCLUDED.completed_at)
-    `;
-  }
   refresh();
 }

@@ -109,13 +109,13 @@ function Reorder({ courseId, id, kind, up, down }: { courseId: string; id: strin
 
 const summaryClass = 'academy-focus flex min-h-12 cursor-pointer list-none items-center gap-2 px-4 text-sm font-semibold sm:px-5';
 
-function NewLesson({ courseId, sectionId }: { courseId: string; sectionId?: string }) {
+function NewLesson({ courseId, sectionId }: { courseId: string; sectionId: string }) {
   return (
     <details className="border-t border-academy-line">
       <summary className={`${summaryClass} text-academy-primary`}>Agregar clase</summary>
       <form action={createLesson} className="grid items-end gap-3 px-4 pb-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:px-5">
         <input type="hidden" name="course_id" value={courseId} />
-        <input type="hidden" name="section_id" value={sectionId || ''} />
+        <input type="hidden" name="section_id" value={sectionId} />
         <label className={labelClass}>Título de la clase<input className={fieldClass} name="title" required /></label>
         <AcademySubmit label="Crear clase" pending="Abriendo clase…" />
       </form>
@@ -228,7 +228,7 @@ function CourseCurriculum({ course, sections, lessons, readOnly, status }: {
       <SectionTitle
         id="temario-titulo"
         title="Módulos y clases"
-        description="Abre una clase para editar su texto, video, actividad y materiales."
+        description="Agrupa las clases en módulos y abre cada clase para editar su texto, video, actividad y materiales."
         action={<Link href={`/dashboard/cursos/${course.id}/entregas`} className={btnGhost}>Entregas de tareas</Link>}
       />
       {status.error === 'seccion' ? <Notice tone="error">Selecciona un módulo de este curso.</Notice> : null}
@@ -267,11 +267,13 @@ function CourseCurriculum({ course, sections, lessons, readOnly, status }: {
           </section>
         );
       })}
-      {loose.length > 0 || !sections.length ? (
+      {loose.length > 0 ? (
         <section aria-labelledby="clases-sueltas" className="academy-panel overflow-hidden">
-          <Heading id="clases-sueltas" level={3} className="px-4 py-4 text-base font-bold sm:px-5">Clases sin módulo</Heading>
+          <VStack gap={0} className="px-4 py-4 sm:px-5">
+            <Heading id="clases-sueltas" level={3} className="text-base font-bold">Clases sin módulo</Heading>
+            <p className="text-sm text-academy-muted">Abre cada una y elige su módulo.</p>
+          </VStack>
           <LessonRows courseId={course.id} lessons={loose} readOnly={readOnly} />
-          {!readOnly ? <NewLesson courseId={course.id} /> : null}
         </section>
       ) : null}
       {!readOnly ? <form action={createSection} className="grid items-end gap-3 rounded-academy-lg border border-dashed border-academy-line bg-academy-surface p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:p-5">

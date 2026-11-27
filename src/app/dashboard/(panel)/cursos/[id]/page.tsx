@@ -9,8 +9,6 @@ import {
   enrollContact,
   enrollPerson,
   removeEnrollment,
-  saveFinalGrade,
-  saveLessonScore,
   updateCourseMeta,
 } from '@/lib/crm/lms-actions';
 import { getCourse, listCourses } from '@/lib/crm/lms';
@@ -170,41 +168,22 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
                           <Heading id={`alumno-${enrollment.id}`} level={3} className="text-base font-bold">{enrollment.contact_name}</Heading>
                           {teacher ? null : <p className="break-all text-sm text-academy-muted">{enrollment.email}</p>}
                         </VStack>
-                        <HStack gap={2} align="center" wrap="wrap">
-                          <p className="text-sm font-semibold tabular-nums">{done} de {lessons.length} clases · {pct}%</p>
-                          {enrollment.final_grade != null ? <Pill tone="ok">Nota final {enrollment.final_grade}/100</Pill> : null}
-                        </HStack>
+                        <p className="text-sm font-semibold tabular-nums">{done} de {lessons.length} clases · {pct}%</p>
                       </HStack>
                       <ProgressBar label={`Progreso de ${enrollment.contact_name}`} value={pct} isLabelHidden />
                     </VStack>
                     {lessons.length ? (
                       <details className="border-t border-academy-line">
-                        <summary className="academy-focus flex min-h-11 cursor-pointer list-none items-center px-4 text-sm font-semibold text-academy-primary sm:px-5">Clases y notas</summary>
+                        <summary className="academy-focus flex min-h-11 cursor-pointer list-none items-center px-4 text-sm font-semibold text-academy-primary sm:px-5">Clases</summary>
                         <ul className="divide-y divide-academy-line border-t border-academy-line">
                           {lessons.map((lesson) => {
                             const mark = mine.find((item) => item.lesson_id === lesson.id);
-                            const completion = mark?.completed_at ? <Pill tone="ok">Completada</Pill> : <Pill tone="off">Pendiente</Pill>;
-                            if (lesson.mission.trim()) {
-                              const assignment = parseMission(lesson.mission).mission?.kind === 'assignment';
-                              return (
-                                <li key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
-                                  <p className="min-w-0 flex-1 break-words text-sm">{lesson.title}</p>
-                                  {completion}
-                                  {assignment ? <Link className="academy-nav academy-focus" href={`/dashboard/cursos/${id}/entregas?leccion=${encodeURIComponent(lesson.id)}`}>Revisar entregas</Link> : null}
-                                </li>
-                              );
-                            }
+                            const assignment = parseMission(lesson.mission).mission?.kind === 'assignment';
                             return (
-                              <li key={lesson.id} className="px-4 py-3 sm:px-5">
-                                <form action={saveLessonScore} className="flex flex-wrap items-center gap-3">
-                                  <input type="hidden" name="contact_id" value={enrollment.contact_id} />
-                                  <input type="hidden" name="person_id" value={enrollment.person_id || ''} />
-                                  <input type="hidden" name="lesson_id" value={lesson.id} />
-                                  <p className="min-w-32 flex-1 break-words text-sm">{lesson.title}</p>
-                                  {completion}
-                                  <input className={`${fieldClass} w-24`} name="score" aria-label={`Nota de ${lesson.title}`} type="number" min="0" max="100" defaultValue={mark?.score ?? ''} placeholder="Nota" />
-                                  <button className={btnSmall} type="submit">Guardar<small className="sr-only"> nota de {lesson.title}</small></button>
-                                </form>
+                              <li key={lesson.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5">
+                                <p className="min-w-0 flex-1 break-words text-sm">{lesson.title}</p>
+                                {mark?.completed_at ? <Pill tone="ok">Completada</Pill> : <Pill tone="off">Pendiente</Pill>}
+                                {assignment ? <Link className="academy-nav academy-focus" href={`/dashboard/cursos/${id}/entregas?leccion=${encodeURIComponent(lesson.id)}`}>Revisar entregas</Link> : null}
                               </li>
                             );
                           })}
@@ -212,18 +191,10 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
                       </details>
                     ) : null}
                     {teacher ? null : (
-                      <VStack gap={4} className="border-t border-academy-line bg-academy-page p-4 sm:p-5">
-                        <form action={saveFinalGrade} className="grid items-end gap-3 md:grid-cols-[theme(spacing.32)_minmax(0,1fr)_auto]">
-                          <input type="hidden" name="id" value={enrollment.id} />
-                          <Field label="Nota final"><input className={fieldClass} name="final_grade" type="number" min="0" max="100" defaultValue={enrollment.final_grade ?? ''} /></Field>
-                          <Field label="Notas"><input className={fieldClass} name="notes" defaultValue={enrollment.notes || ''} /></Field>
-                          <button className={btnGhost} type="submit">Guardar nota final</button>
-                        </form>
-                        <form action={removeEnrollment}>
-                          <input type="hidden" name="id" value={enrollment.id} />
-                          <button className={`${btnSmall} text-red-800`} type="submit">Quitar alumno<small className="sr-only"> {enrollment.contact_name}</small></button>
-                        </form>
-                      </VStack>
+                      <form action={removeEnrollment} className="border-t border-academy-line bg-academy-page p-4 sm:p-5">
+                        <input type="hidden" name="id" value={enrollment.id} />
+                        <button className={`${btnSmall} text-red-800`} type="submit">Quitar alumno<small className="sr-only"> {enrollment.contact_name}</small></button>
+                      </form>
                     )}
                   </article>
                 </li>

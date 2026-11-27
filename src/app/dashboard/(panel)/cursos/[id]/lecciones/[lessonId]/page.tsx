@@ -106,7 +106,7 @@ export default async function LessonPage({ params, searchParams }: {
                 <legend className="sr-only">Módulo y duración</legend>
                 <label className={labelClass}>Módulo
                   <select className={fieldClass} name="section_id" defaultValue={lesson.section_id || ''}>
-                    <option value="">Sin módulo</option>
+                    {lesson.section_id ? null : <option value="">Sin módulo</option>}
                     {detail.sections.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}
                   </select>
                 </label>
@@ -182,12 +182,7 @@ export default async function LessonPage({ params, searchParams }: {
               </ol>
             )
           ) : (
-            <>
-              <LessonActivityEditor key={lesson.mission} value={lesson.mission} />
-              <label className={`${labelClass} max-w-xs`}>XP al aprobar la actividad
-                <input className={fieldClass} name="points" type="number" min="1" defaultValue={lesson.points} />
-              </label>
-            </>
+            <LessonActivityEditor key={lesson.mission} value={lesson.mission} />
           )}
         </Part>
         {!readOnly ? (
