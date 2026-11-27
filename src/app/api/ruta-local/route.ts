@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         city: String(lead.municipio ?? ''),
         form: 'ruta-local',
         details: leadDetails(lead),
-      });
+      }, request);
     } catch (error) {
       console.error('[ruta-local] crm:', error);
     }

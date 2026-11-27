@@ -285,7 +285,7 @@ export async function POST(request: Request) {
           ...(linkedin ? { linkedin } : {}),
           ...(filesNote ? { archivos: filesNote } : {}),
         },
-      });
+      }, request);
     } catch (error) {
       console.error('[careers] crm:', error);
     }
