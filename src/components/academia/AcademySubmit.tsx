@@ -7,7 +7,7 @@ export function AcademySubmit({ label, pending, fullWidth = false, variant = 'pr
   label: string;
   pending: string;
   fullWidth?: boolean;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'destructive';
 }) {
   const status = useFormStatus();
   return (

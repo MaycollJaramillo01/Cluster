@@ -1,9 +1,21 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
+import { VStack } from '@astryxdesign/core/VStack';
 import { reviewPost, reviewProduct, setApplicationStatus } from '@/lib/valux/actions';
 import { listApplications, listPosts, listProducts } from '@/lib/valux/data';
-import { PageTitle, btnTiny } from '@/components/dashboard/ui';
+import { Empty, PageTitle, ReviewButtons, SectionTitle, btnSmall, rowClass } from '@/components/dashboard/StaffUi';
+import { Icon } from '@/components/ui/Icon';
 import { listCourseReviewRequests } from '@/lib/crm/lms';
 import { formatDateTime } from '@/lib/crm/format';
+
+function Queue({ id, title, count, empty, children }: { id: string; title: string; count: number; empty: string; children: ReactNode }) {
+  return (
+    <VStack as="section" gap={4} aria-labelledby={id}>
+      <SectionTitle id={id} title={`${title} (${count})`} />
+      {count ? <ul className="academy-panel divide-y divide-academy-line overflow-hidden">{children}</ul> : <Empty title={empty} />}
+    </VStack>
+  );
+}
 
 export default async function RevisionesPage() {
   const [courses, products, posts, applications] = await Promise.all([
@@ -15,57 +27,54 @@ export default async function RevisionesPage() {
   const fichas = applications.filter((item) => String(item.status) === 'nueva' || String(item.status) === 'revision');
 
   return (
-    <div className="space-y-8">
-      <PageTitle title="Revisiones" />
-      <section className="space-y-2">
-        <h2 className="font-display text-3xl tracking-wide">Cursos pendientes de revisión</h2>
-        {courses.length ? <ul className="divide-y divide-black/10 border border-black/10 bg-white">
-          {courses.map((course) => <li key={course.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-            <section className="min-w-0">
+    <VStack gap={8} className="mx-auto w-full max-w-6xl">
+      <PageTitle eyebrow="Contenido" title="Revisiones" description="Lo que espera una decisión: cursos enviados por profesores, recursos, notas del blog y fichas nuevas." />
+      <Queue id="cursos-revision" title="Cursos" count={courses.length} empty="Los cursos enviados por profesores aparecerán aquí.">
+        {courses.map((course) => (
+          <li key={course.id} className={rowClass}>
+            <VStack gap={1} className="min-w-0">
               <p className="break-words font-semibold">{course.title}</p>
-              <p className="text-sm text-black/65">{course.teacher || 'Academia'} · {course.lessons} {course.lessons === 1 ? 'clase' : 'clases'} · {formatDateTime(course.requestedAt)}</p>
-            </section>
-            <Link href={`/dashboard/cursos/${course.id}?vista=revision`} className={btnTiny}>{course.revision ? 'Revisar actualización' : 'Revisar curso'}</Link>
-          </li>)}
-        </ul> : <p className="text-sm text-black/65">Los cursos enviados por profesores aparecerán aquí.</p>}
-      </section>
-      <section className="space-y-2">
-        <h2 className="font-display text-3xl tracking-wide">Productos</h2>
-        {products.length === 0 ? <p className="text-sm text-black/50">Nada pendiente.</p> : products.map((product) => (
-          <article key={product.id} className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white px-4 py-3">
-            <p>{product.title}</p>
-            <div className="flex gap-2">
-              <form action={reviewProduct}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="status" value="publicado" /><button className={btnTiny} type="submit">Publicar</button></form>
-              <form action={reviewProduct}><input type="hidden" name="id" value={product.id} /><input type="hidden" name="status" value="rechazado" /><button className={btnTiny} type="submit">Rechazar</button></form>
-            </div>
-          </article>
+              <p className="text-sm text-academy-muted">{course.teacher || 'Academia'} · {course.lessons} {course.lessons === 1 ? 'clase' : 'clases'} · enviado el {formatDateTime(course.requestedAt)}</p>
+            </VStack>
+            <Link href={`/dashboard/cursos/${course.id}?vista=revision`} className={btnSmall}>{course.revision ? 'Revisar actualización' : 'Revisar curso'}<small className="sr-only"> {course.title}</small><Icon name="arrow-right" size={15} /></Link>
+          </li>
         ))}
-      </section>
-      <section className="space-y-2">
-        <h2 className="font-display text-3xl tracking-wide">Blog</h2>
-        {posts.length === 0 ? <p className="text-sm text-black/50">Nada pendiente.</p> : posts.map((post) => (
-          <article key={post.id} className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white px-4 py-3">
-            <p>{post.title}</p>
-            <div className="flex gap-2">
-              <form action={reviewPost}><input type="hidden" name="id" value={post.id} /><input type="hidden" name="status" value="publicado" /><button className={btnTiny} type="submit">Publicar</button></form>
-              <form action={reviewPost}><input type="hidden" name="id" value={post.id} /><input type="hidden" name="status" value="rechazado" /><button className={btnTiny} type="submit">Rechazar</button></form>
-            </div>
-          </article>
+      </Queue>
+      <Queue id="productos-revision" title="Recursos del marketplace" count={products.length} empty="No hay recursos pendientes.">
+        {products.map((product) => (
+          <li key={product.id} className={rowClass}>
+            <p className="min-w-0 break-words font-semibold">{product.title}</p>
+            <ReviewButtons action={reviewProduct} id={product.id} status={product.review_status} title={product.title} />
+          </li>
         ))}
-      </section>
-      <section className="space-y-2">
-        <h2 className="font-display text-3xl tracking-wide">Fichas</h2>
-        {fichas.length === 0 ? <p className="text-sm text-black/50">Nada pendiente.</p> : fichas.map((item) => (
-          <article key={String(item.id)} className="flex flex-wrap items-center justify-between gap-3 border border-black/10 bg-white px-4 py-3">
-            <p>{String(item.full_name)} · {String(item.email)}</p>
-            <form action={setApplicationStatus} className="flex gap-2">
-              <input type="hidden" name="id" value={String(item.id)} />
-              <input type="hidden" name="status" value="revision" />
-              <button className={btnTiny} type="submit">En revisión</button>
-            </form>
-          </article>
+      </Queue>
+      <Queue id="blog-revision" title="Notas del blog" count={posts.length} empty="No hay notas pendientes.">
+        {posts.map((post) => (
+          <li key={post.id} className={rowClass}>
+            <p className="min-w-0 break-words font-semibold">{post.title}</p>
+            <ReviewButtons action={reviewPost} id={post.id} status={post.status} title={post.title} />
+          </li>
         ))}
-      </section>
-    </div>
+      </Queue>
+      <Queue id="fichas-revision" title="Fichas" count={fichas.length} empty="No hay fichas nuevas.">
+        {fichas.map((item) => (
+          <li key={String(item.id)} className={rowClass}>
+            <VStack gap={0} className="min-w-0">
+              <p className="break-words font-semibold">{String(item.full_name)}</p>
+              <p className="break-all text-sm text-academy-muted">{String(item.email)}</p>
+            </VStack>
+            {String(item.status) === 'nueva' ? (
+              <form action={setApplicationStatus}>
+                <input type="hidden" name="id" value={String(item.id)} />
+                <input type="hidden" name="status" value="revision" />
+                <button className={btnSmall} type="submit">Pasar a revisión<small className="sr-only"> la ficha de {String(item.full_name)}</small></button>
+              </form>
+            ) : (
+              <Link href="/dashboard/cursos/fichas" className={btnSmall}>Abrir fichas</Link>
+            )}
+          </li>
+        ))}
+      </Queue>
+    </VStack>
   );
 }

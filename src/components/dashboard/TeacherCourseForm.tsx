@@ -4,9 +4,8 @@ import { Heading } from '@astryxdesign/core/Heading';
 import { createCourse } from '@/lib/crm/lms-actions';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { Icon } from '@/components/ui/Icon';
+import { Notice, fieldClass as courseField, labelClass as courseLabel } from './StaffUi';
 
-export const courseField = 'academy-field block w-full min-w-0 font-normal';
-export const courseLabel = 'block min-w-0 space-y-2 text-sm font-semibold';
 
 export function TeacherCourseForm({ error, staff = false }: { error?: string; staff?: boolean }) {
   return (
@@ -22,9 +21,9 @@ export function TeacherCourseForm({ error, staff = false }: { error?: string; st
         <form action={createCourse} className="academy-panel min-w-0 overflow-hidden xl:col-span-2">
           <VStack gap={5} className="p-5 sm:p-6">
             <Heading level={2} className="academy-section-title">Ficha del curso</Heading>
-            {error ? <p role="alert" className="border-l-2 border-red-800 bg-paper px-3 py-2 text-sm text-red-800">
+            {error ? <Notice tone="error">
               {error === 'portada' ? 'La portada no se guardó. Selecciona una imagen de hasta 8 MB o pega un enlace válido.' : 'Completa el título y la descripción para crear el curso.'}
-            </p> : null}
+            </Notice> : null}
             <label className={courseLabel}>Título
               <input className={courseField} name="title" placeholder="Ej. Fotografía de productos con tu celular" required />
             </label>
@@ -44,8 +43,8 @@ export function TeacherCourseForm({ error, staff = false }: { error?: string; st
               </label>
             </fieldset>
           </VStack>
-          <VStack gap={4} className="border-t border-black/10 p-5 sm:p-6">
-            <Heading level={2} className="font-brand text-xl font-semibold">Portada</Heading>
+          <VStack gap={4} className="border-t border-academy-line p-5 sm:p-6">
+            <Heading level={2} className="text-xl font-bold">Portada</Heading>
             <label className={courseLabel}>Subir imagen (hasta 8 MB)
               <input className={courseField} name="cover" type="file" accept="image/*" />
             </label>
@@ -53,8 +52,8 @@ export function TeacherCourseForm({ error, staff = false }: { error?: string; st
               <input className={courseField} name="cover_url" type="url" placeholder="https://…" />
             </label>
           </VStack>
-          {staff ? <VStack gap={4} className="border-t border-black/10 p-5 sm:p-6">
-            <Heading level={2} className="font-brand text-xl font-semibold">Precio</Heading>
+          {staff ? <VStack gap={4} className="border-t border-academy-line p-5 sm:p-6">
+            <Heading level={2} className="text-xl font-bold">Precio</Heading>
             <label className={courseLabel}>Precio en lempiras
               <input className={courseField} name="price" type="number" min={0} step="0.01" defaultValue={0} />
             </label>
@@ -66,9 +65,9 @@ export function TeacherCourseForm({ error, staff = false }: { error?: string; st
         <aside aria-label="Flujo de creación" className="academy-panel self-start bg-academy-tint p-5">
           <Heading level={2} className="text-xl font-bold">Del borrador al catálogo</Heading>
           <ol className="mt-4 space-y-4 text-sm">
-            <li className="flex gap-3"><Icon name="pen" size={18} className="shrink-0 text-black/75" aria-hidden="true" /><p><strong>Ficha y portada</strong><br />Guarda los datos con los que presentarás el curso.</p></li>
-            <li className="flex gap-3"><Icon name="play" size={18} className="shrink-0 text-black/75" aria-hidden="true" /><p><strong>Temario y clases</strong><br />Organiza los módulos y agrega videos, archivos y actividades.</p></li>
-            <li className="flex gap-3"><Icon name="check" size={18} className="shrink-0 text-black/75" aria-hidden="true" /><p><strong>Revisión</strong><br />El superadmin revisa el contenido y autoriza su publicación.</p></li>
+            <li className="flex gap-3"><Icon name="pen" size={18} className="shrink-0 text-academy-primary" aria-hidden="true" /><p><strong>Ficha y portada</strong><br />Guarda los datos con los que presentarás el curso.</p></li>
+            <li className="flex gap-3"><Icon name="play" size={18} className="shrink-0 text-academy-primary" aria-hidden="true" /><p><strong>Temario y clases</strong><br />Organiza los módulos y agrega videos, archivos y actividades.</p></li>
+            <li className="flex gap-3"><Icon name="check" size={18} className="shrink-0 text-academy-primary" aria-hidden="true" /><p><strong>Revisión</strong><br />El superadmin revisa el contenido y autoriza su publicación.</p></li>
           </ol>
         </aside>
       </section>

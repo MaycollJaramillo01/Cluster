@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { parseMission } from '@/lib/valux/mission';
+import { btnGhost, btnSmall, fieldClass as field, labelClass as label } from './StaffUi';
 
-const field = 'min-h-11 w-full border border-black/25 bg-white px-3 py-2 text-base text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink';
-const label = 'block space-y-2 text-sm font-medium';
 type Question = { prompt: string; options: string[]; answer: number };
 type Mode = 'none' | 'checklist' | 'quiz' | 'assignment' | 'legacy';
 const blankQuestion = (): Question => ({ prompt: '', options: ['', ''], answer: 0 });
@@ -51,27 +50,27 @@ export function LessonActivityEditor({ value }: { value: string }) {
       {mode === 'checklist' ? (
         <label className={label}>Pasos de la tarea, uno por línea
           <textarea className={field} rows={4} value={tasks} onChange={(event) => setTasks(event.target.value)} required />
-          <small className="block font-normal text-black/70">El alumno marca todos los pasos para completar la actividad.</small>
+          <small className="block text-xs font-normal text-academy-muted">El alumno marca todos los pasos para completar la actividad.</small>
         </label>
       ) : null}
       {mode === 'assignment' ? (
         <label className={label}>Instrucciones de la tarea
           <textarea className={field} rows={5} value={instructions} onChange={(event) => setInstructions(event.target.value)} required />
-          <small className="block font-normal text-black/70">Indica qué debe entregar el alumno. Podrás revisar su respuesta desde el panel.</small>
+          <small className="block text-xs font-normal text-academy-muted">Indica qué debe entregar el alumno. Podrás revisar su respuesta desde el panel.</small>
         </label>
       ) : null}
       {mode === 'quiz' ? (
         <>
           {questions.map((question, index) => (
-            <fieldset key={index} className="space-y-3 border border-black/15 p-4">
-              <legend className="px-1 text-sm font-semibold">Pregunta {index + 1}</legend>
+            <fieldset key={index} className="space-y-4 rounded-academy border border-academy-line bg-academy-page p-4">
+              <legend className="rounded-academy bg-academy-surface px-2 text-sm font-bold">Pregunta {index + 1}</legend>
               <label className={label}>Enunciado<input className={field} value={question.prompt} onChange={(event) => updateQuestion(index, { prompt: event.target.value })} pattern={'.*\\S.*'} required /></label>
               {question.options.map((option, optionIndex) => (
                 <section key={optionIndex} className="flex flex-wrap items-end gap-2">
                   <label className={`${label} min-w-0 flex-1`}>Opción {optionIndex + 1}
                     <input className={field} value={option} onChange={(event) => updateQuestion(index, { options: question.options.map((entry, i) => i === optionIndex ? event.target.value : entry) })} pattern={'.*\\S.*'} required />
                   </label>
-                  {question.options.length > 2 ? <button type="button" aria-label={`Quitar opción ${optionIndex + 1}`} className="min-h-11 px-2 text-sm underline underline-offset-4" onClick={() => removeOption(index, optionIndex)}>Quitar</button> : null}
+                  {question.options.length > 2 ? <button type="button" aria-label={`Quitar opción ${optionIndex + 1}`} className={btnSmall} onClick={() => removeOption(index, optionIndex)}>Quitar</button> : null}
                 </section>
               ))}
               <label className={label}>Respuesta correcta
@@ -79,11 +78,11 @@ export function LessonActivityEditor({ value }: { value: string }) {
                   {question.options.map((_, i) => <option key={i} value={i}>Opción {i + 1}</option>)}
                 </select>
               </label>
-              <button type="button" className="min-h-11 text-sm font-medium underline underline-offset-4" onClick={() => updateQuestion(index, { options: [...question.options, ''] })}>Agregar opción</button>
-              {questions.length > 1 ? <button type="button" className="ml-4 min-h-11 text-sm underline underline-offset-4" onClick={() => setQuestions((items) => items.filter((_, i) => i !== index))}>Quitar pregunta</button> : null}
+              <button type="button" className={btnSmall} onClick={() => updateQuestion(index, { options: [...question.options, ''] })}>Agregar opción</button>
+              {questions.length > 1 ? <button type="button" className={`${btnSmall} ml-2 text-red-800`} onClick={() => setQuestions((items) => items.filter((_, i) => i !== index))}>Quitar pregunta</button> : null}
             </fieldset>
           ))}
-          <button type="button" className="min-h-11 text-sm font-medium underline underline-offset-4" onClick={() => setQuestions((items) => [...items, blankQuestion()])}>Agregar pregunta</button>
+          <button type="button" className={btnGhost} onClick={() => setQuestions((items) => [...items, blankQuestion()])}>Agregar pregunta</button>
         </>
       ) : null}
     </section>

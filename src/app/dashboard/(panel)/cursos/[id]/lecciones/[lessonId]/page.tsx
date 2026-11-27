@@ -1,11 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
+import { Heading } from '@astryxdesign/core/Heading';
 import { HStack } from '@astryxdesign/core/HStack';
 import { VStack } from '@astryxdesign/core/VStack';
+import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { LessonText } from '@/components/academia/ui';
 import { LessonActivityEditor } from '@/components/dashboard/LessonActivityEditor';
-import { Icon, type IconName } from '@/components/ui/Icon';
-import { SubmitButton } from '@/components/ui/SubmitButton';
+import { Notice, Pill, btnGhost, btnSmall, fieldClass, labelClass } from '@/components/dashboard/StaffUi';
+import { Icon } from '@/components/ui/Icon';
 import { requireCourseEditor } from '@/lib/crm/course-access';
 import { getCourse, getLesson } from '@/lib/crm/lms';
 import { createResource, deleteLesson, deleteResource, updateLesson } from '@/lib/crm/lms-actions';
@@ -13,11 +16,6 @@ import { parseMission } from '@/lib/valux/mission';
 import { isPrivateAcademiaAsset, TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 import { directLessonVideo, lessonEmbed } from '@/lib/valux/video';
 
-const field = 'academy-field block w-full';
-const label = 'block space-y-2 text-sm font-semibold';
-const panel = 'academy-panel min-w-0 space-y-4 p-4 sm:p-6';
-const subhead = 'text-xl font-bold';
-const secondary = 'academy-action academy-action-secondary';
 const editErrors: Record<string, string> = {
   estado: 'El curso está en revisión o publicado. Los cambios requieren que vuelva a borrador.',
   video: 'Revisa el enlace del video. Usa YouTube, Vimeo, Bunny Stream o una URL MP4/WebM.',
@@ -33,12 +31,28 @@ const materialKinds = [
   { id: 'texto', name: 'Nota o texto' },
   { id: TEXT_TEMPLATE_KIND, name: 'Plantilla de texto descargable' },
 ];
-const sections: { id: string; title: string; icon: IconName }[] = [
-  { id: 'contenido', title: 'Contenido', icon: 'pen' },
-  { id: 'video', title: 'Video', icon: 'video' },
-  { id: 'actividad', title: 'Actividad', icon: 'target' },
-  { id: 'materiales', title: 'Materiales', icon: 'link' },
-];
+const activityLabels = {
+  quiz: 'Cuestionario autocorregible',
+  checklist: 'Lista de pasos',
+  assignment: 'Tarea con entrega escrita',
+};
+
+type Tone = 'ok' | 'off' | 'bad';
+
+function Part({ id, n, title, status, tone, action, children }: { id: string; n: number; title: string; status: string; tone: Tone; action?: ReactNode; children: ReactNode }) {
+  return (
+    <VStack as="section" id={id} gap={5} aria-labelledby={`${id}-titulo`} className="academy-panel min-w-0 scroll-mt-24 p-4 sm:p-6">
+      <HStack gap={3} align="center" justify="between" wrap="wrap" className="border-b border-academy-line pb-4">
+        <HStack gap={3} align="center" className="min-w-0">
+          <small aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-academy bg-academy-ink text-sm font-bold text-academy-surface">{n}</small>
+          <Heading id={`${id}-titulo`} level={2} className="text-xl font-bold">{title}</Heading>
+        </HStack>
+        <HStack gap={3} align="center" wrap="wrap">{action}<Pill tone={tone}>{status}</Pill></HStack>
+      </HStack>
+      {children}
+    </VStack>
+  );
+}
 
 export default async function LessonPage({ params, searchParams }: {
   params: Promise<{ id: string; lessonId: string }>;
@@ -54,206 +68,243 @@ export default async function LessonPage({ params, searchParams }: {
   const activity = parseMission(lesson.mission);
   const video = lessonEmbed(lesson.video_url || '');
   const directVideo = video ? '' : directLessonVideo(lesson.video_url || '');
-  const activityLabels = {
-    quiz: 'Cuestionario autocorregible',
-    checklist: 'Lista de pasos',
-    assignment: 'Tarea con entrega escrita',
-  };
   const activityLabel = activity.mission ? activityLabels[activity.mission.kind] : 'Sin actividad';
   const preview = `/dashboard/cursos/${id}/vista-previa?leccion=${encodeURIComponent(lesson.id)}`;
   const error = status.error && editErrors[status.error];
+  const count = lesson.resources.length;
+  const parts: { id: string; title: string; status: string; tone: Tone }[] = [
+    { id: 'contenido', title: 'Contenido', status: lesson.content.trim() ? 'Con texto' : 'Sin texto', tone: lesson.content.trim() ? 'ok' : 'off' },
+    { id: 'video', title: 'Video', status: lesson.video_url ? 'Con video' : 'Sin video', tone: lesson.video_url ? 'ok' : 'off' },
+    { id: 'actividad', title: 'Actividad', status: activity.errors.length ? 'Por corregir' : activityLabel, tone: activity.errors.length ? 'bad' : activity.mission ? 'ok' : 'off' },
+    { id: 'materiales', title: 'Materiales', status: count ? `${count} ${count === 1 ? 'material' : 'materiales'}` : 'Sin materiales', tone: count ? 'ok' : 'off' },
+  ];
+  const part = (anchor: string) => parts.find((item) => item.id === anchor)!;
 
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-5 [color-scheme:light]">
-      <header className="border-b border-black/15 pb-5">
-        <Link href={`/dashboard/cursos/${id}?vista=temario#temario`} className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">← Volver al temario</Link>
-        <HStack gap={4} justify="between" wrap="wrap" className="items-end">
+    <VStack gap={6} className="mx-auto w-full max-w-6xl">
+      <VStack as="header" gap={4}>
+        <Link href={`/dashboard/cursos/${id}?vista=temario#temario`} className="academy-nav academy-focus -ml-3 w-fit"><Icon name="arrow-right" size={16} className="rotate-180" />Volver al temario</Link>
+        <HStack gap={4} justify="between" align="end" wrap="wrap">
           <VStack gap={2} className="min-w-0">
-            <p className="break-words text-sm font-medium text-black/65">{course.title}{module ? ` · ${module.title}` : ''}</p>
-            <h1 className="break-words font-brand text-3xl font-semibold normal-case leading-tight sm:text-4xl">{lesson.title}</h1>
+            <p className="break-words text-sm font-semibold text-academy-muted">{course.title}{module ? ` · ${module.title}` : ''}</p>
+            <Heading level={1} className="academy-title">{lesson.title}</Heading>
           </VStack>
-          <Link href={preview} className={secondary}><Icon name="play" size={17} aria-hidden="true" />Vista de alumno</Link>
+          <Link href={preview} className={btnGhost}><Icon name="play" size={16} aria-hidden="true" />Vista de alumno</Link>
         </HStack>
-      </header>
+      </VStack>
 
-      {status.guardado === '1' ? <p role="status" className="border-l-4 border-brand bg-white p-3 text-sm">Cambios guardados.</p> : null}
-      {error ? <p role="alert" className="border-l-4 border-red-700 bg-white p-3 text-sm text-red-800">{error}</p> : null}
-      {readOnly ? <p className="border border-black/15 bg-paper p-4 text-sm">{course.published ? 'Esta clase está publicada.' : 'Esta clase forma parte de un curso en revisión.'} Puedes consultarla y abrir la vista de alumno.</p> : null}
+      {status.guardado === '1' ? <Notice tone="ok">Cambios guardados.</Notice> : null}
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      {readOnly ? <Notice>{course.published ? 'Esta clase está publicada.' : 'Esta clase forma parte de un curso en revisión.'} Puedes consultarla y abrir la vista de alumno.</Notice> : null}
 
-      <section className="grid min-w-0 items-start gap-5 lg:grid-cols-3">
-        <aside className="academy-panel space-y-4 p-4 lg:sticky lg:top-24">
-          <nav aria-label="Editor de clase">
-            <ul className="grid grid-cols-2 gap-1 lg:grid-cols-1">
-              {sections.map(({ id: anchor, title, icon }) => (
-                <li key={anchor}>
-                  <a href={`#${anchor}`} className="flex min-h-11 items-center gap-2 px-2 text-sm font-medium hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink">
-                    <Icon name={icon} size={17} aria-hidden="true" />{title}
+      <HStack gap={6} align="start" className="flex-col lg:flex-row">
+        <VStack as="aside" gap={4} aria-label="Resumen de la clase" className="academy-panel w-full p-3 lg:sticky lg:top-24 lg:w-64 lg:shrink-0">
+          <nav aria-label="Secciones de la clase">
+            <ol className="grid grid-cols-2 gap-1 lg:grid-cols-1">
+              {parts.map((item, index) => (
+                <li key={item.id}>
+                  <a href={`#${item.id}`} className="academy-focus flex min-h-11 items-center gap-3 rounded-academy px-2 py-1.5 hover:bg-academy-tint">
+                    <small aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-academy bg-academy-tint text-xs font-bold text-academy-primary">{index + 1}</small>
+                    <VStack gap={0} className="min-w-0">
+                      <strong className="text-sm font-semibold">{item.title}</strong>
+                      <small className={`truncate text-xs ${item.tone === 'bad' ? 'font-semibold text-red-800' : 'text-academy-muted'}`}>{item.status}</small>
+                    </VStack>
                   </a>
                 </li>
               ))}
-            </ul>
+            </ol>
           </nav>
-          <dl className="space-y-2 border-t border-black/10 pt-4 text-sm">
-            <HStack as="div" gap={2} justify="between">
-              <dt className="text-black/65">Duración</dt><dd>{lesson.duration_min ? `${lesson.duration_min} min` : 'Sin indicar'}</dd>
+          <dl className="space-y-2 border-t border-academy-line px-2 pt-4 text-sm">
+            <HStack gap={2} justify="between">
+              <dt className="text-academy-muted">Duración</dt><dd className="font-semibold">{lesson.duration_min ? `${lesson.duration_min} min` : 'Sin indicar'}</dd>
             </HStack>
-            <HStack as="div" gap={2} justify="between">
-              <dt className="text-black/65">Materiales</dt><dd>{lesson.resources.length}</dd>
+            <HStack gap={2} justify="between">
+              <dt className="text-academy-muted">XP de la actividad</dt><dd className="font-semibold tabular-nums">{lesson.points}</dd>
+            </HStack>
+            <HStack gap={2} justify="between">
+              <dt className="text-academy-muted">Clase de muestra</dt><dd className="font-semibold">{lesson.preview_public ? 'Sí' : 'No'}</dd>
             </HStack>
           </dl>
-        </aside>
+        </VStack>
 
-        <VStack gap={5} className="min-w-0 lg:col-span-2">
-          <form action={updateLesson} className="min-w-0 space-y-5">
+        <VStack gap={6} className="w-full min-w-0 flex-1">
+          <form action={updateLesson} className="min-w-0 space-y-6">
             <input type="hidden" name="id" value={lesson.id} />
             <input type="hidden" name="course_id" value={id} />
             <input type="hidden" name="editor" value="1" />
 
-            <section id="contenido" aria-labelledby="lesson-content" className={`${panel} scroll-mt-6`}>
-              <h2 id="lesson-content" className={subhead}>Contenido</h2>
+            <Part n={1} {...part('contenido')}>
               {readOnly ? (
-                lesson.content.trim() ? <LessonText text={lesson.content} /> : <p className="text-sm text-black/70">Esta clase no tiene texto guardado.</p>
+                lesson.content.trim() ? <LessonText text={lesson.content} /> : <p className="text-sm text-academy-muted">Esta clase no tiene texto guardado.</p>
               ) : (
-                <VStack gap={4}>
-                  <label className={label}>Título de la clase<input className={field} name="title" defaultValue={lesson.title} required /></label>
-                  <section className="grid gap-3 sm:grid-cols-2">
-                    <label className={label}>Módulo
-                      <select className={field} name="section_id" defaultValue={lesson.section_id || ''}>
+                <VStack gap={5}>
+                  <label className={labelClass}>Título de la clase<input className={fieldClass} name="title" defaultValue={lesson.title} required /></label>
+                  <fieldset className="grid min-w-0 gap-5 sm:grid-cols-2">
+                    <legend className="sr-only">Módulo y duración</legend>
+                    <label className={labelClass}>Módulo
+                      <select className={fieldClass} name="section_id" defaultValue={lesson.section_id || ''}>
                         <option value="">Sin módulo</option>
                         {detail.sections.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}
                       </select>
                     </label>
-                    <label className={label}>Duración (minutos)<input className={field} name="duration_min" type="number" min="1" defaultValue={lesson.duration_min ?? ''} /></label>
-                  </section>
-                  <label className={label}>Texto de la clase
-                    <textarea className={field} name="content" rows={8} defaultValue={lesson.content} placeholder="Explica el tema e incluye los pasos o ejemplos que verá el alumno." />
-                  </label>
+                    <label className={labelClass}>Duración (minutos)<input className={fieldClass} name="duration_min" type="number" min="1" defaultValue={lesson.duration_min ?? ''} /></label>
+                  </fieldset>
+                  <VStack gap={1}>
+                    <label className={labelClass}>Texto de la clase
+                      <textarea className={fieldClass} name="content" rows={10} defaultValue={lesson.content} placeholder="Explica el tema e incluye los pasos o ejemplos que verá el alumno." />
+                    </label>
+                    <small className="text-xs text-academy-muted">Usa «## » al inicio de una línea para un subtítulo y «- » para una lista.</small>
+                  </VStack>
                 </VStack>
               )}
-            </section>
+            </Part>
 
-            <section id="video" aria-labelledby="lesson-video" className={`${panel} scroll-mt-6`}>
-              <h2 id="lesson-video" className={subhead}>Video</h2>
-              {status.error === 'muestra' ? <p role="alert" className="text-sm text-red-800">Para una muestra con video, usa un enlace público de YouTube, Vimeo o MP4/WebM.</p> : null}
+            <Part n={2} {...part('video')}>
+              {status.error === 'muestra' ? <Notice tone="error">Para una muestra con video, usa un enlace público de YouTube, Vimeo o MP4/WebM.</Notice> : null}
               {!readOnly ? (
-                <label className={label}>Enlace del video
-                  <input className={field} name="video_url" defaultValue={lesson.video_url || ''} placeholder="https://…" inputMode="url" spellCheck={false} aria-invalid={status.error === 'video' || undefined} />
-                  <small className="block font-normal text-black/70">Pega una URL de YouTube, Vimeo, Bunny Stream o un archivo MP4/WebM. También puedes usar <code>bunny:&lt;id&gt;</code>.</small>
-                </label>
+                <VStack gap={1}>
+                  <label className={labelClass}>Enlace del video
+                    <input className={fieldClass} name="video_url" defaultValue={lesson.video_url || ''} placeholder="https://…" inputMode="url" spellCheck={false} aria-invalid={status.error === 'video' || undefined} />
+                  </label>
+                  <small className="text-xs text-academy-muted">Pega una URL de YouTube, Vimeo, Bunny Stream o un archivo MP4/WebM. También puedes usar <code>bunny:&lt;id&gt;</code>.</small>
+                </VStack>
               ) : null}
               {!readOnly ? (
-                <>
+                <VStack gap={1} className="rounded-academy border border-academy-line bg-academy-page p-4">
                   <input type="hidden" name="preview_settings" value="1" />
-                  <label className="flex items-start gap-3 text-sm">
-                    <input type="checkbox" name="preview_public" value="1" defaultChecked={lesson.preview_public} className="mt-1" />
-                    <strong>Ofrecer como clase de muestra</strong>
+                  <label className="flex items-start gap-3 text-sm font-semibold">
+                    <input type="checkbox" name="preview_public" value="1" defaultChecked={lesson.preview_public} className="mt-0.5 size-4" />
+                    Ofrecer como clase de muestra
                   </label>
-                  <p className="text-sm text-black/70">En cursos de pago, cualquier visitante podrá ver el texto y el video de esta clase.</p>
-                </>
+                  <p className="pl-7 text-sm text-academy-muted">En cursos de pago, cualquier visitante podrá ver el texto y el video de esta clase.</p>
+                </VStack>
               ) : lesson.preview_public ? <p className="text-sm font-semibold">Clase de muestra</p> : null}
               {video ? (
-                <iframe title={`Video guardado de ${lesson.title}`} src={video} className="aspect-video w-full border border-black/10 bg-ink" loading="lazy" allow="accelerometer; gyroscope; encrypted-media; picture-in-picture" allowFullScreen />
+                <iframe title={`Video guardado de ${lesson.title}`} src={video} className="aspect-video w-full rounded-academy border border-academy-line bg-academy-ink" loading="lazy" allow="accelerometer; gyroscope; encrypted-media; picture-in-picture" allowFullScreen />
               ) : directVideo ? (
-                <video aria-label={`Video guardado de ${lesson.title}`} src={directVideo} controls playsInline preload="none" className="aspect-video w-full border border-black/10 bg-ink" />
+                <video aria-label={`Video guardado de ${lesson.title}`} src={directVideo} controls playsInline preload="none" className="aspect-video w-full rounded-academy border border-academy-line bg-academy-ink" />
               ) : lesson.video_url ? (
-                <p className="text-sm text-black/70">El video guardado no se puede previsualizar aquí. Comprueba el enlace desde la vista de alumno.</p>
+                <p className="text-sm text-academy-muted">El video guardado no se puede previsualizar aquí. Comprueba el enlace desde la vista de alumno.</p>
               ) : (
-                <p className="text-sm text-black/70">Sin video guardado.</p>
+                <p className="rounded-academy border border-dashed border-academy-line px-4 py-6 text-center text-sm text-academy-muted">Sin video guardado</p>
               )}
-            </section>
+            </Part>
 
-            <section id="actividad" aria-labelledby="lesson-activity" className={`${panel} scroll-mt-6`}>
-              <HStack gap={3} justify="between" wrap="wrap">
-                <h2 id="lesson-activity" className={subhead}>Actividad</h2>
-                {activity.mission?.kind === 'assignment' ? (
-                  <Link href={`/dashboard/cursos/${id}/entregas?leccion=${encodeURIComponent(lesson.id)}`} className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4">Ver entregas de esta clase</Link>
-                ) : null}
-              </HStack>
+            <Part n={3} {...part('actividad')} action={activity.mission?.kind === 'assignment' ? (
+              <Link href={`/dashboard/cursos/${id}/entregas?leccion=${encodeURIComponent(lesson.id)}`} className={btnSmall}>Ver entregas</Link>
+            ) : null}>
               {activity.errors.length ? (
-                <ul className="list-disc border-l-4 border-red-700 bg-paper py-3 pl-7 pr-3 text-sm text-red-800">
+                <ul role="alert" className="list-disc rounded-academy border border-red-200 bg-red-50 py-3 pl-8 pr-4 text-sm text-red-900">
                   {activity.errors.map((message) => <li key={message}>{message}</li>)}
                 </ul>
               ) : null}
               {readOnly ? (
-                <p className="text-sm text-black/70">{activityLabel}</p>
+                !activity.mission ? <p className="text-sm text-academy-muted">Esta clase no tiene actividad.</p>
+                : activity.mission.kind === 'assignment' ? <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">{activity.mission.instructions}</p>
+                : activity.mission.kind === 'checklist' ? (
+                  <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed">{activity.mission.items.map((item, index) => <li key={index} className="break-words">{item}</li>)}</ol>
+                ) : (
+                  <ol className="space-y-4 text-sm">
+                    {activity.mission.questions.map((question, index) => (
+                      <li key={index} className="space-y-2">
+                        <p className="break-words font-semibold">{index + 1}. {question.prompt}</p>
+                        <ul className="space-y-1 pl-5">
+                          {question.options.map((option, choice) => (
+                            <li key={choice} className={`break-words ${choice === question.answer ? 'font-semibold text-academy-primary' : 'text-academy-muted'}`}>
+                              {option}{choice === question.answer ? ' · respuesta correcta' : ''}
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ol>
+                )
               ) : (
                 <>
                   <LessonActivityEditor key={lesson.mission} value={lesson.mission} />
-                  <label className={`${label} max-w-xs`}>XP al aprobar la actividad
-                    <input className={field} name="points" type="number" min="1" defaultValue={lesson.points} />
+                  <label className={`${labelClass} max-w-xs`}>XP al aprobar la actividad
+                    <input className={fieldClass} name="points" type="number" min="1" defaultValue={lesson.points} />
                   </label>
                 </>
               )}
-            </section>
-            {!readOnly ? <SubmitButton pending="Guardando…" className="sm:w-auto">Guardar cambios</SubmitButton> : null}
+            </Part>
+            {!readOnly ? (
+              <HStack as="footer" gap={4} align="center" wrap="wrap" className="academy-panel sticky bottom-4 z-10 px-4 py-3 shadow-lg sm:px-5">
+                <AcademySubmit label="Guardar cambios" pending="Guardando…" />
+                <p className="hidden text-sm text-academy-muted sm:block">Guarda el contenido, el video y la actividad. Los materiales se guardan aparte.</p>
+              </HStack>
+            ) : null}
           </form>
 
-          <section id="materiales" aria-labelledby="lesson-materials" className={`${panel} scroll-mt-6`}>
-            <h2 id="lesson-materials" className={subhead}>Materiales</h2>
-            {status.guardado === 'recurso' ? <p role="status" className="text-sm">Material agregado.</p> : null}
-            {status.error === 'archivo' ? <p role="alert" className="text-sm text-red-800">No pudimos guardar el archivo o el enlace. Prueba con un archivo más pequeño o revisa la URL.</p> : null}
-            {status.error === 'recurso' ? <p role="alert" className="text-sm text-red-800">Agrega un archivo, un enlace o una nota para guardar el material.</p> : null}
+          <Part n={4} {...part('materiales')}>
+            {status.guardado === 'recurso' ? <Notice tone="ok">Material agregado.</Notice> : null}
+            {status.error === 'archivo' ? <Notice tone="error">No pudimos guardar el archivo o el enlace. Prueba con un archivo más pequeño o revisa la URL.</Notice> : null}
+            {status.error === 'recurso' ? <Notice tone="error">Agrega un archivo, un enlace o una nota para guardar el material.</Notice> : null}
 
-            {lesson.resources.length ? (
-              <ul className="divide-y divide-black/10 border-y border-black/10">
+            {count ? (
+              <ul className="divide-y divide-academy-line rounded-academy border border-academy-line">
                 {lesson.resources.map((resource) => {
                   const kind = materialKinds.find((item) => item.id === resource.kind);
                   const privateFile = resource.kind === TEXT_TEMPLATE_KIND || isPrivateAcademiaAsset(resource.url || '');
                   return (
-                    <li key={resource.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                      <VStack gap={1} className="min-w-0 flex-1">
-                        <p className="break-words font-medium">{resource.title}</p>
-                        <p className="text-xs text-black/65">{kind?.name || 'Material'}{privateFile ? ' · Descarga privada' : resource.url ? ' · Enlace' : ''}</p>
-                      </VStack>
+                    <li key={resource.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                      <HStack gap={3} align="center" className="min-w-0 flex-1">
+                        <Icon name={privateFile ? 'lock' : 'link'} size={16} className="shrink-0 text-academy-muted" />
+                        <VStack gap={0} className="min-w-0">
+                          <p className="break-words font-semibold">{resource.title}</p>
+                          <p className="text-xs text-academy-muted">{kind?.name || 'Material'}{privateFile ? ' · Descarga privada' : resource.url ? ' · Enlace' : ''}</p>
+                        </VStack>
+                      </HStack>
                       {!readOnly ? (
                         <form action={deleteResource}>
                           <input type="hidden" name="id" value={resource.id} />
-                          <button className="min-h-11 text-sm underline underline-offset-4" type="submit" aria-label={`Quitar ${resource.title}`}>Quitar</button>
+                          <button className={btnSmall} type="submit" aria-label={`Quitar ${resource.title}`}>Quitar</button>
                         </form>
                       ) : null}
                     </li>
                   );
                 })}
               </ul>
-            ) : <p className="text-sm text-black/70">Sin materiales guardados.</p>}
+            ) : <p className="text-sm text-academy-muted">Sin materiales guardados.</p>}
 
             {!readOnly ? (
-              <details open={status.error === 'archivo' || status.error === 'recurso' || status.error === 'plantilla' || undefined} className="border border-black/15 p-3 sm:p-4">
-                <summary className="min-h-9 cursor-pointer font-semibold focus-visible:outline focus-visible:outline-2">Agregar material</summary>
-                <form action={createResource} className="mt-4 space-y-4">
-                  {status.error === 'plantilla' ? <p role="alert" className="text-sm text-red-800">Escribe hasta 12.000 caracteres para la plantilla y deja vacíos el enlace y el archivo.</p> : null}
+              <details open={status.error === 'archivo' || status.error === 'recurso' || status.error === 'plantilla' || undefined} className="rounded-academy border border-academy-line">
+                <summary className="academy-focus flex min-h-11 cursor-pointer list-none items-center px-4 text-sm font-semibold text-academy-primary">Agregar material</summary>
+                <form action={createResource} className="space-y-5 border-t border-academy-line p-4">
+                  {status.error === 'plantilla' ? <Notice tone="error">Escribe hasta 12.000 caracteres para la plantilla y deja vacíos el enlace y el archivo.</Notice> : null}
                   <input type="hidden" name="lesson_id" value={lesson.id} />
-                  <section className="grid gap-3 sm:grid-cols-2">
-                    <label className={label}>Título del material<input className={field} name="title" required /></label>
-                    <label className={label}>Tipo de material
-                      <select className={field} name="kind" defaultValue="enlace">
+                  <fieldset className="grid min-w-0 gap-5 sm:grid-cols-2">
+                    <legend className="sr-only">Material</legend>
+                    <label className={labelClass}>Título del material<input className={fieldClass} name="title" required /></label>
+                    <label className={labelClass}>Tipo de material
+                      <select className={fieldClass} name="kind" defaultValue="enlace">
                         {materialKinds.map((kind) => <option key={kind.id} value={kind.id}>{kind.name}</option>)}
                       </select>
                     </label>
-                  </section>
-                  <label className={label}>Archivo<input className={`${field} file:mr-3 file:border-0 file:bg-paper file:px-2 file:py-1 file:text-sm`} name="file" type="file" /></label>
-                  <label className={label}>Enlace<input className={field} name="url" inputMode="url" placeholder="https://…" /></label>
-                  <label className={label}>Nota o texto<textarea className={field} name="content" rows={3} /></label>
-                  <p className="text-sm text-black/70">Los archivos subidos quedan protegidos por el acceso a la clase. Los enlaces siguen las reglas de su proveedor.</p>
-                  <SubmitButton pending="Guardando material…" className="sm:w-auto">Guardar material</SubmitButton>
+                  </fieldset>
+                  <label className={labelClass}>Archivo<input className={`${fieldClass} text-sm file:mr-3 file:rounded-academy file:border-0 file:bg-academy-tint file:px-3 file:py-1 file:font-semibold file:text-academy-primary`} name="file" type="file" /></label>
+                  <label className={labelClass}>Enlace<input className={fieldClass} name="url" inputMode="url" placeholder="https://…" /></label>
+                  <label className={labelClass}>Nota o texto<textarea className={fieldClass} name="content" rows={3} /></label>
+                  <p className="text-sm text-academy-muted">Los archivos subidos quedan protegidos por el acceso a la clase. Los enlaces siguen las reglas de su proveedor.</p>
+                  <AcademySubmit label="Guardar material" pending="Guardando material…" />
                 </form>
               </details>
             ) : null}
-          </section>
+          </Part>
 
           {!readOnly && !lesson.source_id ? (
-            <details className="border border-black/15 bg-white p-4">
-              <summary className="cursor-pointer text-sm font-semibold text-red-800">Eliminar clase</summary>
-              <form action={deleteLesson} className="mt-3 space-y-3">
+            <details className="academy-panel p-4 sm:px-6">
+              <summary className="academy-focus min-h-11 cursor-pointer py-2.5 text-sm font-semibold text-red-800">Eliminar clase</summary>
+              <form action={deleteLesson} className="space-y-3 pt-2">
                 <input type="hidden" name="id" value={lesson.id} />
                 <input type="hidden" name="course_id" value={id} />
-                <p className="text-sm text-black/70">Eliminar la clase también elimina sus materiales asociados y el avance registrado.</p>
-                <SubmitButton pending="Eliminando…" className="bg-red-800 text-white sm:w-auto">Confirmar eliminación</SubmitButton>
+                <p className="text-sm">Eliminar la clase también elimina sus materiales asociados y el avance registrado.</p>
+                <AcademySubmit label="Confirmar eliminación" pending="Eliminando…" variant="destructive" />
               </form>
             </details>
           ) : null}
         </VStack>
-      </section>
-    </main>
+      </HStack>
+    </VStack>
   );
 }
