@@ -1,5 +1,6 @@
 import { startAutomations } from './automations';
 import { crm } from './db';
+import { relayLead } from './ingest-relay';
 
 const IDENTITY_FIELDS = new Set([
   'nombre',
@@ -50,10 +51,11 @@ export async function captureLead(input: {
   form?: string;
   details?: Record<string, string>;
   automate?: boolean;
-}) {
+}, request?: Request) {
   const email = (input.email || '').trim().toLowerCase();
   const name = input.name.trim();
   if (!name) return;
+  if (request && await relayLead(request, { ...input, name, email })) return;
   const sql = await crm();
   const form = input.form || 'web';
   const details = input.details && Object.keys(input.details).length ? JSON.stringify(input.details) : null;

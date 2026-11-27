@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
 import { processDue } from '@/lib/crm/automations';
+import { retryLeadRelay } from '@/lib/crm/ingest-relay';
 import { processCampaignSends } from '@/lib/crm/campaigns';
 import { expireTransfers } from '@/lib/valux/transfers';
 import { nightlyReconcile, retryPendingStripePayments } from '@/lib/valux/reconcile';
@@ -27,6 +28,8 @@ export async function GET(request: Request) {
   const started = Date.now();
   const result: Record<string, unknown> & { automations: number; sent: number; failed: number; expired: number } = { automations: 0, sent: 0, failed: 0, expired: 0 };
   try {
+    result.leadsRelayed = await retryLeadRelay().catch(() => 'failed');
+    if (process.env.CRM_OPERATIONS_ENABLED === 'false') return NextResponse.json(result);
     result.automations = await processDue(200);
     result.expired = await expireTransfers();
     result.stripeAccess = await retryPendingStripePayments().catch(async (error) => {

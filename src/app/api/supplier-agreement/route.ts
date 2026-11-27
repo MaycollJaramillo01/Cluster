@@ -351,7 +351,7 @@ export async function PUT(request: Request) {
         respuesta: record.decision === 'si' ? 'Sí, acepto' : 'No acepto',
         confirmado: record.confirmedAt,
       },
-    });
+    }, request);
   } catch (error) {
     console.error('[supplier-agreement] crm:', error);
   }

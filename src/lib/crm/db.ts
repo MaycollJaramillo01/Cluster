@@ -6,6 +6,12 @@ import { migrateCrmEnrollments } from './lms-enrollment';
 export type Sql = NeonQueryFunction<false, false>;
 
 const STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS crm_ingest_outbox (
+    id TEXT PRIMARY KEY,
+    payload TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_attempt_at TIMESTAMPTZ
+  )`,
   `CREATE TABLE IF NOT EXISTS crm_meta (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL

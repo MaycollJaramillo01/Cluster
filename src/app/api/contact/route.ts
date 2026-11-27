@@ -181,7 +181,7 @@ export async function POST(request: Request) {
       city: asText(lead.ciudad),
       form: asText(lead.origen) || 'contacto',
       details: leadDetails(lead),
-    });
+    }, request);
   } catch (error) {
     console.error('[contact] crm:', error);
   }
