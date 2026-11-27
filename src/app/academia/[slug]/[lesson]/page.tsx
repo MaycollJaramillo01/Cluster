@@ -9,6 +9,7 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
 import { academiaPersonId } from '@/lib/valux/session';
 import { completeLesson, submitMission } from '@/lib/valux/actions';
+import { courseAccessPaused } from '@/lib/crm/course-access-requests';
 import { canReadCourse, lessonAccess, personXp, publishedLesson } from '@/lib/valux/data';
 import { levelFor, parseMission, publicMission } from '@/lib/valux/mission';
 import { trackEvent } from '@/lib/valux/events';
@@ -149,7 +150,8 @@ export default async function LessonPlayer({
   const { course, lesson } = detail;
   const [canRead, access] = await Promise.all([canReadCourse(personId, course), lessonAccess(personId, course)]);
   const { done, order, pending } = access;
-  if (!canRead && lesson.preview_public && course.price_cents > 0) {
+  const paused = !canRead && await courseAccessPaused(personId, course.id);
+  if (!canRead && !paused && lesson.preview_public && course.price_cents > 0) {
     const embed = bunnyVideo(lesson.video_url) ? '' : lessonEmbed(lesson.video_url);
     const direct = !embed && directLessonVideo(lesson.video_url);
     return (
@@ -208,7 +210,8 @@ export default async function LessonPlayer({
   const arrow = <Icon name="arrow-right" size={16} aria-hidden="true" />;
   let primary: ReactNode = null;
   let status = '';
-  if (!canRead && access.person && !signedIn) {
+  const suspended = paused || (!canRead && Boolean(access.person) && !signedIn);
+  if (suspended) {
     status = 'Acceso suspendido';
   } else if (!canRead) {
     primary = <Link href={`/academia/${slug}?inscripcion=1`} className={primaryClass}>Inscribirme al curso {arrow}</Link>;
@@ -401,10 +404,10 @@ export default async function LessonPlayer({
               <section className="academy-panel mt-8 p-5">
                 <p className="flex items-center gap-2 font-medium">
                   <Icon name="lock" size={16} />
-                  {status === 'Acceso suspendido' ? status : !canRead ? 'Esta clase es parte de un curso de pago' : signedIn ? 'Esta clase todavía está cerrada' : 'Entra para seguir el curso'}
+                  {suspended ? status : !canRead ? 'Esta clase es parte de un curso de pago' : signedIn ? 'Esta clase todavía está cerrada' : 'Entra para seguir el curso'}
                 </p>
                 <p className="mt-2 text-sm text-black/65">
-                  {status === 'Acceso suspendido' ? 'Contacta al equipo de Academia para recuperar tu acceso.' : !canRead
+                  {suspended ? 'Contacta al equipo de Academia para recuperar tu acceso.' : !canRead
                     ? 'Inscríbete para ver el video, las notas y la misión.'
                     : personId
                       ? <>Las clases se abren en orden.{pending ? <> Completa «{pending.title}» para seguir.</> : null}</>

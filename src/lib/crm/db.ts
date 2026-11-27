@@ -277,6 +277,20 @@ const STATEMENTS = [
     portfolio_url TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS lms_course_access_requests (
+    course_id TEXT NOT NULL REFERENCES lms_courses(id) ON DELETE CASCADE,
+    person_id TEXT NOT NULL REFERENCES valux_people(id) ON DELETE CASCADE,
+    paused BOOLEAN NOT NULL DEFAULT false,
+    request_id TEXT NOT NULL,
+    action TEXT NOT NULL CHECK (action IN ('pause', 'resume')),
+    status TEXT NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+    reason TEXT NOT NULL,
+    requested_by TEXT NOT NULL,
+    requested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    reviewed_by TEXT,
+    reviewed_at TIMESTAMPTZ,
+    PRIMARY KEY (course_id, person_id)
+  )`,
   `CREATE TABLE IF NOT EXISTS lms_sections (
     id TEXT PRIMARY KEY,
     course_id TEXT NOT NULL REFERENCES lms_courses(id) ON DELETE CASCADE,
@@ -797,6 +811,7 @@ const STORED_TABLES = [
   'lms_assignment_submissions',
   'lms_resources',
   'lms_progress',
+  'lms_course_access_requests',
   'lms_enrollments',
   'lms_lessons',
   'lms_sections',

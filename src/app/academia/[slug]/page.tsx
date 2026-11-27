@@ -6,6 +6,7 @@ import { CourseCheckoutForm } from '@/components/academia/CourseCheckoutForm';
 import { CertificateRequest } from '@/components/academia/CertificateRequest';
 import { academyMoney as money } from '@/lib/valux/money';
 import { buyCourse, buyUpsell } from '@/lib/valux/actions';
+import { courseAccessPaused } from '@/lib/crm/course-access-requests';
 import { canReadCourse, getPerson, lessonAccess, lessonOrder, ownsCourse, publishedCourse } from '@/lib/valux/data';
 import { academiaPersonId } from '@/lib/valux/session';
 import { paymentOptions } from '@/lib/valux/transfers';
@@ -54,7 +55,9 @@ export default async function CourseCatalogPage({
   const lessonCount = course.lessons.length;
   // Inscrito, o con acceso a un curso de pago por membresía o rol: ve su avance en vez del checkout.
   const enrolled = await ownsCourse(personId, course.id);
-  const hasAccess = Boolean(personId) && (course.price_cents <= 0 ? enrolled : await canReadCourse(personId, course));
+  const canRead = await canReadCourse(personId, course);
+  const paused = !canRead && await courseAccessPaused(personId, course.id);
+  const hasAccess = Boolean(personId) && canRead && (course.price_cents > 0 || enrolled);
   const coursePath = `/academia/${course.slug}`;
   const checkoutPath = `${coursePath}?inscripcion=1`;
   const paid = course.price_cents > 0;
@@ -65,7 +68,7 @@ export default async function CourseCatalogPage({
   const suspended = person?.is_active === false;
   const contact = person?.is_active ? { name: person.name || person.email, email: person.email } : undefined;
 
-  if (!hasAccess && !suspended && (query.inscripcion === '1' || (paid && query.error && query.error !== 'reembolso'))) {
+  if (!hasAccess && !suspended && !paused && (query.inscripcion === '1' || (paid && query.error && query.error !== 'reembolso'))) {
     return (
       <main className="academy-page max-w-5xl">
         <Link href={coursePath} className="academy-nav academy-focus w-fit"><Icon name="arrow-right" size={16} className="rotate-180" /> Volver al curso</Link>
@@ -118,7 +121,7 @@ export default async function CourseCatalogPage({
   const pct = lessonCount ? Math.round((doneCount / lessonCount) * 100) : 0;
   const lessonUrl = (lesson: { slug: string }) => `/academia/${course.slug}/${lesson.slug}`;
   const [firstLesson] = lessonOrder(course.sections, course.lessons);
-  const sample = hasAccess ? undefined : paid ? course.lessons.find((lesson) => lesson.preview_public) : firstLesson;
+  const sample = hasAccess || paused ? undefined : paid ? course.lessons.find((lesson) => lesson.preview_public) : firstLesson;
   const openLessons = access?.unlocked ?? new Set(
     paid ? course.lessons.filter((lesson) => lesson.preview_public).map((lesson) => lesson.id) : firstLesson ? [firstLesson.id] : [],
   );
@@ -212,8 +215,8 @@ export default async function CourseCatalogPage({
             ) : (
               <>
                 <Text as="p" className="text-4xl font-bold tracking-tight text-academy-ink">{priceLabel}</Text>
-                {suspended ? (
-                  <Text as="p" role="status" className="text-sm leading-relaxed text-academy-muted">{payNote('suspendido')}</Text>
+                {paused || suspended ? (
+                  <Text as="p" role="status" className="text-sm leading-relaxed text-academy-muted">{payNote(paused ? 'curso-pausado' : 'suspendido')}</Text>
                 ) : paid && !payReady(pay) ? (
                   <Text as="p" role="status" className="text-sm leading-relaxed text-academy-muted">{payNote('pasarela')}</Text>
                 ) : !paid && contact && !bump ? (

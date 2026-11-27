@@ -3,6 +3,7 @@ import { Badge } from '@astryxdesign/core/Badge';
 import { Grid } from '@astryxdesign/core/Grid';
 import { VStack } from '@astryxdesign/core/VStack';
 import { saveFeaturedCourses } from '@/lib/crm/lms-actions';
+import { pendingCourseAccessCounts } from '@/lib/crm/course-access-requests';
 import { listCourses } from '@/lib/crm/lms';
 import { academyMoney as money } from '@/lib/valux/money';
 import { featuredCourseIds, selectFeatured } from '@/lib/valux/catalog';
@@ -15,7 +16,8 @@ import { Icon } from '@/components/ui/Icon';
 export default async function CoursesPage({ searchParams }: { searchParams: Promise<{ error?: string; guardado?: string }> }) {
   await requireDashboard('contenido');
   const query = await searchParams;
-  const [courses, selected] = await Promise.all([listCourses(), featuredCourseIds()]);
+  const [courses, selected, requests] = await Promise.all([listCourses(), featuredCourseIds(), pendingCourseAccessCounts()]);
+  const pendingByCourse = new Map(requests.map((request) => [request.course_id, request.pending]));
   courses.sort((a, b) => Number(Boolean(b.review_requested_at && !b.published)) - Number(Boolean(a.review_requested_at && !a.published)));
   const published = courses.filter((course) => course.published);
   const featured = selectFeatured(published, selected);
@@ -45,6 +47,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
               <tr key={course.id} className="hover:bg-academy-page">
                 <td className={`${cell} max-w-xs`}>
                   <Link href={`/dashboard/cursos/${course.id}`} className="academy-focus font-semibold hover:underline">{course.title}</Link>
+                  {pendingByCourse.has(course.id) ? <Link href={`/dashboard/cursos/${course.id}?vista=alumnos`} className="academy-focus block text-sm underline">Solicitudes de acceso ({pendingByCourse.get(course.id)})</Link> : null}
                   {featured.some((item) => item.id === course.id) ? <small className="block text-xs text-academy-muted">En la portada</small> : null}
                 </td>
                 <td className={cell}><CourseStatusPill course={course} /></td>

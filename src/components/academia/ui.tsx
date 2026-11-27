@@ -91,6 +91,7 @@ const COUPON_ERRORS: Record<string, string> = {
 };
 
 export function payNote(code?: string) {
+  if (code === 'curso-pausado') return 'Tu acceso a este curso está pausado. Contacta al equipo de Academia.';
   if (code === 'reembolso') return 'Este pago fue devuelto o está en disputa. Ya no da acceso a la compra.';
   if (code === 'suspendido') return 'Tu cuenta está suspendida. Contacta al equipo de Academia para recuperar el acceso.';
   if (code === 'pasarela') return 'El pago no está disponible en este momento.';

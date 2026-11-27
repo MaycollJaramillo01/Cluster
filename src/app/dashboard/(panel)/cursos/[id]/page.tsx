@@ -16,6 +16,8 @@ import { courseReviewIssues } from '@/lib/crm/course-review';
 import { findCourseRevision } from '@/lib/crm/course-revisions';
 import { listContacts } from '@/lib/crm/queries';
 import { listPeople, listPlans } from '@/lib/valux/data';
+import { courseAccessRequests } from '@/lib/crm/course-access-requests';
+import { requestCourseAccessChange, resolveCourseAccessChange } from '@/lib/crm/course-access-request-actions';
 import { requireCourseEditor } from '@/lib/crm/course-access';
 import { parseMission } from '@/lib/valux/mission';
 import { AcademySubmit } from '@/components/academia/AcademySubmit';
@@ -39,13 +41,15 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
   const view = detail.course.revision_of && (requested === 'ajustes' || requested === 'alumnos') ? 'ficha' : requested;
   const roster = view === 'alumnos' && !teacher;
   const settings = view === 'ajustes';
-  const [contacts, people, courses, plans, revision] = await Promise.all([
+  const [contacts, people, courses, plans, revision, accessRequests] = await Promise.all([
     roster ? listContacts({}) : [],
     roster || settings ? listPeople() : [],
     settings ? listCourses() : [],
     settings ? listPlans() : [],
     detail.course.published ? findCourseRevision(id) : null,
+    view === 'alumnos' && detail.course.published ? courseAccessRequests(id) : [],
   ]);
+  const requestsByPerson = new Map(accessRequests.map((request) => [request.person_id, request]));
   const others = courses.filter((item) => item.id !== id);
   const { course, sections, lessons, enrollments, progress } = detail;
   const enrolledContacts = new Set(enrollments.map((item) => item.contact_id).filter(Boolean));
@@ -120,6 +124,10 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
           description={`${enrollments.length} ${enrollments.length === 1 ? 'inscrito' : 'inscritos'} en ${lessons.length} ${lessons.length === 1 ? 'clase' : 'clases'}.`}
           action={<Link className={btnGhost} href={`/dashboard/cursos/${id}/entregas`}>Entregas de tareas</Link>}
         />
+        {status.guardado === 'solicitud-acceso' ? <Notice tone="ok">Solicitud enviada a Contenido y Superadmin.</Notice> : null}
+        {status.guardado === 'solicitud-resuelta' ? <Notice tone="ok">Decisión guardada.</Notice> : null}
+        {status.error === 'solicitud-acceso' ? <Notice tone="error">Escribe un motivo de hasta 1000 caracteres.</Notice> : null}
+        {status.error === 'estado-acceso' ? <Notice tone="error">El estado cambió o la matrícula ya no está disponible. Revisa la ficha del alumno.</Notice> : null}
         {status.error === 'correo-contacto' ? <Notice tone="error">El contacto necesita un correo válido para entrar a la Academia.</Notice> : null}
         {status.error === 'identidad-contacto' ? <Notice tone="error">El contacto ya está vinculado a otra cuenta en este curso. Verifica el correo antes de matricularlo.</Notice> : null}
         {teacher ? null : (
@@ -153,6 +161,7 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
         {enrollments.length === 0 ? <Empty title="Nadie está inscrito.">Los alumnos aparecen aquí al comprar el curso o cuando los inscribes.</Empty> : (
           <VStack as="ul" gap={4}>
             {enrollments.map((enrollment) => {
+              const accessRequest = requestsByPerson.get(enrollment.person_id);
               const mine = progress.filter((item) =>
                 (enrollment.person_id && item.person_id === enrollment.person_id) ||
                 (enrollment.contact_id && item.contact_id === enrollment.contact_id),
@@ -189,6 +198,44 @@ export default async function CoursePage({ params, searchParams }: { params: Pro
                           })}
                         </ul>
                       </details>
+                    ) : null}
+                    {enrollment.person_id && course.published ? (
+                      <VStack gap={3} className="border-t border-academy-line p-4 sm:p-5">
+                        <HStack gap={3} wrap="wrap" align="center">
+                          <Link className={btnGhost} href={`/dashboard/cursos/${id}/reportes?alumno=${encodeURIComponent(enrollment.person_id)}#intentos`}>Ver intentos</Link>
+                          <Pill tone={accessRequest?.paused ? 'off' : 'ok'}>{accessRequest?.paused ? 'Acceso pausado' : 'Acceso sin pausa'}</Pill>
+                        </HStack>
+                        {accessRequest ? (
+                          <p className="break-words text-sm text-academy-muted">
+                            {accessRequest.action === 'pause' ? 'Pausa' : 'Reanudación'} {accessRequest.status === 'pending' ? 'pendiente' : accessRequest.status === 'approved' ? 'aprobada' : 'rechazada'}. {accessRequest.reason}
+                          </p>
+                        ) : null}
+                        {teacher && accessRequest?.status !== 'pending' ? (
+                          <details>
+                            <summary className="academy-focus cursor-pointer font-semibold text-academy-primary">{accessRequest?.paused ? 'Solicitar reanudación' : 'Solicitar pausa'}</summary>
+                            <form action={requestCourseAccessChange} className="mt-3">
+                              <VStack gap={3} className="items-start">
+                                <input type="hidden" name="course_id" value={course.id} />
+                                <input type="hidden" name="person_id" value={enrollment.person_id} />
+                                <input type="hidden" name="action" value={accessRequest?.paused ? 'resume' : 'pause'} />
+                                <Field label="Motivo"><textarea name="reason" required maxLength={1000} className={fieldClass} /></Field>
+                                <AcademySubmit label="Enviar solicitud" pending="Enviando…" />
+                              </VStack>
+                            </form>
+                          </details>
+                        ) : null}
+                        {!teacher && accessRequest?.status === 'pending' ? (
+                          <form action={resolveCourseAccessChange}>
+                            <HStack gap={3} wrap="wrap">
+                              <input type="hidden" name="course_id" value={course.id} />
+                              <input type="hidden" name="person_id" value={enrollment.person_id} />
+                              <input type="hidden" name="request_id" value={accessRequest.request_id} />
+                              <button className={btn} name="decision" value="approved" type="submit">Aprobar {accessRequest.action === 'pause' ? 'pausa' : 'reanudación'}</button>
+                              <button className={btnGhost} name="decision" value="rejected" type="submit">Rechazar solicitud</button>
+                            </HStack>
+                          </form>
+                        ) : null}
+                      </VStack>
                     ) : null}
                     {teacher ? null : (
                       <form action={removeEnrollment} className="border-t border-academy-line bg-academy-page p-4 sm:p-5">

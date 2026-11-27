@@ -9,6 +9,7 @@ import { site } from '@/lib/site';
 import { getPersonByEmail, getPerson, getPlan, ownsCourse, personSubscription, publishedCourse, getProduct, canReadCourse } from './data';
 import { gradeMission } from './mission';
 import { lessonContext } from './lesson-progress';
+import { courseAccessPaused } from '@/lib/crm/course-access-requests';
 import { challengeProgress, getChallenge } from './challenges';
 import { applyCoupon, cleanCode } from './coupons';
 import { computePayouts, ensurePerson, grantAccess, revokeSales, subscriptionCanceled, type GrantKind } from './fulfill';
@@ -140,6 +141,10 @@ async function coursePurchase(formData: FormData, inlineErrors: boolean) {
   if (person && !person.is_active) {
     if (inlineErrors) return 'suspendido';
     redirect(`${path}?error=suspendido`);
+  }
+  if (person && await courseAccessPaused(person.id, course.id)) {
+    if (inlineErrors) return 'curso-pausado';
+    redirect(path);
   }
   if (person && (course.price_cents > 0 ? await canReadCourse(person.id, course) : await ownsCourse(person.id, course.id))) redirect(path);
   // El descuento se calcula aquí con el precio de la base; el navegador solo manda el código.
