@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Cover, PayMethod, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
+import { Cover, PayMethod, PurchaseLegalLinks, durationLabel, payHint, payNote, payReady } from '@/components/academia/ui';
 import { CourseCheckoutForm } from '@/components/academia/CourseCheckoutForm';
 import { CertificateRequest } from '@/components/academia/CertificateRequest';
 import { academyMoney as money } from '@/lib/valux/money';
@@ -275,6 +275,7 @@ export default async function CourseCatalogPage({
               <HStack gap={3} wrap="wrap" align="center">
                 <AcademySubmit label="Sí, agregarlo" pending="Abriendo el pago…" />
                 <Link href={coursePath} className="academy-nav academy-focus">No, gracias</Link>
+                <PurchaseLegalLinks />
               </HStack>
             </form>
           ) : null}

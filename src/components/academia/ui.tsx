@@ -229,9 +229,20 @@ export function Checkout({
       ) : null}
       <VStack gap={2}>
         <AcademySubmit pending="Procesando…" label={label} fullWidth />
+        {pay ? <PurchaseLegalLinks /> : null}
         {note ? <p className="text-center text-xs text-academy-muted">{note}</p> : null}
       </VStack>
     </form>
+  );
+}
+
+export function PurchaseLegalLinks() {
+  return (
+    <p className="text-center text-xs leading-relaxed text-academy-muted">
+      <a href="/terminos#academia" className="academy-focus underline underline-offset-4" target="_blank" rel="noopener">Términos de compra y reembolsos</a>
+      {' · '}
+      <a href="/privacidad#academia" className="academy-focus underline underline-offset-4" target="_blank" rel="noopener">Privacidad</a>
+    </p>
   );
 }
 

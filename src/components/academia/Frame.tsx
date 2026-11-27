@@ -124,7 +124,10 @@ export function Frame({ children, signedIn }: { children: ReactNode; signedIn: b
               </VStack>
             ))}
           </Grid>
-          <Text as="p" className="border-t border-white/15 pt-5 text-sm text-white/65">Aprende a tu ritmo. Aplica lo que aprendes.</Text>
+          <HStack as="nav" aria-label="Información legal" gap={4} wrap="wrap" className="border-t border-white/15 pt-5 text-sm text-white/75">
+            <Link href="/terminos#academia" className="academy-focus underline underline-offset-4">Términos de compra y reembolsos</Link>
+            <Link href="/privacidad#academia" className="academy-focus underline underline-offset-4">Privacidad</Link>
+          </HStack>
         </VStack>
       </footer>
     </AcademyTheme>
