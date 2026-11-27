@@ -159,6 +159,7 @@ function CourseDetails({ course, readOnly, status }: { course: LmsCourseRow; rea
       <VStack gap={3} className="p-5 sm:p-6">
         <SectionTitle id="ficha-titulo" title="Ficha y portada" description="Esta información acompaña al curso en el catálogo." />
         {status.guardado === 'ficha' ? <Notice tone="ok">Ficha guardada.</Notice> : null}
+        {status.error === 'titulo-curso' ? <Notice tone="error">Escribe un título para el curso.</Notice> : null}
         {status.error === 'portada' ? <Notice tone="error">No se pudo guardar la portada. Usa una imagen de hasta 8 MB o pega un enlace válido.</Notice> : null}
       </VStack>
       {readOnly ? (
@@ -232,6 +233,7 @@ function CourseCurriculum({ course, sections, lessons, readOnly, status }: {
         action={<Link href={`/dashboard/cursos/${course.id}/entregas`} className={btnGhost}>Entregas de tareas</Link>}
       />
       {status.error === 'seccion' ? <Notice tone="error">Selecciona un módulo de este curso.</Notice> : null}
+      {status.error === 'titulo-modulo' ? <Notice tone="error">Escribe un título para el módulo.</Notice> : null}
       {status.error === 'temario' ? <Notice tone="error">No se pudo guardar el cambio en el temario.</Notice> : null}
       {sections.map((section, index) => {
         const classes = lessons.filter((lesson) => lesson.section_id === section.id);

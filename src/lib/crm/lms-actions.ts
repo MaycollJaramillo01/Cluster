@@ -112,9 +112,11 @@ export async function updateCoursePresentation(formData: FormData) {
   const id = field(formData, 'course_id');
   const title = field(formData, 'title');
   const description = field(formData, 'description');
-  if (!id || !title || !description) return;
+  if (!id) return;
   const back = `/dashboard/cursos/${id}`;
   await checkEditableBeforeUpload(id, back);
+  if (!title) redirect(`${back}?error=titulo-curso#ficha`);
+  if (!description) return;
   const cover = await storedFile(formData, 'cover', 'cover_url', true).catch(() => {
     redirect(`${back}?error=portada#ficha`);
   });
@@ -283,9 +285,10 @@ export async function updateLesson(formData: FormData) {
   const id = field(formData, 'id');
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
-  if (!id || !courseId || !title) return;
+  if (!id || !courseId) return;
   await requireCourseEditor(courseId);
   const back = `/dashboard/cursos/${courseId}/lecciones/${id}`;
+  if (!title) redirect(`${back}?error=titulo-clase`);
   const section = await courseSection(courseId, field(formData, 'section_id'), back);
   const video = field(formData, 'video_url');
   if (video && !validLessonVideo(video)) redirect(`${back}?error=video`);
@@ -346,8 +349,13 @@ export async function updateCourseMeta(formData: FormData) {
 export async function createSection(formData: FormData) {
   const courseId = field(formData, 'course_id');
   const title = field(formData, 'title');
-  if (!courseId || !title) return;
-  await mutateCourse(courseId, `/dashboard/cursos/${courseId}?vista=temario`, (tx, allowed) => tx`
+  if (!courseId) return;
+  const back = `/dashboard/cursos/${courseId}?vista=temario`;
+  if (!title) {
+    await requireCourseEditor(courseId);
+    redirect(`/dashboard/cursos/${courseId}?error=titulo-modulo&vista=temario`);
+  }
+  await mutateCourse(courseId, back, (tx, allowed) => tx`
     INSERT INTO lms_sections (id, course_id, title, sort_order)
     SELECT ${crypto.randomUUID()}, ${courseId}, ${title},
       (SELECT COALESCE(max(sort_order), 0) + 1 FROM lms_sections WHERE course_id = ${courseId}) WHERE ${allowed}

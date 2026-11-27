@@ -17,6 +17,7 @@ import { isPrivateAcademiaAsset, TEXT_TEMPLATE_KIND } from '@/lib/valux/upload';
 import { directLessonVideo, lessonEmbed } from '@/lib/valux/video';
 
 const editErrors: Record<string, string> = {
+  'titulo-clase': 'Escribe un título para la clase.',
   estado: 'El curso está en revisión o publicado. Los cambios requieren que vuelva a borrador.',
   video: 'Revisa el enlace del video. Usa YouTube, Vimeo, Bunny Stream o una URL MP4/WebM.',
   mision: 'Revisa que la actividad tenga instrucciones o respuestas válidas.',

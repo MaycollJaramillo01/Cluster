@@ -112,6 +112,11 @@ async function main() {
     assert.equal(await redirected(() => requestReview(form({ course_id: courseId }))), '/dashboard/profesor');
 
     cookie = issueSession(teacher, 'Maestro QA', 'profesor');
+    assert.equal(await redirected(() => updateCoursePresentation(form({
+      course_id: courseId, title: '   ', description: 'Descripción de prueba',
+    }))), path + '?error=titulo-curso#ficha');
+    assert.equal(await redirected(() => createSection(form({ course_id: courseId, title: '   ' }))),
+      path + '?error=titulo-modulo&vista=temario');
     await createSection(form({ course_id: courseId, title: 'Fundamentos' }));
     await createSection(form({ course_id: courseId, title: 'Práctica' }));
     const sections = (await getCourse(courseId))!.sections;
@@ -140,6 +145,9 @@ async function main() {
     const secondLessonPath = `${path}/lecciones/${secondLessonId}`;
     const quiz = '¿Qué mide el CTR?\n- Ventas\n* Clics sobre impresiones';
     const checklist = '[ ] Publiqué el anuncio\n[ ] Revisé el resultado';
+    assert.equal(await redirected(() => updateLesson(form({
+      id: firstLessonId, course_id: courseId, title: '   ',
+    }))), firstLessonPath + '?error=titulo-clase');
     const saveQuiz = (mission: string) => updateLesson(form({
       id: firstLessonId, course_id: courseId, section_id: sections[0].id, title: 'Comprueba tus conceptos',
       content: 'Define CTR y CPC.', video_url: 'https://youtu.be/iqTSX9cZ380', duration_min: '6', mission, editor: '1',
