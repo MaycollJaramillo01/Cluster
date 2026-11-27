@@ -1,9 +1,11 @@
+import Link from 'next/link';
+import { HStack } from '@astryxdesign/core/HStack';
 import { notFound } from 'next/navigation';
 import { VStack } from '@astryxdesign/core/VStack';
 import { requireCourseEditor } from '@/lib/crm/course-access';
-import { courseLessonReports, getReportCourse } from '@/lib/crm/course-reports';
+import { courseLessonReports, courseQuizAttempts, getReportCourse } from '@/lib/crm/course-reports';
 import { parseMission } from '@/lib/valux/mission';
-import { Empty, PageTitle, SectionTitle, btn } from '@/components/dashboard/StaffUi';
+import { Empty, PageTitle, SectionTitle, Table, btn, btnGhost, cell } from '@/components/dashboard/StaffUi';
 import { Icon } from '@/components/ui/Icon';
 
 function ReportValue({ label, value }: { label: string; value: string | number }) {
@@ -18,14 +20,23 @@ function ReportValue({ label, value }: { label: string; value: string | number }
 const head = 'hidden border-b border-academy-line bg-academy-tint text-xs text-academy-muted sm:table-header-group';
 const th = 'px-4 py-3 font-semibold';
 
-export default async function CourseReports({ params }: { params: Promise<{ id: string }> }) {
+const attemptDate = new Intl.DateTimeFormat('es-HN', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Tegucigalpa' });
+
+export default async function CourseReports({ params, searchParams }: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ alumno?: string; pagina?: string }>;
+}) {
   const { id } = await params;
   await requireCourseEditor(id);
   const course = await getReportCourse(id);
   if (!course) notFound();
-  const lessons = await courseLessonReports(id);
+  const query = await searchParams;
+  const student = typeof query.alumno === 'string' ? query.alumno : '';
+  const page = Math.min(10000, Math.max(1, Number.parseInt(query.pagina ?? '', 10) || 1));
+  const [lessons, attempts] = await Promise.all([courseLessonReports(id), courseQuizAttempts(id, student, (page - 1) * 50)]);
   const quizzes = lessons.filter((lesson) => lesson.attempts || parseMission(lesson.mission ?? '').mission?.kind === 'quiz');
   const base = `/dashboard/cursos/${id}`;
+  const attemptsHref = (target: number, person = student) => `${base}/reportes?pagina=${target}${person ? '&alumno=' + encodeURIComponent(person) : ''}#intentos`;
   return (
     <VStack gap={8} className="mx-auto w-full max-w-5xl">
       <PageTitle
@@ -67,6 +78,28 @@ export default async function CourseReports({ params }: { params: Promise<{ id: 
             </table>
           </section>
         ) : <Empty title="Todavía no hay cuestionarios." />}
+      </VStack>
+      <VStack as="section" gap={4} aria-labelledby="intentos">
+        <SectionTitle id="intentos" title="Intentos por alumno" action={student ? <Link href={attemptsHref(1, '')} className={btnGhost}>Ver todos</Link> : undefined} />
+        {attempts.length ? (
+          <Table label="Intentos por alumno" head={['Alumno', 'Clase', 'Fecha', 'Aciertos', 'Resultado']}>
+            {attempts.slice(0, 50).map((attempt) => (
+              <tr key={attempt.id}>
+                <td className={cell}>{attempt.student || 'Alumno'}</td>
+                <td className={cell}>{attempt.lesson}</td>
+                <td className={cell}>{attemptDate.format(new Date(attempt.created_at))}</td>
+                <td className={cell}>{attempt.correct}/{attempt.total}</td>
+                <td className={cell}>{attempt.correct === attempt.total ? 'Aprobó' : 'Por aprobar'}</td>
+              </tr>
+            ))}
+          </Table>
+        ) : <Empty title="Todavía no hay intentos de cuestionarios." />}
+        {page > 1 || attempts.length > 50 ? (
+          <HStack as="nav" aria-label="Páginas de intentos" gap={3}>
+            {page > 1 ? <Link className={btnGhost} href={attemptsHref(page - 1)}>Anterior</Link> : null}
+            {attempts.length > 50 ? <Link className={btnGhost} href={attemptsHref(page + 1)}>Siguiente</Link> : null}
+          </HStack>
+        ) : null}
       </VStack>
     </VStack>
   );

@@ -58,6 +58,29 @@ export async function courseLessonReports(courseId: string) {
   `;
 }
 
+
+export async function courseQuizAttempts(courseId: string, student: string, offset: number) {
+  const sql = await crm();
+  return sql`
+    SELECT e.id, v.name AS student, l.title AS lesson, e.created_at,
+      (e.data::jsonb ->> 'correct')::int AS correct, (e.data::jsonb ->> 'total')::int AS total
+    FROM lms_lessons l JOIN lms_courses c ON c.id = l.course_id
+    JOIN academia_events e ON e.data::jsonb ->> 'lesson' = l.id AND e.name = 'mission_submitted'
+    JOIN valux_people v ON v.id = e.person_id AND v.role <> 'junta'
+    WHERE c.id = ${courseId} AND c.published AND c.revision_of IS NULL
+      AND v.id IS DISTINCT FROM c.teacher_id AND (${student} = '' OR v.id = ${student})
+      AND (
+        e.data::jsonb ->> 'kind' = 'quiz' OR
+        (e.data::jsonb ->> 'kind' IS NULL AND btrim(COALESCE(l.mission, '')) <> '' AND ltrim(l.mission) NOT LIKE '[%')
+      )
+      AND CASE WHEN jsonb_typeof(e.data::jsonb -> 'total') = 'number'
+        THEN (e.data::jsonb ->> 'total')::numeric > 0 ELSE false END
+      AND jsonb_typeof(e.data::jsonb -> 'correct') = 'number'
+    ORDER BY e.created_at DESC, e.id DESC
+    LIMIT 51 OFFSET ${offset}
+  `;
+}
+
 export async function courseStudentProgress(courseId: string) {
   const sql = await crm();
   return sql`
